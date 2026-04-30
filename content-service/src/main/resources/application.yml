@@ -1,0 +1,63 @@
+server:
+  port: ${SERVER_PORT:8083}
+
+spring:
+  application:
+    name: content-service
+  datasource:
+    url: ${DB_RUNTIME_URL:${DB_URL:jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:notebook_platform}}}
+    username: ${DB_RUNTIME_USER:${DB_USER:notebook}}
+    password: ${DB_RUNTIME_PASSWORD:${DB_PASSWORD:}}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: true
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    table: content_flyway_schema_history
+
+management:
+  tracing:
+    enabled: ${OTEL_ENABLED:false}
+    sampling:
+      probability: ${MANAGEMENT_TRACING_SAMPLING_PROBABILITY:1.0}
+  otlp:
+    tracing:
+      endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT:http://localhost:4318/v1/traces}
+  endpoints:
+    web:
+      exposure:
+        include: ${MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE:health,info,metrics,prometheus}
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: never
+
+app:
+  rls:
+    enabled: ${APP_RLS_ENABLED:false}
+    strict-workspace-header: ${APP_RLS_STRICT_WORKSPACE_HEADER:false}
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+
+content:
+  blocks:
+    allow-unknown-block-types: ${ALLOW_UNKNOWN_BLOCK_TYPES:false}
+    max-depth: ${CONTENT_BLOCKS_MAX_DEPTH:8}
+    max-json-bytes: ${CONTENT_BLOCKS_MAX_JSON_BYTES:262144}
+  workspace:
+    service-url: ${WORKSPACE_SERVICE_URL:http://workspace-service:8082}
+    timeout-ms: ${WORKSPACE_CLIENT_TIMEOUT_MS:1000}
+    circuit-breaker-failure-threshold: ${WORKSPACE_CLIENT_CB_FAILURE_THRESHOLD:50}
+    circuit-breaker-open-state-ms: ${WORKSPACE_CLIENT_CB_OPEN_STATE_MS:10000}
+    retry-max-attempts: ${WORKSPACE_CLIENT_RETRY_MAX_ATTEMPTS:2}
+    internal-api-token: ${WORKSPACE_INTERNAL_API_TOKEN:}
+    internal-api-token-primary: ${WORKSPACE_INTERNAL_API_TOKEN_PRIMARY:${WORKSPACE_INTERNAL_API_TOKEN:}}
+    internal-api-token-secondary: ${WORKSPACE_INTERNAL_API_TOKEN_SECONDARY:}
+

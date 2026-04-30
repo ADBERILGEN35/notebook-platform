@@ -1,0 +1,19 @@
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    enabled: true
+
+security:
+  argon2:
+    salt-length: 8
+    hash-length: 16
+    parallelism: 1
+    memory-in-kb: 4096
+    iterations: 1
+
+jwt:
+  access-token-ttl-seconds: 60
+  refresh-token-ttl-seconds: 3600
+

@@ -1,0 +1,158 @@
+# Notebook Platform (MVP Skeleton)
+
+Engineering takımları için block-based not tutma platformunun MVP iskeleti.
+
+## Prerequisites
+
+- Java 25 (Gradle toolchain otomatik indirir)
+- Docker / Docker Compose
+
+## Local run
+
+Önce bağımlılıkları ayağa kaldırın:
+
+```bash
+docker compose -f docker-compose.dev.yml up -d
+```
+
+Servisleri başlatın (root’tan hepsi):
+
+```bash
+./gradlew bootRun
+```
+
+Sağlık kontrolü endpoint’i:
+
+- `http://localhost:8080/actuator/health` (api-gateway)
+- `http://localhost:8081/api/ok` (identity-service)
+- `http://localhost:8082/api/ok` (workspace-service)
+- `http://localhost:8083/api/ok` (content-service)
+
+## API Gateway
+
+Gateway `8080` portundan public auth endpointlerini identity-service'e, protected workspace/content endpointlerini ilgili servislere route eder.
+
+Public endpointler:
+
+- `POST /auth/signup`
+- `POST /auth/login`
+- `POST /auth/refresh`
+- `GET /actuator/health`
+
+Protected endpointlerde `Authorization: Bearer <accessToken>` zorunludur. Gateway tercihen identity-service JWKS endpointini `JWT_JWKS_URI` ile kullanir; yoksa `JWT_PUBLIC_KEY_PATH` veya `JWT_PUBLIC_KEY` fallback'i devam eder. Sadece `token_type=access` tokenlari kabul edilir.
+
+Gateway downstream'e identity headerlarini kendi uretir:
+
+- `X-User-Id`: JWT `sub`
+- `X-User-Email`: JWT `email`
+- `X-Workspace-Id`: client gonderdiyse UUID validasyonu sonrasi aktarilir
+
+Client'tan gelen `X-User-Id`, `X-User-Email`, `X-User-Roles`, `X-Workspace-Role` headerlari guvenilmez kabul edilir ve temizlenir. Workspace membership/role kontrolu Faz 3'te workspace-service tarafinda yapilacaktir.
+
+Ayrintilar ve curl ornekleri: [`api-gateway/README.md`](api-gateway/README.md)
+
+## Workspace Service
+
+Workspace, notebook, tag ve invitation domainleri `workspace-service` tarafinda yonetilir. Gateway tarafindan uretilen `X-User-Id` header'i servis icinde authorization icin zorunludur; invitation accept akisi `X-User-Email` de ister.
+
+Faz 6 itibariyla content-service icin internal contract endpointleri gercek implementedir:
+
+- `GET /internal/notebooks/{notebookId}/permissions?userId={userId}`
+- `GET /internal/workspaces/{workspaceId}/tags/{tagId}/exists?scope=NOTE`
+
+Production'da `INTERNAL_API_TOKEN_PRIMARY` ve `WORKSPACE_INTERNAL_API_TOKEN_PRIMARY` ayni aktif secret ile set edilmelidir. Legacy `INTERNAL_API_TOKEN` ve `WORKSPACE_INTERNAL_API_TOKEN` sadece local/dev fallback'tir ve prod profilinde reddedilir. Bu endpointler gateway'e route edilmez.
+
+Ayrintilar ve curl ornekleri: [`workspace-service/README.md`](workspace-service/README.md)
+
+## Content Service
+
+Note current state, immutable note version history, note links, comments, note tags ve basit search `content-service` tarafinda yonetilir. Permission kontrolu workspace-service internal permission contract'i uzerinden yapilir.
+
+Ayrintilar ve curl ornekleri: [`content-service/README.md`](content-service/README.md)
+
+## Observability + Hardening
+
+Faz 5 sonrasi tum servislerde JSON structured logging, `X-Request-Id`, actuator health/metrics/prometheus endpointleri, opsiyonel OTLP HTTP tracing ve standart error response uygulanir.
+
+```bash
+export OTEL_ENABLED=false
+export OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318/v1/traces
+export MANAGEMENT_TRACING_SAMPLING_PROBABILITY=1.0
+docker compose up --build
+```
+
+Prometheus scrape endpointleri:
+
+- `http://localhost:8080/actuator/prometheus`
+- `http://localhost:8081/actuator/prometheus`
+- `http://localhost:8082/actuator/prometheus`
+- `http://localhost:8083/actuator/prometheus`
+
+Dokumanlar:
+
+- [`docs/observability.md`](docs/observability.md)
+- [`docs/resilience.md`](docs/resilience.md)
+- [`docs/error-codes.md`](docs/error-codes.md)
+- [`docs/runtime-security.md`](docs/runtime-security.md)
+
+Faz 12 runtime tenant hardening: workspace-service ve content-service `DB_RUNTIME_*` ile runtime datasource credential, `DB_MIGRATION_*` ile Flyway credential ayrimini destekler. `APP_RLS_ENABLED=true` transaction icinde PostgreSQL `SET LOCAL app.current_workspace_id` uygular; `APP_RLS_STRICT_WORKSPACE_HEADER=true` aggregate-id endpointlerde `X-Workspace-Id` zorunlu hale getirir. FORCE RLS kalici migration degil, `scripts/db/enable-force-rls-*.sql` opt-in scriptidir.
+
+## Docker Compose (full)
+
+Uygulama container’ları da dahil şekilde başlatmak için:
+
+```bash
+docker compose up --build -d
+```
+
+Opsiyonel observability stack:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.observability.yml --profile observability up --build
+```
+
+Production-like run icin runtime secretleri env ile verin:
+
+```bash
+export SPRING_PROFILES_ACTIVE=prod
+export JWT_JWKS_URI=http://identity-service:8081/.well-known/jwks.json
+export JWT_KEYS_ACTIVE_KID=prod-key-1
+export JWT_KEYS_SIGNING_KEYS_0_KID=prod-key-1
+export JWT_KEYS_SIGNING_KEYS_0_PRIVATE_KEY_PATH=/run/secrets/jwt_private_key_1
+export JWT_KEYS_SIGNING_KEYS_0_PUBLIC_KEY_PATH=/run/secrets/jwt_public_key_1
+export DB_RUNTIME_USER=notebook_runtime
+export DB_RUNTIME_PASSWORD=<runtime-db-secret>
+export DB_MIGRATION_USER=notebook_migrator
+export DB_MIGRATION_PASSWORD=<migration-db-secret>
+export INTERNAL_API_TOKEN_PRIMARY=<internal-secret>
+export WORKSPACE_INTERNAL_API_TOKEN_PRIMARY=<internal-secret>
+docker compose up --build
+```
+
+Smoke test:
+
+```bash
+bash scripts/smoke-test.sh
+```
+
+## CI
+
+GitHub Actions quality gate Java 25 ile `./gradlew --no-daemon spotlessCheck`, `./gradlew --no-daemon clean check` ve `./gradlew --no-daemon bootJar` calistirir. Testcontainers integration testleri icin GitHub hosted runner'da Docker kullanilir.
+
+Dokumanlar:
+
+- [`docs/security-threat-model.md`](docs/security-threat-model.md)
+- [`docs/production-readiness.md`](docs/production-readiness.md)
+- [`docs/runtime-security.md`](docs/runtime-security.md)
+- [`docs/secret-inventory.md`](docs/secret-inventory.md)
+- [`docs/configuration-profiles.md`](docs/configuration-profiles.md)
+- [`docs/secret-rotation-runbook.md`](docs/secret-rotation-runbook.md)
+- [`docs/jwt-key-rotation-design.md`](docs/jwt-key-rotation-design.md)
+- [`docs/deployment-packaging.md`](docs/deployment-packaging.md)
+- [`docs/backup-restore.md`](docs/backup-restore.md)
+- [`docs/audit-events.md`](docs/audit-events.md)
+- [`docs/database-performance.md`](docs/database-performance.md)
+- [`docs/database-roles-and-rls.md`](docs/database-roles-and-rls.md)
+- [`docs/api-contract-freeze.md`](docs/api-contract-freeze.md)
+- [`docs/load-testing.md`](docs/load-testing.md)
+

@@ -1,0 +1,16 @@
+package com.notebook.lumen.identity;
+
+import java.util.Map;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/api")
+public class IdentityOkController {
+
+  @GetMapping("/ok")
+  public Map<String, Object> ok() {
+    return Map.of("status", "OK", "service", "identity-service");
+  }
+}

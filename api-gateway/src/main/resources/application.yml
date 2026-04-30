@@ -1,0 +1,99 @@
+server:
+  port: ${SERVER_PORT:8080}
+
+spring:
+  application:
+    name: api-gateway
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+  cloud:
+    gateway:
+      server:
+        webflux:
+          routes:
+            - id: identity-signup
+              uri: ${IDENTITY_SERVICE_URL:http://identity-service:8081}
+              predicates:
+                - Method=POST
+                - Path=/auth/signup
+            - id: identity-login
+              uri: ${IDENTITY_SERVICE_URL:http://identity-service:8081}
+              predicates:
+                - Method=POST
+                - Path=/auth/login
+            - id: identity-refresh
+              uri: ${IDENTITY_SERVICE_URL:http://identity-service:8081}
+              predicates:
+                - Method=POST
+                - Path=/auth/refresh
+            - id: identity-auth
+              uri: ${IDENTITY_SERVICE_URL:http://identity-service:8081}
+              predicates:
+                - Path=/auth/**
+            - id: workspace-workspaces
+              uri: ${WORKSPACE_SERVICE_URL:http://workspace-service:8082}
+              predicates:
+                - Path=/workspaces/**
+            - id: workspace-notebooks
+              uri: ${WORKSPACE_SERVICE_URL:http://workspace-service:8082}
+              predicates:
+                - Path=/notebooks/**
+            - id: workspace-tags
+              uri: ${WORKSPACE_SERVICE_URL:http://workspace-service:8082}
+              predicates:
+                - Path=/tags/**
+            - id: workspace-invitations
+              uri: ${WORKSPACE_SERVICE_URL:http://workspace-service:8082}
+              predicates:
+                - Path=/invitations/**
+            - id: content-notes
+              uri: ${CONTENT_SERVICE_URL:http://content-service:8083}
+              predicates:
+                - Path=/notes/**
+            - id: content-comments
+              uri: ${CONTENT_SERVICE_URL:http://content-service:8083}
+              predicates:
+                - Path=/comments/**
+
+management:
+  tracing:
+    enabled: ${OTEL_ENABLED:false}
+    sampling:
+      probability: ${MANAGEMENT_TRACING_SAMPLING_PROBABILITY:1.0}
+  otlp:
+    tracing:
+      endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT:http://localhost:4318/v1/traces}
+  endpoints:
+    web:
+      exposure:
+        include: ${MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE:health,info,metrics,prometheus}
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: never
+
+gateway:
+  jwt:
+    jwks-uri: ${JWT_JWKS_URI:}
+    public-key-path: ${JWT_PUBLIC_KEY_PATH:}
+    public-key: ${JWT_PUBLIC_KEY:}
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:5173}
+  rate-limit:
+    auth:
+      replenish-rate: ${AUTH_RATE_LIMIT_REPLENISH_RATE:5}
+      burst-capacity: ${AUTH_RATE_LIMIT_BURST_CAPACITY:10}
+      requested-tokens: ${AUTH_RATE_LIMIT_REQUESTED_TOKENS:1}
+    protected-api:
+      replenish-rate: ${PROTECTED_RATE_LIMIT_REPLENISH_RATE:50}
+      burst-capacity: ${PROTECTED_RATE_LIMIT_BURST_CAPACITY:100}
+      requested-tokens: ${PROTECTED_RATE_LIMIT_REQUESTED_TOKENS:1}
+
+logging:
+  level:
+    org.springframework.cloud.gateway: INFO
+

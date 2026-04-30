@@ -1,0 +1,167 @@
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: notebook
+      POSTGRES_PASSWORD: notebook
+      POSTGRES_DB: notebook_platform
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+
+  api-gateway:
+    build:
+      context: .
+      dockerfile: api-gateway/Dockerfile
+    depends_on:
+      - redis
+      - identity-service
+      - workspace-service
+      - content-service
+    environment:
+      SERVER_PORT: 8080
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-}
+      JAVA_OPTS: ${API_GATEWAY_JAVA_OPTS:--XX:MaxRAMPercentage=75.0}
+      SERVICE_NAME: api-gateway
+      LOG_FORMAT: json
+      OTEL_ENABLED: ${OTEL_ENABLED:-false}
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-http://localhost:4318/v1/traces}
+      OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
+      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: health,info,metrics,prometheus
+      MANAGEMENT_TRACING_SAMPLING_PROBABILITY: ${MANAGEMENT_TRACING_SAMPLING_PROBABILITY:-1.0}
+      JWT_JWKS_URI: ${JWT_JWKS_URI:-http://identity-service:8081/.well-known/jwks.json}
+      JWT_PUBLIC_KEY_PATH: ${JWT_PUBLIC_KEY_PATH:-}
+      JWT_PUBLIC_KEY: ${JWT_PUBLIC_KEY:-}
+      IDENTITY_SERVICE_URL: http://identity-service:8081
+      WORKSPACE_SERVICE_URL: http://workspace-service:8082
+      CONTENT_SERVICE_URL: http://content-service:8083
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:3000,http://localhost:5173}
+    ports:
+      - "8080:8080"
+
+  identity-service:
+    build:
+      context: .
+      dockerfile: identity-service/Dockerfile
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      SERVER_PORT: 8081
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-}
+      JAVA_OPTS: ${IDENTITY_SERVICE_JAVA_OPTS:--XX:MaxRAMPercentage=75.0}
+      SERVICE_NAME: identity-service
+      LOG_FORMAT: json
+      OTEL_ENABLED: ${OTEL_ENABLED:-false}
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-http://localhost:4318/v1/traces}
+      OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
+      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: health,info,metrics,prometheus
+      MANAGEMENT_TRACING_SAMPLING_PROBABILITY: ${MANAGEMENT_TRACING_SAMPLING_PROBABILITY:-1.0}
+      JWT_ALLOW_EPHEMERAL_KEYS: ${JWT_ALLOW_EPHEMERAL_KEYS:-true}
+      JWT_KEYS_ACTIVE_KID: ${JWT_KEYS_ACTIVE_KID:-primary}
+      JWT_KEYS_SIGNING_KEYS_0_KID: ${JWT_KEYS_SIGNING_KEYS_0_KID:-}
+      JWT_KEYS_SIGNING_KEYS_0_PRIVATE_KEY_PATH: ${JWT_KEYS_SIGNING_KEYS_0_PRIVATE_KEY_PATH:-}
+      JWT_KEYS_SIGNING_KEYS_0_PUBLIC_KEY_PATH: ${JWT_KEYS_SIGNING_KEYS_0_PUBLIC_KEY_PATH:-}
+      JWT_KEYS_SIGNING_KEYS_1_KID: ${JWT_KEYS_SIGNING_KEYS_1_KID:-}
+      JWT_KEYS_SIGNING_KEYS_1_PRIVATE_KEY_PATH: ${JWT_KEYS_SIGNING_KEYS_1_PRIVATE_KEY_PATH:-}
+      JWT_KEYS_SIGNING_KEYS_1_PUBLIC_KEY_PATH: ${JWT_KEYS_SIGNING_KEYS_1_PUBLIC_KEY_PATH:-}
+      JWT_PRIVATE_KEY: ${JWT_PRIVATE_KEY:-}
+      JWT_PRIVATE_KEY_PATH: ${JWT_PRIVATE_KEY_PATH:-}
+      JWT_PUBLIC_KEY: ${JWT_PUBLIC_KEY:-}
+      JWT_PUBLIC_KEY_PATH: ${JWT_PUBLIC_KEY_PATH:-}
+      DB_URL: jdbc:postgresql://postgres:5432/notebook_platform
+      DB_USER: notebook
+      DB_PASSWORD: ${DB_PASSWORD:-notebook}
+    ports:
+      - "8081:8081"
+
+  workspace-service:
+    build:
+      context: .
+      dockerfile: workspace-service/Dockerfile
+    depends_on:
+      - postgres
+    environment:
+      SERVER_PORT: 8082
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-}
+      JAVA_OPTS: ${WORKSPACE_SERVICE_JAVA_OPTS:--XX:MaxRAMPercentage=75.0}
+      SERVICE_NAME: workspace-service
+      LOG_FORMAT: json
+      OTEL_ENABLED: ${OTEL_ENABLED:-false}
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-http://localhost:4318/v1/traces}
+      OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
+      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: health,info,metrics,prometheus
+      MANAGEMENT_TRACING_SAMPLING_PROBABILITY: ${MANAGEMENT_TRACING_SAMPLING_PROBABILITY:-1.0}
+      APP_RLS_ENABLED: ${APP_RLS_ENABLED:-false}
+      APP_RLS_STRICT_WORKSPACE_HEADER: ${APP_RLS_STRICT_WORKSPACE_HEADER:-false}
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: notebook_platform
+      DB_USER: notebook
+      DB_PASSWORD: ${DB_PASSWORD:-notebook}
+      DB_RUNTIME_USER: ${DB_RUNTIME_USER:-notebook}
+      DB_RUNTIME_PASSWORD: ${DB_RUNTIME_PASSWORD:-notebook}
+      DB_MIGRATION_USER: ${DB_MIGRATION_USER:-notebook}
+      DB_MIGRATION_PASSWORD: ${DB_MIGRATION_PASSWORD:-notebook}
+      SPRING_FLYWAY_USER: ${DB_MIGRATION_USER:-notebook}
+      SPRING_FLYWAY_PASSWORD: ${DB_MIGRATION_PASSWORD:-notebook}
+      IDENTITY_SERVICE_URL: http://identity-service:8081
+      INVITATION_TTL_DAYS: 7
+      INVITATION_ACCEPT_BASE_URL: http://localhost:3000/invitations/accept
+      INVITATION_EXPOSE_TOKEN_IN_RESPONSE: "true"
+      INTERNAL_API_TOKEN: ${INTERNAL_API_TOKEN:-}
+      INTERNAL_API_TOKEN_PRIMARY: ${INTERNAL_API_TOKEN_PRIMARY:-}
+      INTERNAL_API_TOKEN_SECONDARY: ${INTERNAL_API_TOKEN_SECONDARY:-}
+    ports:
+      - "8082:8082"
+
+  content-service:
+    build:
+      context: .
+      dockerfile: content-service/Dockerfile
+    depends_on:
+      - postgres
+    environment:
+      SERVER_PORT: 8083
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-}
+      JAVA_OPTS: ${CONTENT_SERVICE_JAVA_OPTS:--XX:MaxRAMPercentage=75.0}
+      SERVICE_NAME: content-service
+      LOG_FORMAT: json
+      OTEL_ENABLED: ${OTEL_ENABLED:-false}
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-http://localhost:4318/v1/traces}
+      OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
+      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: health,info,metrics,prometheus
+      MANAGEMENT_TRACING_SAMPLING_PROBABILITY: ${MANAGEMENT_TRACING_SAMPLING_PROBABILITY:-1.0}
+      APP_RLS_ENABLED: ${APP_RLS_ENABLED:-false}
+      APP_RLS_STRICT_WORKSPACE_HEADER: ${APP_RLS_STRICT_WORKSPACE_HEADER:-false}
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: notebook_platform
+      DB_USER: notebook
+      DB_PASSWORD: ${DB_PASSWORD:-notebook}
+      DB_RUNTIME_USER: ${DB_RUNTIME_USER:-notebook}
+      DB_RUNTIME_PASSWORD: ${DB_RUNTIME_PASSWORD:-notebook}
+      DB_MIGRATION_USER: ${DB_MIGRATION_USER:-notebook}
+      DB_MIGRATION_PASSWORD: ${DB_MIGRATION_PASSWORD:-notebook}
+      SPRING_FLYWAY_USER: ${DB_MIGRATION_USER:-notebook}
+      SPRING_FLYWAY_PASSWORD: ${DB_MIGRATION_PASSWORD:-notebook}
+      WORKSPACE_SERVICE_URL: http://workspace-service:8082
+      WORKSPACE_INTERNAL_API_TOKEN: ${WORKSPACE_INTERNAL_API_TOKEN:-}
+      WORKSPACE_INTERNAL_API_TOKEN_PRIMARY: ${WORKSPACE_INTERNAL_API_TOKEN_PRIMARY:-}
+      WORKSPACE_INTERNAL_API_TOKEN_SECONDARY: ${WORKSPACE_INTERNAL_API_TOKEN_SECONDARY:-}
+      ALLOW_UNKNOWN_BLOCK_TYPES: "false"
+    ports:
+      - "8083:8083"
+
+volumes:
+  postgres_data:
+

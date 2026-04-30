@@ -1,0 +1,10 @@
+<configuration>
+    <springProperty scope="context" name="serviceName" source="spring.application.name" defaultValue="${SERVICE_NAME:-content-service}"/>
+    <appender name="CONSOLE_JSON" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+            <providers><timestamp/><logLevel/><loggerName fieldName="logger"/><threadName fieldName="thread"/><message/><mdc/><stackTrace/><pattern><pattern>{"service":"${serviceName}"}</pattern></pattern></providers>
+        </encoder>
+    </appender>
+    <root level="INFO"><appender-ref ref="CONSOLE_JSON"/></root>
+</configuration>
+

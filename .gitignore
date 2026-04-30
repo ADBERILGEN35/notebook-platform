@@ -1,0 +1,22 @@
+# Gradle
+/.gradle/
+/build/
+**/build/
+gradle-wrapper.jar
+gradlew
+gradlew.bat
+
+# IDE
+.idea/
+.vscode/
+
+# Docker
+docker-compose*.log
+
+# Local secrets
+.env
+.env.*
+!.env.example
+!.env.production.example
+!identity-service/.env.example
+
