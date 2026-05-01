@@ -1,0 +1,75 @@
+{{- if .Values.services.apiGateway.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "notebook-platform.componentName" (dict "root" . "component" "api-gateway") }}
+  namespace: {{ include "notebook-platform.namespace" . }}
+  labels:
+    {{- include "notebook-platform.labels" . | nindent 4 }}
+    app.kubernetes.io/component: api-gateway
+spec:
+  replicas: {{ .Values.services.apiGateway.replicas }}
+  selector:
+    matchLabels:
+      {{- include "notebook-platform.selectorLabels" (dict "root" . "component" "api-gateway") | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "notebook-platform.selectorLabels" (dict "root" . "component" "api-gateway") | nindent 8 }}
+        app.kubernetes.io/part-of: notebook-platform
+        {{- with .Values.global.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      annotations:
+        {{- include "notebook-platform.podAnnotations" . | nindent 8 }}
+    spec:
+      serviceAccountName: {{ include "notebook-platform.serviceAccountName" . }}
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: api-gateway
+          image: {{ include "notebook-platform.image" (dict "root" . "image" .Values.services.apiGateway.image) | quote }}
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          securityContext:
+            {{- toYaml .Values.containerSecurityContext | nindent 12 }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.services.apiGateway.port }}
+          envFrom:
+            - configMapRef:
+                name: {{ include "notebook-platform.fullname" . }}-config
+          env:
+            - name: SERVER_PORT
+              value: {{ .Values.services.apiGateway.port | quote }}
+            - name: SERVICE_NAME
+              value: api-gateway
+            {{- include "notebook-platform.otelSecretEnv" . | nindent 12 }}
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "notebook-platform.secretName" . }}
+                  key: redis-password
+                  optional: true
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.probes.readiness.path }}
+              port: http
+            {{- omit .Values.probes.readiness "path" | toYaml | nindent 12 }}
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.probes.liveness.path }}
+              port: http
+            {{- omit .Values.probes.liveness "path" | toYaml | nindent 12 }}
+          resources:
+            {{- toYaml .Values.services.apiGateway.resources | nindent 12 }}
+          volumeMounts:
+            {{- include "notebook-platform.volumeMounts" . | nindent 12 }}
+      volumes:
+        - name: tmp
+          emptyDir: {}
+        {{- include "notebook-platform.secretVolume" . | nindent 8 }}
+{{- end }}

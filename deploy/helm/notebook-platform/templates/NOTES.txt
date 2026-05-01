@@ -1,0 +1,15 @@
+Notebook Platform has been rendered.
+
+Gateway service:
+  {{ include "notebook-platform.componentName" (dict "root" . "component" "api-gateway") }}:{{ .Values.services.apiGateway.port }}
+
+Ingress:
+  enabled: {{ .Values.ingress.enabled }}
+
+Production checklist:
+  - Secret delivery mode: {{ .Values.secrets.mode }}.
+  - Provide a populated Secret named {{ include "notebook-platform.secretName" . }} through ExternalSecret, existingSecret, or dev-only Helm-managed Secret values.
+  - Use managed/external PostgreSQL and Redis.
+  - Keep identity/workspace/content services ClusterIP-only.
+  - Enable NetworkPolicy only after the cluster CNI enforces it.
+  - Prefer INTERNAL_AUTH_MODE=service-jwt with mounted service JWT keys.

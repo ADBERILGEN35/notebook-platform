@@ -16,12 +16,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class NoteService {
+  public static final Set<String> NOTE_SORTS = Set.of("title", "createdAt", "updatedAt");
+  public static final Set<String> VERSION_SORTS = Set.of("versionNumber", "createdAt");
+  public static final Set<String> LINK_SORTS = Set.of("createdAt");
+  public static final Set<String> SEARCH_SORTS = Set.of("updatedAt", "createdAt");
   private final NoteRepository noteRepository;
   private final NoteVersionRepository versionRepository;
   private final NoteLinkRepository linkRepository;
@@ -103,14 +110,15 @@ public class NoteService {
   }
 
   @Transactional(readOnly = true)
-  public List<NoteResponse> list(UserContext user, UUID notebookId) {
+  public PageResponse<NoteResponse> list(UserContext user, UUID notebookId, Pageable pageable) {
     WorkspaceClient.NotebookPermissionResponse p =
         permissionService.requireReadable(user.userId(), notebookId);
     tenantDatabaseSession.applyWorkspace(p.workspaceId());
     assertAggregateWorkspaceHeader(user, p.workspaceId());
-    return noteRepository.findByNotebookIdAndArchivedAtIsNull(notebookId).stream()
-        .map(mapper::toResponse)
-        .toList();
+    return PageResponse.from(
+        noteRepository
+            .findByNotebookIdAndArchivedAtIsNull(notebookId, pageable)
+            .map(mapper::toResponse));
   }
 
   @Transactional
@@ -150,14 +158,14 @@ public class NoteService {
   }
 
   @Transactional(readOnly = true)
-  public List<NoteVersionResponse> versions(UserContext user, UUID noteId) {
+  public PageResponse<NoteVersionResponse> versions(
+      UserContext user, UUID noteId, Pageable pageable) {
     Note note = load(noteId);
     tenantDatabaseSession.applyWorkspace(note.getWorkspaceId());
     assertAggregateWorkspaceHeader(user, note.getWorkspaceId());
     permissionService.requireReadable(user.userId(), note.getNotebookId());
-    return versionRepository.findByNoteIdOrderByVersionNumberAsc(noteId).stream()
-        .map(mapper::toResponse)
-        .toList();
+    return PageResponse.from(
+        versionRepository.findByNoteId(noteId, pageable).map(mapper::toResponse));
   }
 
   @Transactional(readOnly = true)
@@ -196,40 +204,46 @@ public class NoteService {
   }
 
   @Transactional(readOnly = true)
-  public List<NoteLinkResponse> outgoing(UserContext user, UUID noteId) {
+  public PageResponse<NoteLinkResponse> outgoing(UserContext user, UUID noteId, Pageable pageable) {
     Note note = load(noteId);
     tenantDatabaseSession.applyWorkspace(note.getWorkspaceId());
     assertAggregateWorkspaceHeader(user, note.getWorkspaceId());
     permissionService.requireReadable(user.userId(), note.getNotebookId());
-    return linkRepository.findByIdFromNoteId(noteId).stream().map(mapper::toResponse).toList();
+    return PageResponse.from(
+        linkRepository.findByIdFromNoteId(noteId, pageable).map(mapper::toResponse));
   }
 
   @Transactional(readOnly = true)
-  public List<NoteLinkResponse> incoming(UserContext user, UUID noteId) {
+  public PageResponse<NoteLinkResponse> incoming(UserContext user, UUID noteId, Pageable pageable) {
     Note note = load(noteId);
     tenantDatabaseSession.applyWorkspace(note.getWorkspaceId());
     assertAggregateWorkspaceHeader(user, note.getWorkspaceId());
     permissionService.requireReadable(user.userId(), note.getNotebookId());
-    return linkRepository.findByIdToNoteId(noteId).stream().map(mapper::toResponse).toList();
+    return PageResponse.from(
+        linkRepository.findByIdToNoteId(noteId, pageable).map(mapper::toResponse));
   }
 
   @Transactional(readOnly = true)
-  public List<NoteResponse> search(UserContext user, UUID workspaceId, String q) {
+  public PageResponse<NoteResponse> search(
+      UserContext user, UUID workspaceId, String q, Pageable pageable) {
     if (q == null || q.length() > 120) throw bad("VALIDATION_ERROR", "q length must be <= 120");
     tenantDatabaseSession.applyWorkspace(workspaceId);
     assertWorkspaceHeaderIfPresent(user, workspaceId);
-    return noteRepository.search(workspaceId, q.trim()).stream()
-        .filter(
-            n -> {
-              try {
-                permissionService.requireReadable(user.userId(), n.getNotebookId());
-                return true;
-              } catch (ContentException e) {
-                return false;
-              }
-            })
-        .map(mapper::toResponse)
-        .toList();
+    Page<Note> page = noteRepository.search(workspaceId, q.trim(), pageable);
+    List<NoteResponse> permitted =
+        page.getContent().stream()
+            .filter(
+                n -> {
+                  try {
+                    permissionService.requireReadable(user.userId(), n.getNotebookId());
+                    return true;
+                  } catch (ContentException e) {
+                    return false;
+                  }
+                })
+            .map(mapper::toResponse)
+            .toList();
+    return PageResponse.from(new PageImpl<>(permitted, pageable, permitted.size()));
   }
 
   Note load(UUID noteId) {

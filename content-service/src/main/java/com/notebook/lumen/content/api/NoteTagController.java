@@ -1,12 +1,13 @@
 package com.notebook.lumen.content.api;
 
 import com.notebook.lumen.content.dto.NoteTagResponse;
+import com.notebook.lumen.content.dto.PageResponse;
 import com.notebook.lumen.content.service.NoteTagService;
+import com.notebook.lumen.content.shared.Pagination;
 import com.notebook.lumen.content.shared.UserContext;
 import com.notebook.lumen.content.shared.UserContextResolver;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletRequest;
-import java.util.List;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -37,8 +38,14 @@ public class NoteTagController {
 
   @GetMapping("/notes/{noteId}/tags")
   @Operation(summary = "List note tags")
-  public List<NoteTagResponse> list(@PathVariable UUID noteId, HttpServletRequest http) {
-    return noteTagService.list(user(http), noteId);
+  public PageResponse<NoteTagResponse> list(
+      @PathVariable UUID noteId,
+      @RequestParam(required = false) Integer page,
+      @RequestParam(required = false) Integer size,
+      @RequestParam(required = false) String sort,
+      HttpServletRequest http) {
+    return noteTagService.list(
+        user(http), noteId, Pagination.pageable(page, size, sort, NoteTagService.NOTE_TAG_SORTS));
   }
 
   private UserContext user(HttpServletRequest request) {

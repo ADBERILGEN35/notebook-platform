@@ -6,6 +6,8 @@ import com.notebook.lumen.workspace.domain.WorkspaceRole;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface WorkspaceMemberRepository
@@ -15,6 +17,8 @@ public interface WorkspaceMemberRepository
   List<WorkspaceMember> findByIdUserId(UUID userId);
 
   List<WorkspaceMember> findByIdWorkspaceId(UUID workspaceId);
+
+  Page<WorkspaceMember> findByIdWorkspaceId(UUID workspaceId, Pageable pageable);
 
   long countByIdWorkspaceIdAndRole(UUID workspaceId, WorkspaceRole role);
 

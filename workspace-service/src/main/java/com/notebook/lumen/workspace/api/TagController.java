@@ -1,14 +1,15 @@
 package com.notebook.lumen.workspace.api;
 
+import com.notebook.lumen.workspace.dto.PageResponse;
 import com.notebook.lumen.workspace.dto.Requests.*;
 import com.notebook.lumen.workspace.dto.TagResponse;
 import com.notebook.lumen.workspace.service.TagService;
+import com.notebook.lumen.workspace.shared.Pagination;
 import com.notebook.lumen.workspace.shared.UserContext;
 import com.notebook.lumen.workspace.shared.UserContextResolver;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import java.util.List;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -35,8 +36,16 @@ public class TagController {
 
   @GetMapping("/workspaces/{workspaceId}/tags")
   @Operation(summary = "List tags")
-  public List<TagResponse> list(@PathVariable UUID workspaceId, HttpServletRequest httpRequest) {
-    return tagService.list(user(httpRequest), workspaceId);
+  public PageResponse<TagResponse> list(
+      @PathVariable UUID workspaceId,
+      @RequestParam(required = false) Integer page,
+      @RequestParam(required = false) Integer size,
+      @RequestParam(required = false) String sort,
+      HttpServletRequest httpRequest) {
+    return tagService.list(
+        user(httpRequest),
+        workspaceId,
+        Pagination.pageable(page, size, sort, TagService.TAG_SORTS));
   }
 
   @PatchMapping("/tags/{tagId}")

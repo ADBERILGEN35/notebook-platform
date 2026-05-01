@@ -2,6 +2,7 @@ package com.notebook.lumen.workspace.service;
 
 import com.notebook.lumen.workspace.audit.AuditService;
 import com.notebook.lumen.workspace.domain.*;
+import com.notebook.lumen.workspace.dto.PageResponse;
 import com.notebook.lumen.workspace.dto.Requests.*;
 import com.notebook.lumen.workspace.dto.WorkspaceMemberResponse;
 import com.notebook.lumen.workspace.dto.WorkspaceResponse;
@@ -11,14 +12,18 @@ import com.notebook.lumen.workspace.shared.UserContext;
 import com.notebook.lumen.workspace.shared.exception.Exceptions;
 import com.notebook.lumen.workspace.tenant.TenantDatabaseSession;
 import java.time.Instant;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class WorkspaceService {
+  public static final Set<String> WORKSPACE_SORTS = Set.of("name", "createdAt", "updatedAt");
+  public static final Set<String> MEMBER_SORTS =
+      Set.of("createdAt", "updatedAt", "joinedAt", "role");
 
   private final WorkspaceRepository workspaceRepository;
   private final WorkspaceMemberRepository workspaceMemberRepository;
@@ -83,16 +88,11 @@ public class WorkspaceService {
   }
 
   @Transactional(readOnly = true)
-  public List<WorkspaceResponse> list(UserContext user) {
-    return workspaceMemberRepository.findByIdUserId(user.userId()).stream()
-        .map(
-            member ->
-                workspaceRepository
-                    .findByIdAndArchivedAtIsNull(member.getWorkspaceId())
-                    .orElse(null))
-        .filter(java.util.Objects::nonNull)
-        .map(mapper::toResponse)
-        .toList();
+  public PageResponse<WorkspaceResponse> list(UserContext user, Pageable pageable) {
+    return PageResponse.from(
+        workspaceRepository
+            .findActiveByMemberUserId(user.userId(), pageable)
+            .map(mapper::toResponse));
   }
 
   @Transactional(readOnly = true)
@@ -133,13 +133,15 @@ public class WorkspaceService {
   }
 
   @Transactional(readOnly = true)
-  public List<WorkspaceMemberResponse> members(UserContext user, UUID workspaceId) {
+  public PageResponse<WorkspaceMemberResponse> members(
+      UserContext user, UUID workspaceId, Pageable pageable) {
     tenantDatabaseSession.applyWorkspace(workspaceId);
     authorizationService.requireWorkspaceRole(
         workspaceId, user.userId(), WorkspaceRole.OWNER, WorkspaceRole.ADMIN, WorkspaceRole.MEMBER);
-    return workspaceMemberRepository.findByIdWorkspaceId(workspaceId).stream()
-        .map(mapper::toResponse)
-        .toList();
+    return PageResponse.from(
+        workspaceMemberRepository
+            .findByIdWorkspaceId(workspaceId, pageable)
+            .map(mapper::toResponse));
   }
 
   @Transactional

@@ -1,0 +1,273 @@
+nameOverride: ""
+fullnameOverride: ""
+
+namespace:
+  create: false
+  name: ""
+
+global:
+  imageRegistry: ""
+  imagePullSecrets: []
+  imagePullPolicy: IfNotPresent
+  springProfilesActive: prod
+  logFormat: json
+  javaOpts: "-XX:MaxRAMPercentage=75.0"
+  podAnnotations: {}
+  podLabels: {}
+  commonLabels: {}
+
+config:
+  otelEnabled: "false"
+  otelExporterOtlpEndpoint: "http://otel-collector:4318/v1/traces"
+  managementTracingSamplingProbability: "1.0"
+  managementEndpointsWebExposureInclude: "health,info,metrics,prometheus"
+  corsAllowedOrigins: "https://app.example.com"
+  appRlsEnabled: "false"
+  appRlsStrictWorkspaceHeader: "false"
+  internalAuthMode: "service-jwt"
+  invitationTtlDays: "7"
+  invitationAcceptBaseUrl: "https://app.example.com/invitations/accept"
+  invitationExposeTokenInResponse: "false"
+  jwtAllowEphemeralKeys: "false"
+  jwtActiveKid: "prod-key-1"
+  internalServiceJwtActiveKid: "content-service-key-1"
+  internalServiceJwtIssuer: "content-service"
+  internalServiceJwtTtlSeconds: "60"
+  trustedContentServiceIssuer: "content-service"
+  trustedContentServiceAudience: "workspace-service"
+  trustedContentServiceKid: "content-service-key-1"
+  dbName: "notebook_platform"
+
+externalDatabase:
+  identityUrl: "jdbc:postgresql://postgres.example.internal:5432/notebook_platform"
+  workspaceRuntimeUrl: "jdbc:postgresql://postgres.example.internal:5432/notebook_platform"
+  contentRuntimeUrl: "jdbc:postgresql://postgres.example.internal:5432/notebook_platform"
+  identityUser: "notebook_identity"
+  workspaceRuntimeUser: "notebook_workspace_runtime"
+  workspaceMigrationUser: "notebook_workspace_migrator"
+  contentRuntimeUser: "notebook_content_runtime"
+  contentMigrationUser: "notebook_content_migrator"
+
+externalRedis:
+  host: "redis.example.internal"
+  port: "6379"
+  tlsEnabled: false
+
+secrets:
+  mode: native-kubernetes-secret # native-kubernetes-secret | external-secrets
+  create: true
+  name: ""
+  existingSecret: ""
+  data:
+    identityDbPassword: ""
+    workspaceRuntimeDbPassword: ""
+    workspaceMigrationDbPassword: ""
+    contentRuntimeDbPassword: ""
+    contentMigrationDbPassword: ""
+    redisPassword: ""
+    otelExporterOtlpHeaders: ""
+    internalApiTokenPrimary: ""
+    internalApiTokenSecondary: ""
+    workspaceInternalApiTokenPrimary: ""
+    workspaceInternalApiTokenSecondary: ""
+    jwtPrivateKeyPem: ""
+    jwtPublicKeyPem: ""
+    serviceJwtPrivateKeyPem: ""
+    serviceJwtPublicKeyPem: ""
+  externalSecrets:
+    enabled: false
+    refreshInterval: 1h
+    secretStoreRef:
+      name: ""
+      kind: ClusterSecretStore
+    targetSecretName: notebook-platform-secrets
+    creationPolicy: Owner
+    deletionPolicy: Retain
+    data:
+      - secretKey: jwt-private-key.pem
+        remoteRef:
+          key: notebook-platform/prod/jwt-private-key
+      - secretKey: jwt-public-key.pem
+        remoteRef:
+          key: notebook-platform/prod/jwt-public-key
+      - secretKey: content-service-jwt-private-key.pem
+        remoteRef:
+          key: notebook-platform/prod/content-service-jwt-private-key
+      - secretKey: content-service-jwt-public-key.pem
+        remoteRef:
+          key: notebook-platform/prod/content-service-jwt-public-key
+      - secretKey: identity-db-password
+        remoteRef:
+          key: notebook-platform/prod/identity-db-password
+      - secretKey: workspace-db-runtime-password
+        remoteRef:
+          key: notebook-platform/prod/workspace-db-runtime-password
+      - secretKey: workspace-db-migration-password
+        remoteRef:
+          key: notebook-platform/prod/workspace-db-migration-password
+      - secretKey: content-db-runtime-password
+        remoteRef:
+          key: notebook-platform/prod/content-db-runtime-password
+      - secretKey: content-db-migration-password
+        remoteRef:
+          key: notebook-platform/prod/content-db-migration-password
+      - secretKey: redis-password
+        remoteRef:
+          key: notebook-platform/prod/redis-password
+      - secretKey: internal-api-token-primary
+        remoteRef:
+          key: notebook-platform/prod/internal-api-token-primary
+      - secretKey: internal-api-token-secondary
+        remoteRef:
+          key: notebook-platform/prod/internal-api-token-secondary
+      - secretKey: workspace-internal-api-token-primary
+        remoteRef:
+          key: notebook-platform/prod/workspace-internal-api-token-primary
+      - secretKey: workspace-internal-api-token-secondary
+        remoteRef:
+          key: notebook-platform/prod/workspace-internal-api-token-secondary
+      - secretKey: otel-auth-token
+        remoteRef:
+          key: notebook-platform/prod/otel-auth-token
+
+serviceAccount:
+  create: true
+  name: ""
+  annotations: {}
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 10001
+  runAsGroup: 10001
+  fsGroup: 10001
+  seccompProfile:
+    type: RuntimeDefault
+
+containerSecurityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop:
+      - ALL
+
+probes:
+  liveness:
+    path: /actuator/health/liveness
+    initialDelaySeconds: 45
+    periodSeconds: 20
+    timeoutSeconds: 3
+    failureThreshold: 3
+  readiness:
+    path: /actuator/health/readiness
+    initialDelaySeconds: 20
+    periodSeconds: 10
+    timeoutSeconds: 3
+    failureThreshold: 3
+
+services:
+  apiGateway:
+    enabled: true
+    replicas: 2
+    image:
+      repository: notebook-platform/api-gateway
+      tag: "0.0.1"
+    port: 8080
+    service:
+      type: ClusterIP
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 500m
+        memory: 768Mi
+  identity:
+    enabled: true
+    replicas: 2
+    image:
+      repository: notebook-platform/identity-service
+      tag: "0.0.1"
+    port: 8081
+    resources:
+      requests:
+        cpu: 100m
+        memory: 384Mi
+      limits:
+        cpu: 750m
+        memory: 1Gi
+  workspace:
+    enabled: true
+    replicas: 2
+    image:
+      repository: notebook-platform/workspace-service
+      tag: "0.0.1"
+    port: 8082
+    resources:
+      requests:
+        cpu: 100m
+        memory: 384Mi
+      limits:
+        cpu: 750m
+        memory: 1Gi
+  content:
+    enabled: true
+    replicas: 2
+    image:
+      repository: notebook-platform/content-service
+      tag: "0.0.1"
+    port: 8083
+    resources:
+      requests:
+        cpu: 100m
+        memory: 384Mi
+      limits:
+        cpu: 750m
+        memory: 1Gi
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  hosts:
+    - host: notebook.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+
+networkPolicy:
+  enabled: false
+  allowNamespaceSelector: {}
+  egress:
+    cidr: 0.0.0.0/0
+    except: []
+
+serviceMonitor:
+  enabled: false
+  namespace: ""
+  labels: {}
+  interval: 30s
+  scrapeTimeout: 10s
+
+autoscaling:
+  enabled: false
+  apiGateway:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 5
+    targetCPUUtilizationPercentage: 70
+  identity:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 4
+    targetCPUUtilizationPercentage: 70
+  workspace:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 4
+    targetCPUUtilizationPercentage: 70
+  content:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 5
+    targetCPUUtilizationPercentage: 70

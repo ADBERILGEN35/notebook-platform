@@ -5,21 +5,24 @@ import com.notebook.lumen.content.domain.Note;
 import com.notebook.lumen.content.domain.NoteTag;
 import com.notebook.lumen.content.domain.NoteTagId;
 import com.notebook.lumen.content.dto.NoteTagResponse;
+import com.notebook.lumen.content.dto.PageResponse;
 import com.notebook.lumen.content.mapper.ContentMapper;
 import com.notebook.lumen.content.repository.NoteTagRepository;
 import com.notebook.lumen.content.shared.UserContext;
 import com.notebook.lumen.content.shared.exception.ContentException;
 import com.notebook.lumen.content.tenant.TenantDatabaseSession;
 import java.time.Instant;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class NoteTagService {
+  public static final Set<String> NOTE_TAG_SORTS = Set.of("createdAt");
   private final NoteTagRepository noteTagRepository;
   private final NoteService noteService;
   private final PermissionService permissionService;
@@ -82,11 +85,12 @@ public class NoteTagService {
   }
 
   @Transactional(readOnly = true)
-  public List<NoteTagResponse> list(UserContext user, UUID noteId) {
+  public PageResponse<NoteTagResponse> list(UserContext user, UUID noteId, Pageable pageable) {
     Note note = noteService.load(noteId);
     tenantDatabaseSession.applyWorkspace(note.getWorkspaceId());
     noteService.assertAggregateWorkspaceHeader(user, note.getWorkspaceId());
     permissionService.requireReadable(user.userId(), note.getNotebookId());
-    return noteTagRepository.findByIdNoteId(noteId).stream().map(mapper::toResponse).toList();
+    return PageResponse.from(
+        noteTagRepository.findByIdNoteId(noteId, pageable).map(mapper::toResponse));
   }
 }

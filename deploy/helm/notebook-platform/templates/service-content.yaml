@@ -1,0 +1,18 @@
+{{- if .Values.services.content.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "notebook-platform.componentName" (dict "root" . "component" "content") }}
+  namespace: {{ include "notebook-platform.namespace" . }}
+  labels:
+    {{- include "notebook-platform.labels" . | nindent 4 }}
+    app.kubernetes.io/component: content
+spec:
+  type: ClusterIP
+  selector:
+    {{- include "notebook-platform.selectorLabels" (dict "root" . "component" "content") | nindent 4 }}
+  ports:
+    - name: http
+      port: {{ .Values.services.content.port }}
+      targetPort: http
+{{- end }}

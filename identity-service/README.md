@@ -92,6 +92,43 @@ curl -s http://localhost:8081/auth/refresh \
   }'
 ```
 
+### Logout
+
+`/auth/logout` revokes one refresh token. It requires an access token and the refresh token body must
+belong to the same user.
+
+```bash
+curl -i http://localhost:8081/auth/logout \
+  -H "Authorization: Bearer <accessToken>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "refreshToken":"<refreshToken>"
+  }'
+```
+
+Success returns `204 No Content`. Repeating logout for the same valid, already revoked refresh token
+is idempotent and also returns `204`.
+
+### Revoke all refresh tokens
+
+`/auth/revoke-all` revokes all active, unexpired refresh tokens for the access token subject.
+
+```bash
+curl -s http://localhost:8081/auth/revoke-all \
+  -H "Authorization: Bearer <accessToken>" \
+  -H "Content-Type: application/json" \
+  -d '{"reason":"ACCOUNT_SECURITY"}'
+```
+
+Response:
+
+```json
+{"revokedCount":2}
+```
+
+Existing access tokens are not immediately invalidated; they remain valid until their short TTL
+expires. Future work may add session listing or access token blacklist/introspection.
+
 ## Testler
 
 ```bash
@@ -111,4 +148,5 @@ curl -s http://localhost:8081/auth/refresh \
 - `SPRING_PROFILES_ACTIVE=prod` ile `jwt.allow-ephemeral-keys=false` olur; JWT key path/env yoksa servis fail-fast eder.
 - Duplicate `kid` veya `activeKid` config'te yoksa servis fail-fast eder.
 - Kritik auth aksiyonlari `identity_audit_events` tablosuna yazilir; token/password gibi hassas metadata alanlari maskelenir.
+- Refresh token plaintext DB, response veya audit metadata icine yazilmaz. DB yalnizca hash ve session metadata saklar.
 

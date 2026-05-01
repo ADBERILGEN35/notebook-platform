@@ -1,0 +1,48 @@
+{{- if .Values.networkPolicy.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "notebook-platform.fullname" . }}-default
+  namespace: {{ include "notebook-platform.namespace" . }}
+  labels:
+    {{- include "notebook-platform.labels" . | nindent 4 }}
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/part-of: notebook-platform
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/part-of: notebook-platform
+    - to:
+        - ipBlock:
+            cidr: {{ .Values.networkPolicy.egress.cidr }}
+            {{- with .Values.networkPolicy.egress.except }}
+            except:
+              {{- toYaml . | nindent 14 }}
+            {{- end }}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "notebook-platform.fullname" . }}-gateway-ingress
+  namespace: {{ include "notebook-platform.namespace" . }}
+  labels:
+    {{- include "notebook-platform.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/component: api-gateway
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector: {}
+{{- end }}

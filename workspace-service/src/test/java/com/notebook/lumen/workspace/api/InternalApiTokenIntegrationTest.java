@@ -24,6 +24,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
     properties = {
       "workspace.identity.service-url=http://127.0.0.1:1",
       "workspace.invitations.expose-token-in-response=true",
+      "workspace.internal.auth-mode=static-token",
       "workspace.internal.primary-token=test-internal-token-primary",
       "workspace.internal.secondary-token=test-internal-token-secondary"
     })
@@ -79,7 +80,7 @@ class InternalApiTokenIntegrationTest {
             null,
             null,
             401);
-    assertThat(missing.get("errorCode").asText()).isEqualTo("INTERNAL_TOKEN_REQUIRED");
+    assertThat(missing.get("errorCode").asText()).isEqualTo("INTERNAL_AUTH_REQUIRED");
 
     JsonNode wrong =
         send(
@@ -89,7 +90,7 @@ class InternalApiTokenIntegrationTest {
             null,
             "wrong",
             401);
-    assertThat(wrong.get("errorCode").asText()).isEqualTo("INTERNAL_TOKEN_REQUIRED");
+    assertThat(wrong.get("errorCode").asText()).isEqualTo("INVALID_INTERNAL_TOKEN");
 
     JsonNode ok =
         send(

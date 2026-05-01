@@ -75,13 +75,13 @@ class WorkspaceIntegrationTest {
     assertThat(workspace.get("slug").asText()).isEqualTo("product-team");
 
     JsonNode list = getJson("/workspaces", owner, 200);
-    assertThat(list).hasSize(1);
+    assertThat(items(list)).hasSize(1);
 
     JsonNode members =
         getJson("/workspaces/" + workspace.get("id").asText() + "/members", owner, 200);
-    assertThat(members).hasSize(1);
-    assertThat(members.get(0).get("userId").asText()).isEqualTo(owner.id().toString());
-    assertThat(members.get(0).get("role").asText()).isEqualTo("OWNER");
+    assertThat(items(members)).hasSize(1);
+    assertThat(items(members).get(0).get("userId").asText()).isEqualTo(owner.id().toString());
+    assertThat(items(members).get(0).get("role").asText()).isEqualTo("OWNER");
     assertThat(auditEventRepository.count()).isGreaterThanOrEqualTo(1);
   }
 
@@ -372,7 +372,7 @@ class WorkspaceIntegrationTest {
     assertThat(reused.get("errorCode").asText()).isEqualTo("INVITATION_ALREADY_ACCEPTED");
 
     JsonNode members = getJson("/workspaces/" + workspaceId + "/members", owner, 200);
-    assertThat(members.toString()).contains(invitee.id().toString()).contains("ADMIN");
+    assertThat(items(members).toString()).contains(invitee.id().toString()).contains("ADMIN");
   }
 
   @Test
@@ -414,6 +414,11 @@ class WorkspaceIntegrationTest {
             """
             .formatted(name),
         201);
+  }
+
+  private JsonNode items(JsonNode page) {
+    assertThat(page.has("items")).as(page.toString()).isTrue();
+    return page.get("items");
   }
 
   private JsonNode createInvitation(User owner, String workspaceId, String email, String role)

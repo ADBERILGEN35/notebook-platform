@@ -31,8 +31,20 @@ public class RefreshToken {
   @Column(name = "revoked_at", nullable = true)
   private Instant revokedAt;
 
+  @Column(name = "revoked_reason", nullable = true, length = 80)
+  private String revokedReason;
+
+  @Column(name = "revoked_by_user_id", nullable = true)
+  private UUID revokedByUserId;
+
   @Column(name = "replaced_by_token_id", nullable = true)
   private UUID replacedByTokenId;
+
+  @Column(name = "last_used_at", nullable = true)
+  private Instant lastUsedAt;
+
+  @Column(name = "replaced_at", nullable = true)
+  private Instant replacedAt;
 
   @Column(name = "created_at", nullable = false)
   private Instant createdAt;
@@ -92,6 +104,22 @@ public class RefreshToken {
     return replacedByTokenId;
   }
 
+  public String getRevokedReason() {
+    return revokedReason;
+  }
+
+  public UUID getRevokedByUserId() {
+    return revokedByUserId;
+  }
+
+  public Instant getLastUsedAt() {
+    return lastUsedAt;
+  }
+
+  public Instant getReplacedAt() {
+    return replacedAt;
+  }
+
   public Instant getCreatedAt() {
     return createdAt;
   }
@@ -104,8 +132,22 @@ public class RefreshToken {
     return userAgent;
   }
 
+  public void markUsed(Instant lastUsedAt) {
+    this.lastUsedAt = lastUsedAt;
+  }
+
   public void revoke(Instant revokedAt, UUID replacedByTokenId) {
+    revoke(revokedAt, replacedByTokenId, null, null);
+  }
+
+  public void revoke(
+      Instant revokedAt, UUID replacedByTokenId, String revokedReason, UUID revokedByUserId) {
     this.revokedAt = revokedAt;
     this.replacedByTokenId = replacedByTokenId;
+    this.revokedReason = revokedReason;
+    this.revokedByUserId = revokedByUserId;
+    if (replacedByTokenId != null) {
+      this.replacedAt = revokedAt;
+    }
   }
 }

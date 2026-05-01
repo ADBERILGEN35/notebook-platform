@@ -11,14 +11,17 @@ import com.notebook.lumen.workspace.shared.exception.Exceptions;
 import com.notebook.lumen.workspace.tenant.StrictWorkspaceHeaderValidator;
 import com.notebook.lumen.workspace.tenant.TenantDatabaseSession;
 import java.time.Instant;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class NotebookService {
+  public static final Set<String> NOTEBOOK_SORTS = Set.of("name", "createdAt", "updatedAt");
+  public static final Set<String> MEMBER_SORTS = Set.of("createdAt", "updatedAt", "role");
 
   private final NotebookRepository notebookRepository;
   private final NotebookMemberRepository notebookMemberRepository;
@@ -64,12 +67,14 @@ public class NotebookService {
   }
 
   @Transactional(readOnly = true)
-  public List<NotebookResponse> list(UserContext user, UUID workspaceId) {
+  public PageResponse<NotebookResponse> list(
+      UserContext user, UUID workspaceId, Pageable pageable) {
     tenantDatabaseSession.applyWorkspace(workspaceId);
     authorizationService.requireWorkspaceMember(workspaceId, user.userId());
-    return notebookRepository.findByWorkspaceIdAndArchivedAtIsNull(workspaceId).stream()
-        .map(mapper::toResponse)
-        .toList();
+    return PageResponse.from(
+        notebookRepository
+            .findByWorkspaceIdAndArchivedAtIsNull(workspaceId, pageable)
+            .map(mapper::toResponse));
   }
 
   @Transactional(readOnly = true)
@@ -101,14 +106,14 @@ public class NotebookService {
   }
 
   @Transactional(readOnly = true)
-  public List<NotebookMemberResponse> members(UserContext user, UUID notebookId) {
+  public PageResponse<NotebookMemberResponse> members(
+      UserContext user, UUID notebookId, Pageable pageable) {
     Notebook notebook = load(notebookId);
     tenantDatabaseSession.applyWorkspace(notebook.getWorkspaceId());
     strictWorkspaceHeaderValidator.validateAggregateRequest(user, notebook.getWorkspaceId());
     authorizationService.requireNotebookRead(notebook, user.userId());
-    return notebookMemberRepository.findByIdNotebookId(notebookId).stream()
-        .map(mapper::toResponse)
-        .toList();
+    return PageResponse.from(
+        notebookMemberRepository.findByIdNotebookId(notebookId, pageable).map(mapper::toResponse));
   }
 
   @Transactional

@@ -1,0 +1,29 @@
+{
+  "uid": "notebook-resilience4j",
+  "title": "Notebook Platform - Resilience4j",
+  "schemaVersion": 39,
+  "version": 1,
+  "timezone": "browser",
+  "refresh": "30s",
+  "tags": ["notebook-platform", "resilience4j"],
+  "panels": [
+    {
+      "type": "stat",
+      "title": "Circuit breaker state",
+      "gridPos": {"x": 0, "y": 0, "w": 8, "h": 6},
+      "targets": [{"expr": "resilience4j_circuitbreaker_state", "legendFormat": "{{application}} {{name}} {{state}}"}]
+    },
+    {
+      "type": "timeseries",
+      "title": "Circuit breaker calls",
+      "gridPos": {"x": 8, "y": 0, "w": 8, "h": 6},
+      "targets": [{"expr": "sum by (application, name, kind) (rate(resilience4j_circuitbreaker_calls_seconds_count[5m]))", "legendFormat": "{{application}} {{name}} {{kind}}"}]
+    },
+    {
+      "type": "timeseries",
+      "title": "Retry calls",
+      "gridPos": {"x": 16, "y": 0, "w": 8, "h": 6},
+      "targets": [{"expr": "sum by (application, name, kind) (rate(resilience4j_retry_calls_total[5m]))", "legendFormat": "{{application}} {{name}} {{kind}}"}]
+    }
+  ]
+}

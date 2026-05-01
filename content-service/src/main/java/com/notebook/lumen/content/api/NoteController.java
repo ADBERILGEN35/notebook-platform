@@ -3,13 +3,13 @@ package com.notebook.lumen.content.api;
 import com.notebook.lumen.content.dto.*;
 import com.notebook.lumen.content.dto.Requests.*;
 import com.notebook.lumen.content.service.NoteService;
+import com.notebook.lumen.content.shared.Pagination;
 import com.notebook.lumen.content.shared.UserContext;
 import com.notebook.lumen.content.shared.UserContextResolver;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Size;
-import java.util.List;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
@@ -44,8 +44,14 @@ public class NoteController {
 
   @GetMapping("/notebooks/{notebookId}/notes")
   @Operation(summary = "List notes")
-  public List<NoteResponse> list(@PathVariable UUID notebookId, HttpServletRequest http) {
-    return noteService.list(user(http), notebookId);
+  public PageResponse<NoteResponse> list(
+      @PathVariable UUID notebookId,
+      @RequestParam(required = false) Integer page,
+      @RequestParam(required = false) Integer size,
+      @RequestParam(required = false) String sort,
+      HttpServletRequest http) {
+    return noteService.list(
+        user(http), notebookId, Pagination.pageable(page, size, sort, NoteService.NOTE_SORTS));
   }
 
   @PatchMapping("/notes/{noteId}")
@@ -66,8 +72,14 @@ public class NoteController {
 
   @GetMapping("/notes/{noteId}/versions")
   @Operation(summary = "List note versions")
-  public List<NoteVersionResponse> versions(@PathVariable UUID noteId, HttpServletRequest http) {
-    return noteService.versions(user(http), noteId);
+  public PageResponse<NoteVersionResponse> versions(
+      @PathVariable UUID noteId,
+      @RequestParam(required = false) Integer page,
+      @RequestParam(required = false) Integer size,
+      @RequestParam(required = false) String sort,
+      HttpServletRequest http) {
+    return noteService.versions(
+        user(http), noteId, Pagination.pageable(page, size, sort, NoteService.VERSION_SORTS));
   }
 
   @GetMapping("/notes/{noteId}/versions/{versionNumber}")
@@ -86,23 +98,42 @@ public class NoteController {
 
   @GetMapping("/notes/{noteId}/links/outgoing")
   @Operation(summary = "Outgoing note links")
-  public List<NoteLinkResponse> outgoing(@PathVariable UUID noteId, HttpServletRequest http) {
-    return noteService.outgoing(user(http), noteId);
+  public PageResponse<NoteLinkResponse> outgoing(
+      @PathVariable UUID noteId,
+      @RequestParam(required = false) Integer page,
+      @RequestParam(required = false) Integer size,
+      @RequestParam(required = false) String sort,
+      HttpServletRequest http) {
+    return noteService.outgoing(
+        user(http), noteId, Pagination.pageable(page, size, sort, NoteService.LINK_SORTS));
   }
 
   @GetMapping({"/notes/{noteId}/links/incoming", "/notes/{noteId}/backlinks"})
   @Operation(summary = "Incoming note links")
-  public List<NoteLinkResponse> incoming(@PathVariable UUID noteId, HttpServletRequest http) {
-    return noteService.incoming(user(http), noteId);
+  public PageResponse<NoteLinkResponse> incoming(
+      @PathVariable UUID noteId,
+      @RequestParam(required = false) Integer page,
+      @RequestParam(required = false) Integer size,
+      @RequestParam(required = false) String sort,
+      HttpServletRequest http) {
+    return noteService.incoming(
+        user(http), noteId, Pagination.pageable(page, size, sort, NoteService.LINK_SORTS));
   }
 
   @GetMapping("/notes/search")
   @Operation(summary = "Search notes")
-  public List<NoteResponse> search(
+  public PageResponse<NoteResponse> search(
       @RequestParam UUID workspaceId,
       @RequestParam @Size(min = 1, max = 120) String q,
+      @RequestParam(required = false) Integer page,
+      @RequestParam(required = false) Integer size,
+      @RequestParam(required = false) String sort,
       HttpServletRequest http) {
-    return noteService.search(user(http), workspaceId, q);
+    return noteService.search(
+        user(http),
+        workspaceId,
+        q,
+        Pagination.pageable(page, size, sort, NoteService.SEARCH_SORTS));
   }
 
   private UserContext user(HttpServletRequest request) {

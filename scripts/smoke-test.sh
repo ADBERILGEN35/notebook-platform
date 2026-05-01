@@ -9,6 +9,10 @@ json_field() {
   python3 -c 'import json,sys; print(json.load(sys.stdin)[sys.argv[1]])' "$1"
 }
 
+assert_page_items() {
+  python3 -c 'import json,sys; data=json.load(sys.stdin); assert isinstance(data.get("items"), list), data; assert "page" in data and "size" in data and "hasNext" in data, data'
+}
+
 request() {
   local method="$1"
   local path="$2"
@@ -43,14 +47,23 @@ echo "Creating workspace..."
 workspace_response="$(request POST /workspaces '{"name":"Smoke Workspace","type":"TEAM"}' "$access_token")"
 workspace_id="$(printf '%s' "$workspace_response" | json_field id)"
 
+echo "Checking paginated workspace list..."
+request GET "/workspaces?page=0&size=20&sort=createdAt,desc" "" "$access_token" | assert_page_items
+
 echo "Creating notebook..."
 notebook_response="$(request POST "/workspaces/$workspace_id/notebooks" '{"name":"Smoke Notebook","icon":"book"}' "$access_token")"
 notebook_id="$(printf '%s' "$notebook_response" | json_field id)"
+
+echo "Checking paginated notebook list..."
+request GET "/workspaces/$workspace_id/notebooks?page=0&size=20&sort=createdAt,desc" "" "$access_token" | assert_page_items
 
 echo "Creating note..."
 note_body='{"title":"Smoke Note","contentBlocks":[{"id":"b1","type":"paragraph","content":[]}]}'
 note_response="$(request POST "/notebooks/$notebook_id/notes" "$note_body" "$access_token" "X-Workspace-Id: $workspace_id")"
 note_id="$(printf '%s' "$note_response" | json_field id)"
+
+echo "Checking paginated note list..."
+request GET "/notebooks/$notebook_id/notes?page=0&size=20&sort=createdAt,desc" "" "$access_token" "X-Workspace-Id: $workspace_id" | assert_page_items
 
 echo "Updating note..."
 update_body='{"title":"Smoke Note Updated","contentBlocks":[{"id":"b1","type":"paragraph","content":[]}]}'
@@ -62,7 +75,10 @@ request GET "/notes/$note_id/versions" "" "$access_token" "X-Workspace-Id: $work
 echo "Creating comment..."
 request POST "/notes/$note_id/comments" '{"blockId":"b1","content":"Smoke comment"}' "$access_token" "X-Workspace-Id: $workspace_id" >/dev/null
 
+echo "Checking paginated comment list..."
+request GET "/notes/$note_id/comments?page=0&size=20&sort=createdAt,desc" "" "$access_token" "X-Workspace-Id: $workspace_id" | assert_page_items
+
 echo "Searching notes..."
-request GET "/notes/search?workspaceId=$workspace_id&q=Smoke" "" "$access_token" "X-Workspace-Id: $workspace_id" >/dev/null
+request GET "/notes/search?workspaceId=$workspace_id&q=Smoke&page=0&size=20&sort=updatedAt,desc" "" "$access_token" "X-Workspace-Id: $workspace_id" | assert_page_items
 
 echo "Smoke test passed."

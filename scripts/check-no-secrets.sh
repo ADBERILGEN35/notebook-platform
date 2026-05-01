@@ -25,4 +25,18 @@ if grep -RIn --exclude-dir=.git --exclude-dir=.gradle --exclude-dir=build \
   exit 1
 fi
 
+if grep -RIn \
+  -E -- '(^|[[:space:]])(password|token|secret|privateKey|private-key|clientSecret):[[:space:]]*["'\'']?[A-Za-z0-9+/=._-]{16,}' \
+  "$ROOT_DIR/deploy/helm/notebook-platform/values-prod.example.yaml"; then
+  echo "values-prod.example.yaml must not contain real-looking secret values." >&2
+  exit 1
+fi
+
+if grep -RIn --include='*.yaml' --include='*.tpl' \
+  -E -- '(stringData|data):[[:space:]]*[A-Za-z0-9+/=._-]{24,}' \
+  "$ROOT_DIR/deploy/helm/notebook-platform/templates"; then
+  echo "Helm templates must not hardcode secret payloads." >&2
+  exit 1
+fi
+
 echo "No obvious committed secrets detected."

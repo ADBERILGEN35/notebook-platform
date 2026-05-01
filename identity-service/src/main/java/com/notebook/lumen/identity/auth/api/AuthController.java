@@ -6,6 +6,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -52,5 +55,31 @@ public class AuthController {
   public AuthResponse refresh(
       @Valid @RequestBody RefreshTokenRequest request, HttpServletRequest httpRequest) {
     return authService.refresh(request, httpRequest);
+  }
+
+  @Operation(
+      summary = "Logout",
+      description = "Revoke one refresh token owned by the access token subject.")
+  @PostMapping(path = "/logout", consumes = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<Void> logout(
+      @Valid @RequestBody LogoutRequest request,
+      @AuthenticationPrincipal Jwt accessToken,
+      HttpServletRequest httpRequest) {
+    authService.logout(request, accessToken, httpRequest);
+    return ResponseEntity.noContent().build();
+  }
+
+  @Operation(
+      summary = "Revoke all refresh tokens",
+      description = "Revoke all active refresh tokens for the authenticated user.")
+  @PostMapping(
+      path = "/revoke-all",
+      consumes = MediaType.APPLICATION_JSON_VALUE,
+      produces = MediaType.APPLICATION_JSON_VALUE)
+  public RevokeAllResponse revokeAll(
+      @RequestBody(required = false) RevokeAllRequest request,
+      @AuthenticationPrincipal Jwt accessToken,
+      HttpServletRequest httpRequest) {
+    return authService.revokeAll(request, accessToken, httpRequest);
   }
 }

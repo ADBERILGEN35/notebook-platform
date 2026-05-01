@@ -99,15 +99,15 @@ class ContentIntegrationTest {
     assertThat(updated.get("title").asText()).isEqualTo("First Updated");
 
     JsonNode versions = get("/notes/" + noteId + "/versions", OWNER, 200);
-    assertThat(versions).hasSize(2);
+    assertThat(items(versions)).hasSize(2);
 
     JsonNode links = get("/notes/" + noteId + "/links/outgoing", OWNER, 200);
-    assertThat(links).hasSize(1);
-    assertThat(links.get(0).get("toNoteId").asText()).isEqualTo(targetId);
+    assertThat(items(links)).hasSize(1);
+    assertThat(items(links).get(0).get("toNoteId").asText()).isEqualTo(targetId);
 
     JsonNode restored = post("/notes/" + noteId + "/restore/1", OWNER, null, 200);
     assertThat(restored.get("title").asText()).isEqualTo("First");
-    assertThat(get("/notes/" + noteId + "/versions", OWNER, 200)).hasSize(3);
+    assertThat(items(get("/notes/" + noteId + "/versions", OWNER, 200))).hasSize(3);
 
     JsonNode comment =
         post(
@@ -129,7 +129,9 @@ class ContentIntegrationTest {
     assertThat(duplicate.get("errorCode").asText()).isEqualTo("DUPLICATE_NOTE_TAG");
 
     JsonNode search = get("/notes/search?workspaceId=" + WORKSPACE_ID + "&q=First", OWNER, 200);
-    assertThat(search).isNotEmpty();
+    assertThat(items(search)).isNotEmpty();
+    assertThat(search.get("page").asInt()).isZero();
+    assertThat(search.get("size").asInt()).isEqualTo(20);
     assertThat(auditEventRepository.count()).isGreaterThanOrEqualTo(5);
   }
 
@@ -184,6 +186,11 @@ class ContentIntegrationTest {
             """
             .formatted(title, blocks),
         201);
+  }
+
+  private JsonNode items(JsonNode page) {
+    assertThat(page.has("items")).as(page.toString()).isTrue();
+    return page.get("items");
   }
 
   private String blocks(String type, String extra) {

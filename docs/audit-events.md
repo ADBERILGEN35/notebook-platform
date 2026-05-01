@@ -22,7 +22,12 @@ Table: `identity_audit_events`
 - `USER_LOGIN_SUCCEEDED`
 - `USER_LOGIN_FAILED`
 - `REFRESH_TOKEN_ROTATED`
+- `REFRESH_TOKEN_REVOKED`
+- `REFRESH_TOKENS_REVOKED_ALL`
 - `REFRESH_TOKEN_REUSE_REJECTED`
+
+Refresh token audit metadata may contain internal UUIDs, `revokedCount` and reason. It must not
+contain token plaintext or token hashes.
 
 ## Workspace Events
 

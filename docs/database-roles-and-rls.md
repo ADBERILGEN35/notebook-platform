@@ -40,9 +40,14 @@ Role setup scriptleri:
 
 - `scripts/db/workspace-create-roles.sql`
 - `scripts/db/content-create-roles.sql`
+- `scripts/rls/check-db-role-permissions.sql`
+- `scripts/rls/check-rls-status.sql`
+- `scripts/rls/check-current-workspace-setting.sql`
 
 Bu scriptler production'da DBA/infra tarafindan, gercek parolalar secret manager'dan verilerek
 calistirilmalidir. Scriptlerdeki placeholder parolalar commit edilmemelidir.
+Preflight scriptlerinin kullanim sirasi [`runtime-rls-rollout.md`](runtime-rls-rollout.md) ve
+`scripts/rls/README.md` icinde tanimlidir.
 
 ## FORCE RLS
 
@@ -63,6 +68,9 @@ FORCE RLS oncesi kosullar:
 - `APP_RLS_ENABLED=true` ile tenant-aware servis akislari test edildi.
 - Aggregate endpointlerde strict workspace header rollout plani net.
 - Integration testler non-owner runtime role ile RLS izolasyonunu dogruluyor.
+- `scripts/rls/check-db-role-permissions.sql` runtime role'un table owner, superuser veya
+  `BYPASSRLS` olmadigini dogruluyor.
+- `scripts/rls/check-rls-status.sql` hedef tablolarin RLS/policy durumunu gosteriyor.
 
 Testcontainers ortaminda ana database kullanicisi superuser olabildigi icin owner-bypass engelleme
 davranisi superuser uzerinden garanti gibi raporlanmaz. Testler non-owner runtime role'un RLS'e
@@ -104,3 +112,6 @@ Rollback tetikleyicileri:
 - Flyway runtime user karisikligi nedeniyle startup failure.
 - Connection pool'un runtime credential ile DML yapamamasi.
 - Strict header rollout'u tamamlanmamis client'larda yaygin 400 hatalari.
+
+Ayrintili staged rollout ve rollback tablosu:
+[`runtime-rls-rollout.md`](runtime-rls-rollout.md).

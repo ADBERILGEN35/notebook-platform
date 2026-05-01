@@ -1,0 +1,18 @@
+{{- if .Values.services.identity.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "notebook-platform.componentName" (dict "root" . "component" "identity") }}
+  namespace: {{ include "notebook-platform.namespace" . }}
+  labels:
+    {{- include "notebook-platform.labels" . | nindent 4 }}
+    app.kubernetes.io/component: identity
+spec:
+  type: ClusterIP
+  selector:
+    {{- include "notebook-platform.selectorLabels" (dict "root" . "component" "identity") | nindent 4 }}
+  ports:
+    - name: http
+      port: {{ .Values.services.identity.port }}
+      targetPort: http
+{{- end }}

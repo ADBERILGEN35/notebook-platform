@@ -32,9 +32,33 @@ jobs:
       - name: Check committed secrets
         run: scripts/check-no-secrets.sh
 
+      - name: Validate Helm templates
+        run: scripts/helm-template-check.sh
+
       - name: Run checks
         run: ./gradlew --no-daemon clean check
 
       - name: Build executable jars
         run: ./gradlew --no-daemon bootJar
+
+      - name: Install Syft
+        uses: anchore/sbom-action/download-syft@v0.20.5
+
+      - name: Install Trivy
+        uses: aquasecurity/setup-trivy@v0.2.3
+
+      - name: Generate image SBOMs
+        run: scripts/security/generate-sbom.sh
+
+      - name: Upload SBOM artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: image-sboms
+          path: sbom/*.spdx.json
+          if-no-files-found: error
+
+      - name: Scan images
+        env:
+          BUILD_IMAGES: "false"
+        run: scripts/security/scan-images.sh
 

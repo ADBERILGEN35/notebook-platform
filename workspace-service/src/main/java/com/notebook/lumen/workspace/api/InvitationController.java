@@ -1,14 +1,15 @@
 package com.notebook.lumen.workspace.api;
 
 import com.notebook.lumen.workspace.dto.InvitationResponse;
+import com.notebook.lumen.workspace.dto.PageResponse;
 import com.notebook.lumen.workspace.dto.Requests.*;
 import com.notebook.lumen.workspace.service.InvitationService;
+import com.notebook.lumen.workspace.shared.Pagination;
 import com.notebook.lumen.workspace.shared.UserContext;
 import com.notebook.lumen.workspace.shared.UserContextResolver;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import java.util.List;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -36,9 +37,16 @@ public class InvitationController {
 
   @GetMapping("/workspaces/{workspaceId}/invitations")
   @Operation(summary = "List invitations")
-  public List<InvitationResponse> list(
-      @PathVariable UUID workspaceId, HttpServletRequest httpRequest) {
-    return invitationService.list(user(httpRequest), workspaceId);
+  public PageResponse<InvitationResponse> list(
+      @PathVariable UUID workspaceId,
+      @RequestParam(required = false) Integer page,
+      @RequestParam(required = false) Integer size,
+      @RequestParam(required = false) String sort,
+      HttpServletRequest httpRequest) {
+    return invitationService.list(
+        user(httpRequest),
+        workspaceId,
+        Pagination.pageable(page, size, sort, InvitationService.INVITATION_SORTS));
   }
 
   @PostMapping("/invitations/accept")

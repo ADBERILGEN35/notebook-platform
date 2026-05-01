@@ -25,6 +25,12 @@ Faz 9 standardizes runtime secrets around environment variables, file-based secr
 | `WORKSPACE_INTERNAL_API_TOKEN_PRIMARY` | content-service | Yes | Yes | Yes | Empty allowed in local/dev | Yes |
 | `WORKSPACE_INTERNAL_API_TOKEN_SECONDARY` | content-service | Yes | No | Yes | Empty allowed | Yes |
 | `WORKSPACE_INTERNAL_API_TOKEN` | content-service | Yes, legacy | No; rejected in prod | Migrate off | Dev fallback only | Yes |
+| `INTERNAL_AUTH_MODE` | workspace-service, content-service | No, security config | Yes | No | `dual` default | No |
+| `INTERNAL_SERVICE_JWT_PRIVATE_KEY_PATH` | content-service | No, points to secret | Yes in service-jwt mode | Yes | Empty allowed in dual/static local | Do not log contents |
+| `INTERNAL_SERVICE_JWT_PRIVATE_KEY` | content-service | Yes | Alternative to private key path | Yes | Empty allowed | Yes |
+| `INTERNAL_SERVICE_JWT_ACTIVE_KID` | content-service | No | Yes in service-jwt mode | Yes | `content-service-key-1` default | No |
+| `TRUSTED_SERVICE_CONTENT_SERVICE_PUBLIC_KEY_PATH` | workspace-service | No, points to public key | Yes in service-jwt mode | Yes | Empty allowed in dual/static local | Do not log contents |
+| `TRUSTED_SERVICE_CONTENT_SERVICE_KID` | workspace-service | No | Yes in service-jwt mode | Yes | `content-service-key-1` default | No |
 | `OTEL_EXPORTER_OTLP_ENDPOINT` | all services | Usually no | No | No | Local collector default | Avoid credentials in URL |
 | `OTEL_EXPORTER_OTLP_HEADERS` | all services / deployment | May contain token | If exporter requires auth | Yes | Empty allowed | Yes |
 | `CORS_ALLOWED_ORIGINS` | api-gateway | No | Yes, explicit prod value | No | Local origins allowed | No |
@@ -35,6 +41,8 @@ Faz 9 standardizes runtime secrets around environment variables, file-based secr
 Rules:
 
 - `application.yml` must not contain real secret values.
-- Production uses primary internal token variables only; legacy token variables are development fallback and are rejected by prod validators.
+- Production should use `INTERNAL_AUTH_MODE=service-jwt`; primary internal token variables remain for transition and rollback only.
 - Secret values are represented with `SecretValue` where code needs to carry raw material; `toString()` and `masked()` never reveal the value.
 - File-based secret paths are compatible with `/run/secrets/jwt_private_key_1`, `/run/secrets/jwt_public_key_1`, `/run/secrets/jwt_private_key_2`, `/run/secrets/jwt_public_key_2` and `/run/secrets/internal_api_token`.
+- Kubernetes secret mounts use `/etc/notebook/secrets/jwt/private.pem`, `/etc/notebook/secrets/jwt/public.pem`, `/etc/notebook/secrets/service-jwt/content-private.pem` and `/etc/notebook/secrets/service-jwt/content-public.pem`.
+- Helm and ExternalSecret integrations standardize Kubernetes Secret keys as `jwt-private-key.pem`, `jwt-public-key.pem`, `content-service-jwt-private-key.pem`, `content-service-jwt-public-key.pem`, `identity-db-password`, `workspace-db-runtime-password`, `workspace-db-migration-password`, `content-db-runtime-password`, `content-db-migration-password`, `redis-password`, fallback token keys and optional `otel-auth-token`.

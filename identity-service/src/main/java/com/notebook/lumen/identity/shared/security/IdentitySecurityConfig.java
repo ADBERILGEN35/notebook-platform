@@ -2,6 +2,8 @@ package com.notebook.lumen.identity.shared.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -30,6 +32,20 @@ public class IdentitySecurityConfig {
                     .permitAll()
                     .anyRequest()
                     .authenticated())
+        .exceptionHandling(
+            exceptions ->
+                exceptions.authenticationEntryPoint(
+                    (request, response, authException) -> {
+                      response.setStatus(HttpStatus.UNAUTHORIZED.value());
+                      response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+                      response
+                          .getWriter()
+                          .write(
+                              """
+                              {"status":401,"errorCode":"ACCESS_TOKEN_REQUIRED","message":"Access token is required","path":"%s","fieldErrors":[]}
+                              """
+                                  .formatted(request.getRequestURI()));
+                    }))
         .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.decoder(jwtDecoder)));
 
     return http.build();

@@ -41,6 +41,13 @@ Public endpointler:
 
 Protected endpointlerde `Authorization: Bearer <accessToken>` zorunludur. Gateway tercihen identity-service JWKS endpointini `JWT_JWKS_URI` ile kullanir; yoksa `JWT_PUBLIC_KEY_PATH` veya `JWT_PUBLIC_KEY` fallback'i devam eder. Sadece `token_type=access` tokenlari kabul edilir.
 
+Identity-service Faz 18 ile refresh token lifecycle hardening destekler:
+
+- `POST /auth/logout`: authenticated kullanicinin sundugu tek refresh tokeni revoke eder.
+- `POST /auth/revoke-all`: authenticated kullanicinin aktif refresh tokenlarini revoke eder.
+
+Bu islemler refresh tokenlari gecersiz kilar; mevcut access tokenlar kisa TTL bitene kadar gecerlidir.
+
 Gateway downstream'e identity headerlarini kendi uretir:
 
 - `X-User-Id`: JWT `sub`
@@ -55,18 +62,24 @@ Ayrintilar ve curl ornekleri: [`api-gateway/README.md`](api-gateway/README.md)
 
 Workspace, notebook, tag ve invitation domainleri `workspace-service` tarafinda yonetilir. Gateway tarafindan uretilen `X-User-Id` header'i servis icinde authorization icin zorunludur; invitation accept akisi `X-User-Email` de ister.
 
+Faz 19 itibariyla workspace-service list endpointleri `PageResponse<T>` envelope doner ve
+`page`, `size`, `sort` parametrelerini destekler.
+
 Faz 6 itibariyla content-service icin internal contract endpointleri gercek implementedir:
 
 - `GET /internal/notebooks/{notebookId}/permissions?userId={userId}`
 - `GET /internal/workspaces/{workspaceId}/tags/{tagId}/exists?scope=NOTE`
 
-Production'da `INTERNAL_API_TOKEN_PRIMARY` ve `WORKSPACE_INTERNAL_API_TOKEN_PRIMARY` ayni aktif secret ile set edilmelidir. Legacy `INTERNAL_API_TOKEN` ve `WORKSPACE_INTERNAL_API_TOKEN` sadece local/dev fallback'tir ve prod profilinde reddedilir. Bu endpointler gateway'e route edilmez.
+Faz 13 itibariyla internal auth `INTERNAL_AUTH_MODE` ile calisir: `static-token`, `service-jwt` veya `dual`. Production hedefi `service-jwt` modudur; content-service kisa omurlu RS256 service JWT uretir ve workspace-service issuer/audience/scope dogrular. Static token envleri sadece gecis ve rollback icindir. Bu endpointler gateway'e route edilmez.
 
 Ayrintilar ve curl ornekleri: [`workspace-service/README.md`](workspace-service/README.md)
 
 ## Content Service
 
 Note current state, immutable note version history, note links, comments, note tags ve basit search `content-service` tarafinda yonetilir. Permission kontrolu workspace-service internal permission contract'i uzerinden yapilir.
+
+Faz 19 itibariyla content-service list/search endpointleri `PageResponse<T>` envelope doner ve
+`page`, `size`, `sort` parametrelerini destekler.
 
 Ayrintilar ve curl ornekleri: [`content-service/README.md`](content-service/README.md)
 
@@ -91,6 +104,7 @@ Prometheus scrape endpointleri:
 Dokumanlar:
 
 - [`docs/observability.md`](docs/observability.md)
+- [`docs/observability-alerting.md`](docs/observability-alerting.md)
 - [`docs/resilience.md`](docs/resilience.md)
 - [`docs/error-codes.md`](docs/error-codes.md)
 - [`docs/runtime-security.md`](docs/runtime-security.md)
@@ -124,8 +138,9 @@ export DB_RUNTIME_USER=notebook_runtime
 export DB_RUNTIME_PASSWORD=<runtime-db-secret>
 export DB_MIGRATION_USER=notebook_migrator
 export DB_MIGRATION_PASSWORD=<migration-db-secret>
-export INTERNAL_API_TOKEN_PRIMARY=<internal-secret>
-export WORKSPACE_INTERNAL_API_TOKEN_PRIMARY=<internal-secret>
+export INTERNAL_AUTH_MODE=service-jwt
+export INTERNAL_SERVICE_JWT_PRIVATE_KEY_PATH=/run/secrets/content_service_internal_jwt_private_key
+export TRUSTED_SERVICE_CONTENT_SERVICE_PUBLIC_KEY_PATH=/run/secrets/content_service_internal_jwt_public_key
 docker compose up --build
 ```
 
@@ -133,11 +148,42 @@ Smoke test:
 
 ```bash
 bash scripts/smoke-test.sh
+bash scripts/smoke-test-auth-security.sh
 ```
+
+## Kubernetes / Helm
+
+Faz 14 chart:
+
+- `deploy/helm/notebook-platform`
+- `deploy/helm/notebook-platform/values-dev.yaml`
+- `deploy/helm/notebook-platform/values-prod.example.yaml`
+
+Render validation:
+
+```bash
+bash scripts/helm-template-check.sh
+```
+
+Production chart usage assumes external PostgreSQL, external Redis and one of the supported secret
+delivery modes: dev-only Helm-managed native Secret, pre-created `existingSecret`, or production
+target ExternalSecret. Only api-gateway should be exposed through Ingress.
+
+ExternalSecret provider examples are under
+`deploy/helm/notebook-platform/examples/external-secrets/`. They contain placeholders only and do
+not install a real cloud/Vault integration.
+
+Runtime RLS production rollout is staged in
+[`docs/runtime-rls-rollout.md`](docs/runtime-rls-rollout.md). The prod Helm example shows the
+steady-state target, but FORCE RLS remains a separate DBA/ops opt-in script and is not applied by
+Helm.
 
 ## CI
 
 GitHub Actions quality gate Java 25 ile `./gradlew --no-daemon spotlessCheck`, `./gradlew --no-daemon clean check` ve `./gradlew --no-daemon bootJar` calistirir. Testcontainers integration testleri icin GitHub hosted runner'da Docker kullanilir.
+
+Faz 17 ile CI ayrica local Docker image build, Syft SBOM generation ve Trivy image scan calistirir.
+SBOM dosyalari `sbom/*.spdx.json` olarak CI artifact olur; registry push yapilmaz.
 
 Dokumanlar:
 
@@ -147,12 +193,21 @@ Dokumanlar:
 - [`docs/secret-inventory.md`](docs/secret-inventory.md)
 - [`docs/configuration-profiles.md`](docs/configuration-profiles.md)
 - [`docs/secret-rotation-runbook.md`](docs/secret-rotation-runbook.md)
+- [`docs/external-secrets.md`](docs/external-secrets.md)
+- [`docs/internal-service-auth.md`](docs/internal-service-auth.md)
 - [`docs/jwt-key-rotation-design.md`](docs/jwt-key-rotation-design.md)
 - [`docs/deployment-packaging.md`](docs/deployment-packaging.md)
 - [`docs/backup-restore.md`](docs/backup-restore.md)
 - [`docs/audit-events.md`](docs/audit-events.md)
 - [`docs/database-performance.md`](docs/database-performance.md)
 - [`docs/database-roles-and-rls.md`](docs/database-roles-and-rls.md)
+- [`docs/runtime-rls-rollout.md`](docs/runtime-rls-rollout.md)
+- [`docs/kubernetes-deployment.md`](docs/kubernetes-deployment.md)
 - [`docs/api-contract-freeze.md`](docs/api-contract-freeze.md)
 - [`docs/load-testing.md`](docs/load-testing.md)
+- [`docs/supply-chain-security.md`](docs/supply-chain-security.md)
+- [`docs/observability-alerting.md`](docs/observability-alerting.md)
+- [`docs/service-contract-testing.md`](docs/service-contract-testing.md)
+- [`docs/pagination-design.md`](docs/pagination-design.md)
+- [`docs/auth-token-revocation.md`](docs/auth-token-revocation.md)
 

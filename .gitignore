@@ -13,6 +13,9 @@ gradlew.bat
 # Docker
 docker-compose*.log
 
+# Generated supply chain artifacts
+/sbom/
+
 # Local secrets
 .env
 .env.*

@@ -58,7 +58,16 @@ workspace:
     circuit-breaker-open-state-ms: ${IDENTITY_CLIENT_CB_OPEN_STATE_MS:10000}
     retry-max-attempts: ${IDENTITY_CLIENT_RETRY_MAX_ATTEMPTS:2}
   internal:
+    auth-mode: ${INTERNAL_AUTH_MODE:dual}
     api-token: ${INTERNAL_API_TOKEN:}
     primary-token: ${INTERNAL_API_TOKEN_PRIMARY:${INTERNAL_API_TOKEN:}}
     secondary-token: ${INTERNAL_API_TOKEN_SECONDARY:}
+    trusted-content-service:
+      kid: ${TRUSTED_SERVICE_CONTENT_SERVICE_KID:}
+      public-key: ${TRUSTED_SERVICE_CONTENT_SERVICE_PUBLIC_KEY:}
+      public-key-path: ${TRUSTED_SERVICE_CONTENT_SERVICE_PUBLIC_KEY_PATH:}
+      issuer: ${TRUSTED_SERVICE_CONTENT_SERVICE_ISSUER:content-service}
+      audience: ${TRUSTED_SERVICE_CONTENT_SERVICE_AUDIENCE:workspace-service}
+      clock-skew-seconds: ${TRUSTED_SERVICE_CONTENT_SERVICE_CLOCK_SKEW_SECONDS:5}
+      allowed-scopes: ${TRUSTED_SERVICE_CONTENT_SERVICE_ALLOWED_SCOPES:internal:workspace:permission:read,internal:workspace:tag:read}
 

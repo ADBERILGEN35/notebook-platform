@@ -9,7 +9,8 @@ class ProductionSecurityValidatorTest {
   @Test
   void run_requiresInternalTokenForProdProfile() {
     WorkspaceProperties properties =
-        new WorkspaceProperties(null, null, new WorkspaceProperties.Internal("", "", ""));
+        new WorkspaceProperties(
+            null, null, new WorkspaceProperties.Internal("", "", "", "static-token", null));
     MockEnvironment environment = new MockEnvironment();
     environment.setActiveProfiles("prod");
     environment.setProperty("spring.datasource.password", "db-secret");
@@ -26,7 +27,9 @@ class ProductionSecurityValidatorTest {
   void run_rejectsLegacyInternalTokenForProdProfile() {
     WorkspaceProperties properties =
         new WorkspaceProperties(
-            null, null, new WorkspaceProperties.Internal("legacy", "primary", ""));
+            null,
+            null,
+            new WorkspaceProperties.Internal("legacy", "primary", "", "static-token", null));
     MockEnvironment environment = new MockEnvironment();
     environment.setActiveProfiles("prod");
     environment.setProperty("spring.datasource.password", "db-secret");

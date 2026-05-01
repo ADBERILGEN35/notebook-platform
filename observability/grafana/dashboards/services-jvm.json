@@ -1,0 +1,48 @@
+{
+  "uid": "notebook-services-jvm",
+  "title": "Notebook Platform - Services JVM",
+  "schemaVersion": 39,
+  "version": 1,
+  "timezone": "browser",
+  "refresh": "30s",
+  "tags": ["notebook-platform", "jvm"],
+  "templating": {
+    "list": [
+      {
+        "name": "application",
+        "type": "query",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "query": "label_values(jvm_memory_used_bytes, application)",
+        "refresh": 1,
+        "includeAll": true,
+        "multi": true
+      }
+    ]
+  },
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "Heap usage",
+      "gridPos": {"x": 0, "y": 0, "w": 12, "h": 8},
+      "targets": [{"expr": "sum by (application) (jvm_memory_used_bytes{application=~\"$application\",area=\"heap\"})", "legendFormat": "{{application}} used"}]
+    },
+    {
+      "type": "timeseries",
+      "title": "GC pause p95",
+      "gridPos": {"x": 12, "y": 0, "w": 12, "h": 8},
+      "targets": [{"expr": "histogram_quantile(0.95, sum by (le, application) (rate(jvm_gc_pause_seconds_bucket{application=~\"$application\"}[5m])))", "legendFormat": "{{application}}"}]
+    },
+    {
+      "type": "timeseries",
+      "title": "Hikari active connections",
+      "gridPos": {"x": 0, "y": 8, "w": 12, "h": 8},
+      "targets": [{"expr": "hikaricp_connections_active{application=~\"$application\"}", "legendFormat": "{{application}} {{pool}}"}]
+    },
+    {
+      "type": "timeseries",
+      "title": "Hikari pool saturation",
+      "gridPos": {"x": 12, "y": 8, "w": 12, "h": 8},
+      "targets": [{"expr": "hikaricp_connections_active{application=~\"$application\"} / clamp_min(hikaricp_connections_max{application=~\"$application\"}, 1)", "legendFormat": "{{application}} {{pool}}"}]
+    }
+  ]
+}

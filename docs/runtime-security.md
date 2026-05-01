@@ -2,7 +2,19 @@
 
 ## Internal Service Authentication
 
-Faz 7 keeps the static internal token approach and hardens it:
+Faz 13 supports service-to-service JWT for internal calls while keeping static tokens as a
+backward-compatible fallback:
+
+- `INTERNAL_AUTH_MODE=static-token`: only `X-Internal-Token`.
+- `INTERNAL_AUTH_MODE=service-jwt`: only `X-Service-Authorization: Bearer <jwt>`.
+- `INTERNAL_AUTH_MODE=dual`: service JWT preferred, static token fallback.
+- content-service signs short-lived RS256 service JWTs for workspace-service.
+- workspace-service validates issuer, audience, `token_type=service`, `kid`, expiration and endpoint scope.
+
+Details are in [`internal-service-auth.md`](internal-service-auth.md).
+Kubernetes secret delivery options are in [`external-secrets.md`](external-secrets.md).
+
+Earlier static token hardening remains available:
 
 - workspace-service validates `X-Internal-Token` centrally for `/internal/**`.
 - content-service sends `X-Internal-Token` from `WORKSPACE_INTERNAL_API_TOKEN_PRIMARY`.
@@ -72,6 +84,8 @@ Faz 12 adds the deployment foundation for making this DB-level control real:
 Important limitation: application-level authorization remains the primary always-on control. DB-level blocking is guaranteed only for flows tested with `APP_RLS_ENABLED=true`, a non-owner runtime DB role, and the relevant RLS/optional FORCE RLS policy enabled.
 
 See [`database-roles-and-rls.md`](database-roles-and-rls.md) for role setup, FORCE RLS scripts and rollback.
+See [`runtime-rls-rollout.md`](runtime-rls-rollout.md) for Stage 0-5 production rollout,
+preflight checks, smoke tests and rollback order.
 
 ## Tenant Context Classification
 
@@ -114,3 +128,14 @@ Production should expose:
 - internal: readiness/liveness/prometheus through private network or service discovery only
 
 Do not route actuator endpoints through public gateway routes without authentication or network policy.
+
+## Kubernetes Deployment Security
+
+The Helm chart keeps identity/workspace/content as ClusterIP-only services and exposes only
+api-gateway through optional Ingress. Pod/container security contexts run as non-root, drop
+capabilities, disable privilege escalation and use a read-only root filesystem with `/tmp` mounted
+as `emptyDir`.
+
+NetworkPolicy is optional because CNI behavior is cluster-specific. The production example enables a
+default policy that allows internal platform traffic, public ingress only to api-gateway and egress
+to external DB/Redis/OTel targets.

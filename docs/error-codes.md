@@ -3,20 +3,32 @@
 | errorCode | HTTP status | service | meaning | example scenario |
 |---|---:|---|---|---|
 | VALIDATION_ERROR | 400 | all | Request validation failed | Missing required field |
+| INVALID_PAGE_REQUEST | 400 | workspace/content | Page index invalid | `page=-1` |
+| INVALID_PAGE_SIZE | 400 | workspace/content | Page size outside allowed range | `size=0` or `size=101` |
+| INVALID_SORT_FIELD | 400 | workspace/content | Sort field is not allow-listed | `sort=passwordHash,asc` |
+| INVALID_SORT_DIRECTION | 400 | workspace/content | Sort direction is not `asc` or `desc` | `sort=createdAt,sideways` |
 | INTERNAL_SERVER_ERROR | 500 | identity-service | Unexpected identity error | Unhandled runtime error |
 | INVALID_CREDENTIALS | 401 | identity-service | Login credentials invalid | Wrong email/password |
 | USER_DISABLED | 403 | identity-service | User cannot authenticate | Disabled/deleted user |
 | EMAIL_ALREADY_EXISTS | 409 | identity-service | Email is already registered | Duplicate signup |
 | INVALID_REFRESH_TOKEN | 401 | identity-service | Refresh token invalid | Reuse/revoked token |
+| ACCESS_TOKEN_REQUIRED | 401 | identity-service | Access token missing or invalid for protected auth endpoint | Call `/auth/revoke-all` without bearer token |
+| INVALID_TOKEN_TYPE | 401 | identity-service/api-gateway | Token is not valid for the endpoint | Refresh token sent to revoke-all |
+| REFRESH_TOKEN_USER_MISMATCH | 403 | identity-service | Refresh token belongs to another user | Logout with another user's refresh token |
 | MISSING_ACCESS_TOKEN | 401 | api-gateway | Bearer token missing | Protected request without token |
 | INVALID_ACCESS_TOKEN | 401 | api-gateway | Access token invalid | Bad signature/malformed token |
 | EXPIRED_ACCESS_TOKEN | 401 | api-gateway | Access token expired | Expired JWT |
-| INVALID_TOKEN_TYPE | 401 | api-gateway | Token is not access token | Refresh token sent to protected route |
 | INVALID_WORKSPACE_ID | 400 | api-gateway | Workspace header is not UUID | Bad `X-Workspace-Id` |
 | RATE_LIMIT_EXCEEDED | 429 | api-gateway | Request bucket exhausted | Too many auth requests |
 | ROUTE_UNAVAILABLE | 503 | api-gateway | Downstream route unavailable | Service connection refused |
 | MISSING_USER_CONTEXT | 401 | workspace/content | User header missing | Direct call without `X-User-Id` |
-| INTERNAL_TOKEN_REQUIRED | 401 | workspace-service | Internal API token missing or invalid | content-service calls `/internal/**` without token |
+| INTERNAL_AUTH_REQUIRED | 401 | workspace-service | Internal auth header missing | content-service calls `/internal/**` without token/JWT |
+| INVALID_INTERNAL_TOKEN | 401 | workspace-service | Static internal token invalid | Wrong `X-Internal-Token` |
+| INVALID_SERVICE_JWT | 401 | workspace-service | Service JWT malformed, wrong kid/type or bad signature | Bad `X-Service-Authorization` |
+| EXPIRED_SERVICE_JWT | 401 | workspace-service | Service JWT expired | Expired internal JWT |
+| INVALID_SERVICE_AUDIENCE | 401 | workspace-service | Service JWT audience mismatch | `aud` is not `workspace-service` |
+| INVALID_SERVICE_ISSUER | 401 | workspace-service | Service JWT issuer mismatch | untrusted `iss` |
+| INSUFFICIENT_SERVICE_SCOPE | 403 | workspace-service | Service JWT lacks endpoint scope | tag scope used for permission endpoint |
 | WORKSPACE_NOT_FOUND | 404 | workspace-service | Workspace not found | Unknown workspace id |
 | WORKSPACE_ACCESS_DENIED | 403 | workspace-service | Workspace permission denied | MEMBER updates owner role |
 | LAST_OWNER_CANNOT_BE_REMOVED | 409 | workspace-service | Owner safety violation | Remove final OWNER |

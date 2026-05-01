@@ -30,9 +30,12 @@ public class InternalWorkspaceController {
   public NotebookPermissionResponse notebookPermissions(
       @RequestHeader(value = InternalApiTokenValidator.HEADER_NAME, required = false)
           String internalToken,
+      @RequestHeader(value = InternalApiTokenValidator.SERVICE_AUTH_HEADER_NAME, required = false)
+          String serviceAuthorization,
       @PathVariable UUID notebookId,
       @RequestParam UUID userId) {
-    tokenValidator.validate(internalToken);
+    tokenValidator.validate(
+        internalToken, serviceAuthorization, "internal:workspace:permission:read");
     return internalWorkspaceService.notebookPermissions(notebookId, userId);
   }
 
@@ -42,10 +45,12 @@ public class InternalWorkspaceController {
   public TagExistsResponse tagExists(
       @RequestHeader(value = InternalApiTokenValidator.HEADER_NAME, required = false)
           String internalToken,
+      @RequestHeader(value = InternalApiTokenValidator.SERVICE_AUTH_HEADER_NAME, required = false)
+          String serviceAuthorization,
       @PathVariable UUID workspaceId,
       @PathVariable UUID tagId,
       @RequestParam TagScope scope) {
-    tokenValidator.validate(internalToken);
+    tokenValidator.validate(internalToken, serviceAuthorization, "internal:workspace:tag:read");
     return internalWorkspaceService.tagExists(workspaceId, tagId, scope);
   }
 }

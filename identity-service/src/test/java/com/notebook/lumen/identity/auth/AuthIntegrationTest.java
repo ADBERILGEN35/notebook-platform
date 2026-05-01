@@ -118,12 +118,148 @@ class AuthIntegrationTest {
     RefreshToken oldToken = refreshTokenRepository.findByTokenHash(oldRefreshHash).orElseThrow();
     assertThat(oldToken.getRevokedAt()).isNotNull();
     assertThat(oldToken.getReplacedByTokenId()).isNotNull();
+    assertThat(oldToken.getRevokedReason()).isEqualTo("ROTATED");
+    assertThat(oldToken.getLastUsedAt()).isNotNull();
+    assertThat(oldToken.getReplacedAt()).isNotNull();
 
     String newRefreshHash = RefreshTokenHasher.hash(refreshResp1.refreshToken());
     RefreshToken newToken = refreshTokenRepository.findByTokenHash(newRefreshHash).orElseThrow();
     assertThat(newToken.getId()).isEqualTo(oldToken.getReplacedByTokenId());
     assertThat(newToken.getRevokedAt()).isNull();
+    assertThat(
+            auditEventRepository.findAll().stream()
+                .anyMatch(e -> "REFRESH_TOKEN_REUSE_REJECTED".equals(e.getEventType())))
+        .isTrue();
     assertThat(auditEventRepository.count()).isGreaterThanOrEqualTo(4);
+  }
+
+  @Test
+  void logout_revokesCurrentRefreshTokenAndIsIdempotent() throws Exception {
+    AuthResponse loginResp = signupAndLogin("logout-" + UUID.randomUUID() + "@example.com");
+
+    HttpResponse<String> logout =
+        postJsonRaw(
+            "/auth/logout",
+            "{\"refreshToken\":\"" + loginResp.refreshToken() + "\"}",
+            loginResp.accessToken());
+    assertThat(logout.statusCode()).isEqualTo(204);
+
+    RefreshToken stored =
+        refreshTokenRepository
+            .findByTokenHash(RefreshTokenHasher.hash(loginResp.refreshToken()))
+            .orElseThrow();
+    assertThat(stored.getRevokedAt()).isNotNull();
+    assertThat(stored.getRevokedReason()).isEqualTo("USER_LOGOUT");
+    assertThat(stored.getRevokedByUserId()).isEqualTo(loginResp.user().id());
+
+    HttpResponse<String> refreshAfterLogout =
+        postJsonRaw("/auth/refresh", new RefreshTokenRequest(loginResp.refreshToken()));
+    assertThat(refreshAfterLogout.statusCode()).isEqualTo(401);
+    assertThat(objectMapper.readValue(refreshAfterLogout.body(), ErrorResponse.class).errorCode())
+        .isEqualTo("INVALID_REFRESH_TOKEN");
+
+    HttpResponse<String> secondLogout =
+        postJsonRaw(
+            "/auth/logout",
+            "{\"refreshToken\":\"" + loginResp.refreshToken() + "\"}",
+            loginResp.accessToken());
+    assertThat(secondLogout.statusCode()).isEqualTo(204);
+
+    assertThat(
+            auditEventRepository.findAll().stream()
+                .filter(e -> "REFRESH_TOKEN_REVOKED".equals(e.getEventType()))
+                .count())
+        .isEqualTo(1);
+    assertThat(auditEventRepository.findAll().toString()).doesNotContain(loginResp.refreshToken());
+  }
+
+  @Test
+  void logout_rejectsRefreshTokenOwnedByAnotherUser() throws Exception {
+    AuthResponse first = signupAndLogin("logout-a-" + UUID.randomUUID() + "@example.com");
+    AuthResponse second = signupAndLogin("logout-b-" + UUID.randomUUID() + "@example.com");
+
+    HttpResponse<String> response =
+        postJsonRaw(
+            "/auth/logout",
+            "{\"refreshToken\":\"" + first.refreshToken() + "\"}",
+            second.accessToken());
+
+    assertThat(response.statusCode()).isEqualTo(403);
+    ErrorResponse error = objectMapper.readValue(response.body(), ErrorResponse.class);
+    assertThat(error.errorCode()).isEqualTo("REFRESH_TOKEN_USER_MISMATCH");
+  }
+
+  @Test
+  void revokeAll_revokesOnlyActiveTokensForAuthenticatedUser() throws Exception {
+    String email = "revoke-all-" + UUID.randomUUID() + "@example.com";
+    AuthResponse firstLogin =
+        postJson(
+            "/auth/signup",
+            new SignupRequest(email, "Password1234", "Session User", null),
+            AuthResponse.class);
+    AuthResponse secondLogin =
+        postJson("/auth/login", new LoginRequest(email, "Password1234"), AuthResponse.class);
+    AuthResponse otherUser = signupAndLogin("other-" + UUID.randomUUID() + "@example.com");
+
+    HttpResponse<String> response =
+        postJsonRaw(
+            "/auth/revoke-all", "{\"reason\":\"ACCOUNT_SECURITY\"}", firstLogin.accessToken());
+
+    assertThat(response.statusCode()).isEqualTo(200);
+    assertThat(
+            objectMapper
+                .readValue(response.body(), com.fasterxml.jackson.databind.JsonNode.class)
+                .get("revokedCount")
+                .asInt())
+        .isEqualTo(2);
+
+    assertThat(
+            postJsonRaw("/auth/refresh", new RefreshTokenRequest(firstLogin.refreshToken()))
+                .statusCode())
+        .isEqualTo(401);
+    assertThat(
+            postJsonRaw("/auth/refresh", new RefreshTokenRequest(secondLogin.refreshToken()))
+                .statusCode())
+        .isEqualTo(401);
+    assertThat(
+            postJsonRaw("/auth/refresh", new RefreshTokenRequest(otherUser.refreshToken()))
+                .statusCode())
+        .isEqualTo(200);
+
+    HttpResponse<String> secondRevokeAll =
+        postJsonRaw("/auth/revoke-all", "{}", firstLogin.accessToken());
+    assertThat(
+            objectMapper
+                .readValue(secondRevokeAll.body(), com.fasterxml.jackson.databind.JsonNode.class)
+                .get("revokedCount")
+                .asInt())
+        .isZero();
+
+    assertThat(
+            auditEventRepository.findAll().stream()
+                .anyMatch(
+                    e ->
+                        "REFRESH_TOKENS_REVOKED_ALL".equals(e.getEventType())
+                            && e.getMetadata().toString().contains("revokedCount=2")))
+        .isTrue();
+    assertThat(auditEventRepository.findAll().toString())
+        .doesNotContain(firstLogin.refreshToken())
+        .doesNotContain(secondLogin.refreshToken());
+  }
+
+  @Test
+  void protectedRevocationEndpointsRequireAccessTokenType() throws Exception {
+    AuthResponse loginResp = signupAndLogin("protected-" + UUID.randomUUID() + "@example.com");
+
+    HttpResponse<String> missingAccess = postJsonRaw("/auth/revoke-all", "{}");
+    assertThat(missingAccess.statusCode()).isEqualTo(401);
+    assertThat(missingAccess.body()).contains("ACCESS_TOKEN_REQUIRED");
+
+    HttpResponse<String> refreshTokenAsBearer =
+        postJsonRaw("/auth/revoke-all", "{}", loginResp.refreshToken());
+    assertThat(refreshTokenAsBearer.statusCode()).isEqualTo(401);
+    ErrorResponse error = objectMapper.readValue(refreshTokenAsBearer.body(), ErrorResponse.class);
+    assertThat(error.errorCode()).isEqualTo("INVALID_TOKEN_TYPE");
   }
 
   @Test
@@ -250,16 +386,33 @@ class AuthIntegrationTest {
   }
 
   private HttpResponse<String> postJsonRaw(String path, Object body) throws Exception {
-    String url = "http://localhost:" + port + path;
-    String json = objectMapper.writeValueAsString(body);
+    return postJsonRaw(path, objectMapper.writeValueAsString(body), null);
+  }
 
-    HttpRequest request =
-        HttpRequest.newBuilder()
-            .uri(URI.create(url))
-            .header("Content-Type", "application/json")
-            .POST(HttpRequest.BodyPublishers.ofString(json))
-            .build();
+  private HttpResponse<String> postJsonRaw(String path, String json) throws Exception {
+    return postJsonRaw(path, json, null);
+  }
+
+  private HttpResponse<String> postJsonRaw(String path, String json, String accessToken)
+      throws Exception {
+    String url = "http://localhost:" + port + path;
+
+    HttpRequest.Builder builder =
+        HttpRequest.newBuilder().uri(URI.create(url)).header("Content-Type", "application/json");
+    if (accessToken != null) {
+      builder.header("Authorization", "Bearer " + accessToken);
+    }
+    HttpRequest request = builder.POST(HttpRequest.BodyPublishers.ofString(json)).build();
 
     return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+  }
+
+  private AuthResponse signupAndLogin(String email) throws Exception {
+    String password = "Password1234";
+    postJson(
+        "/auth/signup",
+        new SignupRequest(email, password, "Session User", null),
+        AuthResponse.class);
+    return postJson("/auth/login", new LoginRequest(email, password), AuthResponse.class);
   }
 }

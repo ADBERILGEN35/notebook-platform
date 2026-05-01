@@ -1,0 +1,78 @@
+{{- if .Values.services.identity.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "notebook-platform.componentName" (dict "root" . "component" "identity") }}
+  namespace: {{ include "notebook-platform.namespace" . }}
+  labels:
+    {{- include "notebook-platform.labels" . | nindent 4 }}
+    app.kubernetes.io/component: identity
+spec:
+  replicas: {{ .Values.services.identity.replicas }}
+  selector:
+    matchLabels:
+      {{- include "notebook-platform.selectorLabels" (dict "root" . "component" "identity") | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "notebook-platform.selectorLabels" (dict "root" . "component" "identity") | nindent 8 }}
+        app.kubernetes.io/part-of: notebook-platform
+      annotations:
+        {{- include "notebook-platform.podAnnotations" . | nindent 8 }}
+    spec:
+      serviceAccountName: {{ include "notebook-platform.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: identity-service
+          image: {{ include "notebook-platform.image" (dict "root" . "image" .Values.services.identity.image) | quote }}
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          securityContext:
+            {{- toYaml .Values.containerSecurityContext | nindent 12 }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.services.identity.port }}
+          envFrom:
+            - configMapRef:
+                name: {{ include "notebook-platform.fullname" . }}-config
+          env:
+            - name: SERVER_PORT
+              value: {{ .Values.services.identity.port | quote }}
+            - name: SERVICE_NAME
+              value: identity-service
+            {{- include "notebook-platform.otelSecretEnv" . | nindent 12 }}
+            - name: DB_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "notebook-platform.fullname" . }}-config
+                  key: IDENTITY_DB_URL
+            - name: DB_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "notebook-platform.fullname" . }}-config
+                  key: IDENTITY_DB_USER
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "notebook-platform.secretName" . }}
+                  key: identity-db-password
+                  optional: false
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.probes.readiness.path }}
+              port: http
+            {{- omit .Values.probes.readiness "path" | toYaml | nindent 12 }}
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.probes.liveness.path }}
+              port: http
+            {{- omit .Values.probes.liveness "path" | toYaml | nindent 12 }}
+          resources:
+            {{- toYaml .Values.services.identity.resources | nindent 12 }}
+          volumeMounts:
+            {{- include "notebook-platform.volumeMounts" . | nindent 12 }}
+      volumes:
+        - name: tmp
+          emptyDir: {}
+        {{- include "notebook-platform.secretVolume" . | nindent 8 }}
+{{- end }}

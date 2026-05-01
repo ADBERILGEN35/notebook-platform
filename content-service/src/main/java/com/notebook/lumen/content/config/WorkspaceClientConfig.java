@@ -1,6 +1,5 @@
 package com.notebook.lumen.content.config;
 
-import com.notebook.lumen.common.security.secrets.SecretValue;
 import com.notebook.lumen.content.client.WorkspaceClient;
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
@@ -24,10 +23,12 @@ public class WorkspaceClientConfig {
         RestClient.builder()
             .baseUrl(properties.workspace().serviceUrl())
             .requestFactory(requestFactory);
-    SecretValue internalToken = properties.workspace().effectiveInternalApiTokenSecret();
-    if (internalToken.hasText()) {
-      builder.defaultHeader("X-Internal-Token", internalToken.value());
-    }
+    WorkspaceInternalAuthHeaders internalAuthHeaders = new WorkspaceInternalAuthHeaders(properties);
+    builder.requestInterceptor(
+        (request, body, execution) -> {
+          internalAuthHeaders.apply(request.getHeaders(), request.getURI().getPath());
+          return execution.execute(request, body);
+        });
     RestClient restClient = builder.build();
     return HttpServiceProxyFactory.builderFor(RestClientAdapter.create(restClient))
         .build()

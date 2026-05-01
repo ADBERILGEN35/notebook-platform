@@ -3,12 +3,12 @@ package com.notebook.lumen.workspace.api;
 import com.notebook.lumen.workspace.dto.*;
 import com.notebook.lumen.workspace.dto.Requests.*;
 import com.notebook.lumen.workspace.service.WorkspaceService;
+import com.notebook.lumen.workspace.shared.Pagination;
 import com.notebook.lumen.workspace.shared.UserContext;
 import com.notebook.lumen.workspace.shared.UserContextResolver;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import java.util.List;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -35,8 +35,13 @@ public class WorkspaceController {
 
   @GetMapping("/workspaces")
   @Operation(summary = "List current user's workspaces")
-  public List<WorkspaceResponse> list(HttpServletRequest httpRequest) {
-    return workspaceService.list(user(httpRequest));
+  public PageResponse<WorkspaceResponse> list(
+      @RequestParam(required = false) Integer page,
+      @RequestParam(required = false) Integer size,
+      @RequestParam(required = false) String sort,
+      HttpServletRequest httpRequest) {
+    return workspaceService.list(
+        user(httpRequest), Pagination.pageable(page, size, sort, WorkspaceService.WORKSPACE_SORTS));
   }
 
   @GetMapping("/workspaces/{workspaceId}")
@@ -63,9 +68,16 @@ public class WorkspaceController {
 
   @GetMapping("/workspaces/{workspaceId}/members")
   @Operation(summary = "List workspace members")
-  public List<WorkspaceMemberResponse> members(
-      @PathVariable UUID workspaceId, HttpServletRequest httpRequest) {
-    return workspaceService.members(user(httpRequest), workspaceId);
+  public PageResponse<WorkspaceMemberResponse> members(
+      @PathVariable UUID workspaceId,
+      @RequestParam(required = false) Integer page,
+      @RequestParam(required = false) Integer size,
+      @RequestParam(required = false) String sort,
+      HttpServletRequest httpRequest) {
+    return workspaceService.members(
+        user(httpRequest),
+        workspaceId,
+        Pagination.pageable(page, size, sort, WorkspaceService.MEMBER_SORTS));
   }
 
   @PatchMapping("/workspaces/{workspaceId}/members/{userId}/role")

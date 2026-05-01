@@ -10,7 +10,8 @@ This document captures the backend contract before frontend work starts.
   - `X-User-Id`
   - `X-User-Email`
   - `X-Workspace-Id` when valid and present
-- Internal workspace endpoints are not routed through the gateway and may require `X-Internal-Token`.
+- Internal workspace endpoints are not routed through the gateway and may require `X-Internal-Token`
+  or `X-Service-Authorization: Bearer <service-jwt>` depending on `INTERNAL_AUTH_MODE`.
 
 ## Strict Workspace Header Rollout
 
@@ -26,6 +27,26 @@ When `APP_RLS_STRICT_WORKSPACE_HEADER=true`, tenant-scoped aggregate endpoints t
 Workspace path/query endpoints such as `/workspaces/{workspaceId}/...` and
 `/notes/search?workspaceId=...` do not require the header because the tenant is known at request
 entry. This is a staged RLS hardening contract, not a full URL redesign.
+
+Strict-mode workspace-service aggregate endpoints:
+
+- `/notebooks/{notebookId}`
+- `/notebooks/{notebookId}/members`
+- `/notebooks/{notebookId}/members/{userId}`
+- `/tags/{tagId}`
+- `/notebooks/{notebookId}/tags/{tagId}`
+- `/invitations/{invitationId}/revoke`
+
+Strict-mode content-service aggregate endpoints:
+
+- `/notebooks/{notebookId}/notes`
+- `/notes/{noteId}`
+- `/notes/{noteId}/versions`
+- `/notes/{noteId}/links/outgoing`
+- `/notes/{noteId}/links/incoming`
+- `/notes/{noteId}/tags`
+- `/notes/{noteId}/comments`
+- `/comments/{commentId}`
 
 ## Error Response
 
@@ -47,11 +68,34 @@ Gateway error responses may omit `fieldErrors` when no validation field exists.
 
 ## Public Endpoints
 
+List endpoints now return a paginated envelope instead of raw arrays. This is a Faz 19 breaking
+change made before frontend release:
+
+```json
+{
+  "items": [],
+  "page": 0,
+  "size": 20,
+  "totalElements": 0,
+  "totalPages": 0,
+  "hasNext": false,
+  "hasPrevious": false
+}
+```
+
+Pagination query parameters:
+
+- `page`: default `0`
+- `size`: default `20`, max `100`
+- `sort`: `field,asc|desc`, endpoint-specific allow-list
+
 Identity:
 
 - `POST /auth/signup`
 - `POST /auth/login`
 - `POST /auth/refresh`
+- `POST /auth/logout`
+- `POST /auth/revoke-all`
 
 Workspace:
 
@@ -114,11 +158,14 @@ Content:
 
 - Safe/idempotent: `GET`, most `DELETE` soft archive/delete endpoints from client perspective.
 - Upsert-like: `PUT /notebooks/{notebookId}/members/{userId}` and note tag attach may return conflict for duplicates.
+- Idempotent auth revoke: `POST /auth/logout` returns `204` even when the presented valid token is
+  already revoked.
 - Non-idempotent: signup, login, refresh rotation, invitation create, note create, comment create.
 
 ## Pagination
 
-Pagination is not implemented yet. List endpoints currently return arrays. This is a frontend-facing TODO before high-volume production usage.
+Pagination is implemented for workspace-service and content-service list endpoints. Cursor
+pagination remains future work for high-volume notes/comments/search flows.
 
 ## Versioning Strategy
 

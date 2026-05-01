@@ -40,6 +40,9 @@ docker compose up --build
 - `INTERNAL_API_TOKEN`: local/dev legacy fallback; production'da reddedilir
 - `INTERNAL_API_TOKEN_PRIMARY`: rotation-ready primary internal token
 - `INTERNAL_API_TOKEN_SECONDARY`: optional secondary internal token during rotation
+- `INTERNAL_AUTH_MODE`: `static-token`, `service-jwt` veya `dual`
+- `TRUSTED_SERVICE_CONTENT_SERVICE_PUBLIC_KEY_PATH`: content-service service JWT public key path
+- `TRUSTED_SERVICE_CONTENT_SERVICE_KID`: trusted content-service key id
 - `APP_RLS_ENABLED`: transaction icinde PostgreSQL tenant setting uygular
 - `APP_RLS_STRICT_WORKSPACE_HEADER`: aggregate-id endpointlerde `X-Workspace-Id` zorunlu kilar
 
@@ -122,7 +125,14 @@ Internal endpointler gateway route'una eklenmez; yalnizca servisler arasi networ
 - `GET /internal/notebooks/{notebookId}/permissions?userId={userId}`
 - `GET /internal/workspaces/{workspaceId}/tags/{tagId}/exists?scope=NOTE`
 
-`INTERNAL_API_TOKEN_PRIMARY` set edilmisse bu endpointler `X-Internal-Token` header'i ister. Local/dev ortamda token bos birakilabilir; production'da `INTERNAL_API_TOKEN_PRIMARY` ve `DB_PASSWORD` zorunludur. Legacy `INTERNAL_API_TOKEN` prod profilinde kabul edilmez.
+Internal auth mode:
+
+- `static-token`: `X-Internal-Token` zorunlu.
+- `service-jwt`: `X-Service-Authorization: Bearer <service-jwt>` zorunlu.
+- `dual`: service JWT varsa dogrulanir, yoksa static token fallback denenir.
+
+Service JWT validation `iss=content-service`, `aud=workspace-service`, `token_type=service`, `kid`,
+`exp` ve endpoint scope kontrolu yapar. Legacy `INTERNAL_API_TOKEN` prod profilinde kabul edilmez.
 
 ## Curl Ornekleri
 
@@ -194,14 +204,14 @@ Internal permission contract:
 
 ```bash
 curl -s 'http://localhost:8082/internal/notebooks/<notebookId>/permissions?userId=11111111-1111-1111-1111-111111111111' \
-  -H "X-Internal-Token: <internal-token>"
+  -H "X-Service-Authorization: Bearer <service-jwt>"
 ```
 
 Internal tag exists:
 
 ```bash
 curl -s 'http://localhost:8082/internal/workspaces/<workspaceId>/tags/<tagId>/exists?scope=NOTE' \
-  -H "X-Internal-Token: <internal-token>"
+  -H "X-Service-Authorization: Bearer <service-jwt>"
 ```
 
 ## Test
@@ -211,6 +221,34 @@ curl -s 'http://localhost:8082/internal/workspaces/<workspaceId>/tags/<tagId>/ex
 ./gradlew :workspace-service:check
 ```
 
+## Pagination
+
+List endpointleri Faz 19 itibariyla raw array yerine `PageResponse<T>` doner:
+
+```json
+{
+  "items": [],
+  "page": 0,
+  "size": 20,
+  "totalElements": 0,
+  "totalPages": 0,
+  "hasNext": false,
+  "hasPrevious": false
+}
+```
+
+Standart query parametreleri: `page`, `size`, `sort`. Default `page=0`, `size=20`, max
+`size=100`.
+
+Sort allow-list:
+
+- workspaces: `name`, `createdAt`, `updatedAt`
+- workspace members: `createdAt`, `updatedAt`, `joinedAt`, `role`
+- notebooks: `name`, `createdAt`, `updatedAt`
+- notebook members: `createdAt`, `updatedAt`, `role`
+- tags: `name`, `createdAt`
+- invitations: `createdAt`, `expiresAt`, `email`
+
 ## Observability + Hardening
 
 - Console logs JSON formatindadir.
@@ -218,7 +256,7 @@ curl -s 'http://localhost:8082/internal/workspaces/<workspaceId>/tags/<tagId>/ex
 - Validation hatalari `fieldErrors` listesi doner.
 - `/actuator/health`, `/actuator/metrics`, `/actuator/prometheus` hazirdir.
 - Identity lookup HTTP Interface Client icin circuit breaker, timeout ve GET retry hazirdir; lookup opsiyonel oldugu icin hata durumunda invitation create fail-open devam eder.
-- Internal permission/tag endpointleri `INTERNAL_API_TOKEN_PRIMARY` ile korunabilir; token set edilirse eksik/hatali header `401 INTERNAL_TOKEN_REQUIRED` doner.
-- `SPRING_PROFILES_ACTIVE=prod` ile `INTERNAL_API_TOKEN_PRIMARY` bos ise servis fail-fast eder.
+- Internal permission/tag endpointleri `INTERNAL_AUTH_MODE` ile korunur; service JWT modunda eksik header `401 INTERNAL_AUTH_REQUIRED`, yetersiz scope `403 INSUFFICIENT_SERVICE_SCOPE` doner.
+- `SPRING_PROFILES_ACTIVE=prod` ve `INTERNAL_AUTH_MODE=service-jwt` ile trusted content-service public key zorunludur.
 - `APP_RLS_ENABLED=true` tenant-scoped transactionlarda PostgreSQL `app.current_workspace_id` ayarini yapar.
 - Kritik workspace/notebook/invitation aksiyonlari `workspace_audit_events` tablosuna yazilir.

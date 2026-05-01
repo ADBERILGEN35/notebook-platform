@@ -1,6 +1,7 @@
 package com.notebook.lumen.workspace.service;
 
 import com.notebook.lumen.workspace.domain.*;
+import com.notebook.lumen.workspace.dto.PageResponse;
 import com.notebook.lumen.workspace.dto.Requests.*;
 import com.notebook.lumen.workspace.dto.TagResponse;
 import com.notebook.lumen.workspace.mapper.WorkspaceMapper;
@@ -10,13 +11,15 @@ import com.notebook.lumen.workspace.shared.exception.Exceptions;
 import com.notebook.lumen.workspace.tenant.StrictWorkspaceHeaderValidator;
 import com.notebook.lumen.workspace.tenant.TenantDatabaseSession;
 import java.time.Instant;
-import java.util.List;
+import java.util.Set;
 import java.util.UUID;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class TagService {
+  public static final Set<String> TAG_SORTS = Set.of("name", "createdAt");
   private final TagRepository tagRepository;
   private final NotebookTagRepository notebookTagRepository;
   private final NotebookService notebookService;
@@ -63,12 +66,13 @@ public class TagService {
   }
 
   @Transactional(readOnly = true)
-  public List<TagResponse> list(UserContext user, UUID workspaceId) {
+  public PageResponse<TagResponse> list(UserContext user, UUID workspaceId, Pageable pageable) {
     tenantDatabaseSession.applyWorkspace(workspaceId);
     authorizationService.requireWorkspaceMember(workspaceId, user.userId());
-    return tagRepository.findByWorkspaceIdAndArchivedAtIsNull(workspaceId).stream()
-        .map(mapper::toResponse)
-        .toList();
+    return PageResponse.from(
+        tagRepository
+            .findByWorkspaceIdAndArchivedAtIsNull(workspaceId, pageable)
+            .map(mapper::toResponse));
   }
 
   @Transactional

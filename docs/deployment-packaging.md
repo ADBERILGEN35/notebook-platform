@@ -42,7 +42,35 @@ Tune memory per container instead of baking JVM flags into images.
 - Route public traffic through the gateway.
 - Keep workspace internal endpoints off public routes.
 - Set `SPRING_PROFILES_ACTIVE=prod` for production-like validation.
-- Provide JWT keys, DB credentials and internal tokens via a secret manager.
+- Provide JWT keys, service JWT keys, DB credentials, Redis credentials and internal fallback tokens
+  through External Secrets or another runtime secret manager path.
 - Use `.env.production.example` only as a template; never commit populated `.env` files.
 - Run `scripts/check-no-secrets.sh` before publishing deployment changes.
 - Add image scanning, SBOM generation and signed immutable image tags before real production rollout.
+
+## Kubernetes / Helm
+
+Faz 14 adds a provider-agnostic Helm chart:
+
+- `deploy/helm/notebook-platform`
+- `deploy/helm/notebook-platform/values-dev.yaml`
+- `deploy/helm/notebook-platform/values-prod.example.yaml`
+
+The chart renders Deployments, ClusterIP Services, ConfigMap, native Secret/pre-created Secret
+references, optional ExternalSecret, optional Ingress, optional NetworkPolicy and optional
+ServiceMonitor. PostgreSQL, Redis, OTel Collector and the actual secret manager remain external
+dependencies.
+
+Validation:
+
+```bash
+bash scripts/helm-template-check.sh
+```
+
+When Helm is installed, the script runs `helm lint` and renders default, dev, prod example,
+ExternalSecret and existingSecret modes. If Helm is not installed, it exits successfully with a
+clear skip message.
+
+Detailed deployment guidance: [`kubernetes-deployment.md`](kubernetes-deployment.md).
+Secret delivery guidance: [`external-secrets.md`](external-secrets.md).
+Runtime RLS staged rollout guidance: [`runtime-rls-rollout.md`](runtime-rls-rollout.md).

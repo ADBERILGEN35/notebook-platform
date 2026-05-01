@@ -11,15 +11,15 @@
 
 - Risk: Private/public key mismatch or accidental dev key use in production.
 - Current mitigation: identity-service emits `kid`, exposes public-only JWKS and validates refresh tokens by configured key set; gateway validates access tokens through `JWT_JWKS_URI` when configured and keeps static public-key fallback.
-- Remaining gap: No session revoke-all mechanism for emergency refresh-token invalidation.
-- Recommended next action: Add operational alerts for unknown `kid` and session revocation controls.
+- Remaining gap: No access token blacklist/introspection for immediate access-token revocation.
+- Recommended next action: Add operational alerts for unknown `kid`; evaluate access token blacklist or introspection only if short TTL is insufficient.
 
 ## Refresh Token Rotation
 
 - Risk: Refresh token replay or database token leakage.
-- Current mitigation: Refresh token rotation is DB-backed and stores token hashes, not plaintext tokens.
-- Remaining gap: No device/session management UI.
-- Recommended next action: Add refresh token reuse monitoring and session revocation workflows.
+- Current mitigation: Refresh token rotation is DB-backed and stores token hashes, not plaintext tokens. Users can revoke one refresh token with `/auth/logout` or all active refresh tokens with `/auth/revoke-all`; reuse is audited as `REFRESH_TOKEN_REUSE_REJECTED`.
+- Remaining gap: No device/session listing UI and no automatic revoke-all on token reuse.
+- Recommended next action: Add session listing and define an incident policy for reuse-triggered mass revocation.
 
 ## Gateway Header Spoofing
 
@@ -37,10 +37,10 @@
 
 ## Internal API Token
 
-- Risk: content-service calls workspace internal permission endpoints without authentication.
-- Current mitigation: workspace-service validates primary/secondary internal tokens centrally for internal endpoints; content-service sends the active internal token; prod profile requires primary tokens and rejects legacy token envs.
-- Remaining gap: Shared static token lacks rotation and per-service identity.
-- Recommended next action: Replace with mTLS or short-lived service JWTs in the deployment phase.
+- Risk: content-service calls workspace internal permission endpoints with a long-lived shared secret.
+- Current mitigation: workspace-service supports `INTERNAL_AUTH_MODE=service-jwt` and validates short-lived RS256 service JWTs by issuer, audience, `kid`, `token_type=service`, expiration and endpoint scope; static tokens remain as dual/static rollback.
+- Remaining gap: No mTLS transport identity and no real provider-backed External Secrets rollout.
+- Recommended next action: Deploy service-jwt mode with External Secrets-backed key distribution, then add mTLS.
 
 ## Invitation Token Secrecy
 
@@ -68,7 +68,7 @@
 - Risk: Application bug queries cross-tenant data.
 - Current mitigation: workspace/content tables include `workspace_id`; application-level tenant enforcement is active; tenant-aware service methods set `app.current_workspace_id` when `APP_RLS_ENABLED=true`; non-owner runtime role SQL and opt-in FORCE RLS SQL exist.
 - Remaining gap: Production still needs actual runtime credentials provisioned and strict header rollout enabled per client.
-- Recommended next action: Deploy non-owner runtime DB users, enable `APP_RLS_STRICT_WORKSPACE_HEADER` for aggregate endpoints, then enable FORCE RLS table groups after smoke tests.
+- Recommended next action: Execute the Stage 1-5 rollout in `runtime-rls-rollout.md`, starting with strict header readiness in staging.
 
 ## Actuator Exposure
 

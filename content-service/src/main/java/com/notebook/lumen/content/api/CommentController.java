@@ -1,14 +1,15 @@
 package com.notebook.lumen.content.api;
 
 import com.notebook.lumen.content.dto.CommentResponse;
+import com.notebook.lumen.content.dto.PageResponse;
 import com.notebook.lumen.content.dto.Requests.*;
 import com.notebook.lumen.content.service.CommentService;
+import com.notebook.lumen.content.shared.Pagination;
 import com.notebook.lumen.content.shared.UserContext;
 import com.notebook.lumen.content.shared.UserContextResolver;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import java.util.List;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -35,8 +36,14 @@ public class CommentController {
 
   @GetMapping("/notes/{noteId}/comments")
   @Operation(summary = "List comments")
-  public List<CommentResponse> list(@PathVariable UUID noteId, HttpServletRequest http) {
-    return commentService.list(user(http), noteId);
+  public PageResponse<CommentResponse> list(
+      @PathVariable UUID noteId,
+      @RequestParam(required = false) Integer page,
+      @RequestParam(required = false) Integer size,
+      @RequestParam(required = false) String sort,
+      HttpServletRequest http) {
+    return commentService.list(
+        user(http), noteId, Pagination.pageable(page, size, sort, CommentService.COMMENT_SORTS));
   }
 
   @PatchMapping("/comments/{commentId}")

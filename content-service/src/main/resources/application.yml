@@ -57,7 +57,18 @@ content:
     circuit-breaker-failure-threshold: ${WORKSPACE_CLIENT_CB_FAILURE_THRESHOLD:50}
     circuit-breaker-open-state-ms: ${WORKSPACE_CLIENT_CB_OPEN_STATE_MS:10000}
     retry-max-attempts: ${WORKSPACE_CLIENT_RETRY_MAX_ATTEMPTS:2}
+    internal-auth-mode: ${INTERNAL_AUTH_MODE:dual}
     internal-api-token: ${WORKSPACE_INTERNAL_API_TOKEN:}
     internal-api-token-primary: ${WORKSPACE_INTERNAL_API_TOKEN_PRIMARY:${WORKSPACE_INTERNAL_API_TOKEN:}}
     internal-api-token-secondary: ${WORKSPACE_INTERNAL_API_TOKEN_SECONDARY:}
+  service-jwt:
+    active-kid: ${INTERNAL_SERVICE_JWT_ACTIVE_KID:content-service-key-1}
+    private-key: ${INTERNAL_SERVICE_JWT_PRIVATE_KEY:}
+    private-key-path: ${INTERNAL_SERVICE_JWT_PRIVATE_KEY_PATH:}
+    public-key-path: ${INTERNAL_SERVICE_JWT_PUBLIC_KEY_PATH:}
+    issuer: ${INTERNAL_SERVICE_JWT_ISSUER:content-service}
+    subject: ${INTERNAL_SERVICE_JWT_SUBJECT:service:content-service}
+    service-name: ${INTERNAL_SERVICE_JWT_SERVICE_NAME:content-service}
+    ttl-seconds: ${INTERNAL_SERVICE_JWT_TTL_SECONDS:60}
+    audience: ${INTERNAL_SERVICE_JWT_AUDIENCE:workspace-service}
 

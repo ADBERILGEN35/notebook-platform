@@ -1,0 +1,18 @@
+{{- if .Values.services.apiGateway.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "notebook-platform.componentName" (dict "root" . "component" "api-gateway") }}
+  namespace: {{ include "notebook-platform.namespace" . }}
+  labels:
+    {{- include "notebook-platform.labels" . | nindent 4 }}
+    app.kubernetes.io/component: api-gateway
+spec:
+  type: {{ .Values.services.apiGateway.service.type }}
+  selector:
+    {{- include "notebook-platform.selectorLabels" (dict "root" . "component" "api-gateway") | nindent 4 }}
+  ports:
+    - name: http
+      port: {{ .Values.services.apiGateway.port }}
+      targetPort: http
+{{- end }}

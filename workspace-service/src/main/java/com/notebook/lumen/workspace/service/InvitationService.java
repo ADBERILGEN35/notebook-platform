@@ -7,6 +7,7 @@ import com.notebook.lumen.workspace.domain.Invitation;
 import com.notebook.lumen.workspace.domain.WorkspaceMember;
 import com.notebook.lumen.workspace.domain.WorkspaceRole;
 import com.notebook.lumen.workspace.dto.InvitationResponse;
+import com.notebook.lumen.workspace.dto.PageResponse;
 import com.notebook.lumen.workspace.dto.Requests.AcceptInvitationRequest;
 import com.notebook.lumen.workspace.dto.Requests.CreateInvitationRequest;
 import com.notebook.lumen.workspace.mapper.WorkspaceMapper;
@@ -20,17 +21,19 @@ import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.retry.Retry;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class InvitationService {
+  public static final Set<String> INVITATION_SORTS = Set.of("createdAt", "expiresAt", "email");
 
   private static final Logger log = LoggerFactory.getLogger(InvitationService.class);
 
@@ -119,13 +122,13 @@ public class InvitationService {
   }
 
   @Transactional(readOnly = true)
-  public List<InvitationResponse> list(UserContext user, UUID workspaceId) {
+  public PageResponse<InvitationResponse> list(
+      UserContext user, UUID workspaceId, Pageable pageable) {
     tenantDatabaseSession.applyWorkspace(workspaceId);
     authorizationService.requireWorkspaceRole(
         workspaceId, user.userId(), WorkspaceRole.OWNER, WorkspaceRole.ADMIN);
-    return invitationRepository.findByWorkspaceId(workspaceId).stream()
-        .map(mapper::toResponse)
-        .toList();
+    return PageResponse.from(
+        invitationRepository.findByWorkspaceId(workspaceId, pageable).map(mapper::toResponse));
   }
 
   @Transactional

@@ -1,0 +1,50 @@
+global:
+  springProfilesActive: dev
+  imagePullPolicy: IfNotPresent
+
+config:
+  otelEnabled: "false"
+  corsAllowedOrigins: "http://localhost:3000,http://localhost:5173"
+  appRlsEnabled: "false"
+  appRlsStrictWorkspaceHeader: "false"
+  internalAuthMode: "dual"
+  jwtAllowEphemeralKeys: "true"
+  invitationExposeTokenInResponse: "true"
+
+externalDatabase:
+  identityUrl: "jdbc:postgresql://postgres:5432/notebook_platform"
+  workspaceRuntimeUrl: "jdbc:postgresql://postgres:5432/notebook_platform"
+  contentRuntimeUrl: "jdbc:postgresql://postgres:5432/notebook_platform"
+  identityUser: "notebook"
+  workspaceRuntimeUser: "notebook"
+  workspaceMigrationUser: "notebook"
+  contentRuntimeUser: "notebook"
+  contentMigrationUser: "notebook"
+
+externalRedis:
+  host: "redis"
+  port: "6379"
+
+secrets:
+  mode: native-kubernetes-secret
+  create: true
+  existingSecret: ""
+
+services:
+  apiGateway:
+    replicas: 1
+  identity:
+    replicas: 1
+  workspace:
+    replicas: 1
+  content:
+    replicas: 1
+
+ingress:
+  enabled: false
+
+networkPolicy:
+  enabled: false
+
+serviceMonitor:
+  enabled: false

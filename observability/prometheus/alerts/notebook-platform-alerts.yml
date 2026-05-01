@@ -1,0 +1,101 @@
+groups:
+  - name: notebook-platform.rules
+    rules:
+      - alert: NotebookPlatformServiceDown
+        expr: up{job=~".*notebook-platform.*"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Notebook Platform service is down"
+          description: "{{ $labels.instance }} has not been scrapeable for more than 2 minutes."
+
+      - alert: NotebookPlatformHigh5xxRate
+        expr: |
+          sum by (application) (rate(http_server_requests_seconds_count{status=~"5.."}[5m]))
+          /
+          clamp_min(sum by (application) (rate(http_server_requests_seconds_count[5m])), 0.001)
+          > 0.05
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High 5xx rate for {{ $labels.application }}"
+          description: "More than 5% of HTTP requests are returning 5xx responses."
+
+      - alert: NotebookPlatformHighP95Latency
+        expr: |
+          histogram_quantile(
+            0.95,
+            sum by (le, application, uri) (rate(http_server_requests_seconds_bucket{uri!~"/actuator.*"}[5m]))
+          ) > 1.5
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High p95 latency for {{ $labels.application }}"
+          description: "{{ $labels.uri }} p95 latency is above 1.5 seconds."
+
+      - alert: NotebookPlatformCircuitBreakerOpen
+        expr: resilience4j_circuitbreaker_state{state="open"} == 1
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Circuit breaker is open"
+          description: "{{ $labels.name }} is open in {{ $labels.application }}."
+
+      - alert: NotebookPlatformDbPoolSaturation
+        expr: |
+          hikaricp_connections_active
+          /
+          clamp_min(hikaricp_connections_max, 1)
+          > 0.85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Database connection pool saturation"
+          description: "{{ $labels.pool }} in {{ $labels.application }} is above 85% utilization."
+
+      - alert: NotebookPlatformHighJvmMemoryUsage
+        expr: |
+          sum by (application) (jvm_memory_used_bytes{area="heap"})
+          /
+          clamp_min(sum by (application) (jvm_memory_max_bytes{area="heap"}), 1)
+          > 0.85
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High JVM heap usage for {{ $labels.application }}"
+          description: "Heap usage is above 85% for 10 minutes."
+
+      - alert: NotebookPlatformGateway429Spike
+        expr: sum(rate(http_server_requests_seconds_count{application="api-gateway",status="429"}[5m])) > 1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Gateway rate limit spike"
+          description: "api-gateway is returning more than one 429 response per second."
+
+      - alert: NotebookPlatformWorkspaceUnavailableFromContent
+        expr: |
+          sum(rate(http_server_requests_seconds_count{application="content-service",status="503"}[5m])) > 0.2
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "workspace-service appears unavailable from content-service"
+          description: "content-service is returning sustained 503 responses, likely fail-closed workspace permission checks."
+
+      - alert: NotebookPlatformInternalAuthFailureSpike
+        expr: |
+          sum(rate(http_server_requests_seconds_count{uri=~"/internal/.*",status=~"401|403"}[5m])) > 0.2
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Internal auth failure spike"
+          description: "Internal endpoints are seeing elevated 401/403 responses."

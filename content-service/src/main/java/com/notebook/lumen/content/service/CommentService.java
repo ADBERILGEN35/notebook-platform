@@ -4,6 +4,7 @@ import com.notebook.lumen.content.audit.AuditService;
 import com.notebook.lumen.content.domain.Comment;
 import com.notebook.lumen.content.domain.Note;
 import com.notebook.lumen.content.dto.CommentResponse;
+import com.notebook.lumen.content.dto.PageResponse;
 import com.notebook.lumen.content.dto.Requests.*;
 import com.notebook.lumen.content.mapper.ContentMapper;
 import com.notebook.lumen.content.repository.CommentRepository;
@@ -11,15 +12,17 @@ import com.notebook.lumen.content.shared.UserContext;
 import com.notebook.lumen.content.shared.exception.ContentException;
 import com.notebook.lumen.content.tenant.TenantDatabaseSession;
 import java.time.Instant;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class CommentService {
+  public static final Set<String> COMMENT_SORTS = Set.of("createdAt", "updatedAt");
   private final CommentRepository commentRepository;
   private final NoteService noteService;
   private final PermissionService permissionService;
@@ -75,14 +78,13 @@ public class CommentService {
   }
 
   @Transactional(readOnly = true)
-  public List<CommentResponse> list(UserContext user, UUID noteId) {
+  public PageResponse<CommentResponse> list(UserContext user, UUID noteId, Pageable pageable) {
     Note note = noteService.load(noteId);
     tenantDatabaseSession.applyWorkspace(note.getWorkspaceId());
     noteService.assertAggregateWorkspaceHeader(user, note.getWorkspaceId());
     permissionService.requireReadable(user.userId(), note.getNotebookId());
-    return commentRepository.findByNoteIdAndDeletedAtIsNull(noteId).stream()
-        .map(mapper::toResponse)
-        .toList();
+    return PageResponse.from(
+        commentRepository.findByNoteIdAndDeletedAtIsNull(noteId, pageable).map(mapper::toResponse));
   }
 
   @Transactional

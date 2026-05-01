@@ -3,12 +3,12 @@ package com.notebook.lumen.workspace.api;
 import com.notebook.lumen.workspace.dto.*;
 import com.notebook.lumen.workspace.dto.Requests.*;
 import com.notebook.lumen.workspace.service.NotebookService;
+import com.notebook.lumen.workspace.shared.Pagination;
 import com.notebook.lumen.workspace.shared.UserContext;
 import com.notebook.lumen.workspace.shared.UserContextResolver;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import java.util.List;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -36,9 +36,16 @@ public class NotebookController {
 
   @GetMapping("/workspaces/{workspaceId}/notebooks")
   @Operation(summary = "List notebooks")
-  public List<NotebookResponse> list(
-      @PathVariable UUID workspaceId, HttpServletRequest httpRequest) {
-    return notebookService.list(user(httpRequest), workspaceId);
+  public PageResponse<NotebookResponse> list(
+      @PathVariable UUID workspaceId,
+      @RequestParam(required = false) Integer page,
+      @RequestParam(required = false) Integer size,
+      @RequestParam(required = false) String sort,
+      HttpServletRequest httpRequest) {
+    return notebookService.list(
+        user(httpRequest),
+        workspaceId,
+        Pagination.pageable(page, size, sort, NotebookService.NOTEBOOK_SORTS));
   }
 
   @GetMapping("/notebooks/{notebookId}")
@@ -65,9 +72,16 @@ public class NotebookController {
 
   @GetMapping("/notebooks/{notebookId}/members")
   @Operation(summary = "List notebook members")
-  public List<NotebookMemberResponse> members(
-      @PathVariable UUID notebookId, HttpServletRequest httpRequest) {
-    return notebookService.members(user(httpRequest), notebookId);
+  public PageResponse<NotebookMemberResponse> members(
+      @PathVariable UUID notebookId,
+      @RequestParam(required = false) Integer page,
+      @RequestParam(required = false) Integer size,
+      @RequestParam(required = false) String sort,
+      HttpServletRequest httpRequest) {
+    return notebookService.members(
+        user(httpRequest),
+        notebookId,
+        Pagination.pageable(page, size, sort, NotebookService.MEMBER_SORTS));
   }
 
   @PutMapping("/notebooks/{notebookId}/members/{userId}")

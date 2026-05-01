@@ -1,0 +1,101 @@
+{{- if .Values.services.content.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "notebook-platform.componentName" (dict "root" . "component" "content") }}
+  namespace: {{ include "notebook-platform.namespace" . }}
+  labels:
+    {{- include "notebook-platform.labels" . | nindent 4 }}
+    app.kubernetes.io/component: content
+spec:
+  replicas: {{ .Values.services.content.replicas }}
+  selector:
+    matchLabels:
+      {{- include "notebook-platform.selectorLabels" (dict "root" . "component" "content") | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "notebook-platform.selectorLabels" (dict "root" . "component" "content") | nindent 8 }}
+        app.kubernetes.io/part-of: notebook-platform
+      annotations:
+        {{- include "notebook-platform.podAnnotations" . | nindent 8 }}
+    spec:
+      serviceAccountName: {{ include "notebook-platform.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: content-service
+          image: {{ include "notebook-platform.image" (dict "root" . "image" .Values.services.content.image) | quote }}
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          securityContext:
+            {{- toYaml .Values.containerSecurityContext | nindent 12 }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.services.content.port }}
+          envFrom:
+            - configMapRef:
+                name: {{ include "notebook-platform.fullname" . }}-config
+          env:
+            - name: SERVER_PORT
+              value: {{ .Values.services.content.port | quote }}
+            - name: SERVICE_NAME
+              value: content-service
+            {{- include "notebook-platform.otelSecretEnv" . | nindent 12 }}
+            - name: DB_RUNTIME_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "notebook-platform.fullname" . }}-config
+                  key: CONTENT_DB_RUNTIME_URL
+            - name: DB_RUNTIME_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "notebook-platform.fullname" . }}-config
+                  key: CONTENT_DB_RUNTIME_USER
+            - name: DB_RUNTIME_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "notebook-platform.secretName" . }}
+                  key: content-db-runtime-password
+                  optional: false
+            - name: SPRING_FLYWAY_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "notebook-platform.fullname" . }}-config
+                  key: CONTENT_DB_MIGRATION_USER
+            - name: SPRING_FLYWAY_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "notebook-platform.secretName" . }}
+                  key: content-db-migration-password
+                  optional: false
+            - name: WORKSPACE_INTERNAL_API_TOKEN_PRIMARY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "notebook-platform.secretName" . }}
+                  key: workspace-internal-api-token-primary
+                  optional: true
+            - name: WORKSPACE_INTERNAL_API_TOKEN_SECONDARY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "notebook-platform.secretName" . }}
+                  key: workspace-internal-api-token-secondary
+                  optional: true
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.probes.readiness.path }}
+              port: http
+            {{- omit .Values.probes.readiness "path" | toYaml | nindent 12 }}
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.probes.liveness.path }}
+              port: http
+            {{- omit .Values.probes.liveness "path" | toYaml | nindent 12 }}
+          resources:
+            {{- toYaml .Values.services.content.resources | nindent 12 }}
+          volumeMounts:
+            {{- include "notebook-platform.volumeMounts" . | nindent 12 }}
+      volumes:
+        - name: tmp
+          emptyDir: {}
+        {{- include "notebook-platform.secretVolume" . | nindent 8 }}
+{{- end }}

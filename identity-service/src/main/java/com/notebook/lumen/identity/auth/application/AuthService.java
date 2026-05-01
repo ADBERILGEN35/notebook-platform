@@ -3,11 +3,17 @@ package com.notebook.lumen.identity.auth.application;
 import com.notebook.lumen.identity.audit.AuditService;
 import com.notebook.lumen.identity.auth.api.AuthResponse;
 import com.notebook.lumen.identity.auth.api.LoginRequest;
+import com.notebook.lumen.identity.auth.api.LogoutRequest;
 import com.notebook.lumen.identity.auth.api.RefreshTokenRequest;
+import com.notebook.lumen.identity.auth.api.RevokeAllRequest;
+import com.notebook.lumen.identity.auth.api.RevokeAllResponse;
 import com.notebook.lumen.identity.auth.api.SignupRequest;
+import com.notebook.lumen.identity.shared.exception.AccessTokenRequiredException;
 import com.notebook.lumen.identity.shared.exception.EmailAlreadyExistsException;
 import com.notebook.lumen.identity.shared.exception.InvalidCredentialsException;
 import com.notebook.lumen.identity.shared.exception.InvalidRefreshTokenException;
+import com.notebook.lumen.identity.shared.exception.InvalidTokenTypeException;
+import com.notebook.lumen.identity.shared.exception.RefreshTokenUserMismatchException;
 import com.notebook.lumen.identity.shared.exception.UserDisabledException;
 import com.notebook.lumen.identity.shared.exception.UserNotFoundException;
 import com.notebook.lumen.identity.shared.exception.ValidationFailedException;
@@ -27,11 +33,16 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class AuthService {
+  private static final String ACCESS_TOKEN_TYPE = "access";
+  private static final String USER_LOGOUT_REASON = "USER_LOGOUT";
+  private static final String USER_REVOKE_ALL_REASON = "USER_REVOKE_ALL";
+  private static final String ACCOUNT_SECURITY_REASON = "ACCOUNT_SECURITY";
 
   private final UserRepository userRepository;
   private final RefreshTokenRepository refreshTokenRepository;
@@ -177,7 +188,7 @@ public class AuthService {
           "REFRESH_TOKEN",
           stored.getId(),
           httpRequest,
-          Map.of());
+          reuseMetadata(stored));
       throw new InvalidRefreshTokenException();
     }
     if (stored.getExpiresAt().isBefore(Instant.now())
@@ -206,7 +217,8 @@ public class AuthService {
             httpRequest.getHeader("User-Agent"));
     refreshTokenRepository.save(newToken);
 
-    stored.revoke(now, newRefreshTokenId);
+    stored.markUsed(now);
+    stored.revoke(now, newRefreshTokenId, "ROTATED", user.getId());
     refreshTokenRepository.save(stored);
     auditService.record(
         "REFRESH_TOKEN_ROTATED",
@@ -221,6 +233,68 @@ public class AuthService {
 
     UserResponse userResponse = userMapper.toResponse(user);
     return new AuthResponse(accessToken, newRefreshJwt, "Bearer", expiresIn, userResponse);
+  }
+
+  @Transactional
+  public void logout(LogoutRequest request, Jwt accessToken, HttpServletRequest httpRequest) {
+    UUID authenticatedUserId = authenticatedAccessUserId(accessToken);
+    String refreshTokenPlaintext = request.refreshToken();
+    if (refreshTokenPlaintext == null || refreshTokenPlaintext.isBlank()) {
+      throw new ValidationFailedException("refreshToken is required");
+    }
+
+    JwtTokenService.RefreshTokenJwtClaims decoded =
+        jwtTokenService.decodeRefreshToken(refreshTokenPlaintext);
+    if (!authenticatedUserId.equals(decoded.userId())) {
+      throw new RefreshTokenUserMismatchException();
+    }
+
+    String tokenHash = RefreshTokenHasher.hash(refreshTokenPlaintext);
+    RefreshToken stored =
+        refreshTokenRepository
+            .findByTokenHash(tokenHash)
+            .orElseThrow(InvalidRefreshTokenException::new);
+    if (!stored.getId().equals(decoded.refreshTokenId())) {
+      throw new InvalidRefreshTokenException();
+    }
+
+    if (stored.getRevokedAt() == null) {
+      Instant now = Instant.now();
+      stored.revoke(now, null, USER_LOGOUT_REASON, authenticatedUserId);
+      refreshTokenRepository.save(stored);
+      auditService.record(
+          "REFRESH_TOKEN_REVOKED",
+          authenticatedUserId,
+          "REFRESH_TOKEN",
+          stored.getId(),
+          httpRequest,
+          Map.of("reason", USER_LOGOUT_REASON, "tokenId", stored.getId().toString()));
+    }
+  }
+
+  @Transactional
+  public RevokeAllResponse revokeAll(
+      RevokeAllRequest request, Jwt accessToken, HttpServletRequest httpRequest) {
+    UUID authenticatedUserId = authenticatedAccessUserId(accessToken);
+    String reason = revokeAllReason(request);
+    Instant now = Instant.now();
+    var activeTokens =
+        refreshTokenRepository.findByUserIdAndRevokedAtIsNullAndExpiresAtAfter(
+            authenticatedUserId, now);
+
+    for (RefreshToken token : activeTokens) {
+      token.revoke(now, null, reason, authenticatedUserId);
+    }
+    refreshTokenRepository.saveAll(activeTokens);
+
+    auditService.record(
+        "REFRESH_TOKENS_REVOKED_ALL",
+        authenticatedUserId,
+        "USER",
+        authenticatedUserId,
+        httpRequest,
+        Map.of("revokedCount", activeTokens.size(), "reason", reason));
+    return new RevokeAllResponse(activeTokens.size());
   }
 
   private AuthResponse issueTokens(User user, HttpServletRequest httpRequest) {
@@ -250,6 +324,45 @@ public class AuthService {
 
     UserResponse userResponse = userMapper.toResponse(user);
     return new AuthResponse(accessToken, refreshJwt, "Bearer", expiresIn, userResponse);
+  }
+
+  private UUID authenticatedAccessUserId(Jwt accessToken) {
+    if (accessToken == null) {
+      throw new AccessTokenRequiredException();
+    }
+    Object tokenType = accessToken.getClaim("token_type");
+    if (!(tokenType instanceof String value) || !ACCESS_TOKEN_TYPE.equals(value)) {
+      throw new InvalidTokenTypeException();
+    }
+    try {
+      return UUID.fromString(accessToken.getSubject());
+    } catch (IllegalArgumentException e) {
+      throw new InvalidTokenTypeException();
+    }
+  }
+
+  private String revokeAllReason(RevokeAllRequest request) {
+    if (request == null || request.reason() == null || request.reason().isBlank()) {
+      return USER_REVOKE_ALL_REASON;
+    }
+    String reason = request.reason().trim().toUpperCase();
+    if (ACCOUNT_SECURITY_REASON.equals(reason) || USER_REVOKE_ALL_REASON.equals(reason)) {
+      return reason;
+    }
+    throw new ValidationFailedException("reason must be USER_REVOKE_ALL or ACCOUNT_SECURITY");
+  }
+
+  private Map<String, Object> reuseMetadata(RefreshToken stored) {
+    if (stored.getReplacedByTokenId() != null) {
+      return Map.of(
+          "reason",
+          "REPLACED_TOKEN_REUSED",
+          "tokenId",
+          stored.getId().toString(),
+          "replacedByTokenId",
+          stored.getReplacedByTokenId().toString());
+    }
+    return Map.of("reason", "REVOKED_TOKEN_REUSED", "tokenId", stored.getId().toString());
   }
 
   private void validatePasswordPolicy(String password) {

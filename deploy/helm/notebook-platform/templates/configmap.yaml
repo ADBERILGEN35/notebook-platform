@@ -1,0 +1,55 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "notebook-platform.fullname" . }}-config
+  namespace: {{ include "notebook-platform.namespace" . }}
+  labels:
+    {{- include "notebook-platform.labels" . | nindent 4 }}
+data:
+  SPRING_PROFILES_ACTIVE: {{ .Values.global.springProfilesActive | quote }}
+  LOG_FORMAT: {{ .Values.global.logFormat | quote }}
+  JAVA_OPTS: {{ .Values.global.javaOpts | quote }}
+  OTEL_ENABLED: {{ .Values.config.otelEnabled | quote }}
+  OTEL_EXPORTER_OTLP_ENDPOINT: {{ .Values.config.otelExporterOtlpEndpoint | quote }}
+  MANAGEMENT_TRACING_SAMPLING_PROBABILITY: {{ .Values.config.managementTracingSamplingProbability | quote }}
+  MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: {{ .Values.config.managementEndpointsWebExposureInclude | quote }}
+  CORS_ALLOWED_ORIGINS: {{ .Values.config.corsAllowedOrigins | quote }}
+  APP_RLS_ENABLED: {{ .Values.config.appRlsEnabled | quote }}
+  APP_RLS_STRICT_WORKSPACE_HEADER: {{ .Values.config.appRlsStrictWorkspaceHeader | quote }}
+  INTERNAL_AUTH_MODE: {{ .Values.config.internalAuthMode | quote }}
+  JWT_ALLOW_EPHEMERAL_KEYS: {{ .Values.config.jwtAllowEphemeralKeys | quote }}
+  JWT_KEYS_ACTIVE_KID: {{ .Values.config.jwtActiveKid | quote }}
+  JWT_KEYS_SIGNING_KEYS_0_KID: {{ .Values.config.jwtActiveKid | quote }}
+  JWT_KEYS_SIGNING_KEYS_0_PRIVATE_KEY_PATH: "/etc/notebook/secrets/jwt/private.pem"
+  JWT_KEYS_SIGNING_KEYS_0_PUBLIC_KEY_PATH: "/etc/notebook/secrets/jwt/public.pem"
+  JWT_PRIVATE_KEY_PATH: "/etc/notebook/secrets/jwt/private.pem"
+  JWT_PUBLIC_KEY_PATH: "/etc/notebook/secrets/jwt/public.pem"
+  JWT_JWKS_URI: {{ printf "http://%s-identity:8081/.well-known/jwks.json" (include "notebook-platform.fullname" .) | quote }}
+  IDENTITY_SERVICE_URL: {{ printf "http://%s-identity:8081" (include "notebook-platform.fullname" .) | quote }}
+  WORKSPACE_SERVICE_URL: {{ printf "http://%s-workspace:8082" (include "notebook-platform.fullname" .) | quote }}
+  CONTENT_SERVICE_URL: {{ printf "http://%s-content:8083" (include "notebook-platform.fullname" .) | quote }}
+  REDIS_HOST: {{ .Values.externalRedis.host | quote }}
+  REDIS_PORT: {{ .Values.externalRedis.port | quote }}
+  DB_NAME: {{ .Values.config.dbName | quote }}
+  DB_URL: {{ .Values.externalDatabase.identityUrl | quote }}
+  DB_RUNTIME_URL: {{ .Values.externalDatabase.workspaceRuntimeUrl | quote }}
+  IDENTITY_DB_URL: {{ .Values.externalDatabase.identityUrl | quote }}
+  WORKSPACE_DB_RUNTIME_URL: {{ .Values.externalDatabase.workspaceRuntimeUrl | quote }}
+  CONTENT_DB_RUNTIME_URL: {{ .Values.externalDatabase.contentRuntimeUrl | quote }}
+  IDENTITY_DB_USER: {{ .Values.externalDatabase.identityUser | quote }}
+  WORKSPACE_DB_RUNTIME_USER: {{ .Values.externalDatabase.workspaceRuntimeUser | quote }}
+  WORKSPACE_DB_MIGRATION_USER: {{ .Values.externalDatabase.workspaceMigrationUser | quote }}
+  CONTENT_DB_RUNTIME_USER: {{ .Values.externalDatabase.contentRuntimeUser | quote }}
+  CONTENT_DB_MIGRATION_USER: {{ .Values.externalDatabase.contentMigrationUser | quote }}
+  INVITATION_TTL_DAYS: {{ .Values.config.invitationTtlDays | quote }}
+  INVITATION_ACCEPT_BASE_URL: {{ .Values.config.invitationAcceptBaseUrl | quote }}
+  INVITATION_EXPOSE_TOKEN_IN_RESPONSE: {{ .Values.config.invitationExposeTokenInResponse | quote }}
+  INTERNAL_SERVICE_JWT_ACTIVE_KID: {{ .Values.config.internalServiceJwtActiveKid | quote }}
+  INTERNAL_SERVICE_JWT_PRIVATE_KEY_PATH: "/etc/notebook/secrets/service-jwt/content-private.pem"
+  INTERNAL_SERVICE_JWT_PUBLIC_KEY_PATH: "/etc/notebook/secrets/service-jwt/content-public.pem"
+  INTERNAL_SERVICE_JWT_ISSUER: {{ .Values.config.internalServiceJwtIssuer | quote }}
+  INTERNAL_SERVICE_JWT_TTL_SECONDS: {{ .Values.config.internalServiceJwtTtlSeconds | quote }}
+  TRUSTED_SERVICE_CONTENT_SERVICE_KID: {{ .Values.config.trustedContentServiceKid | quote }}
+  TRUSTED_SERVICE_CONTENT_SERVICE_PUBLIC_KEY_PATH: "/etc/notebook/secrets/service-jwt/content-public.pem"
+  TRUSTED_SERVICE_CONTENT_SERVICE_ISSUER: {{ .Values.config.trustedContentServiceIssuer | quote }}
+  TRUSTED_SERVICE_CONTENT_SERVICE_AUDIENCE: {{ .Values.config.trustedContentServiceAudience | quote }}

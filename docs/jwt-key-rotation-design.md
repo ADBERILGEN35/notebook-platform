@@ -96,4 +96,4 @@ Because refresh tokens have a longer TTL, retired keys must remain configured in
 5. Keep `key-1` configured until old access tokens expire and old refresh tokens are no longer valid.
 6. Remove `key-1`; JWKS contains only `key-2`.
 
-Emergency rotation can remove a compromised key immediately, but any access or refresh token signed by that key stops validating. Without a revoke-all session mechanism, this is intentionally disruptive.
+Emergency rotation can remove a compromised key immediately, but any access or refresh token signed by that key stops validating. Prefer user-level `/auth/revoke-all` for account/session compromise; reserve emergency key removal for key compromise because it is intentionally disruptive.

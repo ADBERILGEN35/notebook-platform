@@ -1,0 +1,35 @@
+{
+  "uid": "notebook-api-gateway",
+  "title": "Notebook Platform - API Gateway",
+  "schemaVersion": 39,
+  "version": 1,
+  "timezone": "browser",
+  "refresh": "30s",
+  "tags": ["notebook-platform", "api-gateway"],
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "Gateway request rate by route",
+      "gridPos": {"x": 0, "y": 0, "w": 12, "h": 8},
+      "targets": [{"expr": "sum by (uri, method) (rate(http_server_requests_seconds_count{application=\"api-gateway\",uri!~\"/actuator.*\"}[5m]))", "legendFormat": "{{method}} {{uri}}"}]
+    },
+    {
+      "type": "timeseries",
+      "title": "Gateway 4xx and 5xx",
+      "gridPos": {"x": 12, "y": 0, "w": 12, "h": 8},
+      "targets": [{"expr": "sum by (status) (rate(http_server_requests_seconds_count{application=\"api-gateway\",status=~\"4..|5..\"}[5m]))", "legendFormat": "{{status}}"}]
+    },
+    {
+      "type": "timeseries",
+      "title": "Gateway p95 latency",
+      "gridPos": {"x": 0, "y": 8, "w": 12, "h": 8},
+      "targets": [{"expr": "histogram_quantile(0.95, sum by (le, uri) (rate(http_server_requests_seconds_bucket{application=\"api-gateway\",uri!~\"/actuator.*\"}[5m])))", "legendFormat": "{{uri}}"}]
+    },
+    {
+      "type": "timeseries",
+      "title": "Rate limited responses",
+      "gridPos": {"x": 12, "y": 8, "w": 12, "h": 8},
+      "targets": [{"expr": "sum(rate(http_server_requests_seconds_count{application=\"api-gateway\",status=\"429\"}[1m]))", "legendFormat": "429/s"}]
+    }
+  ]
+}

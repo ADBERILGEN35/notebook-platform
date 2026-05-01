@@ -11,7 +11,9 @@ class ProductionSecurityValidatorTest {
     ContentProperties properties =
         new ContentProperties(
             null,
-            new ContentProperties.Workspace("http://localhost", 1000, 50, 10000, 2, "", "", ""));
+            new ContentProperties.Workspace(
+                "http://localhost", 1000, 50, 10000, 2, "", "", "", "static-token"),
+            null);
     MockEnvironment environment = new MockEnvironment();
     environment.setActiveProfiles("prod");
     environment.setProperty("spring.datasource.password", "db-secret");
@@ -30,7 +32,8 @@ class ProductionSecurityValidatorTest {
         new ContentProperties(
             null,
             new ContentProperties.Workspace(
-                "http://localhost", 1000, 50, 10000, 2, "legacy", "primary", ""));
+                "http://localhost", 1000, 50, 10000, 2, "legacy", "primary", "", "static-token"),
+            null);
     MockEnvironment environment = new MockEnvironment();
     environment.setActiveProfiles("prod");
     environment.setProperty("spring.datasource.password", "db-secret");

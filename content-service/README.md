@@ -31,6 +31,10 @@ docker compose up --build
 - `WORKSPACE_INTERNAL_API_TOKEN`: local/dev legacy fallback; production'da reddedilir
 - `WORKSPACE_INTERNAL_API_TOKEN_PRIMARY`: rotation-ready active internal token
 - `WORKSPACE_INTERNAL_API_TOKEN_SECONDARY`: optional rotation bookkeeping value
+- `INTERNAL_AUTH_MODE`: `static-token`, `service-jwt` veya `dual`
+- `INTERNAL_SERVICE_JWT_PRIVATE_KEY_PATH`: content-service internal service JWT signing key
+- `INTERNAL_SERVICE_JWT_ACTIVE_KID`: service JWT `kid`
+- `INTERNAL_SERVICE_JWT_TTL_SECONDS`: default `60`
 - `ALLOW_UNKNOWN_BLOCK_TYPES`: default `false`
 - `APP_RLS_ENABLED`: transaction icinde PostgreSQL tenant setting uygular
 - `APP_RLS_STRICT_WORKSPACE_HEADER`: aggregate-id endpointlerde `X-Workspace-Id` zorunlu kilar
@@ -71,7 +75,7 @@ Content-service Spring HTTP Interface Client ile workspace-service contract'ina 
 - `GET /internal/notebooks/{notebookId}/permissions?userId={userId}`
 - `GET /internal/workspaces/{workspaceId}/tags/{tagId}/exists?scope=NOTE`
 
-Faz 6 itibariyla bu endpointler workspace-service icinde gercek implementedir. `WORKSPACE_INTERNAL_API_TOKEN_PRIMARY` set edilmisse content-service tum internal GET cagrilarinda `X-Internal-Token` header'i gonderir. Local/dev icin legacy `WORKSPACE_INTERNAL_API_TOKEN` fallback olarak kalir; production'da kabul edilmez. Permission client fail-closed calisir: workspace-service 5xx/connection/circuit breaker hatalarinda `503 WORKSPACE_SERVICE_UNAVAILABLE`, permission false ise `403 NOTEBOOK_ACCESS_DENIED`, tag exists false ise `404 TAG_NOT_FOUND` doner.
+Faz 6 itibariyla bu endpointler workspace-service icinde gercek implementedir. Faz 13 ile content-service `INTERNAL_AUTH_MODE=service-jwt` veya `dual` modda `X-Service-Authorization: Bearer <service-jwt>` gonderir; `static-token` modda `X-Internal-Token` gonderir. Dual modda service JWT signing key varsa service JWT tercih edilir. Permission client fail-closed calisir: workspace-service 5xx/connection/circuit breaker hatalarinda `503 WORKSPACE_SERVICE_UNAVAILABLE`, permission false ise `403 NOTEBOOK_ACCESS_DENIED`, tag exists false ise `404 TAG_NOT_FOUND` doner.
 
 ## Endpointler
 
@@ -162,6 +166,37 @@ curl -s 'http://localhost:8083/notes/search?workspaceId=<workspaceId>&q=roadmap'
 ./gradlew :content-service:check
 ```
 
+## Pagination
+
+List endpointleri Faz 19 itibariyla raw array yerine `PageResponse<T>` doner:
+
+```json
+{
+  "items": [],
+  "page": 0,
+  "size": 20,
+  "totalElements": 0,
+  "totalPages": 0,
+  "hasNext": false,
+  "hasPrevious": false
+}
+```
+
+Standart query parametreleri: `page`, `size`, `sort`. Default `page=0`, `size=20`, max
+`size=100`.
+
+Sort allow-list:
+
+- notes: `title`, `createdAt`, `updatedAt`
+- note versions: `versionNumber`, `createdAt`
+- comments: `createdAt`, `updatedAt`
+- note tags: `createdAt`
+- links/backlinks: `createdAt`
+- search: `updatedAt`, `createdAt`
+
+Search endpointi Faz 19'da pageable title matching kullanir. Full-text rank/cursor pagination
+ileriki faz icin birakildi.
+
 ## Observability + Hardening
 
 - Console logs JSON formatindadir.
@@ -170,8 +205,8 @@ curl -s 'http://localhost:8083/notes/search?workspaceId=<workspaceId>&q=roadmap'
 - `/actuator/health`, `/actuator/metrics`, `/actuator/prometheus` hazirdir.
 - Workspace permission client circuit breaker, timeout ve GET retry ile sarilidir.
 - Permission client unavailable ise fail-closed `503 WORKSPACE_SERVICE_UNAVAILABLE` doner.
-- Internal token `WORKSPACE_INTERNAL_API_TOKEN_PRIMARY` ile gonderilir; production'da workspace-service `INTERNAL_API_TOKEN_PRIMARY` ile ayni aktif secret kullanilmalidir.
-- `SPRING_PROFILES_ACTIVE=prod` ile `WORKSPACE_INTERNAL_API_TOKEN_PRIMARY` bos ise servis fail-fast eder.
+- Internal auth `INTERNAL_AUTH_MODE` ile belirlenir; production hedefi `service-jwt` modudur.
+- `SPRING_PROFILES_ACTIVE=prod` ve `INTERNAL_AUTH_MODE=service-jwt` ile `INTERNAL_SERVICE_JWT_PRIVATE_KEY_PATH` zorunludur.
 - Faz 11 tenant-aware akislarda `TenantDatabaseSession.applyWorkspace(workspaceId)` kullanir. `APP_RLS_ENABLED=true` ise transaction icinde `SET LOCAL app.current_workspace_id = '<workspace-id>'` uygulanir; request sonunda ThreadLocal context temizlenir.
 - Faz 12 runtime ve migration DB credential ayrimini destekler. `scripts/db/content-create-roles.sql` non-owner runtime role icin template saglar. `scripts/db/enable-force-rls-content.sql` opt-in FORCE RLS scriptidir.
 - Tam DB-level blocking icin non-owner runtime role, `APP_RLS_ENABLED=true`, gerekirse `APP_RLS_STRICT_WORKSPACE_HEADER=true` ve opt-in FORCE RLS rollout'u birlikte test edilmelidir; default `APP_RLS_ENABLED=false` kalir.

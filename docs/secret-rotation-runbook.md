@@ -13,6 +13,31 @@
 
 Legacy `INTERNAL_API_TOKEN` and `WORKSPACE_INTERNAL_API_TOKEN` are local/dev fallback only and must not be used in prod.
 
+## Service JWT Internal Keys
+
+Normal rotation for `content-service -> workspace-service`:
+
+1. Generate a new RSA keypair for content-service internal service JWT signing.
+2. Add the new public key to workspace-service trusted config and keep the old key trusted.
+3. Deploy workspace-service first.
+4. Change content-service `INTERNAL_SERVICE_JWT_ACTIVE_KID` and private key path to the new key.
+5. Deploy content-service; new internal calls carry the new `kid`.
+6. Keep the old public key trusted until all old service JWTs expire. With the default 60 second TTL,
+   this window is short.
+7. Remove the old trusted public key after metrics confirm success.
+
+With Kubernetes External Secrets, update the provider values first, wait for the ExternalSecret
+refresh or force a sync according to the operator runbook, then restart affected pods. Kubernetes
+Secret volume updates are eventually reflected on disk, but application key loaders read at startup,
+so a rollout restart is the operationally safe path.
+
+Emergency rotation:
+
+- Remove the compromised trusted public key from workspace-service config and redeploy.
+- Deploy content-service with a new private key and `kid`.
+- During recovery, `INTERNAL_AUTH_MODE=dual` plus static token can be used as a temporary rollback
+  path if static tokens are still provisioned.
+
 ## JWT Keys
 
 Normal rotation:
@@ -31,7 +56,7 @@ Emergency rotation:
 - Remove the compromised key from identity-service config and JWKS immediately.
 - Gateway rejects access tokens with the removed `kid`.
 - identity-service rejects refresh tokens with the removed `kid`.
-- This invalidates affected sessions; without revoke-all/session management this is the intended containment behavior.
+- This invalidates affected sessions. Prefer `/auth/revoke-all` for user/session compromise; key removal remains the containment behavior for signing-key compromise.
 
 Refresh token impact:
 
@@ -41,13 +66,27 @@ Refresh token impact:
 ## DB Password
 
 - Rotate through the database platform or secret manager.
-- Update `DB_PASSWORD` in each affected service.
+- Update the provider value that feeds `identity-db-password`, `workspace-db-runtime-password`,
+  `workspace-db-migration-password`, `content-db-runtime-password` or
+  `content-db-migration-password`.
 - Restart service instances so Hikari/connection pools reconnect with the new password.
 - Coordinate with migration jobs because Flyway uses the same datasource credentials.
 
 ## Redis Password
 
 - Enable Redis auth in the deployment platform.
-- Update `REDIS_PASSWORD` for api-gateway.
+- Update the provider value that feeds `redis-password`.
 - Restart gateway instances.
 - Expect rate-limit state to be temporarily unavailable if Redis restarts.
+
+## Kubernetes Rollout Behavior
+
+External Secrets Operator updates the generated Kubernetes Secret on `refreshInterval`. Pods are not
+guaranteed to restart automatically. The Helm chart includes `checksum/config` and `checksum/secret`
+annotations for rendered values, but provider-side changes do not necessarily change Helm output.
+
+After rotating a secret, use one of:
+
+- `kubectl rollout restart deployment/<service> -n <namespace>`
+- a Secret reloader controller
+- a Helm upgrade that changes a rendered annotation

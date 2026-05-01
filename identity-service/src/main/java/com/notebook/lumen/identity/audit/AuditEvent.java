@@ -56,4 +56,28 @@ public class AuditEvent {
     this.metadata = metadata;
     this.createdAt = createdAt;
   }
+
+  public UUID getId() {
+    return id;
+  }
+
+  public String getEventType() {
+    return eventType;
+  }
+
+  public UUID getActorUserId() {
+    return actorUserId;
+  }
+
+  public String getAggregateType() {
+    return aggregateType;
+  }
+
+  public UUID getAggregateId() {
+    return aggregateId;
+  }
+
+  public Map<String, Object> getMetadata() {
+    return metadata;
+  }
 }
