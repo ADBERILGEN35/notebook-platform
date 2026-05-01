@@ -16,14 +16,18 @@ public class StrictWorkspaceHeaderValidator {
   }
 
   public void validateAggregateRequest(UserContext user, UUID resolvedWorkspaceId) {
+    requireWorkspaceHeader(user);
+    if (user.workspaceId() != null && !user.workspaceId().equals(resolvedWorkspaceId)) {
+      throw Exceptions.badRequest(
+          "INVALID_WORKSPACE_CONTEXT", "X-Workspace-Id conflicts with resolved workspace");
+    }
+  }
+
+  public void requireWorkspaceHeader(UserContext user) {
     if (strictWorkspaceHeader && user.workspaceId() == null) {
       throw Exceptions.badRequest(
           "MISSING_WORKSPACE_CONTEXT",
           "X-Workspace-Id header is required for tenant-scoped aggregate requests");
-    }
-    if (user.workspaceId() != null && !user.workspaceId().equals(resolvedWorkspaceId)) {
-      throw Exceptions.badRequest(
-          "INVALID_WORKSPACE_CONTEXT", "X-Workspace-Id conflicts with resolved workspace");
     }
   }
 

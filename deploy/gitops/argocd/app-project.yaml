@@ -1,0 +1,22 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: notebook-platform
+  namespace: argocd
+spec:
+  description: Notebook Platform provider-agnostic GitOps project
+  sourceRepos:
+    - https://github.com/ORG/REPO.git
+  destinations:
+    - server: https://kubernetes.default.svc
+      namespace: notebook-dev
+    - server: https://kubernetes.default.svc
+      namespace: notebook-staging
+    - server: https://kubernetes.default.svc
+      namespace: notebook-prod
+  clusterResourceWhitelist: []
+  namespaceResourceWhitelist:
+    - group: "*"
+      kind: "*"
+  orphanedResources:
+    warn: true

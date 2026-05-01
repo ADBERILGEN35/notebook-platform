@@ -1,0 +1,85 @@
+global:
+  imageRegistry: "registry.example.com"
+  imagePullPolicy: IfNotPresent
+  springProfilesActive: prod
+
+config:
+  otelEnabled: "true"
+  otelExporterOtlpEndpoint: "http://otel-collector.observability:4318/v1/traces"
+  corsAllowedOrigins: "https://app.example.com"
+  appRlsEnabled: "false"
+  appRlsStrictWorkspaceHeader: "true"
+  internalAuthMode: "service-jwt"
+  jwtAllowEphemeralKeys: "false"
+
+secrets:
+  mode: external-secrets
+  create: false
+  existingSecret: ""
+  externalSecrets:
+    enabled: true
+    refreshInterval: 1h
+    secretStoreRef:
+      name: notebook-platform-prod-secret-store
+      kind: ClusterSecretStore
+    targetSecretName: notebook-platform-secrets
+
+services:
+  apiGateway:
+    replicas: 2
+    image:
+      tag: "prod-placeholder"
+      digest: ""
+  identity:
+    replicas: 2
+    image:
+      tag: "prod-placeholder"
+      digest: ""
+  workspace:
+    replicas: 2
+    image:
+      tag: "prod-placeholder"
+      digest: ""
+  content:
+    replicas: 2
+    image:
+      tag: "prod-placeholder"
+      digest: ""
+
+ingress:
+  enabled: true
+  className: "nginx"
+  hosts:
+    - host: api.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: api-example-com-tls
+      hosts:
+        - api.example.com
+
+networkPolicy:
+  enabled: true
+
+serviceMonitor:
+  enabled: true
+
+autoscaling:
+  enabled: true
+  apiGateway:
+    minReplicas: 2
+    maxReplicas: 5
+    targetCPUUtilizationPercentage: 70
+  identity:
+    minReplicas: 2
+    maxReplicas: 4
+    targetCPUUtilizationPercentage: 70
+  workspace:
+    minReplicas: 2
+    maxReplicas: 4
+    targetCPUUtilizationPercentage: 70
+  content:
+    minReplicas: 2
+    maxReplicas: 5
+    targetCPUUtilizationPercentage: 70

@@ -23,7 +23,8 @@ Not included:
 - Redis chart/operator.
 - Real cloud secret manager integration or External Secrets Operator installation.
 - mTLS/service mesh.
-- GitOps pipeline.
+- Real GitOps controller installation or cluster deployment. Provider-agnostic Argo CD examples and
+  environment values are available under `deploy/gitops`.
 
 ## Values
 
@@ -32,6 +33,9 @@ Not included:
 - `values-prod.example.yaml`: production-oriented example with Ingress and NetworkPolicy enabled.
   It also shows the intended RLS steady-state values, but those must be rolled out through
   [`runtime-rls-rollout.md`](runtime-rls-rollout.md), not enabled blindly in a live environment.
+- `deploy/gitops/environments/dev/values.yaml`: dev GitOps overrides.
+- `deploy/gitops/environments/staging/values.yaml`: staging GitOps overrides.
+- `deploy/gitops/environments/prod/values.yaml`: prod GitOps overrides.
 
 Never place real secrets in values files committed to git.
 
@@ -108,6 +112,13 @@ Treat those as the production steady-state target. Roll out in stages:
 FORCE RLS is not applied by Helm. Use the DBA-controlled scripts under `scripts/db/` and preflight
 checks under `scripts/rls/`.
 
+In GitOps promotion, roll out RLS flags through environment values only after staging validation.
+`APP_RLS_STRICT_WORKSPACE_HEADER` and `APP_RLS_ENABLED` are safe application config toggles; FORCE
+RLS remains an explicit database operation outside Argo CD/Helm auto-sync.
+
+Faz 22 adds `./gradlew rlsIntegrationTest` and guarded `scripts/rls/run-force-rls-*.sh` wrappers to
+validate the staging model before changing cluster values.
+
 ## Validation
 
 ```bash
@@ -137,3 +148,26 @@ enabled backend service using the per-service settings under:
 
 CPU utilization based HPA requires valid container CPU requests. The default chart values include
 requests; production overrides must keep them or HPA utilization will not work correctly.
+
+## Image Digests
+
+Each service image supports:
+
+- `services.<service>.image.tag`
+- `services.<service>.image.digest`
+
+If `digest` is set, Helm renders `repository@sha256:...`. If it is empty, Helm keeps the existing
+`repository:tag` behavior. GitOps should keep immutable tags everywhere and prefer digest pinning in
+prod once registry digest capture and Cosign verification are stable.
+
+## GitOps
+
+Faz 20 adds provider-agnostic GitOps examples:
+
+- `deploy/gitops/argocd/app-dev.yaml`
+- `deploy/gitops/argocd/app-staging.yaml`
+- `deploy/gitops/argocd/app-prod.yaml`
+- `docs/gitops-deployment.md`
+
+The examples use Argo CD as the primary controller model and keep Flux as a documented alternative.
+They do not install Argo CD, deploy to a real cluster or include real registry/secret credentials.

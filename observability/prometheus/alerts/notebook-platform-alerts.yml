@@ -99,3 +99,39 @@ groups:
         annotations:
           summary: "Internal auth failure spike"
           description: "Internal endpoints are seeing elevated 401/403 responses."
+
+      - alert: NotebookPlatformRlsStrictHeader400Spike
+        expr: |
+          sum by (application) (
+            rate(http_server_requests_seconds_count{application=~"workspace-service|content-service",status="400"}[5m])
+          ) > 0.5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "RLS strict header 400 spike for {{ $labels.application }}"
+          description: "During RLS rollout, check logs for MISSING_WORKSPACE_CONTEXT or INVALID_WORKSPACE_CONTEXT."
+
+      - alert: NotebookPlatformRlsAccessDeniedSpike
+        expr: |
+          sum by (application) (
+            rate(http_server_requests_seconds_count{application=~"workspace-service|content-service",status="403"}[5m])
+          ) > 0.2
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "RLS rollout access denied spike for {{ $labels.application }}"
+          description: "Tenant context, workspace membership and content permission checks should be reviewed."
+
+      - alert: NotebookPlatformRlsDbPermissionSymptom
+        expr: |
+          sum by (application) (
+            rate(http_server_requests_seconds_count{application=~"workspace-service|content-service",status=~"5.."}[5m])
+          ) > 0.1
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Possible RLS DB permission failure for {{ $labels.application }}"
+          description: "Check service logs for permission denied, row-level security policy or app.current_workspace_id errors."

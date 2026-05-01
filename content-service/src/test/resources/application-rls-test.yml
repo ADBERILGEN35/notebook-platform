@@ -1,0 +1,15 @@
+app:
+  rls:
+    enabled: true
+    strict-workspace-header: true
+
+content:
+  workspace:
+    internal-api-token-primary: contract-token-primary
+
+spring:
+  flyway:
+    table: content_flyway_schema_history
+  jpa:
+    hibernate:
+      ddl-auto: validate

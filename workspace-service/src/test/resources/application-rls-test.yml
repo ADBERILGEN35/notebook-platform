@@ -1,0 +1,17 @@
+app:
+  rls:
+    enabled: true
+    strict-workspace-header: true
+
+workspace:
+  identity:
+    service-url: http://127.0.0.1:1
+  invitations:
+    expose-token-in-response: true
+
+spring:
+  flyway:
+    table: workspace_flyway_schema_history
+  jpa:
+    hibernate:
+      ddl-auto: validate

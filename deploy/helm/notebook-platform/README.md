@@ -53,6 +53,25 @@ helm upgrade --install notebook-platform deploy/helm/notebook-platform \
 Do not use `values-prod.example.yaml` as-is. Copy it to an untracked values file and wire real image
 tags, hosts and secret references.
 
+## Image References
+
+Each service supports tag-based and digest-based image references:
+
+```yaml
+services:
+  apiGateway:
+    image:
+      repository: notebook-platform/api-gateway
+      tag: "v1.2.3"
+      digest: ""
+```
+
+When `digest` is empty, the rendered image is `repository:tag`. When `digest` is set, the rendered
+image is `repository@sha256:...` and the tag is ignored for the container image reference.
+
+Use immutable tags everywhere. Prefer digest pinning for production after registry digest capture,
+Cosign verification and rollback procedures are tested.
+
 ## Secrets
 
 The chart supports three delivery modes:

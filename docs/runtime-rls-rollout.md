@@ -4,6 +4,21 @@ Faz 16 turns the Faz 11-12 tenant/RLS foundation into a staged production rollou
 authorization remains active in every stage. DB-level enforcement is counted as active only after the
 stage has been validated with runtime credentials and the relevant RLS policies.
 
+## Staging Validation Gate
+
+Before any production rollout, run the staging-like validation suite:
+
+```bash
+./gradlew rlsIntegrationTest
+```
+
+The suite uses Testcontainers PostgreSQL, `application-rls-test.yml`, non-owner runtime roles and
+the FORCE RLS enable/disable scripts. It validates strict header behavior, tenant-scoped DB
+visibility, runtime role properties and rollback metadata.
+
+For a deployed staging environment, capture results with
+`docs/rls-staging-validation-report-template.md`.
+
 ## Stage 0 - Current Safe Mode
 
 Config:
@@ -51,6 +66,13 @@ Rollback:
 - Set `APP_RLS_STRICT_WORKSPACE_HEADER=false`.
 - Restart workspace-service and content-service.
 
+GitOps promotion:
+
+- Enable strict header mode in staging first through
+  `deploy/gitops/environments/staging/values.yaml`.
+- Run `STRICT_MODE_EXPECTED=true bash scripts/smoke-test-rls-strict.sh`.
+- Promote the same flag to prod only after staging traffic and alerts are clean.
+
 ## Stage 2 - Runtime Tenant Context Enabled
 
 Config:
@@ -72,6 +94,13 @@ Preflight:
 psql "$DB_RUNTIME_URL" -f scripts/rls/check-current-workspace-setting.sql
 ```
 
+Wrapper:
+
+```bash
+DB_URL=<postgres-url> DB_USER=<runtime-user> DB_PASSWORD=<secret> \
+  bash scripts/rls/run-preflight-checks.sh
+```
+
 Validation:
 
 - `scripts/smoke-test-rls-strict.sh` passes.
@@ -81,6 +110,12 @@ Rollback:
 
 - Set `APP_RLS_ENABLED=false`.
 - Restart workspace-service and content-service.
+
+GitOps promotion:
+
+- Enable tenant context in staging before production.
+- Keep FORCE RLS disabled while validating application transaction behavior.
+- Use `scripts/gitops-post-sync-check.sh` with `RUN_RLS_STRICT_SMOKE=true` after sync.
 
 ## Stage 3 - Non-owner Runtime DB Role
 
@@ -105,6 +140,15 @@ psql "$DB_MIGRATION_URL" \
   -f scripts/rls/check-db-role-permissions.sql
 
 psql "$DB_MIGRATION_URL" -f scripts/rls/check-rls-status.sql
+```
+
+Wrapper:
+
+```bash
+DB_URL=<postgres-url> DB_USER=<inspection-or-migration-user> DB_PASSWORD=<secret> \
+WORKSPACE_RUNTIME_ROLE=notebook_workspace_runtime \
+CONTENT_RUNTIME_ROLE=notebook_content_runtime \
+bash scripts/rls/run-preflight-checks.sh
 ```
 
 Validation:
@@ -132,6 +176,12 @@ Purpose:
 - Prevent table-owner bypass for the selected tenant-scoped tables.
 - Keep `workspaces` excluded because it does not carry `workspace_id` and serves user-level flows.
 
+GitOps boundary:
+
+- Do not apply FORCE RLS from Argo CD, Flux or Helm auto-sync.
+- GitOps values may promote application RLS flags only after staging validation.
+- FORCE RLS scripts remain manual ops/DBA actions with separate preflight and rollback approval.
+
 Preflight:
 
 - Stage 3 has run cleanly in staging.
@@ -144,12 +194,27 @@ Validation:
 
 - Staging smoke and regression checks pass.
 - Production rollout is performed table-group by table-group if risk is high.
+- In local/staging-like validation, `./gradlew rlsIntegrationTest` passes.
+
+Enable wrapper:
+
+```bash
+DB_URL=<postgres-url> DB_USER=<migration-user> DB_PASSWORD=<secret> \
+CONFIRM_ENVIRONMENT=staging bash scripts/rls/run-force-rls-enable.sh
+```
 
 Rollback:
 
 ```bash
 psql "$DB_MIGRATION_URL" -f scripts/db/disable-force-rls-workspace.sql
 psql "$DB_MIGRATION_URL" -f scripts/db/disable-force-rls-content.sql
+```
+
+Disable wrapper:
+
+```bash
+DB_URL=<postgres-url> DB_USER=<migration-user> DB_PASSWORD=<secret> \
+CONFIRM_ENVIRONMENT=staging bash scripts/rls/run-force-rls-disable.sh
 ```
 
 ## Stage 5 - Production Steady State

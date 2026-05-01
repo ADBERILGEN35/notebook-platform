@@ -15,6 +15,7 @@ docker-compose*.log
 
 # Generated supply chain artifacts
 /sbom/
+/provenance/
 
 # Local secrets
 .env

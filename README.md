@@ -178,6 +178,46 @@ Runtime RLS production rollout is staged in
 steady-state target, but FORCE RLS remains a separate DBA/ops opt-in script and is not applied by
 Helm.
 
+Staging-like Runtime RLS validation:
+
+```bash
+./gradlew rlsIntegrationTest
+```
+
+This runs Testcontainers-based workspace/content RLS checks with strict workspace headers,
+non-owner runtime roles, FORCE RLS enable/disable scripts and cross-tenant negative reads. Deployed
+staging evidence can be captured with
+[`docs/rls-staging-validation-report-template.md`](docs/rls-staging-validation-report-template.md).
+
+## GitOps Deployment
+
+Faz 20 adds provider-agnostic GitOps preparation:
+
+- `deploy/gitops/environments/dev/values.yaml`
+- `deploy/gitops/environments/staging/values.yaml`
+- `deploy/gitops/environments/prod/values.yaml`
+- `deploy/gitops/argocd/*.yaml`
+- [`docs/gitops-deployment.md`](docs/gitops-deployment.md)
+
+Argo CD is the primary documented model; Flux remains an alternative. The manifests are examples
+only: they do not install a controller, deploy to a real cluster, push to a real registry or contain
+real secrets. Promote immutable image tags through environment values and run post-sync validation
+with `scripts/gitops-post-sync-check.sh`.
+
+## Image Signing and Provenance
+
+Faz 21 adds supply-chain hardening preparation:
+
+- Cosign signing/verification scripts
+- SLSA-style provenance placeholder script and GitHub Actions attestation hooks
+- per-service SPDX SBOM artifact names
+- optional Helm image digest rendering
+- admission policy examples under `deploy/policies/`
+
+Primary signing strategy is keyless Cosign through GitHub Actions OIDC. Key-based signing remains
+documented for enterprise/offline environments. Details:
+[`docs/image-signing-provenance.md`](docs/image-signing-provenance.md).
+
 ## CI
 
 GitHub Actions quality gate Java 25 ile `./gradlew --no-daemon spotlessCheck`, `./gradlew --no-daemon clean check` ve `./gradlew --no-daemon bootJar` calistirir. Testcontainers integration testleri icin GitHub hosted runner'da Docker kullanilir.

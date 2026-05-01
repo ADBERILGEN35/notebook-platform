@@ -87,6 +87,15 @@ See [`database-roles-and-rls.md`](database-roles-and-rls.md) for role setup, FOR
 See [`runtime-rls-rollout.md`](runtime-rls-rollout.md) for Stage 0-5 production rollout,
 preflight checks, smoke tests and rollback order.
 
+Faz 22 adds staging-like Runtime RLS validation:
+
+- `workspace-service/src/test/resources/application-rls-test.yml`
+- `content-service/src/test/resources/application-rls-test.yml`
+- `./gradlew rlsIntegrationTest`
+
+These tests exercise strict workspace headers, transaction-scoped tenant setting, non-owner runtime
+roles, FORCE RLS opt-in scripts, cross-tenant negative reads and FORCE RLS rollback scripts.
+
 ## Tenant Context Classification
 
 | Endpoint | Service | Tenant source | Category | SET LOCAL ready? | Refactor needed? | Current enforcement | Target enforcement |

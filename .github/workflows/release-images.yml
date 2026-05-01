@@ -1,0 +1,211 @@
+name: Release Images Draft
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: Immutable image tag. Leave empty to use the commit SHA.
+        required: false
+        type: string
+      registry_host:
+        description: Registry host, for example ghcr.io.
+        required: true
+        default: ghcr.io
+        type: string
+      image_repository_prefix:
+        description: Repository prefix under the registry, for example ORG/notebook-platform.
+        required: true
+        default: ORG/notebook-platform
+        type: string
+      push_images:
+        description: Push images to the registry after build and scan.
+        required: true
+        default: false
+        type: boolean
+      sign_images:
+        description: Sign pushed images with Cosign.
+        required: true
+        default: false
+        type: boolean
+      signing_mode:
+        description: Cosign signing mode.
+        required: true
+        default: keyless
+        type: choice
+        options:
+          - keyless
+          - key
+      generate_provenance:
+        description: Generate build provenance attestation.
+        required: true
+        default: false
+        type: boolean
+      promote_environment:
+        description: Environment values to update in this run. Prefer gitops-promote.yml for real PRs.
+        required: true
+        default: none
+        type: choice
+        options:
+          - none
+          - dev
+          - staging
+          - prod
+      high_vulnerability_exit_code:
+        description: Trivy HIGH severity exit code. Use 1 after baseline cleanup.
+        required: true
+        default: "0"
+        type: string
+      dry_run:
+        description: Keep publish/sign/promote steps in validation mode.
+        required: true
+        default: true
+        type: boolean
+
+permissions:
+  contents: read
+  id-token: write
+  packages: write
+  attestations: write
+
+jobs:
+  build-scan-and-optionally-push:
+    runs-on: ubuntu-latest
+    env:
+      IMAGE_TAG: ${{ inputs.image_tag || github.sha }}
+      IMAGE_REGISTRY: ${{ inputs.registry_host }}
+      IMAGE_REPOSITORY_PREFIX: ${{ inputs.image_repository_prefix }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "25"
+
+      - name: Gradle quality gates
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Run Java and packaging checks
+        run: ./gradlew --no-daemon spotlessCheck clean check bootJar
+
+      - name: Check repository for accidental secrets
+        run: bash scripts/check-no-secrets.sh
+
+      - name: Validate Helm chart templates
+        run: bash scripts/helm-template-check.sh
+
+      - name: Install Cosign
+        if: inputs.sign_images || inputs.generate_provenance
+        uses: sigstore/cosign-installer@v3
+
+      - name: Install Syft
+        uses: anchore/sbom-action/download-syft@v0.17.8
+
+      - name: Install Trivy
+        uses: aquasecurity/setup-trivy@v0.2.3
+
+      - name: Generate SBOM
+        run: bash scripts/security/generate-sbom.sh
+
+      - name: Scan images
+        env:
+          BUILD_IMAGES: "false"
+          HIGH_EXIT_CODE: ${{ inputs.high_vulnerability_exit_code }}
+        run: bash scripts/security/scan-images.sh
+
+      - name: Upload SBOM artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom-${{ env.IMAGE_TAG }}
+          path: sbom/*.spdx.json
+          if-no-files-found: error
+
+      - name: Login to registry
+        if: inputs.dry_run == false && inputs.push_images == true
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ inputs.registry_host }}
+          username: ${{ secrets.REGISTRY_USERNAME }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
+
+      - name: Push images
+        if: inputs.dry_run == false && inputs.push_images == true
+        run: |
+          for service in api-gateway identity-service workspace-service content-service; do
+            docker push "$IMAGE_REGISTRY/$IMAGE_REPOSITORY_PREFIX/$service:$IMAGE_TAG"
+          done
+
+      - name: Sign images
+        if: inputs.sign_images == true
+        env:
+          SIGNING_MODE: ${{ inputs.signing_mode }}
+          COSIGN_KEY: ${{ secrets.COSIGN_KEY }}
+          COSIGN_DRY_RUN: ${{ inputs.dry_run || !inputs.push_images }}
+        run: bash scripts/security/sign-images.sh
+
+      - name: Generate local provenance placeholder
+        if: inputs.generate_provenance == true
+        run: bash scripts/security/generate-provenance.sh
+
+      - name: Capture pushed image digests
+        if: inputs.generate_provenance == true && inputs.dry_run == false && inputs.push_images == true
+        id: image-digests
+        run: |
+          echo "api_gateway=$(docker buildx imagetools inspect "$IMAGE_REGISTRY/$IMAGE_REPOSITORY_PREFIX/api-gateway:$IMAGE_TAG" --format '{{.Manifest.Digest}}')" >> "$GITHUB_OUTPUT"
+          echo "identity_service=$(docker buildx imagetools inspect "$IMAGE_REGISTRY/$IMAGE_REPOSITORY_PREFIX/identity-service:$IMAGE_TAG" --format '{{.Manifest.Digest}}')" >> "$GITHUB_OUTPUT"
+          echo "workspace_service=$(docker buildx imagetools inspect "$IMAGE_REGISTRY/$IMAGE_REPOSITORY_PREFIX/workspace-service:$IMAGE_TAG" --format '{{.Manifest.Digest}}')" >> "$GITHUB_OUTPUT"
+          echo "content_service=$(docker buildx imagetools inspect "$IMAGE_REGISTRY/$IMAGE_REPOSITORY_PREFIX/content-service:$IMAGE_TAG" --format '{{.Manifest.Digest}}')" >> "$GITHUB_OUTPUT"
+
+      - name: Attest api-gateway provenance
+        if: inputs.generate_provenance == true && inputs.dry_run == false && inputs.push_images == true
+        uses: actions/attest-build-provenance@v1
+        with:
+          subject-name: ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_REPOSITORY_PREFIX }}/api-gateway
+          subject-digest: ${{ steps.image-digests.outputs.api_gateway }}
+          push-to-registry: true
+
+      - name: Attest identity-service provenance
+        if: inputs.generate_provenance == true && inputs.dry_run == false && inputs.push_images == true
+        uses: actions/attest-build-provenance@v1
+        with:
+          subject-name: ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_REPOSITORY_PREFIX }}/identity-service
+          subject-digest: ${{ steps.image-digests.outputs.identity_service }}
+          push-to-registry: true
+
+      - name: Attest workspace-service provenance
+        if: inputs.generate_provenance == true && inputs.dry_run == false && inputs.push_images == true
+        uses: actions/attest-build-provenance@v1
+        with:
+          subject-name: ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_REPOSITORY_PREFIX }}/workspace-service
+          subject-digest: ${{ steps.image-digests.outputs.workspace_service }}
+          push-to-registry: true
+
+      - name: Attest content-service provenance
+        if: inputs.generate_provenance == true && inputs.dry_run == false && inputs.push_images == true
+        uses: actions/attest-build-provenance@v1
+        with:
+          subject-name: ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_REPOSITORY_PREFIX }}/content-service
+          subject-digest: ${{ steps.image-digests.outputs.content_service }}
+          push-to-registry: true
+
+      - name: Show GitOps promotion diff
+        if: inputs.promote_environment != 'none'
+        env:
+          ENVIRONMENT: ${{ inputs.promote_environment }}
+          IMAGE_TAG: ${{ env.IMAGE_TAG }}
+        run: |
+          python3 - <<'PY'
+          import os
+          import pathlib
+          import re
+
+          env = os.environ["ENVIRONMENT"]
+          tag = os.environ["IMAGE_TAG"]
+          path = pathlib.Path("deploy/gitops/environments") / env / "values.yaml"
+          text = path.read_text(encoding="utf-8")
+          text = re.sub(r'tag: "[^"]+"', f'tag: "{tag}"', text)
+          path.write_text(text, encoding="utf-8")
+          PY
+          git diff -- "deploy/gitops/environments/${ENVIRONMENT}/values.yaml"

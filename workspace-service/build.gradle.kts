@@ -36,3 +36,16 @@ dependencies {
 springBoot {
     mainClass.set("com.notebook.lumen.workspace.WorkspaceServiceApplication")
 }
+
+tasks.register<Test>("rlsIntegrationTest") {
+    group = "verification"
+    description = "Run workspace-service staging-like Runtime RLS integration tests"
+    testClassesDirs = sourceSets.test.get().output.classesDirs
+    classpath = sourceSets.test.get().runtimeClasspath
+    useJUnitPlatform()
+    filter {
+        includeTestsMatching("*.WorkspaceRlsIsolationIntegrationTest")
+        includeTestsMatching("*.WorkspaceStrictHeaderRlsIntegrationTest")
+    }
+    shouldRunAfter(tasks.test)
+}

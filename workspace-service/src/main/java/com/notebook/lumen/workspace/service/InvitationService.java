@@ -170,6 +170,7 @@ public class InvitationService {
 
   @Transactional
   public InvitationResponse revoke(UserContext user, UUID invitationId) {
+    strictWorkspaceHeaderValidator.requireWorkspaceHeader(user);
     Invitation invitation =
         invitationRepository
             .findById(invitationId)

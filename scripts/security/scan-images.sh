@@ -2,11 +2,13 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-IMAGE_PREFIX="${IMAGE_PREFIX:-notebook-platform}"
+IMAGE_REGISTRY="${IMAGE_REGISTRY:-}"
+IMAGE_REPOSITORY_PREFIX="${IMAGE_REPOSITORY_PREFIX:-${IMAGE_PREFIX:-notebook-platform}}"
 IMAGE_TAG="${IMAGE_TAG:-phase17-local}"
 BUILD_IMAGES="${BUILD_IMAGES:-true}"
 ALLOW_SECURITY_TOOL_SKIP="${ALLOW_SECURITY_TOOL_SKIP:-false}"
 HIGH_EXIT_CODE="${HIGH_EXIT_CODE:-0}"
+MEDIUM_LOW_EXIT_CODE="${MEDIUM_LOW_EXIT_CODE:-0}"
 SERVICES=(api-gateway identity-service workspace-service content-service)
 
 if ! command -v trivy >/dev/null 2>&1; then
@@ -28,7 +30,11 @@ if [[ "$BUILD_IMAGES" == "true" ]] && ! command -v docker >/dev/null 2>&1; then
 fi
 
 for service in "${SERVICES[@]}"; do
-  image="$IMAGE_PREFIX/$service:$IMAGE_TAG"
+  if [[ -n "$IMAGE_REGISTRY" ]]; then
+    image="$IMAGE_REGISTRY/$IMAGE_REPOSITORY_PREFIX/$service:$IMAGE_TAG"
+  else
+    image="$IMAGE_REPOSITORY_PREFIX/$service:$IMAGE_TAG"
+  fi
   if [[ "$BUILD_IMAGES" == "true" ]]; then
     docker build -f "$ROOT_DIR/$service/Dockerfile" -t "$image" "$ROOT_DIR"
   fi
@@ -38,4 +44,7 @@ for service in "${SERVICES[@]}"; do
 
   echo "Scanning $image for HIGH vulnerabilities; HIGH_EXIT_CODE=$HIGH_EXIT_CODE"
   trivy image --ignore-unfixed --severity HIGH --exit-code "$HIGH_EXIT_CODE" "$image"
+
+  echo "Reporting $image MEDIUM/LOW vulnerabilities; MEDIUM_LOW_EXIT_CODE=$MEDIUM_LOW_EXIT_CODE"
+  trivy image --ignore-unfixed --severity MEDIUM,LOW --exit-code "$MEDIUM_LOW_EXIT_CODE" "$image"
 done

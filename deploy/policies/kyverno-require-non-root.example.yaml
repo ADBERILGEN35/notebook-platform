@@ -1,0 +1,24 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: notebook-platform-require-non-root
+spec:
+  validationFailureAction: Audit
+  background: true
+  rules:
+    - name: require-non-root-pod
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+      validate:
+        message: "Notebook Platform pods must run as non-root and disable privilege escalation."
+        pattern:
+          spec:
+            securityContext:
+              runAsNonRoot: true
+            containers:
+              - securityContext:
+                  allowPrivilegeEscalation: false
+                  runAsNonRoot: true

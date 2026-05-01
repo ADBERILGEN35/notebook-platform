@@ -39,3 +39,25 @@ psql "$DB_RUNTIME_URL" -f scripts/rls/check-current-workspace-setting.sql
 - `app.current_workspace_id` is empty before and after a transaction and populated only inside it.
 
 If any check fails, stop the rollout before enabling `APP_RLS_ENABLED` or FORCE RLS.
+
+## Wrapper Scripts
+
+Faz 22 adds guarded wrappers:
+
+- `run-preflight-checks.sh`
+- `run-force-rls-enable.sh`
+- `run-force-rls-disable.sh`
+
+Example:
+
+```bash
+DB_URL=postgresql://host:5432/notebook_platform \
+DB_USER=notebook_migrator \
+DB_PASSWORD=<secret> \
+CONFIRM_ENVIRONMENT=staging \
+bash scripts/rls/run-force-rls-enable.sh
+```
+
+The FORCE wrappers refuse to run unless `CONFIRM_ENVIRONMENT=staging` or
+`CONFIRM_FORCE_RLS=true` is set. Do not use the override for production without a separately
+approved rollout or incident rollback.

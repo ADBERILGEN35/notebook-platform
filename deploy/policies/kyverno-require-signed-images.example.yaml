@@ -1,0 +1,25 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: notebook-platform-require-signed-images
+spec:
+  validationFailureAction: Audit
+  background: true
+  rules:
+    - name: verify-keyless-signature
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+      verifyImages:
+        - imageReferences:
+            - "registry.example.com/notebook-platform/*"
+          attestors:
+            - entries:
+                - keyless:
+                    issuer: https://token.actions.githubusercontent.com
+                    subject: https://github.com/ORG/REPO/.github/workflows/release-images.yml@refs/heads/main
+          mutateDigest: false
+          required: true
+          verifyDigest: false

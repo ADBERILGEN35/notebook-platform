@@ -84,3 +84,12 @@ tasks.register("bootRun") {
         ":content-service:bootRun"
     )
 }
+
+tasks.register("rlsIntegrationTest") {
+    group = "verification"
+    description = "Run staging-like Runtime RLS integration tests for workspace and content services"
+    dependsOn(
+        ":workspace-service:rlsIntegrationTest",
+        ":content-service:rlsIntegrationTest"
+    )
+}

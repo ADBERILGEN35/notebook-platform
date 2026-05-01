@@ -77,6 +77,7 @@ public class TagService {
 
   @Transactional
   public TagResponse update(UserContext user, UUID tagId, UpdateTagRequest request) {
+    strictWorkspaceHeaderValidator.requireWorkspaceHeader(user);
     Tag tag = load(tagId);
     tenantDatabaseSession.applyWorkspace(tag.getWorkspaceId());
     strictWorkspaceHeaderValidator.validateAggregateRequest(user, tag.getWorkspaceId());
@@ -93,6 +94,7 @@ public class TagService {
 
   @Transactional
   public void archive(UserContext user, UUID tagId) {
+    strictWorkspaceHeaderValidator.requireWorkspaceHeader(user);
     Tag tag = load(tagId);
     tenantDatabaseSession.applyWorkspace(tag.getWorkspaceId());
     strictWorkspaceHeaderValidator.validateAggregateRequest(user, tag.getWorkspaceId());

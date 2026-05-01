@@ -1,0 +1,71 @@
+global:
+  imageRegistry: "registry.example.com"
+  imagePullPolicy: IfNotPresent
+  springProfilesActive: prod
+
+config:
+  otelEnabled: "true"
+  otelExporterOtlpEndpoint: "http://otel-collector.observability:4318/v1/traces"
+  corsAllowedOrigins: "https://staging.example.com"
+  # Stage 1 keeps strict header validation on while DB tenant context remains off.
+  # Move to "true" only for Stage 2 after rlsIntegrationTest and staging smoke validation.
+  appRlsEnabled: "false"
+  appRlsStrictWorkspaceHeader: "true"
+  internalAuthMode: "service-jwt"
+  jwtAllowEphemeralKeys: "false"
+
+secrets:
+  mode: external-secrets
+  create: false
+  existingSecret: ""
+  externalSecrets:
+    enabled: true
+    refreshInterval: 1h
+    secretStoreRef:
+      name: notebook-platform-staging-secret-store
+      kind: ClusterSecretStore
+    targetSecretName: notebook-platform-secrets
+
+services:
+  apiGateway:
+    replicas: 2
+    image:
+      tag: "staging-placeholder"
+      digest: ""
+  identity:
+    replicas: 1
+    image:
+      tag: "staging-placeholder"
+      digest: ""
+  workspace:
+    replicas: 1
+    image:
+      tag: "staging-placeholder"
+      digest: ""
+  content:
+    replicas: 1
+    image:
+      tag: "staging-placeholder"
+      digest: ""
+
+ingress:
+  enabled: true
+  className: "nginx"
+  hosts:
+    - host: api.staging.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: api-staging-example-com-tls
+      hosts:
+        - api.staging.example.com
+
+networkPolicy:
+  enabled: true
+
+serviceMonitor:
+  enabled: true
+
+autoscaling:
+  enabled: false

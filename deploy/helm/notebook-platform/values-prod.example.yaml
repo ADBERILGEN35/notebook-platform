@@ -7,6 +7,8 @@ config:
   otelEnabled: "true"
   otelExporterOtlpEndpoint: "http://otel-collector.observability:4318/v1/traces"
   corsAllowedOrigins: "https://app.example.com"
+  # Production steady-state target only. Follow docs/runtime-rls-rollout.md stage by stage.
+  # FORCE RLS is never applied by Helm or GitOps auto-sync.
   appRlsEnabled: "true"
   appRlsStrictWorkspaceHeader: "true"
   internalAuthMode: "service-jwt"

@@ -2,9 +2,11 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-IMAGE_PREFIX="${IMAGE_PREFIX:-notebook-platform}"
+IMAGE_REGISTRY="${IMAGE_REGISTRY:-}"
+IMAGE_REPOSITORY_PREFIX="${IMAGE_REPOSITORY_PREFIX:-${IMAGE_PREFIX:-notebook-platform}}"
 IMAGE_TAG="${IMAGE_TAG:-phase17-local}"
 SBOM_DIR="${SBOM_DIR:-$ROOT_DIR/sbom}"
+SBOM_FORMAT="${SBOM_FORMAT:-spdx-json}"
 BUILD_IMAGES="${BUILD_IMAGES:-true}"
 ALLOW_SECURITY_TOOL_SKIP="${ALLOW_SECURITY_TOOL_SKIP:-false}"
 SERVICES=(api-gateway identity-service workspace-service content-service)
@@ -30,11 +32,16 @@ fi
 mkdir -p "$SBOM_DIR"
 
 for service in "${SERVICES[@]}"; do
-  image="$IMAGE_PREFIX/$service:$IMAGE_TAG"
+  if [[ -n "$IMAGE_REGISTRY" ]]; then
+    image="$IMAGE_REGISTRY/$IMAGE_REPOSITORY_PREFIX/$service:$IMAGE_TAG"
+  else
+    image="$IMAGE_REPOSITORY_PREFIX/$service:$IMAGE_TAG"
+  fi
+  sbom_file="$SBOM_DIR/$service-$IMAGE_TAG.spdx.json"
   if [[ "$BUILD_IMAGES" == "true" ]]; then
     docker build -f "$ROOT_DIR/$service/Dockerfile" -t "$image" "$ROOT_DIR"
   fi
-  syft "$image" -o "spdx-json=$SBOM_DIR/$service.spdx.json"
+  syft "$image" -o "$SBOM_FORMAT=$sbom_file"
 done
 
 echo "SBOM files written to $SBOM_DIR"

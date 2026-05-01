@@ -96,3 +96,14 @@ Redis password rotation require pod restarts so connection pools reconnect.
 
 Never commit real provider credentials, PEM private keys, database passwords, Redis passwords or
 tokens to values files.
+
+## GitOps Usage
+
+The GitOps environment values use:
+
+- dev: pre-created Kubernetes Secret placeholder for local or ephemeral clusters.
+- staging/prod: `secrets.mode=external-secrets` with environment-specific `ClusterSecretStore`
+  placeholder names.
+
+Replace the placeholder SecretStore names before deploying. Do not place provider credentials or
+secret values in `deploy/gitops/environments/**/values.yaml`.

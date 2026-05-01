@@ -43,11 +43,24 @@ Role setup scriptleri:
 - `scripts/rls/check-db-role-permissions.sql`
 - `scripts/rls/check-rls-status.sql`
 - `scripts/rls/check-current-workspace-setting.sql`
+- `scripts/rls/run-preflight-checks.sh`
+- `scripts/rls/run-force-rls-enable.sh`
+- `scripts/rls/run-force-rls-disable.sh`
 
 Bu scriptler production'da DBA/infra tarafindan, gercek parolalar secret manager'dan verilerek
 calistirilmalidir. Scriptlerdeki placeholder parolalar commit edilmemelidir.
 Preflight scriptlerinin kullanim sirasi [`runtime-rls-rollout.md`](runtime-rls-rollout.md) ve
 `scripts/rls/README.md` icinde tanimlidir.
+
+Faz 22 adds a staging-like automated validation task:
+
+```bash
+./gradlew rlsIntegrationTest
+```
+
+It creates Testcontainers PostgreSQL databases, validates non-owner runtime roles, confirms runtime
+roles cannot run DDL, applies FORCE RLS opt-in scripts, confirms cross-tenant reads return no rows
+and runs the disable scripts to prove rollback metadata changes.
 
 ## FORCE RLS
 
@@ -77,6 +90,9 @@ davranisi superuser uzerinden garanti gibi raporlanmaz. Testler non-owner runtim
 takildigini ve FORCE RLS opt-in komutlarinin tablo metadata'sinda aktif/pasif hale geldigini
 dogrular; production garantisi superuser olmayan migration owner + non-owner runtime role ile
 tamamlanir.
+
+The staging-like tests intentionally do not connect to a real staging or production database.
+Deployed staging validation should use `docs/rls-staging-validation-report-template.md`.
 
 ## Strict Workspace Header
 

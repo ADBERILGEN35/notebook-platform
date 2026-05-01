@@ -1,0 +1,53 @@
+global:
+  imageRegistry: "registry.example.com"
+  imagePullPolicy: IfNotPresent
+  springProfilesActive: dev
+
+config:
+  otelEnabled: "false"
+  corsAllowedOrigins: "http://localhost:3000"
+  appRlsEnabled: "false"
+  appRlsStrictWorkspaceHeader: "false"
+  internalAuthMode: "dual"
+  jwtAllowEphemeralKeys: "false"
+
+secrets:
+  mode: native-kubernetes-secret
+  create: false
+  existingSecret: notebook-platform-dev-secrets
+  externalSecrets:
+    enabled: false
+
+services:
+  apiGateway:
+    replicas: 1
+    image:
+      tag: "dev-placeholder"
+      digest: ""
+  identity:
+    replicas: 1
+    image:
+      tag: "dev-placeholder"
+      digest: ""
+  workspace:
+    replicas: 1
+    image:
+      tag: "dev-placeholder"
+      digest: ""
+  content:
+    replicas: 1
+    image:
+      tag: "dev-placeholder"
+      digest: ""
+
+ingress:
+  enabled: false
+
+networkPolicy:
+  enabled: false
+
+serviceMonitor:
+  enabled: false
+
+autoscaling:
+  enabled: false

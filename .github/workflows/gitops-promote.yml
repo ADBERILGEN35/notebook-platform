@@ -1,0 +1,79 @@
+name: GitOps Promote Draft
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Environment values file to update.
+        required: true
+        type: choice
+        options:
+          - dev
+          - staging
+          - prod
+      image_tag:
+        description: Immutable image tag to promote.
+        required: true
+        type: string
+      dry_run:
+        description: Validate the change without committing it.
+        required: true
+        default: true
+        type: boolean
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate image tag
+        run: |
+          if [[ ! "${{ inputs.image_tag }}" =~ ^[A-Za-z0-9._-]+$ ]]; then
+            echo "image_tag must be immutable and contain only letters, numbers, dot, underscore or dash." >&2
+            exit 1
+          fi
+
+      - name: Update environment image tags
+        env:
+          ENVIRONMENT: ${{ inputs.environment }}
+          IMAGE_TAG: ${{ inputs.image_tag }}
+        run: |
+          python3 - <<'PY'
+          import os
+          import pathlib
+          import re
+
+          env = os.environ["ENVIRONMENT"]
+          tag = os.environ["IMAGE_TAG"]
+          path = pathlib.Path("deploy/gitops/environments") / env / "values.yaml"
+          text = path.read_text(encoding="utf-8")
+          text = re.sub(r'tag: "[^"]+"', f'tag: "{tag}"', text)
+          path.write_text(text, encoding="utf-8")
+          PY
+
+      - name: Validate YAML when parser is available
+        run: bash scripts/validate-yaml.sh
+
+      - name: Show diff
+        run: git diff -- deploy/gitops/environments/${{ inputs.environment }}/values.yaml
+
+      - name: Commit promotion change
+        if: inputs.dry_run == false
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout -b promote/${{ inputs.environment }}-${{ inputs.image_tag }}
+          git add deploy/gitops/environments/${{ inputs.environment }}/values.yaml
+          git commit -m "Promote ${{ inputs.environment }} to ${{ inputs.image_tag }}"
+          git push --set-upstream origin promote/${{ inputs.environment }}-${{ inputs.image_tag }}
+          gh pr create \
+            --title "Promote ${{ inputs.environment }} to ${{ inputs.image_tag }}" \
+            --body "Promotes notebook-platform ${{ inputs.environment }} image tags to ${{ inputs.image_tag }} after release quality gates."

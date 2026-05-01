@@ -65,10 +65,19 @@ app.kubernetes.io/component: {{ .component }}
 {{- $registry := .root.Values.global.imageRegistry -}}
 {{- $repo := .image.repository -}}
 {{- $tag := .image.tag | default .root.Chart.AppVersion -}}
+{{- $digest := .image.digest | default "" -}}
 {{- if $registry -}}
+{{- if $digest -}}
+{{- printf "%s/%s@%s" $registry $repo $digest -}}
+{{- else -}}
 {{- printf "%s/%s:%s" $registry $repo $tag -}}
+{{- end -}}
+{{- else -}}
+{{- if $digest -}}
+{{- printf "%s@%s" $repo $digest -}}
 {{- else -}}
 {{- printf "%s:%s" $repo $tag -}}
+{{- end -}}
 {{- end -}}
 {{- end -}}
 

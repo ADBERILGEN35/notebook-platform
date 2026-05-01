@@ -1,0 +1,15 @@
+apiVersion: policy.sigstore.dev/v1beta1
+kind: ClusterImagePolicy
+metadata:
+  name: notebook-platform-keyless-signatures
+spec:
+  images:
+    - glob: "registry.example.com/notebook-platform/**"
+  authorities:
+    - keyless:
+        url: https://fulcio.sigstore.dev
+        identities:
+          - issuer: https://token.actions.githubusercontent.com
+            subject: https://github.com/ORG/REPO/.github/workflows/release-images.yml@refs/heads/main
+      ctlog:
+        url: https://rekor.sigstore.dev

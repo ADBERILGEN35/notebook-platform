@@ -31,3 +31,16 @@ dependencies {
 springBoot {
     mainClass.set("com.notebook.lumen.content.ContentServiceApplication")
 }
+
+tasks.register<Test>("rlsIntegrationTest") {
+    group = "verification"
+    description = "Run content-service staging-like Runtime RLS integration tests"
+    testClassesDirs = sourceSets.test.get().output.classesDirs
+    classpath = sourceSets.test.get().runtimeClasspath
+    useJUnitPlatform()
+    filter {
+        includeTestsMatching("*.ContentRlsIsolationIntegrationTest")
+        includeTestsMatching("*.ContentStrictHeaderRlsIntegrationTest")
+    }
+    shouldRunAfter(tasks.test)
+}

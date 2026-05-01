@@ -35,6 +35,10 @@ Prometheus endpoints. It does not install Prometheus, Grafana or Alertmanager.
 - api-gateway 429 spike
 - workspace-service unavailable symptoms from content-service 503s
 - missing or invalid internal auth spike on `/internal/**`
+- RLS rollout strict-header 400 spike, approximated by service/status metrics and confirmed through
+  logs for `MISSING_WORKSPACE_CONTEXT` and `INVALID_WORKSPACE_CONTEXT`
+- RLS rollout 403 spike
+- RLS rollout 5xx DB permission symptoms
 
 Thresholds are initial production-readiness defaults. They should be tuned after baseline traffic
 and k6 profiles are available.
@@ -46,3 +50,22 @@ Grafana instance uses another datasource UID, update the dashboard datasource ma
 
 Prometheus alert rules can be loaded by a Prometheus rule file mount or by a Prometheus Operator
 `PrometheusRule` wrapper in a later deployment phase.
+
+During Runtime RLS rollout, current metrics do not expose `errorCode` as a Prometheus label. Use the
+status-based starter alerts plus log queries for:
+
+- `MISSING_WORKSPACE_CONTEXT`
+- `INVALID_WORKSPACE_CONTEXT`
+- `permission denied`
+- `violates row-level security policy`
+- `app.current_workspace_id`
+
+Adding explicit error-code metrics is future work.
+
+## GitOps Promotion Usage
+
+Staging and prod GitOps values enable `serviceMonitor.enabled=true` so Prometheus Operator based
+clusters can scrape the actuator Prometheus endpoints after sync. Dev keeps it disabled by default.
+
+Before production promotion, import the Grafana dashboards, load the Prometheus rules and run the
+post-sync health/smoke checks from `docs/gitops-deployment.md`.

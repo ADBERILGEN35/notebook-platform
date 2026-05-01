@@ -171,6 +171,7 @@ services:
     image:
       repository: notebook-platform/api-gateway
       tag: "0.0.1"
+      digest: ""
     port: 8080
     service:
       type: ClusterIP
@@ -187,6 +188,7 @@ services:
     image:
       repository: notebook-platform/identity-service
       tag: "0.0.1"
+      digest: ""
     port: 8081
     resources:
       requests:
@@ -201,6 +203,7 @@ services:
     image:
       repository: notebook-platform/workspace-service
       tag: "0.0.1"
+      digest: ""
     port: 8082
     resources:
       requests:
@@ -215,6 +218,7 @@ services:
     image:
       repository: notebook-platform/content-service
       tag: "0.0.1"
+      digest: ""
     port: 8083
     resources:
       requests:
