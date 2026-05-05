@@ -72,3 +72,13 @@ content:
     ttl-seconds: ${INTERNAL_SERVICE_JWT_TTL_SECONDS:60}
     audience: ${INTERNAL_SERVICE_JWT_AUDIENCE:workspace-service}
 
+audit:
+  admin:
+    kid: ${AUDIT_ADMIN_SERVICE_JWT_KID:}
+    public-key: ${AUDIT_ADMIN_SERVICE_JWT_PUBLIC_KEY:}
+    public-key-path: ${AUDIT_ADMIN_SERVICE_JWT_PUBLIC_KEY_PATH:}
+    issuer: ${AUDIT_ADMIN_SERVICE_JWT_ISSUER:audit-admin}
+    audience: ${AUDIT_ADMIN_SERVICE_JWT_AUDIENCE:content-service}
+    clock-skew-seconds: ${AUDIT_ADMIN_SERVICE_JWT_CLOCK_SKEW_SECONDS:5}
+    allowed-scopes: ${AUDIT_ADMIN_SERVICE_JWT_ALLOWED_SCOPES:internal:audit:read}
+

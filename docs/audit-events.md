@@ -1,6 +1,7 @@
 # Audit Events
 
-Audit events are stored in each service database. There is no public audit query API in Faz 8.
+Audit events are stored in each service database. Faz 23 adds service-local internal query
+endpoints, but there is still no central audit service or public audit route.
 
 ## Failure Policy
 
@@ -13,6 +14,22 @@ Sensitive values must not be written to metadata:
 - invitation token
 - internal token
 - JWT access token
+
+Audit query responses sanitize metadata again before serialization. Sensitive keys are masked even
+if an older event was written before sanitizer hardening.
+
+## Query API
+
+Internal endpoints:
+
+- identity-service: `GET /internal/audit-events`
+- workspace-service: `GET /internal/audit-events`
+- content-service: `GET /internal/audit-events`
+
+They require `X-Service-Authorization: Bearer <service-jwt>` with scope `internal:audit:read`.
+Details: [`audit-query-api.md`](audit-query-api.md).
+
+Retention policy: [`audit-retention.md`](audit-retention.md).
 
 ## Identity Events
 

@@ -71,3 +71,13 @@ workspace:
       clock-skew-seconds: ${TRUSTED_SERVICE_CONTENT_SERVICE_CLOCK_SKEW_SECONDS:5}
       allowed-scopes: ${TRUSTED_SERVICE_CONTENT_SERVICE_ALLOWED_SCOPES:internal:workspace:permission:read,internal:workspace:tag:read}
 
+audit:
+  admin:
+    kid: ${AUDIT_ADMIN_SERVICE_JWT_KID:}
+    public-key: ${AUDIT_ADMIN_SERVICE_JWT_PUBLIC_KEY:}
+    public-key-path: ${AUDIT_ADMIN_SERVICE_JWT_PUBLIC_KEY_PATH:}
+    issuer: ${AUDIT_ADMIN_SERVICE_JWT_ISSUER:audit-admin}
+    audience: ${AUDIT_ADMIN_SERVICE_JWT_AUDIENCE:workspace-service}
+    clock-skew-seconds: ${AUDIT_ADMIN_SERVICE_JWT_CLOCK_SKEW_SECONDS:5}
+    allowed-scopes: ${AUDIT_ADMIN_SERVICE_JWT_ALLOWED_SCOPES:internal:audit:read}
+

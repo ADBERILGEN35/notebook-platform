@@ -12,6 +12,8 @@ This document captures the backend contract before frontend work starts.
   - `X-Workspace-Id` when valid and present
 - Internal workspace endpoints are not routed through the gateway and may require `X-Internal-Token`
   or `X-Service-Authorization: Bearer <service-jwt>` depending on `INTERNAL_AUTH_MODE`.
+- Internal audit endpoints are not public gateway routes and require
+  `X-Service-Authorization: Bearer <service-jwt>` with `internal:audit:read`.
 
 ## Strict Workspace Header Rollout
 

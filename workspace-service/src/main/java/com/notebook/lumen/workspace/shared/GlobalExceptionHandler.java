@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -69,6 +70,21 @@ public class GlobalExceptionHandler {
                 400,
                 "VALIDATION_ERROR",
                 "Validation failed",
+                request.getRequestURI(),
+                requestId(request),
+                List.of()));
+  }
+
+  @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+  ResponseEntity<ErrorResponse> handleTypeMismatch(
+      MethodArgumentTypeMismatchException ex, HttpServletRequest request) {
+    return ResponseEntity.badRequest()
+        .body(
+            new ErrorResponse(
+                Instant.now(),
+                400,
+                "INVALID_AUDIT_FILTER",
+                "Invalid query parameter: " + ex.getName(),
                 request.getRequestURI(),
                 requestId(request),
                 List.of()));

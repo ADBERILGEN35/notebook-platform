@@ -7,6 +7,10 @@
 | INVALID_PAGE_SIZE | 400 | workspace/content | Page size outside allowed range | `size=0` or `size=101` |
 | INVALID_SORT_FIELD | 400 | workspace/content | Sort field is not allow-listed | `sort=passwordHash,asc` |
 | INVALID_SORT_DIRECTION | 400 | workspace/content | Sort direction is not `asc` or `desc` | `sort=createdAt,sideways` |
+| INVALID_AUDIT_FILTER | 400 | identity/workspace/content | Audit query filter cannot be parsed or is invalid | bad UUID/timestamp/page |
+| INVALID_AUDIT_TIME_RANGE | 400 | identity/workspace/content | `createdFrom` is after `createdTo` | inverted audit time range |
+| AUDIT_QUERY_RANGE_TOO_LARGE | 400 | identity/workspace/content | Audit query time range exceeds 90 days | `createdFrom` one year before `createdTo` |
+| AUDIT_ACCESS_DENIED | 403 | identity/workspace/content | Service JWT lacks audit scope | missing `internal:audit:read` |
 | INTERNAL_SERVER_ERROR | 500 | identity-service | Unexpected identity error | Unhandled runtime error |
 | INVALID_CREDENTIALS | 401 | identity-service | Login credentials invalid | Wrong email/password |
 | USER_DISABLED | 403 | identity-service | User cannot authenticate | Disabled/deleted user |
@@ -22,13 +26,13 @@
 | RATE_LIMIT_EXCEEDED | 429 | api-gateway | Request bucket exhausted | Too many auth requests |
 | ROUTE_UNAVAILABLE | 503 | api-gateway | Downstream route unavailable | Service connection refused |
 | MISSING_USER_CONTEXT | 401 | workspace/content | User header missing | Direct call without `X-User-Id` |
-| INTERNAL_AUTH_REQUIRED | 401 | workspace-service | Internal auth header missing | content-service calls `/internal/**` without token/JWT |
+| INTERNAL_AUTH_REQUIRED | 401 | workspace/content/identity internal APIs | Internal auth header missing | internal API call without service JWT |
 | INVALID_INTERNAL_TOKEN | 401 | workspace-service | Static internal token invalid | Wrong `X-Internal-Token` |
-| INVALID_SERVICE_JWT | 401 | workspace-service | Service JWT malformed, wrong kid/type or bad signature | Bad `X-Service-Authorization` |
-| EXPIRED_SERVICE_JWT | 401 | workspace-service | Service JWT expired | Expired internal JWT |
-| INVALID_SERVICE_AUDIENCE | 401 | workspace-service | Service JWT audience mismatch | `aud` is not `workspace-service` |
-| INVALID_SERVICE_ISSUER | 401 | workspace-service | Service JWT issuer mismatch | untrusted `iss` |
-| INSUFFICIENT_SERVICE_SCOPE | 403 | workspace-service | Service JWT lacks endpoint scope | tag scope used for permission endpoint |
+| INVALID_SERVICE_JWT | 401 | internal APIs | Service JWT malformed, wrong kid/type or bad signature | Bad `X-Service-Authorization` |
+| EXPIRED_SERVICE_JWT | 401 | internal APIs | Service JWT expired | Expired internal JWT |
+| INVALID_SERVICE_AUDIENCE | 401 | internal APIs | Service JWT audience mismatch | `aud` is not target service |
+| INVALID_SERVICE_ISSUER | 401 | internal APIs | Service JWT issuer mismatch | untrusted `iss` |
+| INSUFFICIENT_SERVICE_SCOPE | 403 | internal APIs | Service JWT lacks endpoint scope | tag scope used for permission endpoint |
 | WORKSPACE_NOT_FOUND | 404 | workspace-service | Workspace not found | Unknown workspace id |
 | WORKSPACE_ACCESS_DENIED | 403 | workspace-service | Workspace permission denied | MEMBER updates owner role |
 | LAST_OWNER_CANNOT_BE_REMOVED | 409 | workspace-service | Owner safety violation | Remove final OWNER |

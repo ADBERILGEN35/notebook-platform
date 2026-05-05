@@ -101,6 +101,6 @@
 ## Audit Event Integrity
 
 - Risk: Critical security/domain actions are not traceable after incidents.
-- Current mitigation: identity, workspace and content services write DB-backed audit events for key actions without storing secrets in metadata.
-- Remaining gap: No admin audit query API, immutable log store or retention policy.
-- Recommended next action: Add append-only storage policy and admin audit query API with strict access control.
+- Current mitigation: identity, workspace and content services write DB-backed audit events for key actions without storing secrets in metadata; Faz 23 adds service-local internal audit query endpoints protected by service JWT scope `internal:audit:read`.
+- Remaining gap: No central audit service, immutable log store, SIEM export or Admin UI.
+- Recommended next action: Add export/SIEM integration and immutable archive once provider/storage choices are made.

@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -54,6 +55,21 @@ public class GlobalExceptionHandler {
             request.getRequestURI(),
             requestId(request),
             fieldErrors);
+    return ResponseEntity.badRequest().body(body);
+  }
+
+  @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+  ResponseEntity<ErrorResponse> handleTypeMismatch(
+      MethodArgumentTypeMismatchException ex, HttpServletRequest request) {
+    ErrorResponse body =
+        new ErrorResponse(
+            Instant.now(),
+            400,
+            "INVALID_AUDIT_FILTER",
+            "Invalid query parameter: " + ex.getName(),
+            request.getRequestURI(),
+            requestId(request),
+            List.of());
     return ResponseEntity.badRequest().body(body);
   }
 

@@ -69,6 +69,10 @@ public class AuditEvent {
     return actorUserId;
   }
 
+  public UUID getWorkspaceId() {
+    return workspaceId;
+  }
+
   public String getAggregateType() {
     return aggregateType;
   }
@@ -77,7 +81,23 @@ public class AuditEvent {
     return aggregateId;
   }
 
+  public String getRequestId() {
+    return requestId;
+  }
+
+  public String getIpAddress() {
+    return ipAddress;
+  }
+
+  public String getUserAgent() {
+    return userAgent;
+  }
+
   public Map<String, Object> getMetadata() {
     return metadata;
+  }
+
+  public Instant getCreatedAt() {
+    return createdAt;
   }
 }

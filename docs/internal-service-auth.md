@@ -47,6 +47,15 @@ workspace-service internal endpointleri endpoint bazli scope ister:
 | `GET /internal/notebooks/{notebookId}/permissions` | `internal:workspace:permission:read` |
 | `GET /internal/workspaces/{workspaceId}/tags/{tagId}/exists` | `internal:workspace:tag:read` |
 
+Audit query endpoints across identity/workspace/content require:
+
+| Endpoint | Required scope |
+| --- | --- |
+| `GET /internal/audit-events` | `internal:audit:read` |
+
+Audit query endpoints do not accept normal user access tokens. They use service JWT because a
+platform-admin user/role model does not exist yet.
+
 ## Key Model
 
 Faz 13 provider-agnostic RSA key modelini kullanir:

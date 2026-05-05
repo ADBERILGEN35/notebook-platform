@@ -71,3 +71,13 @@ security:
     memory-in-kb: ${ARGON2_MEMORY_IN_KB:65536}
     iterations: ${ARGON2_ITERATIONS:3}
 
+audit:
+  admin:
+    kid: ${AUDIT_ADMIN_SERVICE_JWT_KID:}
+    public-key: ${AUDIT_ADMIN_SERVICE_JWT_PUBLIC_KEY:}
+    public-key-path: ${AUDIT_ADMIN_SERVICE_JWT_PUBLIC_KEY_PATH:}
+    issuer: ${AUDIT_ADMIN_SERVICE_JWT_ISSUER:audit-admin}
+    audience: ${AUDIT_ADMIN_SERVICE_JWT_AUDIENCE:identity-service}
+    clock-skew-seconds: ${AUDIT_ADMIN_SERVICE_JWT_CLOCK_SKEW_SECONDS:5}
+    allowed-scopes: ${AUDIT_ADMIN_SERVICE_JWT_ALLOWED_SCOPES:internal:audit:read}
+

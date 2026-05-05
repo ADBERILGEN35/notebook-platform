@@ -55,4 +55,48 @@ public class AuditEvent {
     this.metadata = metadata;
     this.createdAt = createdAt;
   }
+
+  public UUID getId() {
+    return id;
+  }
+
+  public String getEventType() {
+    return eventType;
+  }
+
+  public UUID getActorUserId() {
+    return actorUserId;
+  }
+
+  public UUID getWorkspaceId() {
+    return workspaceId;
+  }
+
+  public String getAggregateType() {
+    return aggregateType;
+  }
+
+  public UUID getAggregateId() {
+    return aggregateId;
+  }
+
+  public String getRequestId() {
+    return requestId;
+  }
+
+  public String getIpAddress() {
+    return ipAddress;
+  }
+
+  public String getUserAgent() {
+    return userAgent;
+  }
+
+  public Map<String, Object> getMetadata() {
+    return metadata;
+  }
+
+  public Instant getCreatedAt() {
+    return createdAt;
+  }
 }

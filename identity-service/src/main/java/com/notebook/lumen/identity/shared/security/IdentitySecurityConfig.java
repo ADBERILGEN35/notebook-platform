@@ -24,6 +24,7 @@ public class IdentitySecurityConfig {
                         "/auth/signup",
                         "/auth/login",
                         "/auth/refresh",
+                        "/internal/audit-events",
                         "/.well-known/jwks.json",
                         "/actuator/health",
                         "/swagger-ui.html",

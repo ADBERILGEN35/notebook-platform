@@ -1,0 +1,17 @@
+-- Example only. Review legal/compliance retention before running.
+-- Run as migration owner or an audited maintenance role.
+\set cutoff_timestamp '2025-01-01T00:00:00Z'
+
+BEGIN;
+
+DELETE FROM identity_audit_events
+WHERE created_at < :'cutoff_timestamp'::timestamptz;
+
+DELETE FROM workspace_audit_events
+WHERE created_at < :'cutoff_timestamp'::timestamptz;
+
+DELETE FROM content_audit_events
+WHERE created_at < :'cutoff_timestamp'::timestamptz;
+
+-- Inspect affected row counts before COMMIT in an interactive session.
+COMMIT;

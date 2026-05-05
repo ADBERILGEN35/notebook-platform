@@ -178,6 +178,10 @@ Runtime RLS production rollout is staged in
 steady-state target, but FORCE RLS remains a separate DBA/ops opt-in script and is not applied by
 Helm.
 
+Audit events are queryable through service-local internal endpoints:
+`GET /internal/audit-events` on identity/workspace/content. These endpoints require service JWT
+scope `internal:audit:read` and must not be exposed through the public gateway.
+
 Staging-like Runtime RLS validation:
 
 ```bash
@@ -239,6 +243,8 @@ Dokumanlar:
 - [`docs/deployment-packaging.md`](docs/deployment-packaging.md)
 - [`docs/backup-restore.md`](docs/backup-restore.md)
 - [`docs/audit-events.md`](docs/audit-events.md)
+- [`docs/audit-query-api.md`](docs/audit-query-api.md)
+- [`docs/audit-retention.md`](docs/audit-retention.md)
 - [`docs/database-performance.md`](docs/database-performance.md)
 - [`docs/database-roles-and-rls.md`](docs/database-roles-and-rls.md)
 - [`docs/runtime-rls-rollout.md`](docs/runtime-rls-rollout.md)
