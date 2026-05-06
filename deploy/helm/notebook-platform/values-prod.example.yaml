@@ -15,16 +15,27 @@ config:
   jwtAllowEphemeralKeys: "false"
   jwtActiveKid: "prod-key-1"
   internalServiceJwtActiveKid: "content-service-key-1"
+  searchServiceJwtActiveKid: "search-service-key-1"
+  emailProvider: "smtp"
+  smtpHost: "smtp.example.internal"
+  smtpPort: "587"
+  smtpFrom: "security@example.com"
+  smtpTlsEnabled: "true"
+  workspaceServiceJwtActiveKid: "workspace-service-key-1"
 
 externalDatabase:
   identityUrl: "jdbc:postgresql://postgres.example.internal:5432/notebook_platform"
   workspaceRuntimeUrl: "jdbc:postgresql://postgres.example.internal:5432/notebook_platform"
   contentRuntimeUrl: "jdbc:postgresql://postgres.example.internal:5432/notebook_platform"
+  notificationUrl: "jdbc:postgresql://postgres.example.internal:5432/notebook_platform"
+  searchUrl: "jdbc:postgresql://postgres.example.internal:5432/notebook_platform"
   identityUser: "notebook_identity"
   workspaceRuntimeUser: "notebook_workspace_runtime"
   workspaceMigrationUser: "notebook_workspace_migrator"
   contentRuntimeUser: "notebook_content_runtime"
   contentMigrationUser: "notebook_content_migrator"
+  notificationUser: "notebook_notification"
+  searchUser: "notebook_search"
 
 externalRedis:
   host: "redis.example.internal"
@@ -77,6 +88,10 @@ autoscaling:
     maxReplicas: 4
     targetCPUUtilizationPercentage: 70
   content:
+    minReplicas: 2
+    maxReplicas: 5
+    targetCPUUtilizationPercentage: 70
+  search:
     minReplicas: 2
     maxReplicas: 5
     targetCPUUtilizationPercentage: 70

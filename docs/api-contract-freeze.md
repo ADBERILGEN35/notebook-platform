@@ -14,6 +14,8 @@ This document captures the backend contract before frontend work starts.
   or `X-Service-Authorization: Bearer <service-jwt>` depending on `INTERNAL_AUTH_MODE`.
 - Internal audit endpoints are not public gateway routes and require
   `X-Service-Authorization: Bearer <service-jwt>` with `internal:audit:read`.
+- notification-service internal email endpoint is not routed by api-gateway and requires
+  `X-Service-Authorization: Bearer <service-jwt>` with `internal:notification:email:send`.
 
 ## Strict Workspace Header Rollout
 
@@ -150,11 +152,15 @@ Content:
 - `DELETE /notes/{noteId}/tags/{tagId}`
 - `GET /notes/{noteId}/tags`
 - `GET /notes/search?workspaceId={workspaceId}&q={query}`
+- `GET /search/notes?workspaceId={workspaceId}&q={query}`
 
 ## Internal Endpoints
 
 - `GET /internal/notebooks/{notebookId}/permissions?userId={userId}`
 - `GET /internal/workspaces/{workspaceId}/tags/{tagId}/exists?scope=NOTE`
+- `POST /internal/notifications/email`
+- `POST /internal/search/documents`
+- `DELETE /internal/search/documents/{noteId}`
 
 ## Idempotency
 

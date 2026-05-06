@@ -95,6 +95,14 @@ app.kubernetes.io/component: {{ .component }}
         path: service-jwt/content-private.pem
       - key: content-service-jwt-public-key.pem
         path: service-jwt/content-public.pem
+      - key: workspace-service-jwt-private-key.pem
+        path: service-jwt/workspace-private.pem
+      - key: workspace-service-jwt-public-key.pem
+        path: service-jwt/workspace-public.pem
+      - key: search-service-jwt-private-key.pem
+        path: service-jwt/search-private.pem
+      - key: search-service-jwt-public-key.pem
+        path: service-jwt/search-public.pem
 {{- end -}}
 
 {{- define "notebook-platform.volumeMounts" -}}

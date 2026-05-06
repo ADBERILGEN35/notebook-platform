@@ -2,6 +2,7 @@ package com.notebook.lumen.workspace.service;
 
 import com.notebook.lumen.workspace.audit.AuditService;
 import com.notebook.lumen.workspace.client.IdentityClient;
+import com.notebook.lumen.workspace.client.NotificationClient;
 import com.notebook.lumen.workspace.config.WorkspaceProperties;
 import com.notebook.lumen.workspace.domain.Invitation;
 import com.notebook.lumen.workspace.domain.WorkspaceMember;
@@ -42,6 +43,7 @@ public class InvitationService {
   private final AuthorizationService authorizationService;
   private final InvitationTokenService tokenService;
   private final IdentityClient identityClient;
+  private final NotificationClient notificationClient;
   private final CircuitBreaker identityClientCircuitBreaker;
   private final Retry identityClientRetry;
   private final WorkspaceProperties properties;
@@ -56,6 +58,7 @@ public class InvitationService {
       AuthorizationService authorizationService,
       InvitationTokenService tokenService,
       IdentityClient identityClient,
+      NotificationClient notificationClient,
       CircuitBreaker identityClientCircuitBreaker,
       Retry identityClientRetry,
       WorkspaceProperties properties,
@@ -68,6 +71,7 @@ public class InvitationService {
     this.authorizationService = authorizationService;
     this.tokenService = tokenService;
     this.identityClient = identityClient;
+    this.notificationClient = notificationClient;
     this.identityClientCircuitBreaker = identityClientCircuitBreaker;
     this.identityClientRetry = identityClientRetry;
     this.properties = properties;
@@ -113,11 +117,12 @@ public class InvitationService {
         Map.of("role", request.role().name()));
 
     String acceptUrl = acceptUrl(plaintextToken);
+    enqueueInvitationEmail(invitation, user.email(), acceptUrl);
     log.info(
-        "Invitation created workspaceId={} email={} acceptUrl={}",
+        "Invitation created workspaceId={} email={} invitationId={}",
         workspaceId,
         invitation.getEmail(),
-        acceptUrl);
+        invitation.getId());
     return invitationResponse(invitation, plaintextToken, acceptUrl);
   }
 
@@ -242,6 +247,23 @@ public class InvitationService {
     } catch (Exception e) {
       log.debug(
           "Identity lookup unavailable for invitation email={}; continuing without lookup", email);
+    }
+  }
+
+  private void enqueueInvitationEmail(
+      Invitation invitation, String inviterEmail, String acceptUrl) {
+    if (!properties.notification().enabled()) {
+      return;
+    }
+    try {
+      notificationClient.sendEmail(
+          NotificationClient.workspaceInvitation(
+              invitation,
+              inviterEmail == null || inviterEmail.isBlank() ? "unknown" : inviterEmail,
+              acceptUrl));
+    } catch (RuntimeException e) {
+      throw Exceptions.serviceUnavailable(
+          "NOTIFICATION_SERVICE_UNAVAILABLE", "Notification service is unavailable");
     }
   }
 }

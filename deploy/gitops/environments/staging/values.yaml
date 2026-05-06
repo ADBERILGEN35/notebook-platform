@@ -47,6 +47,16 @@ services:
     image:
       tag: "staging-placeholder"
       digest: ""
+  notification:
+    replicas: 1
+    image:
+      tag: "staging-placeholder"
+      digest: ""
+  search:
+    replicas: 1
+    image:
+      tag: "staging-placeholder"
+      digest: ""
 
 ingress:
   enabled: true

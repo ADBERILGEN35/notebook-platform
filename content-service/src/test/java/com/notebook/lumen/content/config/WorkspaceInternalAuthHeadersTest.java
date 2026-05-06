@@ -60,7 +60,8 @@ class WorkspaceInternalAuthHeadersTest {
             "service:content-service",
             "content-service",
             60,
-            "workspace-service"));
+            "workspace-service"),
+        null);
   }
 
   private String privatePem() {

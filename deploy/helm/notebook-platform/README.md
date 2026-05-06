@@ -6,6 +6,8 @@ Provider-agnostic umbrella chart for the backend services:
 - identity-service
 - workspace-service
 - content-service
+- notification-service
+- search-service
 
 The chart intentionally does not install PostgreSQL, Redis, OTel Collector, Prometheus or a cloud
 secret manager. Production deployments should use managed/external dependencies.
@@ -112,6 +114,8 @@ The Secret must provide the standardized keys:
 - `workspace-db-migration-password`
 - `content-db-runtime-password`
 - `content-db-migration-password`
+- `notification-db-password`
+- `search-db-password`
 - `redis-password`
 - `internal-api-token-primary`
 - `internal-api-token-secondary`
@@ -121,6 +125,12 @@ The Secret must provide the standardized keys:
 - `jwt-public-key.pem`
 - `content-service-jwt-private-key.pem`
 - `content-service-jwt-public-key.pem`
+- `workspace-service-jwt-private-key.pem`
+- `workspace-service-jwt-public-key.pem`
+- `search-service-jwt-private-key.pem`
+- `search-service-jwt-public-key.pem`
+- `smtp-username`
+- `smtp-password`
 - `otel-auth-token` optional
 
 Mounted paths:
@@ -129,6 +139,10 @@ Mounted paths:
 - `/etc/notebook/secrets/jwt/public.pem`
 - `/etc/notebook/secrets/service-jwt/content-private.pem`
 - `/etc/notebook/secrets/service-jwt/content-public.pem`
+- `/etc/notebook/secrets/service-jwt/workspace-private.pem`
+- `/etc/notebook/secrets/service-jwt/workspace-public.pem`
+- `/etc/notebook/secrets/service-jwt/search-private.pem`
+- `/etc/notebook/secrets/service-jwt/search-public.pem`
 
 Provider example `ClusterSecretStore` manifests are under
 `examples/external-secrets/`. They are placeholders only; this chart does not install External
@@ -136,16 +150,20 @@ Secrets Operator or any cloud integration.
 
 ## Network Model
 
-Only api-gateway should be public through Ingress. identity-service, workspace-service and
-content-service are ClusterIP only.
+Only api-gateway should be public through Ingress. identity-service, workspace-service,
+content-service, notification-service and search-service are ClusterIP only.
 
 Service discovery:
 
 - api-gateway -> `http://<release>-notebook-platform-identity:8081`
 - api-gateway -> `http://<release>-notebook-platform-workspace:8082`
 - api-gateway -> `http://<release>-notebook-platform-content:8083`
+- api-gateway -> `http://<release>-notebook-platform-search:8085`
 - content-service -> workspace-service
+- content-service -> search-service for note indexing
+- search-service -> workspace-service for permission filtering
 - workspace-service -> identity-service
+- workspace-service -> notification-service for invitation email enqueue
 
 ## Security Context
 

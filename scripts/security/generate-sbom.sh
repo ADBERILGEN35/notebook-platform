@@ -9,7 +9,7 @@ SBOM_DIR="${SBOM_DIR:-$ROOT_DIR/sbom}"
 SBOM_FORMAT="${SBOM_FORMAT:-spdx-json}"
 BUILD_IMAGES="${BUILD_IMAGES:-true}"
 ALLOW_SECURITY_TOOL_SKIP="${ALLOW_SECURITY_TOOL_SKIP:-false}"
-SERVICES=(api-gateway identity-service workspace-service content-service)
+SERVICES=(api-gateway identity-service workspace-service content-service notification-service search-service)
 
 if ! command -v syft >/dev/null 2>&1; then
   if [[ "$ALLOW_SECURITY_TOOL_SKIP" == "true" ]]; then

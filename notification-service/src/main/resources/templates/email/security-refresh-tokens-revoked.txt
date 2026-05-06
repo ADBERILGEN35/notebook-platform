@@ -1,0 +1,4 @@
+Security notice for your account.
+
+All refresh tokens were revoked at {{revokedAt}}.
+If this was not you, reset your password and contact support.

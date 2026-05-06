@@ -25,10 +25,7 @@ public class ProductionSecurityValidator implements ApplicationRunner {
     WorkspaceProperties.Internal internal = properties.internal();
     InternalAuthMode mode =
         internal == null ? InternalAuthMode.DUAL : InternalAuthMode.parse(internal.authMode());
-    boolean trustedServiceConfigured =
-        internal != null
-            && internal.trustedContentService() != null
-            && internal.trustedContentService().configured();
+    boolean trustedServiceConfigured = internal != null && internal.serviceJwtTrustConfigured();
     boolean primaryTokenConfigured = internal != null && internal.primaryTokenConfigured();
     if (mode == InternalAuthMode.SERVICE_JWT && !trustedServiceConfigured) {
       throw new IllegalStateException(

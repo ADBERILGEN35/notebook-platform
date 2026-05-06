@@ -81,7 +81,9 @@ tasks.register("bootRun") {
         ":api-gateway:bootRun",
         ":identity-service:bootRun",
         ":workspace-service:bootRun",
-        ":content-service:bootRun"
+        ":content-service:bootRun",
+        ":notification-service:bootRun",
+        ":search-service:bootRun"
     )
 }
 

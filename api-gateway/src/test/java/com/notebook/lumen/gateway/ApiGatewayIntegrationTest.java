@@ -51,6 +51,7 @@ class ApiGatewayIntegrationTest {
   private static final TestDownstream IDENTITY = TestDownstream.start("identity-service");
   private static final TestDownstream WORKSPACE = TestDownstream.start("workspace-service");
   private static final TestDownstream CONTENT = TestDownstream.start("content-service");
+  private static final TestDownstream SEARCH = TestDownstream.start("search-service");
   private static final KeyPair KEYS = generateKeys();
   private static final String USER_ID = UUID.randomUUID().toString();
   private static final String USER_EMAIL = "ada@example.com";
@@ -71,6 +72,7 @@ class ApiGatewayIntegrationTest {
     registry.add("IDENTITY_SERVICE_URL", IDENTITY::baseUrl);
     registry.add("WORKSPACE_SERVICE_URL", WORKSPACE::baseUrl);
     registry.add("CONTENT_SERVICE_URL", CONTENT::baseUrl);
+    registry.add("SEARCH_SERVICE_URL", SEARCH::baseUrl);
   }
 
   @BeforeEach
@@ -79,6 +81,7 @@ class ApiGatewayIntegrationTest {
     IDENTITY.reset();
     WORKSPACE.reset();
     CONTENT.reset();
+    SEARCH.reset();
   }
 
   @AfterAll
@@ -86,6 +89,7 @@ class ApiGatewayIntegrationTest {
     IDENTITY.stop();
     WORKSPACE.stop();
     CONTENT.stop();
+    SEARCH.stop();
   }
 
   @Test
@@ -214,6 +218,25 @@ class ApiGatewayIntegrationTest {
         .expectBody()
         .jsonPath("$.errorCode")
         .isEqualTo("INVALID_WORKSPACE_ID");
+  }
+
+  @Test
+  void searchRoute_isProtectedAndRoutesToSearchService() {
+    webTestClient
+        .get()
+        .uri("/search/notes?workspaceId=" + UUID.randomUUID() + "&q=roadmap")
+        .headers(headers -> headers.setBearerAuth(jwt(USER_ID, USER_EMAIL, "access", 0, 300)))
+        .exchange()
+        .expectStatus()
+        .isOk()
+        .expectBody()
+        .jsonPath("$.service")
+        .isEqualTo("search-service");
+
+    TestRequest request = SEARCH.lastRequest();
+    org.assertj.core.api.Assertions.assertThat(request.path()).isEqualTo("/search/notes");
+    org.assertj.core.api.Assertions.assertThat(request.header("X-User-Id"))
+        .containsExactly(USER_ID);
   }
 
   @Test

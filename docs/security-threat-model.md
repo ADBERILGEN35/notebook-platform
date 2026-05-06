@@ -104,3 +104,12 @@
 - Current mitigation: identity, workspace and content services write DB-backed audit events for key actions without storing secrets in metadata; Faz 23 adds service-local internal audit query endpoints protected by service JWT scope `internal:audit:read`.
 - Remaining gap: No central audit service, immutable log store, SIEM export or Admin UI.
 - Recommended next action: Add export/SIEM integration and immutable archive once provider/storage choices are made.
+
+## Search Query Privacy
+
+- Risk: Search queries may contain sensitive user or business data.
+- Current mitigation: search-service audit metadata records query length and result count, not
+  plaintext query text.
+- Remaining gap: No dedicated query redaction metric or privacy review workflow.
+- Recommended next action: Keep plaintext search queries out of audit/log metadata and add
+  aggregate metrics only.

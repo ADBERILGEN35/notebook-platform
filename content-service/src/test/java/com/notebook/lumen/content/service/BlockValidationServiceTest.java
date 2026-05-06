@@ -16,6 +16,7 @@ class BlockValidationServiceTest {
               new ContentProperties.Blocks(false, 8, 262144),
               new ContentProperties.Workspace(
                   "http://localhost", 1000, 50, 10000, 2, "", "", "", "dual"),
+              null,
               null));
 
   @Test
@@ -49,6 +50,7 @@ class BlockValidationServiceTest {
                 new ContentProperties.Blocks(false, 1, 262144),
                 new ContentProperties.Workspace(
                     "http://localhost", 1000, 50, 10000, 2, "", "", "", "dual"),
+                null,
                 null));
     var json =
         objectMapper.readTree(

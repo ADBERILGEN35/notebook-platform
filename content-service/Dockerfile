@@ -5,10 +5,13 @@ WORKDIR /app
 COPY gradlew gradlew.bat ./
 COPY gradle ./gradle
 COPY build.gradle.kts settings.gradle.kts gradle.properties ./
+COPY common-security ./common-security
 COPY api-gateway ./api-gateway
 COPY identity-service ./identity-service
 COPY workspace-service ./workspace-service
 COPY content-service ./content-service
+COPY notification-service ./notification-service
+COPY search-service ./search-service
 
 RUN chmod +x gradlew
 RUN ./gradlew :content-service:bootJar -x test --no-daemon
@@ -24,4 +27,3 @@ USER app
 EXPOSE 8083
 ENV JAVA_OPTS="-XX:MaxRAMPercentage=75.0"
 ENTRYPOINT ["sh","-c","exec java $JAVA_OPTS -jar /app/app.jar"]
-

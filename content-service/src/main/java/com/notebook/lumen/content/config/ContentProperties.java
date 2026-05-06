@@ -4,7 +4,8 @@ import com.notebook.lumen.common.security.secrets.SecretValue;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties(prefix = "content")
-public record ContentProperties(Blocks blocks, Workspace workspace, ServiceJwt serviceJwt) {
+public record ContentProperties(
+    Blocks blocks, Workspace workspace, ServiceJwt serviceJwt, Search search) {
   public record Blocks(boolean allowUnknownBlockTypes, int maxDepth, int maxJsonBytes) {}
 
   public record Workspace(
@@ -45,6 +46,24 @@ public record ContentProperties(Blocks blocks, Workspace workspace, ServiceJwt s
       String privateKey,
       String privateKeyPath,
       String publicKeyPath,
+      String issuer,
+      String subject,
+      String serviceName,
+      long ttlSeconds,
+      String audience) {
+    public boolean signingConfigured() {
+      return (privateKey != null && !privateKey.isBlank())
+          || (privateKeyPath != null && !privateKeyPath.isBlank());
+    }
+  }
+
+  public record Search(
+      String serviceUrl, long timeoutMs, boolean enabled, SearchServiceJwt serviceJwt) {}
+
+  public record SearchServiceJwt(
+      String activeKid,
+      String privateKey,
+      String privateKeyPath,
       String issuer,
       String subject,
       String serviceName,

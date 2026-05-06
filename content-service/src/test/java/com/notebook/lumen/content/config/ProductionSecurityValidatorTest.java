@@ -13,6 +13,7 @@ class ProductionSecurityValidatorTest {
             null,
             new ContentProperties.Workspace(
                 "http://localhost", 1000, 50, 10000, 2, "", "", "", "static-token"),
+            null,
             null);
     MockEnvironment environment = new MockEnvironment();
     environment.setActiveProfiles("prod");
@@ -33,6 +34,7 @@ class ProductionSecurityValidatorTest {
             null,
             new ContentProperties.Workspace(
                 "http://localhost", 1000, 50, 10000, 2, "legacy", "primary", "", "static-token"),
+            null,
             null);
     MockEnvironment environment = new MockEnvironment();
     environment.setActiveProfiles("prod");

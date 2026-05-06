@@ -25,6 +25,10 @@ public final class Exceptions {
     return new SimpleWorkspaceException(HttpStatus.UNAUTHORIZED, code, message);
   }
 
+  public static WorkspaceRuntimeException serviceUnavailable(String code, String message) {
+    return new SimpleWorkspaceException(HttpStatus.SERVICE_UNAVAILABLE, code, message);
+  }
+
   private static final class SimpleWorkspaceException extends WorkspaceRuntimeException {
     private SimpleWorkspaceException(HttpStatus status, String code, String message) {
       super(status, code, message);

@@ -1,0 +1,90 @@
+{{- if .Values.services.notification.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "notebook-platform.componentName" (dict "root" . "component" "notification") }}
+  namespace: {{ include "notebook-platform.namespace" . }}
+  labels:
+    {{- include "notebook-platform.labels" . | nindent 4 }}
+    app.kubernetes.io/component: notification
+spec:
+  replicas: {{ .Values.services.notification.replicas }}
+  selector:
+    matchLabels:
+      {{- include "notebook-platform.selectorLabels" (dict "root" . "component" "notification") | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "notebook-platform.selectorLabels" (dict "root" . "component" "notification") | nindent 8 }}
+        app.kubernetes.io/part-of: notebook-platform
+      annotations:
+        {{- include "notebook-platform.podAnnotations" . | nindent 8 }}
+    spec:
+      serviceAccountName: {{ include "notebook-platform.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: notification-service
+          image: {{ include "notebook-platform.image" (dict "root" . "image" .Values.services.notification.image) | quote }}
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          securityContext:
+            {{- toYaml .Values.containerSecurityContext | nindent 12 }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.services.notification.port }}
+          envFrom:
+            - configMapRef:
+                name: {{ include "notebook-platform.fullname" . }}-config
+          env:
+            - name: SERVER_PORT
+              value: {{ .Values.services.notification.port | quote }}
+            - name: SERVICE_NAME
+              value: notification-service
+            {{- include "notebook-platform.otelSecretEnv" . | nindent 12 }}
+            - name: DB_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "notebook-platform.fullname" . }}-config
+                  key: NOTIFICATION_DB_URL
+            - name: DB_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "notebook-platform.fullname" . }}-config
+                  key: NOTIFICATION_DB_USER
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "notebook-platform.secretName" . }}
+                  key: notification-db-password
+                  optional: false
+            - name: SMTP_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "notebook-platform.secretName" . }}
+                  key: smtp-username
+                  optional: true
+            - name: SMTP_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "notebook-platform.secretName" . }}
+                  key: smtp-password
+                  optional: true
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.probes.readiness.path }}
+              port: http
+            {{- omit .Values.probes.readiness "path" | toYaml | nindent 12 }}
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.probes.liveness.path }}
+              port: http
+            {{- omit .Values.probes.liveness "path" | toYaml | nindent 12 }}
+          resources:
+            {{- toYaml .Values.services.notification.resources | nindent 12 }}
+          volumeMounts:
+            {{- include "notebook-platform.volumeMounts" . | nindent 12 }}
+      volumes:
+        - name: tmp
+          emptyDir: {}
+        {{- include "notebook-platform.secretVolume" . | nindent 8 }}
+{{- end }}

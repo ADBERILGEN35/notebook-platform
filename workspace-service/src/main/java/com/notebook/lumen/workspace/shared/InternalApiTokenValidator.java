@@ -37,8 +37,7 @@ public class InternalApiTokenValidator {
       throw Exceptions.unauthorized("INTERNAL_AUTH_REQUIRED", "Service JWT is required");
     }
     if (mode == InternalAuthMode.DUAL
-        && internal.trustedContentService() != null
-        && internal.trustedContentService().configured()
+        && internal.serviceJwtTrustConfigured()
         && !internal.tokenRequired()) {
       throw Exceptions.unauthorized(
           "INTERNAL_AUTH_REQUIRED", "Internal authentication is required");
@@ -65,7 +64,18 @@ public class InternalApiTokenValidator {
   private void validateServiceJwt(
       WorkspaceProperties.Internal internal, String serviceAuthorization, String requiredScope) {
     String token = bearerToken(serviceAuthorization);
-    WorkspaceProperties.TrustedService trusted = internal.trustedContentService();
+    if (!internal.serviceJwtTrustConfigured()) {
+      throw Exceptions.unauthorized("INVALID_SERVICE_JWT", "Trusted service key is not configured");
+    }
+    try {
+      verifyWithTrustedService(internal.trustedContentService(), token, requiredScope);
+    } catch (RuntimeException e) {
+      verifyWithTrustedService(internal.trustedSearchService(), token, requiredScope);
+    }
+  }
+
+  private void verifyWithTrustedService(
+      WorkspaceProperties.TrustedService trusted, String token, String requiredScope) {
     if (trusted == null || !trusted.configured()) {
       throw Exceptions.unauthorized("INVALID_SERVICE_JWT", "Trusted service key is not configured");
     }

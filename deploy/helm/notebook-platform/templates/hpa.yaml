@@ -5,6 +5,7 @@
   (dict "key" "identity" "component" "identity" "service" .Values.services.identity "hpa" .Values.autoscaling.identity)
   (dict "key" "workspace" "component" "workspace" "service" .Values.services.workspace "hpa" .Values.autoscaling.workspace)
   (dict "key" "content" "component" "content" "service" .Values.services.content "hpa" .Values.autoscaling.content)
+  (dict "key" "search" "component" "search" "service" .Values.services.search "hpa" .Values.autoscaling.search)
 }}
 {{- range $item := $components }}
 {{- if and $item.service.enabled $item.hpa.enabled }}

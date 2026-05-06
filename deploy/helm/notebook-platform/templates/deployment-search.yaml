@@ -1,0 +1,90 @@
+{{- if .Values.services.search.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "notebook-platform.componentName" (dict "root" . "component" "search") }}
+  namespace: {{ include "notebook-platform.namespace" . }}
+  labels:
+    {{- include "notebook-platform.labels" . | nindent 4 }}
+    app.kubernetes.io/component: search
+spec:
+  replicas: {{ .Values.services.search.replicas }}
+  selector:
+    matchLabels:
+      {{- include "notebook-platform.selectorLabels" (dict "root" . "component" "search") | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "notebook-platform.selectorLabels" (dict "root" . "component" "search") | nindent 8 }}
+        app.kubernetes.io/part-of: notebook-platform
+      annotations:
+        {{- include "notebook-platform.podAnnotations" . | nindent 8 }}
+    spec:
+      serviceAccountName: {{ include "notebook-platform.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: search-service
+          image: {{ include "notebook-platform.image" (dict "root" . "image" .Values.services.search.image) | quote }}
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          securityContext:
+            {{- toYaml .Values.containerSecurityContext | nindent 12 }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.services.search.port }}
+          envFrom:
+            - configMapRef:
+                name: {{ include "notebook-platform.fullname" . }}-config
+          env:
+            - name: SERVER_PORT
+              value: {{ .Values.services.search.port | quote }}
+            - name: SERVICE_NAME
+              value: search-service
+            {{- include "notebook-platform.otelSecretEnv" . | nindent 12 }}
+            - name: DB_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "notebook-platform.fullname" . }}-config
+                  key: SEARCH_DB_URL
+            - name: DB_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "notebook-platform.fullname" . }}-config
+                  key: SEARCH_DB_USER
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "notebook-platform.secretName" . }}
+                  key: search-db-password
+                  optional: false
+            - name: INTERNAL_SERVICE_JWT_ACTIVE_KID
+              value: {{ .Values.config.searchServiceJwtActiveKid | quote }}
+            - name: INTERNAL_SERVICE_JWT_PRIVATE_KEY_PATH
+              value: "/etc/notebook/secrets/service-jwt/search-private.pem"
+            - name: INTERNAL_SERVICE_JWT_ISSUER
+              value: {{ .Values.config.searchServiceJwtIssuer | quote }}
+            - name: INTERNAL_SERVICE_JWT_SUBJECT
+              value: "service:search-service"
+            - name: INTERNAL_SERVICE_JWT_SERVICE_NAME
+              value: "search-service"
+            - name: INTERNAL_SERVICE_JWT_AUDIENCE
+              value: "workspace-service"
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.probes.readiness.path }}
+              port: http
+            {{- omit .Values.probes.readiness "path" | toYaml | nindent 12 }}
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.probes.liveness.path }}
+              port: http
+            {{- omit .Values.probes.liveness "path" | toYaml | nindent 12 }}
+          resources:
+            {{- toYaml .Values.services.search.resources | nindent 12 }}
+          volumeMounts:
+            {{- include "notebook-platform.volumeMounts" . | nindent 12 }}
+      volumes:
+        - name: tmp
+          emptyDir: {}
+        {{- include "notebook-platform.secretVolume" . | nindent 8 }}
+{{- end }}

@@ -10,7 +10,7 @@ COSIGN_CERTIFICATE_ISSUER="${COSIGN_CERTIFICATE_ISSUER:-https://token.actions.gi
 COSIGN_CERTIFICATE_IDENTITY="${COSIGN_CERTIFICATE_IDENTITY:-https://github.com/ORG/REPO/.github/workflows/release-images.yml@refs/heads/main}"
 ALLOW_SECURITY_TOOL_SKIP="${ALLOW_SECURITY_TOOL_SKIP:-false}"
 COSIGN_DRY_RUN="${COSIGN_DRY_RUN:-true}"
-SERVICES=(api-gateway identity-service workspace-service content-service)
+SERVICES=(api-gateway identity-service workspace-service content-service notification-service search-service)
 
 if [[ -z "$IMAGE_REGISTRY" ]]; then
   echo "IMAGE_REGISTRY is required for verification because cosign verifies registry image references." >&2

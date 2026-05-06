@@ -9,7 +9,7 @@ BUILD_IMAGES="${BUILD_IMAGES:-true}"
 ALLOW_SECURITY_TOOL_SKIP="${ALLOW_SECURITY_TOOL_SKIP:-false}"
 HIGH_EXIT_CODE="${HIGH_EXIT_CODE:-0}"
 MEDIUM_LOW_EXIT_CODE="${MEDIUM_LOW_EXIT_CODE:-0}"
-SERVICES=(api-gateway identity-service workspace-service content-service)
+SERVICES=(api-gateway identity-service workspace-service content-service notification-service search-service)
 
 if ! command -v trivy >/dev/null 2>&1; then
   if [[ "$ALLOW_SECURITY_TOOL_SKIP" == "true" ]]; then

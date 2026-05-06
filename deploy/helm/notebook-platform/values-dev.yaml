@@ -10,16 +10,22 @@ config:
   internalAuthMode: "dual"
   jwtAllowEphemeralKeys: "true"
   invitationExposeTokenInResponse: "true"
+  emailProvider: "log"
+  emailWorkerEnabled: "true"
 
 externalDatabase:
   identityUrl: "jdbc:postgresql://postgres:5432/notebook_platform"
   workspaceRuntimeUrl: "jdbc:postgresql://postgres:5432/notebook_platform"
   contentRuntimeUrl: "jdbc:postgresql://postgres:5432/notebook_platform"
+  notificationUrl: "jdbc:postgresql://postgres:5432/notebook_platform"
+  searchUrl: "jdbc:postgresql://postgres:5432/notebook_platform"
   identityUser: "notebook"
   workspaceRuntimeUser: "notebook"
   workspaceMigrationUser: "notebook"
   contentRuntimeUser: "notebook"
   contentMigrationUser: "notebook"
+  notificationUser: "notebook"
+  searchUser: "notebook"
 
 externalRedis:
   host: "redis"
@@ -38,6 +44,10 @@ services:
   workspace:
     replicas: 1
   content:
+    replicas: 1
+  notification:
+    replicas: 1
+  search:
     replicas: 1
 
 ingress:

@@ -39,6 +39,12 @@ Prometheus endpoints. It does not install Prometheus, Grafana or Alertmanager.
   logs for `MISSING_WORKSPACE_CONTEXT` and `INVALID_WORKSPACE_CONTEXT`
 - RLS rollout 403 spike
 - RLS rollout 5xx DB permission symptoms
+- notification-service email send failure spike
+- notification-service queued email backlog growth
+- search-service down
+- search indexing failure spike
+- search query p95 latency high
+- search permission client failures
 
 Thresholds are initial production-readiness defaults. They should be tuned after baseline traffic
 and k6 profiles are available.
@@ -61,6 +67,16 @@ status-based starter alerts plus log queries for:
 - `app.current_workspace_id`
 
 Adding explicit error-code metrics is future work.
+
+Faz 24 notification-service logs queue transitions and exposes actuator Prometheus like the other
+services. Custom notification counters such as `email_notifications_total` and queue-depth gauges
+remain future hardening; until then, alert on service health, HTTP 5xx and logs containing
+`EMAIL_NOTIFICATION_FAILED`.
+
+Faz 25 search-service exposes actuator Prometheus and logs search/indexing events. Custom counters
+such as `search_queries_total`, `search_index_upserts_total` and
+`search_permission_filter_denied_total` remain future hardening; until then, alert on service health,
+HTTP 5xx, latency and logs containing `SEARCH_INDEXING_FAILED`.
 
 ## GitOps Promotion Usage
 

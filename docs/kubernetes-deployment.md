@@ -7,8 +7,8 @@ Faz 14 adds a provider-agnostic Helm chart under
 
 Included:
 
-- Deployments and ClusterIP Services for api-gateway, identity-service, workspace-service and
-  content-service.
+- Deployments and ClusterIP Services for api-gateway, identity-service, workspace-service,
+  content-service and notification-service.
 - ConfigMap for non-secret runtime configuration.
 - Native Secret, pre-created Secret and ExternalSecret delivery modes for secret material.
 - Optional Ingress that routes only to api-gateway.
@@ -55,6 +55,7 @@ Production should use managed/external PostgreSQL and Redis:
 - identity-service uses `externalDatabase.identityUrl`.
 - workspace-service uses `externalDatabase.workspaceRuntimeUrl` plus runtime and migration users.
 - content-service uses `externalDatabase.contentRuntimeUrl` plus runtime and migration users.
+- notification-service uses `externalDatabase.notificationUrl` and `notification-db-password`.
 - api-gateway uses `externalRedis.host`, `externalRedis.port` and `redis-password` from Secret.
 
 The chart keeps startup Flyway for now. A dedicated migration Job is recommended before a strict
@@ -68,6 +69,8 @@ The chart mounts the Secret at `/etc/notebook/secrets`:
 - `jwt-public-key.pem` -> `/etc/notebook/secrets/jwt/public.pem`
 - `content-service-jwt-private-key.pem` -> `/etc/notebook/secrets/service-jwt/content-private.pem`
 - `content-service-jwt-public-key.pem` -> `/etc/notebook/secrets/service-jwt/content-public.pem`
+- `workspace-service-jwt-private-key.pem` -> `/etc/notebook/secrets/service-jwt/workspace-private.pem`
+- `workspace-service-jwt-public-key.pem` -> `/etc/notebook/secrets/service-jwt/workspace-public.pem`
 
 Runtime env points the applications to those paths:
 
@@ -75,6 +78,14 @@ Runtime env points the applications to those paths:
 - `JWT_PUBLIC_KEY_PATH`
 - `INTERNAL_SERVICE_JWT_PRIVATE_KEY_PATH`
 - `TRUSTED_SERVICE_CONTENT_SERVICE_PUBLIC_KEY_PATH`
+- `WORKSPACE_SERVICE_JWT_PRIVATE_KEY_PATH`
+- `TRUSTED_SERVICE_WORKSPACE_SERVICE_PUBLIC_KEY_PATH`
+
+notification-service is ClusterIP-only. It is not added to Ingress or api-gateway routes.
+
+search-service is ClusterIP-only and is reachable publicly only through api-gateway `/search/**`.
+content-service can reach search-service internal indexing endpoints, and search-service can reach
+workspace-service for permission filtering.
 
 `docs/external-secrets.md` defines the full Secret key contract and provider examples.
 

@@ -28,6 +28,8 @@ data:
   IDENTITY_SERVICE_URL: {{ printf "http://%s-identity:8081" (include "notebook-platform.fullname" .) | quote }}
   WORKSPACE_SERVICE_URL: {{ printf "http://%s-workspace:8082" (include "notebook-platform.fullname" .) | quote }}
   CONTENT_SERVICE_URL: {{ printf "http://%s-content:8083" (include "notebook-platform.fullname" .) | quote }}
+  NOTIFICATION_SERVICE_URL: {{ default (printf "http://%s-notification:8084" (include "notebook-platform.fullname" .)) .Values.config.notificationServiceUrl | quote }}
+  SEARCH_SERVICE_URL: {{ default (printf "http://%s-search:8085" (include "notebook-platform.fullname" .)) .Values.config.searchServiceUrl | quote }}
   REDIS_HOST: {{ .Values.externalRedis.host | quote }}
   REDIS_PORT: {{ .Values.externalRedis.port | quote }}
   DB_NAME: {{ .Values.config.dbName | quote }}
@@ -36,11 +38,15 @@ data:
   IDENTITY_DB_URL: {{ .Values.externalDatabase.identityUrl | quote }}
   WORKSPACE_DB_RUNTIME_URL: {{ .Values.externalDatabase.workspaceRuntimeUrl | quote }}
   CONTENT_DB_RUNTIME_URL: {{ .Values.externalDatabase.contentRuntimeUrl | quote }}
+  NOTIFICATION_DB_URL: {{ .Values.externalDatabase.notificationUrl | quote }}
+  SEARCH_DB_URL: {{ .Values.externalDatabase.searchUrl | quote }}
   IDENTITY_DB_USER: {{ .Values.externalDatabase.identityUser | quote }}
   WORKSPACE_DB_RUNTIME_USER: {{ .Values.externalDatabase.workspaceRuntimeUser | quote }}
   WORKSPACE_DB_MIGRATION_USER: {{ .Values.externalDatabase.workspaceMigrationUser | quote }}
   CONTENT_DB_RUNTIME_USER: {{ .Values.externalDatabase.contentRuntimeUser | quote }}
   CONTENT_DB_MIGRATION_USER: {{ .Values.externalDatabase.contentMigrationUser | quote }}
+  NOTIFICATION_DB_USER: {{ .Values.externalDatabase.notificationUser | quote }}
+  SEARCH_DB_USER: {{ .Values.externalDatabase.searchUser | quote }}
   INVITATION_TTL_DAYS: {{ .Values.config.invitationTtlDays | quote }}
   INVITATION_ACCEPT_BASE_URL: {{ .Values.config.invitationAcceptBaseUrl | quote }}
   INVITATION_EXPOSE_TOKEN_IN_RESPONSE: {{ .Values.config.invitationExposeTokenInResponse | quote }}
@@ -53,3 +59,30 @@ data:
   TRUSTED_SERVICE_CONTENT_SERVICE_PUBLIC_KEY_PATH: "/etc/notebook/secrets/service-jwt/content-public.pem"
   TRUSTED_SERVICE_CONTENT_SERVICE_ISSUER: {{ .Values.config.trustedContentServiceIssuer | quote }}
   TRUSTED_SERVICE_CONTENT_SERVICE_AUDIENCE: {{ .Values.config.trustedContentServiceAudience | quote }}
+  SEARCH_SERVICE_JWT_ACTIVE_KID: {{ .Values.config.internalServiceJwtActiveKid | quote }}
+  SEARCH_SERVICE_JWT_PRIVATE_KEY_PATH: "/etc/notebook/secrets/service-jwt/content-private.pem"
+  SEARCH_SERVICE_JWT_ISSUER: {{ .Values.config.internalServiceJwtIssuer | quote }}
+  SEARCH_SERVICE_JWT_AUDIENCE: "search-service"
+  TRUSTED_SERVICE_SEARCH_SERVICE_KID: {{ .Values.config.searchServiceJwtActiveKid | quote }}
+  TRUSTED_SERVICE_SEARCH_SERVICE_PUBLIC_KEY_PATH: "/etc/notebook/secrets/service-jwt/search-public.pem"
+  TRUSTED_SERVICE_SEARCH_SERVICE_ISSUER: {{ .Values.config.searchServiceJwtIssuer | quote }}
+  TRUSTED_SERVICE_SEARCH_SERVICE_AUDIENCE: "workspace-service"
+  WORKSPACE_SERVICE_JWT_ACTIVE_KID: {{ .Values.config.workspaceServiceJwtActiveKid | quote }}
+  WORKSPACE_SERVICE_JWT_PRIVATE_KEY_PATH: "/etc/notebook/secrets/service-jwt/workspace-private.pem"
+  WORKSPACE_SERVICE_JWT_PUBLIC_KEY_PATH: "/etc/notebook/secrets/service-jwt/workspace-public.pem"
+  WORKSPACE_SERVICE_JWT_ISSUER: {{ .Values.config.workspaceServiceJwtIssuer | quote }}
+  WORKSPACE_SERVICE_JWT_TTL_SECONDS: {{ .Values.config.workspaceServiceJwtTtlSeconds | quote }}
+  WORKSPACE_SERVICE_JWT_AUDIENCE: "notification-service"
+  TRUSTED_SERVICE_WORKSPACE_SERVICE_KID: {{ .Values.config.trustedWorkspaceServiceKid | quote }}
+  TRUSTED_SERVICE_WORKSPACE_SERVICE_PUBLIC_KEY_PATH: "/etc/notebook/secrets/service-jwt/workspace-public.pem"
+  TRUSTED_SERVICE_WORKSPACE_SERVICE_ISSUER: {{ .Values.config.trustedWorkspaceServiceIssuer | quote }}
+  TRUSTED_SERVICE_WORKSPACE_SERVICE_AUDIENCE: {{ .Values.config.trustedWorkspaceServiceAudience | quote }}
+  EMAIL_PROVIDER: {{ .Values.config.emailProvider | quote }}
+  EMAIL_WORKER_ENABLED: {{ .Values.config.emailWorkerEnabled | quote }}
+  EMAIL_MAX_ATTEMPTS: {{ .Values.config.emailMaxAttempts | quote }}
+  EMAIL_RETRY_INITIAL_DELAY_SECONDS: {{ .Values.config.emailRetryInitialDelaySeconds | quote }}
+  EMAIL_RETRY_MAX_DELAY_SECONDS: {{ .Values.config.emailRetryMaxDelaySeconds | quote }}
+  SMTP_HOST: {{ .Values.config.smtpHost | quote }}
+  SMTP_PORT: {{ .Values.config.smtpPort | quote }}
+  SMTP_FROM: {{ .Values.config.smtpFrom | quote }}
+  SMTP_TLS_ENABLED: {{ .Values.config.smtpTlsEnabled | quote }}

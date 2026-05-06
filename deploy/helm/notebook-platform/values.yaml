@@ -36,17 +36,40 @@ config:
   trustedContentServiceIssuer: "content-service"
   trustedContentServiceAudience: "workspace-service"
   trustedContentServiceKid: "content-service-key-1"
+  notificationServiceUrl: ""
+  searchServiceUrl: ""
+  emailProvider: "smtp"
+  emailWorkerEnabled: "true"
+  emailMaxAttempts: "5"
+  emailRetryInitialDelaySeconds: "60"
+  emailRetryMaxDelaySeconds: "3600"
+  smtpHost: "smtp.example.internal"
+  smtpPort: "587"
+  smtpFrom: "no-reply@example.com"
+  smtpTlsEnabled: "true"
+  workspaceServiceJwtActiveKid: "workspace-service-key-1"
+  workspaceServiceJwtIssuer: "workspace-service"
+  workspaceServiceJwtTtlSeconds: "60"
+  trustedWorkspaceServiceIssuer: "workspace-service"
+  trustedWorkspaceServiceAudience: "notification-service"
+  trustedWorkspaceServiceKid: "workspace-service-key-1"
+  searchServiceJwtActiveKid: "search-service-key-1"
+  searchServiceJwtIssuer: "search-service"
   dbName: "notebook_platform"
 
 externalDatabase:
   identityUrl: "jdbc:postgresql://postgres.example.internal:5432/notebook_platform"
   workspaceRuntimeUrl: "jdbc:postgresql://postgres.example.internal:5432/notebook_platform"
   contentRuntimeUrl: "jdbc:postgresql://postgres.example.internal:5432/notebook_platform"
+  notificationUrl: "jdbc:postgresql://postgres.example.internal:5432/notebook_platform"
+  searchUrl: "jdbc:postgresql://postgres.example.internal:5432/notebook_platform"
   identityUser: "notebook_identity"
   workspaceRuntimeUser: "notebook_workspace_runtime"
   workspaceMigrationUser: "notebook_workspace_migrator"
   contentRuntimeUser: "notebook_content_runtime"
   contentMigrationUser: "notebook_content_migrator"
+  notificationUser: "notebook_notification"
+  searchUser: "notebook_search"
 
 externalRedis:
   host: "redis.example.internal"
@@ -64,6 +87,8 @@ secrets:
     workspaceMigrationDbPassword: ""
     contentRuntimeDbPassword: ""
     contentMigrationDbPassword: ""
+    notificationDbPassword: ""
+    searchDbPassword: ""
     redisPassword: ""
     otelExporterOtlpHeaders: ""
     internalApiTokenPrimary: ""
@@ -74,6 +99,12 @@ secrets:
     jwtPublicKeyPem: ""
     serviceJwtPrivateKeyPem: ""
     serviceJwtPublicKeyPem: ""
+    workspaceServiceJwtPrivateKeyPem: ""
+    workspaceServiceJwtPublicKeyPem: ""
+    searchServiceJwtPrivateKeyPem: ""
+    searchServiceJwtPublicKeyPem: ""
+    smtpUsername: ""
+    smtpPassword: ""
   externalSecrets:
     enabled: false
     refreshInterval: 1h
@@ -96,6 +127,18 @@ secrets:
       - secretKey: content-service-jwt-public-key.pem
         remoteRef:
           key: notebook-platform/prod/content-service-jwt-public-key
+      - secretKey: workspace-service-jwt-private-key.pem
+        remoteRef:
+          key: notebook-platform/prod/workspace-service-jwt-private-key
+      - secretKey: workspace-service-jwt-public-key.pem
+        remoteRef:
+          key: notebook-platform/prod/workspace-service-jwt-public-key
+      - secretKey: search-service-jwt-private-key.pem
+        remoteRef:
+          key: notebook-platform/prod/search-service-jwt-private-key
+      - secretKey: search-service-jwt-public-key.pem
+        remoteRef:
+          key: notebook-platform/prod/search-service-jwt-public-key
       - secretKey: identity-db-password
         remoteRef:
           key: notebook-platform/prod/identity-db-password
@@ -111,6 +154,12 @@ secrets:
       - secretKey: content-db-migration-password
         remoteRef:
           key: notebook-platform/prod/content-db-migration-password
+      - secretKey: notification-db-password
+        remoteRef:
+          key: notebook-platform/prod/notification-db-password
+      - secretKey: search-db-password
+        remoteRef:
+          key: notebook-platform/prod/search-db-password
       - secretKey: redis-password
         remoteRef:
           key: notebook-platform/prod/redis-password
@@ -129,6 +178,12 @@ secrets:
       - secretKey: otel-auth-token
         remoteRef:
           key: notebook-platform/prod/otel-auth-token
+      - secretKey: smtp-username
+        remoteRef:
+          key: notebook-platform/prod/smtp-username
+      - secretKey: smtp-password
+        remoteRef:
+          key: notebook-platform/prod/smtp-password
 
 serviceAccount:
   create: true
@@ -227,6 +282,36 @@ services:
       limits:
         cpu: 750m
         memory: 1Gi
+  notification:
+    enabled: true
+    replicas: 2
+    image:
+      repository: notebook-platform/notification-service
+      tag: "0.0.1"
+      digest: ""
+    port: 8084
+    resources:
+      requests:
+        cpu: 100m
+        memory: 384Mi
+      limits:
+        cpu: 750m
+        memory: 1Gi
+  search:
+    enabled: true
+    replicas: 2
+    image:
+      repository: notebook-platform/search-service
+      tag: "0.0.1"
+      digest: ""
+    port: 8085
+    resources:
+      requests:
+        cpu: 100m
+        memory: 384Mi
+      limits:
+        cpu: 750m
+        memory: 1Gi
 
 ingress:
   enabled: false
@@ -271,6 +356,11 @@ autoscaling:
     maxReplicas: 4
     targetCPUUtilizationPercentage: 70
   content:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 5
+    targetCPUUtilizationPercentage: 70
+  search:
     enabled: true
     minReplicas: 2
     maxReplicas: 5

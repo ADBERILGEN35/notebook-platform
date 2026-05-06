@@ -1,0 +1,63 @@
+server:
+  port: ${SERVER_PORT:8084}
+
+spring:
+  application:
+    name: notification-service
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/notebook_platform}
+    username: ${DB_USER:notebook}
+    password: ${DB_PASSWORD:}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: true
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    table: notification_flyway_schema_history
+
+management:
+  tracing:
+    enabled: ${OTEL_ENABLED:false}
+    sampling:
+      probability: ${MANAGEMENT_TRACING_SAMPLING_PROBABILITY:1.0}
+  otlp:
+    tracing:
+      endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT:http://localhost:4318/v1/traces}
+  endpoints:
+    web:
+      exposure:
+        include: ${MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE:health,info,metrics,prometheus}
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: never
+
+notification:
+  email:
+    provider: ${EMAIL_PROVIDER:log}
+    from: ${SMTP_FROM:no-reply@example.com}
+    worker-enabled: ${EMAIL_WORKER_ENABLED:true}
+    max-attempts: ${EMAIL_MAX_ATTEMPTS:5}
+    retry-initial-delay-seconds: ${EMAIL_RETRY_INITIAL_DELAY_SECONDS:60}
+    retry-max-delay-seconds: ${EMAIL_RETRY_MAX_DELAY_SECONDS:3600}
+    worker-fixed-delay-ms: ${EMAIL_WORKER_FIXED_DELAY_MS:5000}
+    smtp:
+      host: ${SMTP_HOST:localhost}
+      port: ${SMTP_PORT:587}
+      username: ${SMTP_USERNAME:}
+      password: ${SMTP_PASSWORD:}
+      tls-enabled: ${SMTP_TLS_ENABLED:true}
+  internal:
+    trusted-notification-client:
+      kid: ${TRUSTED_SERVICE_WORKSPACE_SERVICE_KID:}
+      public-key: ${TRUSTED_SERVICE_WORKSPACE_SERVICE_PUBLIC_KEY:}
+      public-key-path: ${TRUSTED_SERVICE_WORKSPACE_SERVICE_PUBLIC_KEY_PATH:}
+      issuer: ${TRUSTED_SERVICE_WORKSPACE_SERVICE_ISSUER:workspace-service}
+      audience: ${TRUSTED_SERVICE_WORKSPACE_SERVICE_AUDIENCE:notification-service}
+      clock-skew-seconds: ${TRUSTED_SERVICE_WORKSPACE_SERVICE_CLOCK_SKEW_SECONDS:5}
+      allowed-scopes: ${TRUSTED_SERVICE_WORKSPACE_SERVICE_ALLOWED_SCOPES:internal:notification:email:send}

@@ -53,6 +53,12 @@ Audit query endpoints across identity/workspace/content require:
 | --- | --- |
 | `GET /internal/audit-events` | `internal:audit:read` |
 
+notification-service email enqueue endpoint requires:
+
+| Endpoint | Required scope |
+| --- | --- |
+| `POST /internal/notifications/email` | `internal:notification:email:send` |
+
 Audit query endpoints do not accept normal user access tokens. They use service JWT because a
 platform-admin user/role model does not exist yet.
 
@@ -62,6 +68,9 @@ Faz 13 provider-agnostic RSA key modelini kullanir:
 
 - content-service service JWT'yi kendi private key'i ile imzalar.
 - workspace-service content-service public key'i ile dogrular.
+- workspace-service notification-service email cagrilari icin kendi private key'i ile service JWT
+  imzalar.
+- notification-service workspace-service public key'i ile dogrular.
 - Shared signing key kullanilmadi.
 - JWKS endpoint eklenmedi; Faz 13 kapsaminda public key path fallback yeterli tutuldu.
 
@@ -116,6 +125,14 @@ The Helm chart mounts service JWT keys from Kubernetes Secret:
 
 - content-service signing key: `/etc/notebook/secrets/service-jwt/content-private.pem`
 - workspace-service trusted public key: `/etc/notebook/secrets/service-jwt/content-public.pem`
+- workspace-service notification signing key:
+  `/etc/notebook/secrets/service-jwt/workspace-private.pem`
+- notification-service trusted workspace public key:
+  `/etc/notebook/secrets/service-jwt/workspace-public.pem`
+- content-service search indexing calls use `internal:search:index:write` and
+  `aud=search-service`.
+- search-service permission filtering calls workspace-service with
+  `internal:workspace:permission:read` and `aud=workspace-service`.
 
 `values-prod.example.yaml` sets `INTERNAL_AUTH_MODE=service-jwt`. Static tokens should only be kept
 for a controlled rollback window.

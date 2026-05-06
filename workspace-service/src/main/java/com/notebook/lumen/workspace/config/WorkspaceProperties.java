@@ -7,7 +7,8 @@ import java.util.stream.Collectors;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties(prefix = "workspace")
-public record WorkspaceProperties(Invitations invitations, Identity identity, Internal internal) {
+public record WorkspaceProperties(
+    Invitations invitations, Identity identity, Internal internal, Notification notification) {
   public record Invitations(long ttlDays, String acceptBaseUrl, boolean exposeTokenInResponse) {}
 
   public record Identity(
@@ -22,7 +23,8 @@ public record WorkspaceProperties(Invitations invitations, Identity identity, In
       String primaryToken,
       String secondaryToken,
       String authMode,
-      TrustedService trustedContentService) {
+      TrustedService trustedContentService,
+      TrustedService trustedSearchService) {
     public boolean tokenRequired() {
       return hasText(primaryToken) || hasText(apiToken);
     }
@@ -51,6 +53,11 @@ public record WorkspaceProperties(Invitations invitations, Identity identity, In
       return hasText(secondaryToken);
     }
 
+    public boolean serviceJwtTrustConfigured() {
+      return (trustedContentService != null && trustedContentService.configured())
+          || (trustedSearchService != null && trustedSearchService.configured());
+    }
+
     private static boolean hasText(String value) {
       return value != null && !value.isBlank();
     }
@@ -76,6 +83,27 @@ public record WorkspaceProperties(Invitations invitations, Identity identity, In
           .map(String::trim)
           .filter(scope -> !scope.isBlank())
           .collect(Collectors.toUnmodifiableSet());
+    }
+
+    private static boolean hasText(String value) {
+      return value != null && !value.isBlank();
+    }
+  }
+
+  public record Notification(
+      String serviceUrl, long timeoutMs, boolean enabled, ServiceJwt serviceJwt) {}
+
+  public record ServiceJwt(
+      String activeKid,
+      String privateKey,
+      String privateKeyPath,
+      String issuer,
+      String subject,
+      String serviceName,
+      long ttlSeconds,
+      String audience) {
+    public boolean signingConfigured() {
+      return hasText(privateKey) || hasText(privateKeyPath);
     }
 
     private static boolean hasText(String value) {

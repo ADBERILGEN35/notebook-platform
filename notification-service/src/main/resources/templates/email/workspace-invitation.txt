@@ -1,0 +1,8 @@
+You have been invited to join a workspace.
+
+Workspace: {{workspaceName}}
+Invited by: {{inviterEmail}}
+Role: {{role}}
+
+Accept invitation:
+{{acceptUrl}}

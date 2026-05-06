@@ -45,6 +45,16 @@ services:
     image:
       tag: "prod-placeholder"
       digest: ""
+  notification:
+    replicas: 2
+    image:
+      tag: "prod-placeholder"
+      digest: ""
+  search:
+    replicas: 2
+    image:
+      tag: "prod-placeholder"
+      digest: ""
 
 ingress:
   enabled: true
@@ -80,6 +90,10 @@ autoscaling:
     maxReplicas: 4
     targetCPUUtilizationPercentage: 70
   content:
+    minReplicas: 2
+    maxReplicas: 5
+    targetCPUUtilizationPercentage: 70
+  search:
     minReplicas: 2
     maxReplicas: 5
     targetCPUUtilizationPercentage: 70

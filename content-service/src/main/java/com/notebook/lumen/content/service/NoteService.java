@@ -39,6 +39,7 @@ public class NoteService {
   private final AuditService auditService;
   private final TenantDatabaseSession tenantDatabaseSession;
   private final StrictWorkspaceHeaderValidator strictWorkspaceHeaderValidator;
+  private final SearchIndexingService searchIndexingService;
 
   public NoteService(
       NoteRepository noteRepository,
@@ -50,7 +51,8 @@ public class NoteService {
       ContentMapper mapper,
       AuditService auditService,
       TenantDatabaseSession tenantDatabaseSession,
-      StrictWorkspaceHeaderValidator strictWorkspaceHeaderValidator) {
+      StrictWorkspaceHeaderValidator strictWorkspaceHeaderValidator,
+      SearchIndexingService searchIndexingService) {
     this.noteRepository = noteRepository;
     this.versionRepository = versionRepository;
     this.linkRepository = linkRepository;
@@ -61,6 +63,7 @@ public class NoteService {
     this.auditService = auditService;
     this.tenantDatabaseSession = tenantDatabaseSession;
     this.strictWorkspaceHeaderValidator = strictWorkspaceHeaderValidator;
+    this.searchIndexingService = searchIndexingService;
   }
 
   @Transactional
@@ -97,6 +100,7 @@ public class NoteService {
         "NOTE",
         note.getId(),
         Map.of("notebookId", notebookId.toString()));
+    searchIndexingService.upsert(note, request.contentBlocks(), 1);
     return mapper.toResponse(note);
   }
 
@@ -128,13 +132,14 @@ public class NoteService {
     assertAggregateWorkspaceHeader(user, note.getWorkspaceId());
     permissionService.requireWritable(user.userId(), note.getNotebookId());
     blockValidationService.validate(request.contentBlocks());
+    int versionNumber = nextVersion(note.getId());
     note.update(
         request.title(),
         mapper.write(request.contentBlocks()),
         schema(request.contentSchemaVersion()),
         user.userId(),
         Instant.now());
-    createVersion(note, nextVersion(note.getId()), user.userId(), Instant.now());
+    createVersion(note, versionNumber, user.userId(), Instant.now());
     replaceLinks(note, request.contentBlocks(), Instant.now());
     auditService.record(
         "NOTE_UPDATED",
@@ -143,6 +148,7 @@ public class NoteService {
         "NOTE",
         note.getId(),
         Map.of("notebookId", note.getNotebookId().toString()));
+    searchIndexingService.upsert(note, request.contentBlocks(), versionNumber);
     return mapper.toResponse(note);
   }
 
@@ -155,6 +161,7 @@ public class NoteService {
     note.archive(Instant.now(), user.userId());
     auditService.record(
         "NOTE_ARCHIVED", user.userId(), note.getWorkspaceId(), "NOTE", note.getId(), Map.of());
+    searchIndexingService.archive(note);
   }
 
   @Transactional(readOnly = true)
@@ -185,13 +192,14 @@ public class NoteService {
     permissionService.requireWritable(user.userId(), note.getNotebookId());
     NoteVersion version = loadVersion(noteId, versionNumber);
     Instant now = Instant.now();
+    int newVersionNumber = nextVersion(noteId);
     note.update(
         version.getTitle(),
         version.getContentBlocks(),
         version.getContentSchemaVersion(),
         user.userId(),
         now);
-    createVersion(note, nextVersion(noteId), user.userId(), now);
+    createVersion(note, newVersionNumber, user.userId(), now);
     replaceLinks(note, mapper.toResponse(version).contentBlocks(), now);
     auditService.record(
         "NOTE_RESTORED",
@@ -200,6 +208,8 @@ public class NoteService {
         "NOTE",
         note.getId(),
         Map.of("restoredVersion", versionNumber));
+    searchIndexingService.upsert(
+        note, mapper.toResponse(version).contentBlocks(), newVersionNumber);
     return mapper.toResponse(note);
   }
 

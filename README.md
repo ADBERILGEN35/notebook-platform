@@ -27,6 +27,8 @@ Sağlık kontrolü endpoint’i:
 - `http://localhost:8081/api/ok` (identity-service)
 - `http://localhost:8082/api/ok` (workspace-service)
 - `http://localhost:8083/api/ok` (content-service)
+- `http://localhost:8084/actuator/health` (notification-service)
+- `http://localhost:8085/actuator/health` (search-service)
 
 ## API Gateway
 
@@ -82,6 +84,34 @@ Faz 19 itibariyla content-service list/search endpointleri `PageResponse<T>` env
 `page`, `size`, `sort` parametrelerini destekler.
 
 Ayrintilar ve curl ornekleri: [`content-service/README.md`](content-service/README.md)
+
+## Notification Service
+
+Faz 24 ile `notification-service` invitation ve security email altyapisi icin eklendi. Servis
+internal-only calisir, gateway route'u yoktur ve `POST /internal/notifications/email` endpointi
+`X-Service-Authorization` service JWT ile korunur. Local/dev icin `EMAIL_PROVIDER=log`, production
+icin `EMAIL_PROVIDER=smtp` onerilir.
+
+Workspace invitation create akisi notification-service'e email request'i gonderir. Notification
+request kabul edilmezse invitation transaction rollback olur ve `503 NOTIFICATION_SERVICE_UNAVAILABLE`
+doner.
+
+Ayrintilar: [`docs/notification-service.md`](docs/notification-service.md) ve
+[`docs/email-delivery.md`](docs/email-delivery.md)
+
+## Search Service
+
+Faz 25 ile `search-service` PostgreSQL full-text search tabanli, provider-agnostic search
+foundation olarak eklendi. Content-service note create/update/restore/archive akislari search
+indexing API'sini best-effort cagirir; search-service hatasi note write transaction'ini bozmaz ve
+audit/log ile izlenir.
+
+Public search gateway uzerinden `/search/notes` ile calisir. Internal indexing endpointleri
+`X-Service-Authorization` service JWT ile korunur.
+
+Ayrintilar: [`docs/search-service.md`](docs/search-service.md),
+[`docs/search-indexing.md`](docs/search-indexing.md) ve
+[`docs/search-reindexing.md`](docs/search-reindexing.md)
 
 ## Observability + Hardening
 
@@ -256,4 +286,3 @@ Dokumanlar:
 - [`docs/service-contract-testing.md`](docs/service-contract-testing.md)
 - [`docs/pagination-design.md`](docs/pagination-design.md)
 - [`docs/auth-token-revocation.md`](docs/auth-token-revocation.md)
-

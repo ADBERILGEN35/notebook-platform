@@ -70,6 +70,27 @@ workspace:
       audience: ${TRUSTED_SERVICE_CONTENT_SERVICE_AUDIENCE:workspace-service}
       clock-skew-seconds: ${TRUSTED_SERVICE_CONTENT_SERVICE_CLOCK_SKEW_SECONDS:5}
       allowed-scopes: ${TRUSTED_SERVICE_CONTENT_SERVICE_ALLOWED_SCOPES:internal:workspace:permission:read,internal:workspace:tag:read}
+    trusted-search-service:
+      kid: ${TRUSTED_SERVICE_SEARCH_SERVICE_KID:}
+      public-key: ${TRUSTED_SERVICE_SEARCH_SERVICE_PUBLIC_KEY:}
+      public-key-path: ${TRUSTED_SERVICE_SEARCH_SERVICE_PUBLIC_KEY_PATH:}
+      issuer: ${TRUSTED_SERVICE_SEARCH_SERVICE_ISSUER:search-service}
+      audience: ${TRUSTED_SERVICE_SEARCH_SERVICE_AUDIENCE:workspace-service}
+      clock-skew-seconds: ${TRUSTED_SERVICE_SEARCH_SERVICE_CLOCK_SKEW_SECONDS:5}
+      allowed-scopes: ${TRUSTED_SERVICE_SEARCH_SERVICE_ALLOWED_SCOPES:internal:workspace:permission:read}
+  notification:
+    service-url: ${NOTIFICATION_SERVICE_URL:http://notification-service:8084}
+    timeout-ms: ${NOTIFICATION_CLIENT_TIMEOUT_MS:1000}
+    enabled: ${NOTIFICATION_EMAIL_ENABLED:true}
+    service-jwt:
+      active-kid: ${WORKSPACE_SERVICE_JWT_ACTIVE_KID:workspace-service-key-1}
+      private-key: ${WORKSPACE_SERVICE_JWT_PRIVATE_KEY:}
+      private-key-path: ${WORKSPACE_SERVICE_JWT_PRIVATE_KEY_PATH:}
+      issuer: ${WORKSPACE_SERVICE_JWT_ISSUER:workspace-service}
+      subject: ${WORKSPACE_SERVICE_JWT_SUBJECT:service:workspace-service}
+      service-name: ${WORKSPACE_SERVICE_JWT_SERVICE_NAME:workspace-service}
+      ttl-seconds: ${WORKSPACE_SERVICE_JWT_TTL_SECONDS:60}
+      audience: ${WORKSPACE_SERVICE_JWT_AUDIENCE:notification-service}
 
 audit:
   admin:
@@ -80,4 +101,3 @@ audit:
     audience: ${AUDIT_ADMIN_SERVICE_JWT_AUDIENCE:workspace-service}
     clock-skew-seconds: ${AUDIT_ADMIN_SERVICE_JWT_CLOCK_SKEW_SECONDS:5}
     allowed-scopes: ${AUDIT_ADMIN_SERVICE_JWT_ALLOWED_SCOPES:internal:audit:read}
-

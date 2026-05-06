@@ -42,6 +42,7 @@
 | DUPLICATE_TAG | 409 | workspace-service | Tag duplicate | Same name/scope in workspace |
 | NOTEBOOK_NOT_FOUND | 404 | workspace-service | Notebook not found | Internal permission lookup for unknown notebook |
 | INVALID_INVITATION_TOKEN | 400 | workspace-service | Invite token invalid | Unknown token |
+| NOTIFICATION_SERVICE_UNAVAILABLE | 503 | workspace-service | Invitation email enqueue failed | notification-service down |
 | INVITATION_EXPIRED | 400 | workspace-service | Invite expired | `expiresAt` is past |
 | INVITATION_REVOKED | 400 | workspace-service | Invite revoked | `revokedAt` set |
 | INVITATION_ALREADY_ACCEPTED | 400 | workspace-service | Invite already used | `acceptedAt` set |
@@ -57,6 +58,21 @@
 | DUPLICATE_NOTE_TAG | 409 | content-service | Tag already attached | Reattach same tag |
 | TAG_NOT_FOUND | 404 | content-service | Workspace tag missing | Attach unknown tag |
 | WORKSPACE_SERVICE_UNAVAILABLE | 503 | content-service | Permission dependency failed | Workspace permission client down |
+| NOTIFICATION_ACCESS_DENIED | 401/403 | notification-service | Missing/insufficient service JWT | normal user token or wrong scope |
+| INVALID_NOTIFICATION_REQUEST | 400 | notification-service | Notification request invalid | missing template variable |
+| EMAIL_TEMPLATE_NOT_FOUND | 400 | notification-service | Template key/resource missing | unknown template |
+| EMAIL_PROVIDER_UNAVAILABLE | 503 | notification-service | Email provider cannot accept message | SMTP outage |
+| EMAIL_SEND_FAILED | 500 | notification-service | Email send failed unexpectedly | provider runtime error |
+| DUPLICATE_NOTIFICATION | 409 | notification-service | Duplicate idempotency key | future strict duplicate mode |
+| INVALID_EMAIL_PROVIDER_CONFIG | 500 | notification-service | Email provider config invalid | unsupported provider |
+| SEARCH_ACCESS_DENIED | 401/403 | search-service | Missing/insufficient search auth | missing service JWT |
+| INVALID_SEARCH_QUERY | 400 | search-service | Search query is missing or invalid | blank q |
+| SEARCH_QUERY_TOO_SHORT | 400 | search-service | Search query shorter than configured minimum | q=a |
+| SEARCH_QUERY_TOO_LONG | 400 | search-service | Search query exceeds configured maximum | q > 120 chars |
+| SEARCH_INDEX_REQUEST_INVALID | 400 | search-service | Search indexing request invalid | missing noteId |
+| SEARCH_SERVICE_UNAVAILABLE | 503 | content/search | Search dependency unavailable | indexing API down |
+| WORKSPACE_PERMISSION_UNAVAILABLE | 503 | search-service | Workspace permission filtering failed | workspace-service down |
+| INVALID_WORKSPACE_CONTEXT | 400 | search-service | Header workspace and query workspace conflict | mismatched X-Workspace-Id |
 
 All error responses use:
 

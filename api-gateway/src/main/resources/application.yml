@@ -57,6 +57,10 @@ spring:
               uri: ${CONTENT_SERVICE_URL:http://content-service:8083}
               predicates:
                 - Path=/comments/**
+            - id: search-notes
+              uri: ${SEARCH_SERVICE_URL:http://search-service:8085}
+              predicates:
+                - Path=/search/**
 
 management:
   tracing:
@@ -96,4 +100,3 @@ gateway:
 logging:
   level:
     org.springframework.cloud.gateway: INFO
-

@@ -9,5 +9,7 @@ include(
     "api-gateway",
     "identity-service",
     "workspace-service",
-    "content-service"
+    "content-service",
+    "notification-service",
+    "search-service"
 )

@@ -81,4 +81,7 @@ request GET "/notes/$note_id/comments?page=0&size=20&sort=createdAt,desc" "" "$a
 echo "Searching notes..."
 request GET "/notes/search?workspaceId=$workspace_id&q=Smoke&page=0&size=20&sort=updatedAt,desc" "" "$access_token" "X-Workspace-Id: $workspace_id" | assert_page_items
 
+echo "Searching via search-service..."
+request GET "/search/notes?workspaceId=$workspace_id&q=Smoke&page=0&size=20" "" "$access_token" "X-Workspace-Id: $workspace_id" | assert_page_items
+
 echo "Smoke test passed."

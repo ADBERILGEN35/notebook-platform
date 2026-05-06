@@ -39,6 +39,16 @@ services:
     image:
       tag: "dev-placeholder"
       digest: ""
+  notification:
+    replicas: 1
+    image:
+      tag: "dev-placeholder"
+      digest: ""
+  search:
+    replicas: 1
+    image:
+      tag: "dev-placeholder"
+      digest: ""
 
 ingress:
   enabled: false

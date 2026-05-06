@@ -71,6 +71,19 @@ content:
     service-name: ${INTERNAL_SERVICE_JWT_SERVICE_NAME:content-service}
     ttl-seconds: ${INTERNAL_SERVICE_JWT_TTL_SECONDS:60}
     audience: ${INTERNAL_SERVICE_JWT_AUDIENCE:workspace-service}
+  search:
+    service-url: ${SEARCH_SERVICE_URL:http://search-service:8085}
+    timeout-ms: ${SEARCH_CLIENT_TIMEOUT_MS:1000}
+    enabled: ${SEARCH_INDEXING_ENABLED:true}
+    service-jwt:
+      active-kid: ${SEARCH_SERVICE_JWT_ACTIVE_KID:${INTERNAL_SERVICE_JWT_ACTIVE_KID:content-service-key-1}}
+      private-key: ${SEARCH_SERVICE_JWT_PRIVATE_KEY:${INTERNAL_SERVICE_JWT_PRIVATE_KEY:}}
+      private-key-path: ${SEARCH_SERVICE_JWT_PRIVATE_KEY_PATH:${INTERNAL_SERVICE_JWT_PRIVATE_KEY_PATH:}}
+      issuer: ${SEARCH_SERVICE_JWT_ISSUER:content-service}
+      subject: ${SEARCH_SERVICE_JWT_SUBJECT:service:content-service}
+      service-name: ${SEARCH_SERVICE_JWT_SERVICE_NAME:content-service}
+      ttl-seconds: ${SEARCH_SERVICE_JWT_TTL_SECONDS:60}
+      audience: ${SEARCH_SERVICE_JWT_AUDIENCE:search-service}
 
 audit:
   admin:
@@ -81,4 +94,3 @@ audit:
     audience: ${AUDIT_ADMIN_SERVICE_JWT_AUDIENCE:content-service}
     clock-skew-seconds: ${AUDIT_ADMIN_SERVICE_JWT_CLOCK_SKEW_SECONDS:5}
     allowed-scopes: ${AUDIT_ADMIN_SERVICE_JWT_ALLOWED_SCOPES:internal:audit:read}
-
