@@ -1,6 +1,7 @@
 package com.notebook.lumen.content.repository;
 
 import com.notebook.lumen.content.domain.Note;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -28,4 +29,23 @@ public interface NoteRepository extends JpaRepository<Note, UUID> {
       """)
   Page<Note> search(
       @Param("workspaceId") UUID workspaceId, @Param("q") String q, Pageable pageable);
+
+  @Query(
+      """
+      select n from Note n
+      where (:workspaceId is null or n.workspaceId = :workspaceId)
+        and (:notebookId is null or n.notebookId = :notebookId)
+        and (
+          :cursorUpdatedAt is null
+          or n.updatedAt > :cursorUpdatedAt
+          or (n.updatedAt = :cursorUpdatedAt and n.id > :cursorNoteId)
+        )
+      order by n.updatedAt asc, n.id asc
+      """)
+  Page<Note> findSearchIndexSource(
+      @Param("workspaceId") UUID workspaceId,
+      @Param("notebookId") UUID notebookId,
+      @Param("cursorUpdatedAt") Instant cursorUpdatedAt,
+      @Param("cursorNoteId") UUID cursorNoteId,
+      Pageable pageable);
 }

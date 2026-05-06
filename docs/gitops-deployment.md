@@ -224,7 +224,8 @@ Staging:
 - Service JWT validation is enabled.
 - NetworkPolicy is enabled and verified.
 - ServiceMonitor is scraping metrics.
-- Search-service DB credentials and content/search service JWT keys are synced.
+- Search-service DB credentials, content/search service JWT keys, search outbox worker config and
+  search reindex config are synced.
 - SBOM and image scan gates passed.
 - Cosign signing and verification dry-run or audit validation passed.
 - RLS Stage 1 strict smoke passed before moving to later stages.
@@ -236,7 +237,8 @@ Prod:
 - Image signature and provenance status are recorded.
 - Optional image digest is captured for each service.
 - External Secrets are configured.
-- Search-service DB credentials and content/search service JWT keys are synced.
+- Search-service DB credentials, content/search service JWT keys, search outbox worker config and
+  search reindex config are synced.
 - NetworkPolicy is enabled.
 - Resource requests support HPA.
 - Grafana dashboards and Prometheus alert rules are loaded.

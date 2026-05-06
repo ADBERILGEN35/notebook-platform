@@ -13,9 +13,13 @@ public record SearchProperties(
     int minQueryLength,
     int maxPageSize,
     Workspace workspace,
+    ContentSource contentSource,
     ServiceJwt serviceJwt,
-    Internal internal) {
+    Internal internal,
+    Reindex reindex) {
   public record Workspace(String serviceUrl, long timeoutMs, int retryMaxAttempts) {}
+
+  public record ContentSource(String serviceUrl, long timeoutMs, String audience) {}
 
   public record ServiceJwt(
       String activeKid,
@@ -31,7 +35,23 @@ public record SearchProperties(
     }
   }
 
-  public record Internal(TrustedService trustedIndexingClient) {}
+  public record Internal(
+      TrustedService trustedIndexingClient, TrustedService trustedReindexClient) {}
+
+  public record Reindex(
+      boolean workerEnabled, int batchSize, int pollIntervalSeconds, int maxFailures) {
+    public int effectiveBatchSize() {
+      return batchSize <= 0 ? 100 : Math.min(batchSize, 500);
+    }
+
+    public int effectivePollIntervalSeconds() {
+      return pollIntervalSeconds <= 0 ? 10 : pollIntervalSeconds;
+    }
+
+    public int effectiveMaxFailures() {
+      return maxFailures <= 0 ? 100 : maxFailures;
+    }
+  }
 
   public record TrustedService(
       String kid,

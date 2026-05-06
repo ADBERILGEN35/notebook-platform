@@ -11,6 +11,12 @@ config:
   appRlsStrictWorkspaceHeader: "true"
   internalAuthMode: "service-jwt"
   jwtAllowEphemeralKeys: "false"
+  searchOutboxWorkerEnabled: "true"
+  searchOutboxBatchSize: "50"
+  searchOutboxPollIntervalSeconds: "10"
+  searchReindexWorkerEnabled: "true"
+  searchReindexBatchSize: "100"
+  searchReindexPollIntervalSeconds: "10"
 
 secrets:
   mode: external-secrets

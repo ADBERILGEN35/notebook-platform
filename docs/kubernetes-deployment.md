@@ -55,6 +55,10 @@ Production should use managed/external PostgreSQL and Redis:
 - identity-service uses `externalDatabase.identityUrl`.
 - workspace-service uses `externalDatabase.workspaceRuntimeUrl` plus runtime and migration users.
 - content-service uses `externalDatabase.contentRuntimeUrl` plus runtime and migration users.
+- content-service search indexing outbox worker is controlled by `SEARCH_OUTBOX_*` env values.
+  It remains inside content-service; no separate Deployment, Kafka or RabbitMQ is required.
+- search-service reindex worker is controlled by `SEARCH_REINDEX_*` env values and calls
+  content-service internal source API over ClusterIP.
 - notification-service uses `externalDatabase.notificationUrl` and `notification-db-password`.
 - api-gateway uses `externalRedis.host`, `externalRedis.port` and `redis-password` from Secret.
 

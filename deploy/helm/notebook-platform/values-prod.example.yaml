@@ -22,6 +22,12 @@ config:
   smtpFrom: "security@example.com"
   smtpTlsEnabled: "true"
   workspaceServiceJwtActiveKid: "workspace-service-key-1"
+  searchOutboxWorkerEnabled: "true"
+  searchOutboxBatchSize: "50"
+  searchOutboxPollIntervalSeconds: "10"
+  searchReindexWorkerEnabled: "true"
+  searchReindexBatchSize: "100"
+  searchReindexPollIntervalSeconds: "10"
 
 externalDatabase:
   identityUrl: "jdbc:postgresql://postgres.example.internal:5432/notebook_platform"

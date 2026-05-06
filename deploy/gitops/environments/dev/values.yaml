@@ -10,6 +10,12 @@ config:
   appRlsStrictWorkspaceHeader: "false"
   internalAuthMode: "dual"
   jwtAllowEphemeralKeys: "false"
+  searchOutboxWorkerEnabled: "true"
+  searchOutboxBatchSize: "10"
+  searchOutboxPollIntervalSeconds: "5"
+  searchReindexWorkerEnabled: "true"
+  searchReindexBatchSize: "50"
+  searchReindexPollIntervalSeconds: "5"
 
 secrets:
   mode: native-kubernetes-secret

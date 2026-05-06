@@ -62,7 +62,8 @@ count only. It does not record plaintext `q`.
 ## Limitations
 
 - no OpenSearch/Elasticsearch provider
-- no async outbox or Kafka/RabbitMQ indexing
+- no Kafka/RabbitMQ indexing
+- no orphan cleanup / mark-and-sweep during reindex
 - no advanced highlighting
 - no vector or semantic search
 - no autocomplete

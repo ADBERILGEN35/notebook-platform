@@ -102,16 +102,18 @@ Ayrintilar: [`docs/notification-service.md`](docs/notification-service.md) ve
 ## Search Service
 
 Faz 25 ile `search-service` PostgreSQL full-text search tabanli, provider-agnostic search
-foundation olarak eklendi. Content-service note create/update/restore/archive akislari search
-indexing API'sini best-effort cagirir; search-service hatasi note write transaction'ini bozmaz ve
-audit/log ile izlenir.
+foundation olarak eklendi. Faz 26 ile content-service note create/update/restore/archive akislari
+search indexing outbox'a yazilir; worker retry/backoff ile search-service internal API'sine
+gonderir. Search-service hatasi note write transaction'ini bozmaz.
 
 Public search gateway uzerinden `/search/notes` ile calisir. Internal indexing endpointleri
 `X-Service-Authorization` service JWT ile korunur.
 
 Ayrintilar: [`docs/search-service.md`](docs/search-service.md),
-[`docs/search-indexing.md`](docs/search-indexing.md) ve
-[`docs/search-reindexing.md`](docs/search-reindexing.md)
+[`docs/search-indexing.md`](docs/search-indexing.md),
+[`docs/search-index-outbox.md`](docs/search-index-outbox.md) ve
+[`docs/search-reindexing.md`](docs/search-reindexing.md). Full/workspace/notebook backfill
+runbook'u: [`docs/search-reindex-backfill.md`](docs/search-reindex-backfill.md)
 
 ## Observability + Hardening
 

@@ -46,6 +46,10 @@ search:
     service-url: ${WORKSPACE_SERVICE_URL:http://workspace-service:8082}
     timeout-ms: ${WORKSPACE_CLIENT_TIMEOUT_MS:1000}
     retry-max-attempts: ${WORKSPACE_CLIENT_RETRY_MAX_ATTEMPTS:2}
+  content-source:
+    service-url: ${CONTENT_SERVICE_URL:http://content-service:8083}
+    timeout-ms: ${CONTENT_SOURCE_CLIENT_TIMEOUT_MS:5000}
+    audience: ${CONTENT_SOURCE_SERVICE_JWT_AUDIENCE:content-service}
   service-jwt:
     active-kid: ${INTERNAL_SERVICE_JWT_ACTIVE_KID:search-service-key-1}
     private-key: ${INTERNAL_SERVICE_JWT_PRIVATE_KEY:}
@@ -64,3 +68,16 @@ search:
       audience: ${TRUSTED_SERVICE_CONTENT_SERVICE_AUDIENCE:search-service}
       clock-skew-seconds: ${TRUSTED_SERVICE_CONTENT_SERVICE_CLOCK_SKEW_SECONDS:5}
       allowed-scopes: ${TRUSTED_SERVICE_CONTENT_SERVICE_ALLOWED_SCOPES:internal:search:index:write}
+    trusted-reindex-client:
+      kid: ${TRUSTED_SERVICE_REINDEX_CLIENT_KID:}
+      public-key: ${TRUSTED_SERVICE_REINDEX_CLIENT_PUBLIC_KEY:}
+      public-key-path: ${TRUSTED_SERVICE_REINDEX_CLIENT_PUBLIC_KEY_PATH:}
+      issuer: ${TRUSTED_SERVICE_REINDEX_CLIENT_ISSUER:ops-admin}
+      audience: ${TRUSTED_SERVICE_REINDEX_CLIENT_AUDIENCE:search-service}
+      clock-skew-seconds: ${TRUSTED_SERVICE_REINDEX_CLIENT_CLOCK_SKEW_SECONDS:5}
+      allowed-scopes: ${TRUSTED_SERVICE_REINDEX_CLIENT_ALLOWED_SCOPES:internal:search:reindex:manage}
+  reindex:
+    worker-enabled: ${SEARCH_REINDEX_WORKER_ENABLED:true}
+    batch-size: ${SEARCH_REINDEX_BATCH_SIZE:100}
+    poll-interval-seconds: ${SEARCH_REINDEX_POLL_INTERVAL_SECONDS:10}
+    max-failures: ${SEARCH_REINDEX_MAX_FAILURES:100}

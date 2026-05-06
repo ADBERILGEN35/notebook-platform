@@ -135,6 +135,10 @@ Production should expose:
 
 - public: health through a protected edge path only if required
 - internal: readiness/liveness/prometheus through private network or service discovery only
+- content-service search outbox ops endpoints stay internal-only:
+  `/internal/search-index-outbox/status` and `/internal/search-index-outbox/reprocess-failed`
+  require service JWT scopes `internal:content:search-outbox:read` or
+  `internal:content:search-outbox:manage` and must not be routed by api-gateway.
 
 Do not route actuator endpoints through public gateway routes without authentication or network policy.
 

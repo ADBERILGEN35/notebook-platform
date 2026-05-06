@@ -42,7 +42,8 @@ Prometheus endpoints. It does not install Prometheus, Grafana or Alertmanager.
 - notification-service email send failure spike
 - notification-service queued email backlog growth
 - search-service down
-- search indexing failure spike
+- search indexing outbox failed count > 0 for sustained periods
+- search indexing retry spike or oldest pending age high
 - search query p95 latency high
 - search permission client failures
 
@@ -73,10 +74,19 @@ services. Custom notification counters such as `email_notifications_total` and q
 remain future hardening; until then, alert on service health, HTTP 5xx and logs containing
 `EMAIL_NOTIFICATION_FAILED`.
 
-Faz 25 search-service exposes actuator Prometheus and logs search/indexing events. Custom counters
-such as `search_queries_total`, `search_index_upserts_total` and
-`search_permission_filter_denied_total` remain future hardening; until then, alert on service health,
-HTTP 5xx, latency and logs containing `SEARCH_INDEXING_FAILED`.
+Faz 26 content-service exposes search outbox metrics:
+`search_outbox_pending`, `search_outbox_failed`, `search_outbox_processed_total`,
+`search_outbox_failed_total`, `search_outbox_retry_total`,
+`search_outbox_processing_duration` and `search_outbox_oldest_pending_age`.
+
+Alert on failed outbox count, oldest pending age, retry spikes and search-service 5xx/unavailable
+symptoms. Query text and note body should not be logged or stored in audit metadata.
+
+Faz 27 search reindex metrics include `search_reindex_jobs_total`, `search_reindex_running`,
+`search_reindex_completed_total`, `search_reindex_failed_total`, `search_reindex_scanned_total`,
+`search_reindex_indexed_total`, `search_reindex_duration` and
+`search_reindex_last_run_timestamp`. Alert on failed jobs, jobs running too long and repeated
+content-source API failures.
 
 ## GitOps Promotion Usage
 

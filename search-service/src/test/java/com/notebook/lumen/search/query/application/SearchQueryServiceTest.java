@@ -45,7 +45,9 @@ class SearchQueryServiceTest {
         2,
         50,
         new SearchProperties.Workspace("http://localhost", 1000, 2),
+        new SearchProperties.ContentSource("http://localhost", 1000, "content-service"),
         null,
-        new SearchProperties.Internal(null));
+        new SearchProperties.Internal(null, null),
+        new SearchProperties.Reindex(true, 100, 10, 100));
   }
 }

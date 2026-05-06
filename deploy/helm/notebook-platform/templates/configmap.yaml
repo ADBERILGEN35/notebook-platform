@@ -63,10 +63,35 @@ data:
   SEARCH_SERVICE_JWT_PRIVATE_KEY_PATH: "/etc/notebook/secrets/service-jwt/content-private.pem"
   SEARCH_SERVICE_JWT_ISSUER: {{ .Values.config.internalServiceJwtIssuer | quote }}
   SEARCH_SERVICE_JWT_AUDIENCE: "search-service"
+  TRUSTED_SERVICE_SEARCH_INDEX_SOURCE_KID: {{ .Values.config.searchServiceJwtActiveKid | quote }}
+  TRUSTED_SERVICE_SEARCH_INDEX_SOURCE_PUBLIC_KEY_PATH: "/etc/notebook/secrets/service-jwt/search-public.pem"
+  TRUSTED_SERVICE_SEARCH_INDEX_SOURCE_ISSUER: {{ .Values.config.searchServiceJwtIssuer | quote }}
+  TRUSTED_SERVICE_SEARCH_INDEX_SOURCE_AUDIENCE: "content-service"
+  SEARCH_OUTBOX_WORKER_ENABLED: {{ .Values.config.searchOutboxWorkerEnabled | quote }}
+  SEARCH_OUTBOX_BATCH_SIZE: {{ .Values.config.searchOutboxBatchSize | quote }}
+  SEARCH_OUTBOX_MAX_ATTEMPTS: {{ .Values.config.searchOutboxMaxAttempts | quote }}
+  SEARCH_OUTBOX_INITIAL_DELAY_SECONDS: {{ .Values.config.searchOutboxInitialDelaySeconds | quote }}
+  SEARCH_OUTBOX_MAX_DELAY_SECONDS: {{ .Values.config.searchOutboxMaxDelaySeconds | quote }}
+  SEARCH_OUTBOX_POLL_INTERVAL_SECONDS: {{ .Values.config.searchOutboxPollIntervalSeconds | quote }}
+  SEARCH_OUTBOX_ADMIN_SERVICE_JWT_KID: {{ .Values.config.searchOutboxAdminServiceJwtKid | quote }}
+  SEARCH_OUTBOX_ADMIN_SERVICE_JWT_PUBLIC_KEY_PATH: {{ .Values.config.searchOutboxAdminServiceJwtPublicKeyPath | quote }}
+  SEARCH_OUTBOX_ADMIN_SERVICE_JWT_ISSUER: {{ .Values.config.searchOutboxAdminServiceJwtIssuer | quote }}
+  SEARCH_OUTBOX_ADMIN_SERVICE_JWT_AUDIENCE: "content-service"
+  SEARCH_OUTBOX_ADMIN_SERVICE_JWT_ALLOWED_SCOPES: "internal:content:search-outbox:read,internal:content:search-outbox:manage"
   TRUSTED_SERVICE_SEARCH_SERVICE_KID: {{ .Values.config.searchServiceJwtActiveKid | quote }}
   TRUSTED_SERVICE_SEARCH_SERVICE_PUBLIC_KEY_PATH: "/etc/notebook/secrets/service-jwt/search-public.pem"
   TRUSTED_SERVICE_SEARCH_SERVICE_ISSUER: {{ .Values.config.searchServiceJwtIssuer | quote }}
   TRUSTED_SERVICE_SEARCH_SERVICE_AUDIENCE: "workspace-service"
+  CONTENT_SOURCE_SERVICE_JWT_AUDIENCE: "content-service"
+  SEARCH_REINDEX_WORKER_ENABLED: {{ .Values.config.searchReindexWorkerEnabled | quote }}
+  SEARCH_REINDEX_BATCH_SIZE: {{ .Values.config.searchReindexBatchSize | quote }}
+  SEARCH_REINDEX_POLL_INTERVAL_SECONDS: {{ .Values.config.searchReindexPollIntervalSeconds | quote }}
+  SEARCH_REINDEX_MAX_FAILURES: {{ .Values.config.searchReindexMaxFailures | quote }}
+  TRUSTED_SERVICE_REINDEX_CLIENT_KID: {{ .Values.config.searchReindexClientJwtKid | quote }}
+  TRUSTED_SERVICE_REINDEX_CLIENT_PUBLIC_KEY_PATH: {{ .Values.config.searchReindexClientJwtPublicKeyPath | quote }}
+  TRUSTED_SERVICE_REINDEX_CLIENT_ISSUER: {{ .Values.config.searchReindexClientJwtIssuer | quote }}
+  TRUSTED_SERVICE_REINDEX_CLIENT_AUDIENCE: "search-service"
+  TRUSTED_SERVICE_REINDEX_CLIENT_ALLOWED_SCOPES: "internal:search:reindex:manage"
   WORKSPACE_SERVICE_JWT_ACTIVE_KID: {{ .Values.config.workspaceServiceJwtActiveKid | quote }}
   WORKSPACE_SERVICE_JWT_PRIVATE_KEY_PATH: "/etc/notebook/secrets/service-jwt/workspace-private.pem"
   WORKSPACE_SERVICE_JWT_PUBLIC_KEY_PATH: "/etc/notebook/secrets/service-jwt/workspace-public.pem"

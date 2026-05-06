@@ -1,6 +1,8 @@
 # content-service
 
 Note, note version, note link, comment, note tag ve basit note search domainlerini yoneten servis.
+Faz 26 itibariyla search-service indexing entegrasyonu DB-backed
+`search_index_outbox` uzerinden retry edilebilir sekilde calisir.
 
 ## Calistirma
 
@@ -33,6 +35,10 @@ docker compose up --build
 - `WORKSPACE_INTERNAL_API_TOKEN_SECONDARY`: optional rotation bookkeeping value
 - `INTERNAL_AUTH_MODE`: `static-token`, `service-jwt` veya `dual`
 - `INTERNAL_SERVICE_JWT_PRIVATE_KEY_PATH`: content-service internal service JWT signing key
+- `SEARCH_OUTBOX_WORKER_ENABLED`, `SEARCH_OUTBOX_BATCH_SIZE`,
+  `SEARCH_OUTBOX_MAX_ATTEMPTS`, `SEARCH_OUTBOX_INITIAL_DELAY_SECONDS`,
+  `SEARCH_OUTBOX_MAX_DELAY_SECONDS`, `SEARCH_OUTBOX_POLL_INTERVAL_SECONDS`: search indexing outbox
+  worker config
 - `INTERNAL_SERVICE_JWT_ACTIVE_KID`: service JWT `kid`
 - `INTERNAL_SERVICE_JWT_TTL_SECONDS`: default `60`
 - `ALLOW_UNKNOWN_BLOCK_TYPES`: default `false`
@@ -211,6 +217,11 @@ ileriki faz icin birakildi.
 - Faz 12 runtime ve migration DB credential ayrimini destekler. `scripts/db/content-create-roles.sql` non-owner runtime role icin template saglar. `scripts/db/enable-force-rls-content.sql` opt-in FORCE RLS scriptidir.
 - Tam DB-level blocking icin non-owner runtime role, `APP_RLS_ENABLED=true`, gerekirse `APP_RLS_STRICT_WORKSPACE_HEADER=true` ve opt-in FORCE RLS rollout'u birlikte test edilmelidir; default `APP_RLS_ENABLED=false` kalir.
 - Kritik note/comment/tag aksiyonlari `content_audit_events` tablosuna yazilir.
+- Search indexing outbox olaylari `SEARCH_INDEX_OUTBOX_QUEUED`,
+  `SEARCH_INDEX_OUTBOX_PROCESSED`, `SEARCH_INDEX_OUTBOX_RETRY_SCHEDULED` ve
+  `SEARCH_INDEX_OUTBOX_FAILED` audit eventleriyle izlenir. Audit metadata note body icermez.
+- Search reindex source endpointi `GET /internal/search-index-source/notes` sadece service JWT ile
+  calisir ve public gateway'e route edilmez.
 - Block JSON validation max depth ve max size ile sinirlandirilir:
   - `CONTENT_BLOCKS_MAX_DEPTH`
   - `CONTENT_BLOCKS_MAX_JSON_BYTES`

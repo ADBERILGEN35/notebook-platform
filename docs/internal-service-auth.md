@@ -131,6 +131,13 @@ The Helm chart mounts service JWT keys from Kubernetes Secret:
   `/etc/notebook/secrets/service-jwt/workspace-public.pem`
 - content-service search indexing calls use `internal:search:index:write` and
   `aud=search-service`.
+- content-service search outbox ops calls use `internal:content:search-outbox:read` or
+  `internal:content:search-outbox:manage` and `aud=content-service`. These endpoints are for
+  operators/internal jobs only and are not gateway-routed.
+- search-service reindex source pulls use `internal:content:search-index-source:read` and
+  `aud=content-service`.
+- search-service reindex job management uses `internal:search:reindex:manage` and
+  `aud=search-service`.
 - search-service permission filtering calls workspace-service with
   `internal:workspace:permission:read` and `aud=workspace-service`.
 

@@ -1,14 +1,15 @@
 # Search Indexing
 
-Content-service calls search-service after note lifecycle changes:
+Content-service writes a search index outbox event after note lifecycle changes:
 
 - note create: upsert search document
 - note update: upsert search document
 - note restore: upsert search document
 - note archive: archive search document
 
-The call is best-effort. Search-service failures do not fail the note write transaction. Content
-audit records `SEARCH_INDEXING_FAILED` with operation and error class so operators can reindex later.
+The outbox row is stored in the same transaction as the note change. A background worker later calls
+search-service. Search-service failures do not fail the note write transaction; they produce retry
+or failed outbox state. See [`search-index-outbox.md`](search-index-outbox.md).
 
 ## Indexed Fields
 
@@ -36,5 +37,9 @@ Unknown block types are not rejected by search-service.
 
 ## Failure Policy
 
-Faz 25 intentionally chooses write availability over strict search consistency. Search drift is
-expected to be repaired by reindex/backfill operations rather than failing user note writes.
+Faz 26 chooses write availability plus durable indexing events. Search drift should be limited to
+events that are still retrying or are in `FAILED` state. Operators can requeue failed events through
+the internal reprocess endpoint.
+
+If search-service data is lost or corrupted beyond outbox recovery, run the pull-based reindex
+backfill job documented in [`search-reindex-backfill.md`](search-reindex-backfill.md).

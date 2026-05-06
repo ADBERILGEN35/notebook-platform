@@ -40,6 +40,9 @@ Faz 9 standardizes runtime secrets around environment variables, file-based secr
 | `SEARCH_DB_PASSWORD` | search-service | Yes | Yes | Yes | Empty only in local dev | Yes |
 | `SEARCH_SERVICE_JWT_PRIVATE_KEY_PATH` | search-service | No, points to secret | Yes in service-jwt mode | Yes | Empty allowed only outside prod/dual fallback | Do not log contents |
 | `TRUSTED_SERVICE_SEARCH_SERVICE_PUBLIC_KEY_PATH` | workspace-service | No, points to public key | Yes when search-service permission checks use service JWT | Yes | Empty only outside prod/dual fallback | Do not log contents |
+| `SEARCH_OUTBOX_ADMIN_SERVICE_JWT_PUBLIC_KEY_PATH` | content-service | No, points to public key | Required only when ops outbox endpoints are used | Yes | Empty disables ops endpoint trust | Do not log contents |
+| `TRUSTED_SERVICE_SEARCH_INDEX_SOURCE_PUBLIC_KEY_PATH` | content-service | No, points to public key | Required for search-service reindex source pulls | Yes | Empty rejects source API calls | Do not log contents |
+| `TRUSTED_SERVICE_REINDEX_CLIENT_PUBLIC_KEY_PATH` | search-service | No, points to public key | Required for reindex job ops API | Yes | Empty rejects reindex ops calls | Do not log contents |
 | `OTEL_EXPORTER_OTLP_ENDPOINT` | all services | Usually no | No | No | Local collector default | Avoid credentials in URL |
 | `OTEL_EXPORTER_OTLP_HEADERS` | all services / deployment | May contain token | If exporter requires auth | Yes | Empty allowed | Yes |
 | `CORS_ALLOWED_ORIGINS` | api-gateway | No | Yes, explicit prod value | No | Local origins allowed | No |

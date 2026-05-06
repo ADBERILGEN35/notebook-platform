@@ -16,6 +16,9 @@ This document captures the backend contract before frontend work starts.
   `X-Service-Authorization: Bearer <service-jwt>` with `internal:audit:read`.
 - notification-service internal email endpoint is not routed by api-gateway and requires
   `X-Service-Authorization: Bearer <service-jwt>` with `internal:notification:email:send`.
+- content-service search outbox ops endpoints are not public gateway routes and require
+  `X-Service-Authorization: Bearer <service-jwt>` with
+  `internal:content:search-outbox:read` or `internal:content:search-outbox:manage`.
 
 ## Strict Workspace Header Rollout
 
@@ -161,6 +164,12 @@ Content:
 - `POST /internal/notifications/email`
 - `POST /internal/search/documents`
 - `DELETE /internal/search/documents/{noteId}`
+- `GET /internal/search-index-outbox/status`
+- `POST /internal/search-index-outbox/reprocess-failed`
+- `GET /internal/search-index-source/notes`
+- `POST /internal/search/reindex-jobs`
+- `GET /internal/search/reindex-jobs/{jobId}`
+- `POST /internal/search/reindex-jobs/{jobId}/cancel`
 
 ## Idempotency
 

@@ -12,6 +12,12 @@ config:
   invitationExposeTokenInResponse: "true"
   emailProvider: "log"
   emailWorkerEnabled: "true"
+  searchOutboxWorkerEnabled: "true"
+  searchOutboxBatchSize: "10"
+  searchOutboxPollIntervalSeconds: "5"
+  searchReindexWorkerEnabled: "true"
+  searchReindexBatchSize: "50"
+  searchReindexPollIntervalSeconds: "5"
 
 externalDatabase:
   identityUrl: "jdbc:postgresql://postgres:5432/notebook_platform"

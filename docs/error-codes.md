@@ -73,6 +73,19 @@
 | SEARCH_SERVICE_UNAVAILABLE | 503 | content/search | Search dependency unavailable | indexing API down |
 | WORKSPACE_PERMISSION_UNAVAILABLE | 503 | search-service | Workspace permission filtering failed | workspace-service down |
 | INVALID_WORKSPACE_CONTEXT | 400 | search-service | Header workspace and query workspace conflict | mismatched X-Workspace-Id |
+| SEARCH_OUTBOX_EVENT_NOT_FOUND | 404 | content-service | Search outbox event missing | unknown event id |
+| SEARCH_OUTBOX_REPROCESS_FAILED | 500 | content-service | Failed to requeue search outbox events | repository failure |
+| SEARCH_OUTBOX_ACCESS_DENIED | 403 | content-service | Search outbox service JWT lacks scope | wrong ops scope |
+| INVALID_SEARCH_OUTBOX_REQUEST | 400 | content-service | Invalid search outbox ops request | invalid limit |
+| SEARCH_INDEX_SOURCE_ACCESS_DENIED | 403 | content-service | Search index source service JWT lacks scope | wrong source scope |
+| INVALID_SEARCH_INDEX_SOURCE_REQUEST | 400 | content-service | Invalid search index source request | invalid cursor or size |
+| REINDEX_ACCESS_DENIED | 401/403 | search-service | Reindex service JWT missing or lacks scope | missing manage scope |
+| REINDEX_JOB_ALREADY_RUNNING | 409 | search-service | A reindex job is already pending/running | second job create |
+| REINDEX_JOB_NOT_FOUND | 404 | search-service | Reindex job not found | unknown job id |
+| INVALID_REINDEX_REQUEST | 400 | search-service | Invalid mode/scope combination | NOTEBOOK without notebookId |
+| REINDEX_SOURCE_UNAVAILABLE | 503 | search-service | Content source API unavailable | content-service down |
+| REINDEX_JOB_CANCELLED | 409 | search-service | Reindex job was cancelled | cancelled while polling |
+| REINDEX_JOB_FAILED | 500 | search-service | Reindex job failed | max failures exceeded |
 
 All error responses use:
 

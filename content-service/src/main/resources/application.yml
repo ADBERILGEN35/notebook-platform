@@ -84,6 +84,30 @@ content:
       service-name: ${SEARCH_SERVICE_JWT_SERVICE_NAME:content-service}
       ttl-seconds: ${SEARCH_SERVICE_JWT_TTL_SECONDS:60}
       audience: ${SEARCH_SERVICE_JWT_AUDIENCE:search-service}
+    source:
+      trusted-search-service:
+        kid: ${TRUSTED_SERVICE_SEARCH_INDEX_SOURCE_KID:}
+        public-key: ${TRUSTED_SERVICE_SEARCH_INDEX_SOURCE_PUBLIC_KEY:}
+        public-key-path: ${TRUSTED_SERVICE_SEARCH_INDEX_SOURCE_PUBLIC_KEY_PATH:}
+        issuer: ${TRUSTED_SERVICE_SEARCH_INDEX_SOURCE_ISSUER:search-service}
+        audience: ${TRUSTED_SERVICE_SEARCH_INDEX_SOURCE_AUDIENCE:content-service}
+        clock-skew-seconds: ${TRUSTED_SERVICE_SEARCH_INDEX_SOURCE_CLOCK_SKEW_SECONDS:5}
+        allowed-scopes: ${TRUSTED_SERVICE_SEARCH_INDEX_SOURCE_ALLOWED_SCOPES:internal:content:search-index-source:read}
+    outbox:
+      worker-enabled: ${SEARCH_OUTBOX_WORKER_ENABLED:true}
+      batch-size: ${SEARCH_OUTBOX_BATCH_SIZE:50}
+      max-attempts: ${SEARCH_OUTBOX_MAX_ATTEMPTS:10}
+      initial-delay-seconds: ${SEARCH_OUTBOX_INITIAL_DELAY_SECONDS:30}
+      max-delay-seconds: ${SEARCH_OUTBOX_MAX_DELAY_SECONDS:3600}
+      poll-interval-seconds: ${SEARCH_OUTBOX_POLL_INTERVAL_SECONDS:10}
+      admin:
+        kid: ${SEARCH_OUTBOX_ADMIN_SERVICE_JWT_KID:}
+        public-key: ${SEARCH_OUTBOX_ADMIN_SERVICE_JWT_PUBLIC_KEY:}
+        public-key-path: ${SEARCH_OUTBOX_ADMIN_SERVICE_JWT_PUBLIC_KEY_PATH:}
+        issuer: ${SEARCH_OUTBOX_ADMIN_SERVICE_JWT_ISSUER:ops-admin}
+        audience: ${SEARCH_OUTBOX_ADMIN_SERVICE_JWT_AUDIENCE:content-service}
+        clock-skew-seconds: ${SEARCH_OUTBOX_ADMIN_SERVICE_JWT_CLOCK_SKEW_SECONDS:5}
+        allowed-scopes: ${SEARCH_OUTBOX_ADMIN_SERVICE_JWT_ALLOWED_SCOPES:internal:content:search-outbox:read,internal:content:search-outbox:manage}
 
 audit:
   admin:
