@@ -1,6 +1,7 @@
 package com.notebook.lumen.search.index.infrastructure;
 
 import com.notebook.lumen.search.index.domain.SearchDocument;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
@@ -72,4 +73,51 @@ public interface SearchDocumentRepository extends JpaRepository<SearchDocument, 
       @Param("workspaceId") UUID workspaceId,
       @Param("notebookId") UUID notebookId,
       @Param("now") java.time.Instant now);
+
+  @Query(
+      value =
+          """
+          SELECT count(*)
+          FROM search_documents
+          WHERE archived_at IS NULL
+            AND (:workspaceId IS NULL OR workspace_id = :workspaceId)
+            AND (:notebookId IS NULL OR notebook_id = :notebookId)
+            AND (
+              last_seen_reindex_job_id IS NULL
+              OR last_seen_reindex_job_id <> :jobId
+            )
+          """,
+      nativeQuery = true)
+  long countActiveOrphansForReindex(
+      @Param("jobId") UUID jobId,
+      @Param("workspaceId") UUID workspaceId,
+      @Param("notebookId") UUID notebookId);
+
+  @Query(
+      value =
+          """
+          SELECT note_id AS noteId,
+                 workspace_id AS workspaceId,
+                 notebook_id AS notebookId,
+                 indexed_at AS indexedAt,
+                 note_updated_at AS noteUpdatedAt,
+                 archived_at AS archivedAt,
+                 last_seen_reindex_at AS lastSeenReindexAt
+          FROM search_documents
+          WHERE archived_at IS NULL
+            AND (:workspaceId IS NULL OR workspace_id = :workspaceId)
+            AND (:notebookId IS NULL OR notebook_id = :notebookId)
+            AND (
+              last_seen_reindex_job_id IS NULL
+              OR last_seen_reindex_job_id <> :jobId
+            )
+          ORDER BY note_updated_at DESC NULLS LAST, updated_at DESC
+          LIMIT :limit
+          """,
+      nativeQuery = true)
+  List<SearchOrphanCandidateRow> findActiveOrphansForReindex(
+      @Param("jobId") UUID jobId,
+      @Param("workspaceId") UUID workspaceId,
+      @Param("notebookId") UUID notebookId,
+      @Param("limit") int limit);
 }

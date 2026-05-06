@@ -170,10 +170,14 @@ Content:
 - `POST /internal/search/reindex-jobs`
 - `GET /internal/search/reindex-jobs/{jobId}`
 - `POST /internal/search/reindex-jobs/{jobId}/cancel`
+- `GET /internal/search/reindex-jobs/{jobId}/orphan-preview`
 
-`POST /internal/search/reindex-jobs` accepts optional `cleanupOrphans`. Responses include
+`POST /internal/search/reindex-jobs` accepts optional `cleanupOrphans` and `dryRunCleanup`.
+Responses include
 `totalArchivedOrphans`, `cleanupStartedAt`, `cleanupCompletedAt`, `cleanupOrphansRequested` and
-`cleanupOrphansExecuted`.
+`cleanupOrphansExecuted`, plus `dryRunCleanup`, `cleanupPreviewCount` and
+`cleanupPreviewGeneratedAt`. `orphan-preview` returns scoped orphan identifiers and timestamps only;
+title/content/query text are excluded.
 
 ## Idempotency
 

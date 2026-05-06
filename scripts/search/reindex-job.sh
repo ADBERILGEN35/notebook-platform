@@ -7,6 +7,9 @@ MODE="${MODE:-FULL}"
 WORKSPACE_ID="${WORKSPACE_ID:-}"
 NOTEBOOK_ID="${NOTEBOOK_ID:-}"
 CLEANUP_ORPHANS="${CLEANUP_ORPHANS:-false}"
+DRY_RUN_CLEANUP="${DRY_RUN_CLEANUP:-false}"
+SHOW_ORPHAN_PREVIEW="${SHOW_ORPHAN_PREVIEW:-false}"
+ORPHAN_PREVIEW_SIZE="${ORPHAN_PREVIEW_SIZE:-20}"
 TIMEOUT_SECONDS="${TIMEOUT_SECONDS:-600}"
 POLL_SECONDS="${POLL_SECONDS:-5}"
 
@@ -15,7 +18,7 @@ if [[ -z "$SERVICE_JWT" ]]; then
   exit 1
 fi
 
-payload="{\"mode\":\"${MODE}\",\"cleanupOrphans\":${CLEANUP_ORPHANS}}"
+payload="{\"mode\":\"${MODE}\",\"cleanupOrphans\":${CLEANUP_ORPHANS},\"dryRunCleanup\":${DRY_RUN_CLEANUP}"
 if [[ -n "$WORKSPACE_ID" ]]; then
   payload="${payload},\"workspaceId\":\"${WORKSPACE_ID}\""
 fi
@@ -48,14 +51,22 @@ while (( SECONDS < deadline )); do
   )"
   echo "$status_response"
   archived="$(printf '%s' "$status_response" | sed -n 's/.*"totalArchivedOrphans"[[:space:]]*:[[:space:]]*\([0-9][0-9]*\).*/\1/p')"
+  preview_count="$(printf '%s' "$status_response" | sed -n 's/.*"cleanupPreviewCount"[[:space:]]*:[[:space:]]*\([0-9][0-9]*\).*/\1/p')"
   cleanup_executed="$(printf '%s' "$status_response" | sed -n 's/.*"cleanupOrphansExecuted"[[:space:]]*:[[:space:]]*\(true\|false\).*/\1/p')"
   if [[ -n "$archived" ]]; then
-    echo "archived_orphans=${archived} cleanup_executed=${cleanup_executed:-unknown}" >&2
+    echo "archived_orphans=${archived} cleanup_preview_count=${preview_count:-unknown} cleanup_executed=${cleanup_executed:-unknown}" >&2
   fi
 
   if printf '%s' "$status_response" | grep -Eq '"status"[[:space:]]*:[[:space:]]*"(COMPLETED|FAILED|CANCELLED)"'; then
-    printf '%s' "$status_response" | grep -q '"status"[[:space:]]*:[[:space:]]*"COMPLETED"'
-    exit $?
+    if printf '%s' "$status_response" | grep -q '"status"[[:space:]]*:[[:space:]]*"COMPLETED"'; then
+      if [[ "$SHOW_ORPHAN_PREVIEW" == "true" ]]; then
+        curl -fsS \
+          -H "X-Service-Authorization: Bearer ${SERVICE_JWT}" \
+          "${SEARCH_SERVICE_URL}/internal/search/reindex-jobs/${job_id}/orphan-preview?size=${ORPHAN_PREVIEW_SIZE}"
+      fi
+      exit 0
+    fi
+    exit 1
   fi
   sleep "$POLL_SECONDS"
 done

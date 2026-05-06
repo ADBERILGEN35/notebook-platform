@@ -35,6 +35,9 @@ public class SearchReindexJob {
   private Instant cleanupCompletedAt;
   private boolean cleanupOrphansRequested;
   private boolean cleanupOrphansExecuted;
+  private boolean dryRunCleanup;
+  private long cleanupPreviewCount;
+  private Instant cleanupPreviewGeneratedAt;
   private String lastError;
   private Instant createdAt;
   private Instant updatedAt;
@@ -47,6 +50,7 @@ public class SearchReindexJob {
       UUID workspaceId,
       UUID notebookId,
       boolean cleanupOrphansRequested,
+      boolean dryRunCleanup,
       String requestedByService,
       Instant now) {
     this.id = id;
@@ -54,6 +58,7 @@ public class SearchReindexJob {
     this.workspaceId = workspaceId;
     this.notebookId = notebookId;
     this.cleanupOrphansRequested = cleanupOrphansRequested;
+    this.dryRunCleanup = dryRunCleanup;
     this.requestedByService = requestedByService;
     this.status = SearchReindexJobStatus.PENDING;
     this.createdAt = now;
@@ -88,12 +93,22 @@ public class SearchReindexJob {
   public void completeCleanup(long archivedOrphans, Instant now) {
     this.totalArchivedOrphans = archivedOrphans;
     this.cleanupOrphansExecuted = true;
+    this.cleanupPreviewCount = archivedOrphans;
+    this.cleanupPreviewGeneratedAt = now;
     this.cleanupCompletedAt = now;
     this.updatedAt = now;
   }
 
   public void skipCleanup(Instant now) {
     this.cleanupOrphansExecuted = false;
+    this.cleanupCompletedAt = now;
+    this.updatedAt = now;
+  }
+
+  public void completeDryRunCleanup(long orphanCount, Instant now) {
+    this.cleanupOrphansExecuted = false;
+    this.cleanupPreviewCount = orphanCount;
+    this.cleanupPreviewGeneratedAt = now;
     this.cleanupCompletedAt = now;
     this.updatedAt = now;
   }
@@ -194,6 +209,18 @@ public class SearchReindexJob {
 
   public boolean isCleanupOrphansExecuted() {
     return cleanupOrphansExecuted;
+  }
+
+  public boolean isDryRunCleanup() {
+    return dryRunCleanup;
+  }
+
+  public long getCleanupPreviewCount() {
+    return cleanupPreviewCount;
+  }
+
+  public Instant getCleanupPreviewGeneratedAt() {
+    return cleanupPreviewGeneratedAt;
   }
 
   public String getLastError() {

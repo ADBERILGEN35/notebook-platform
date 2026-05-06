@@ -59,8 +59,8 @@ Production should use managed/external PostgreSQL and Redis:
   It remains inside content-service; no separate Deployment, Kafka or RabbitMQ is required.
 - search-service reindex worker is controlled by `SEARCH_REINDEX_*` env values and calls
   content-service internal source API over ClusterIP.
-- `SEARCH_REINDEX_ORPHAN_CLEANUP_ENABLED` defaults to `false`; enable only after staging validation
-  and scoped operator approval.
+- `SEARCH_REINDEX_ORPHAN_CLEANUP_ENABLED` defaults to `false`; run dry-run cleanup and inspect
+  orphan preview in staging before enabling real cleanup with scoped operator approval.
 - notification-service uses `externalDatabase.notificationUrl` and `notification-db-password`.
 - api-gateway uses `externalRedis.host`, `externalRedis.port` and `redis-password` from Secret.
 

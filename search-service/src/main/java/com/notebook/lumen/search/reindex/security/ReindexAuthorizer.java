@@ -21,9 +21,17 @@ public class ReindexAuthorizer {
   }
 
   public ServiceJwtClaims authorize(String serviceAuthorization) {
+    return authorize(serviceAuthorization, "REINDEX_ACCESS_DENIED");
+  }
+
+  public ServiceJwtClaims authorizeOrphanPreview(String serviceAuthorization) {
+    return authorize(serviceAuthorization, "ORPHAN_PREVIEW_ACCESS_DENIED");
+  }
+
+  private ServiceJwtClaims authorize(String serviceAuthorization, String accessDeniedCode) {
     if (serviceAuthorization == null || serviceAuthorization.isBlank()) {
       throw new SearchException(
-          HttpStatus.UNAUTHORIZED, "REINDEX_ACCESS_DENIED", "Service JWT is required");
+          HttpStatus.UNAUTHORIZED, accessDeniedCode, "Service JWT is required");
     }
     SearchProperties.TrustedService trustedService = properties.internal().trustedReindexClient();
     if (trustedService == null || !trustedService.configured()) {
@@ -45,7 +53,7 @@ public class ReindexAuthorizer {
           .verify(bearerToken(serviceAuthorization), MANAGE_SCOPE);
     } catch (ServiceJwtValidationException e) {
       if (e.insufficientScope()) {
-        throw new SearchException(HttpStatus.FORBIDDEN, "REINDEX_ACCESS_DENIED", e.getMessage());
+        throw new SearchException(HttpStatus.FORBIDDEN, accessDeniedCode, e.getMessage());
       }
       throw new SearchException(HttpStatus.UNAUTHORIZED, e.errorCode(), e.getMessage());
     } catch (RuntimeException e) {

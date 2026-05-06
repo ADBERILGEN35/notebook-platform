@@ -93,6 +93,12 @@ Faz 28 cleanup metrics include `search_reindex_orphans_archived_total`,
 orphan count is unexpectedly high for the requested scope or if cleanup fails after a successful
 scan.
 
+Faz 29 dry-run metrics include `search_reindex_cleanup_dry_run_total`,
+`search_reindex_cleanup_preview_count` and `search_reindex_orphan_preview_viewed_total`. Before
+real cleanup rollout, run a scoped dry-run and compare the preview count with the expected orphan
+range. Alert or block promotion when dry-run orphan count is unexpectedly high. A future alert can
+compare real cleanup archived count against the most recent dry-run count for the same scope.
+
 ## GitOps Promotion Usage
 
 Staging and prod GitOps values enable `serviceMonitor.enabled=true` so Prometheus Operator based

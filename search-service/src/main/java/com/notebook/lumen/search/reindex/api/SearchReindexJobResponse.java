@@ -23,6 +23,9 @@ public record SearchReindexJobResponse(
     Instant cleanupCompletedAt,
     boolean cleanupOrphansRequested,
     boolean cleanupOrphansExecuted,
+    boolean dryRunCleanup,
+    long cleanupPreviewCount,
+    Instant cleanupPreviewGeneratedAt,
     String lastError,
     Instant createdAt,
     Instant updatedAt) {}

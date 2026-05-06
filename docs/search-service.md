@@ -37,6 +37,19 @@ Internal indexing requires `X-Service-Authorization: Bearer <service-jwt>` with:
 - `aud=search-service`
 - `scope=internal:search:index:write`
 
+Reindex ops endpoints are internal only and require service JWT scope
+`internal:search:reindex:manage`:
+
+```http
+POST /internal/search/reindex-jobs
+GET /internal/search/reindex-jobs/{jobId}
+POST /internal/search/reindex-jobs/{jobId}/cancel
+GET /internal/search/reindex-jobs/{jobId}/orphan-preview
+```
+
+`cleanupOrphans=true,dryRunCleanup=true` previews orphan cleanup without modifying documents.
+Preview samples return only ids and timestamps, not titles or note content.
+
 ## PostgreSQL FTS
 
 `search_documents.search_vector` is a generated `tsvector`:
@@ -64,6 +77,7 @@ count only. It does not record plaintext `q`.
 - no OpenSearch/Elasticsearch provider
 - no Kafka/RabbitMQ indexing
 - no hard delete during mark-and-sweep reindex cleanup
+- real cleanup production rollout still requires staged approval
 - no advanced highlighting
 - no vector or semantic search
 - no autocomplete

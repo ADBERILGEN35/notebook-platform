@@ -48,6 +48,7 @@ Search-service internal endpoints:
 POST /internal/search/reindex-jobs
 GET /internal/search/reindex-jobs/{jobId}
 POST /internal/search/reindex-jobs/{jobId}/cancel
+GET /internal/search/reindex-jobs/{jobId}/orphan-preview
 ```
 
 Auth:
@@ -63,7 +64,8 @@ Request:
   "mode": "WORKSPACE",
   "workspaceId": "00000000-0000-0000-0000-000000000000",
   "notebookId": null,
-  "cleanupOrphans": false
+  "cleanupOrphans": false,
+  "dryRunCleanup": false
 }
 ```
 
@@ -109,6 +111,42 @@ If an archived source note is seen, it remains archived in search. If an active 
 for an archived search document, the upsert clears `archivedAt` and restores it to active search
 eligibility.
 
+## Dry-Run And Orphan Preview
+
+Faz 29 adds dry-run cleanup and an orphan preview endpoint. Use dry-run before enabling real
+cleanup in staging or production:
+
+```json
+{
+  "mode": "WORKSPACE",
+  "workspaceId": "00000000-0000-0000-0000-000000000000",
+  "cleanupOrphans": true,
+  "dryRunCleanup": true
+}
+```
+
+Rules:
+
+- `dryRunCleanup=true` requires `cleanupOrphans=true`; otherwise the request returns
+  `400 INVALID_CLEANUP_MODE`.
+- dry-run does not archive or delete `search_documents`.
+- dry-run records `cleanupPreviewCount` and `cleanupPreviewGeneratedAt` on the job.
+- `cleanupOrphans=true`, `dryRunCleanup=false` and global cleanup disabled still skips real cleanup.
+- real cleanup still requires `SEARCH_REINDEX_ORPHAN_CLEANUP_ENABLED=true`.
+
+Preview sample:
+
+```http
+GET /internal/search/reindex-jobs/{jobId}/orphan-preview?size=20
+```
+
+The preview endpoint requires the same reindex service JWT scope and returns only identifiers and
+timestamps: `noteId`, `workspaceId`, `notebookId`, `indexedAt`, `noteUpdatedAt`, `archivedAt` and
+`lastSeenReindexAt`. It does not return title, content, tags or query text. Preview is available
+only after the reindex scan has completed; pending, running, failed and cancelled jobs return
+`409 PREVIEW_NOT_READY`. After a real cleanup job, the endpoint shows remaining active orphan
+candidates; use `totalArchivedOrphans` on the job response for the archived count history.
+
 ## Consistency
 
 `SearchDocument.noteId` remains unique. Existing source-version behavior remains in force:
@@ -136,6 +174,9 @@ Metrics:
 - `search_reindex_orphans_archived_total`
 - `search_reindex_cleanup_duration`
 - `search_reindex_cleanup_skipped_total`
+- `search_reindex_cleanup_dry_run_total`
+- `search_reindex_cleanup_preview_count`
+- `search_reindex_orphan_preview_viewed_total`
 
 Audit events:
 
@@ -147,5 +188,8 @@ Audit events:
 - `SEARCH_REINDEX_CLEANUP_STARTED`
 - `SEARCH_REINDEX_CLEANUP_COMPLETED`
 - `SEARCH_REINDEX_CLEANUP_SKIPPED`
+- `SEARCH_REINDEX_CLEANUP_DRY_RUN_STARTED`
+- `SEARCH_REINDEX_CLEANUP_DRY_RUN_COMPLETED`
+- `SEARCH_REINDEX_ORPHAN_PREVIEW_VIEWED`
 
 Audit metadata does not include note body or extracted content.

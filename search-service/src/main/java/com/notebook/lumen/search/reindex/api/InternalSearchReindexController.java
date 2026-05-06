@@ -45,4 +45,13 @@ public class InternalSearchReindexController {
     authorizer.authorize(headers.getFirst(ReindexAuthorizer.HEADER_NAME));
     return service.cancel(jobId);
   }
+
+  @GetMapping("/{jobId}/orphan-preview")
+  public SearchReindexOrphanPreviewResponse orphanPreview(
+      @RequestHeader HttpHeaders headers,
+      @PathVariable UUID jobId,
+      @org.springframework.web.bind.annotation.RequestParam(defaultValue = "20") int size) {
+    authorizer.authorizeOrphanPreview(headers.getFirst(ReindexAuthorizer.HEADER_NAME));
+    return service.orphanPreview(jobId, size);
+  }
 }

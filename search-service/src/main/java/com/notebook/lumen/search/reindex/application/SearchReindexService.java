@@ -2,8 +2,11 @@ package com.notebook.lumen.search.reindex.application;
 
 import com.notebook.lumen.search.index.application.SearchAuditService;
 import com.notebook.lumen.search.index.infrastructure.SearchDocumentRepository;
+import com.notebook.lumen.search.index.infrastructure.SearchOrphanCandidateRow;
 import com.notebook.lumen.search.reindex.api.SearchReindexJobRequest;
 import com.notebook.lumen.search.reindex.api.SearchReindexJobResponse;
+import com.notebook.lumen.search.reindex.api.SearchReindexOrphanPreviewItem;
+import com.notebook.lumen.search.reindex.api.SearchReindexOrphanPreviewResponse;
 import com.notebook.lumen.search.reindex.domain.SearchReindexJob;
 import com.notebook.lumen.search.reindex.domain.SearchReindexJobStatus;
 import com.notebook.lumen.search.reindex.domain.SearchReindexMode;
@@ -64,6 +67,7 @@ public class SearchReindexService {
             request.workspaceId(),
             request.notebookId(),
             request.cleanupOrphansRequested(),
+            request.dryRunCleanupRequested(),
             requestedByService,
             now);
     repository.save(job);
@@ -104,6 +108,48 @@ public class SearchReindexService {
   }
 
   @Transactional(readOnly = true)
+  public SearchReindexOrphanPreviewResponse orphanPreview(UUID jobId, int requestedSize) {
+    SearchReindexJob job = load(jobId);
+    if (job.getStatus() != SearchReindexJobStatus.COMPLETED) {
+      throw new SearchException(
+          HttpStatus.CONFLICT,
+          "PREVIEW_NOT_READY",
+          "Orphan preview is available only after a completed reindex scan");
+    }
+    int size = Math.max(1, Math.min(requestedSize, 100));
+    long orphanCount = countOrphanCandidates(job);
+    Instant previewGeneratedAt = Instant.now();
+    List<SearchReindexOrphanPreviewItem> items =
+        findOrphanCandidates(job, size).stream()
+            .map(
+                row ->
+                    new SearchReindexOrphanPreviewItem(
+                        row.getNoteId(),
+                        row.getWorkspaceId(),
+                        row.getNotebookId(),
+                        row.getLastSeenReindexAt(),
+                        row.getIndexedAt(),
+                        row.getNoteUpdatedAt(),
+                        row.getArchivedAt()))
+            .toList();
+    meterRegistry.counter("search_reindex_orphan_preview_viewed_total").increment();
+    meterRegistry.summary("search_reindex_cleanup_preview_count").record(orphanCount);
+    auditService.record(
+        "SEARCH_REINDEX_ORPHAN_PREVIEW_VIEWED",
+        job.getWorkspaceId(),
+        job.getId(),
+        previewMetadata(job, orphanCount, items.size()));
+    return new SearchReindexOrphanPreviewResponse(
+        job.getId(),
+        job.getMode(),
+        job.getWorkspaceId(),
+        job.getNotebookId(),
+        orphanCount,
+        previewGeneratedAt,
+        items);
+  }
+
+  @Transactional(readOnly = true)
   public boolean cancelled(UUID jobId) {
     return load(jobId).getStatus() == SearchReindexJobStatus.CANCELLED;
   }
@@ -141,7 +187,17 @@ public class SearchReindexService {
     if (job.getStatus() == SearchReindexJobStatus.CANCELLED) {
       return job;
     }
-    if (!job.isCleanupOrphansRequested() || !properties.reindex().orphanCleanupEnabled()) {
+    if (!job.isCleanupOrphansRequested()) {
+      job.skipCleanup(Instant.now());
+      meterRegistry.counter("search_reindex_cleanup_skipped_total").increment();
+      auditService.record(
+          "SEARCH_REINDEX_CLEANUP_SKIPPED", job.getWorkspaceId(), job.getId(), metadata(job, null));
+      return job;
+    }
+    if (job.isDryRunCleanup()) {
+      return dryRunCleanup(job);
+    }
+    if (!properties.reindex().orphanCleanupEnabled()) {
       job.skipCleanup(Instant.now());
       meterRegistry.counter("search_reindex_cleanup_skipped_total").increment();
       auditService.record(
@@ -155,9 +211,7 @@ public class SearchReindexService {
         "SEARCH_REINDEX_CLEANUP_STARTED", job.getWorkspaceId(), job.getId(), metadata(job, null));
     int archived;
     try {
-      archived =
-          documentRepository.archiveActiveOrphansForReindex(
-              job.getId(), job.getWorkspaceId(), job.getNotebookId(), now);
+      archived = archiveOrphanCandidates(job, now);
     } finally {
       sample.stop(meterRegistry.timer("search_reindex_cleanup_duration"));
     }
@@ -165,6 +219,33 @@ public class SearchReindexService {
     meterRegistry.counter("search_reindex_orphans_archived_total").increment(archived);
     auditService.record(
         "SEARCH_REINDEX_CLEANUP_COMPLETED", job.getWorkspaceId(), job.getId(), metadata(job, null));
+    return job;
+  }
+
+  private SearchReindexJob dryRunCleanup(SearchReindexJob job) {
+    Instant now = Instant.now();
+    job.startCleanup(now);
+    Timer.Sample sample = Timer.start(meterRegistry);
+    auditService.record(
+        "SEARCH_REINDEX_CLEANUP_DRY_RUN_STARTED",
+        job.getWorkspaceId(),
+        job.getId(),
+        metadata(job, null));
+    long orphanCount;
+    try {
+      orphanCount = countOrphanCandidates(job);
+    } finally {
+      sample.stop(meterRegistry.timer("search_reindex_cleanup_duration"));
+    }
+    Instant completedAt = Instant.now();
+    job.completeDryRunCleanup(orphanCount, completedAt);
+    meterRegistry.counter("search_reindex_cleanup_dry_run_total").increment();
+    meterRegistry.summary("search_reindex_cleanup_preview_count").record(orphanCount);
+    auditService.record(
+        "SEARCH_REINDEX_CLEANUP_DRY_RUN_COMPLETED",
+        job.getWorkspaceId(),
+        job.getId(),
+        metadata(job, null));
     return job;
   }
 
@@ -193,6 +274,12 @@ public class SearchReindexService {
   private void validate(SearchReindexJobRequest request) {
     if (request == null || request.mode() == null) {
       throw invalid("mode is required");
+    }
+    if (request.dryRunCleanupRequested() && !request.cleanupOrphansRequested()) {
+      throw new SearchException(
+          HttpStatus.BAD_REQUEST,
+          "INVALID_CLEANUP_MODE",
+          "dryRunCleanup requires cleanupOrphans=true");
     }
     if (SearchReindexMode.FULL.equals(request.mode())) {
       return;
@@ -231,9 +318,27 @@ public class SearchReindexService {
         job.getCleanupCompletedAt(),
         job.isCleanupOrphansRequested(),
         job.isCleanupOrphansExecuted(),
+        job.isDryRunCleanup(),
+        job.getCleanupPreviewCount(),
+        job.getCleanupPreviewGeneratedAt(),
         job.getLastError(),
         job.getCreatedAt(),
         job.getUpdatedAt());
+  }
+
+  private long countOrphanCandidates(SearchReindexJob job) {
+    return documentRepository.countActiveOrphansForReindex(
+        job.getId(), job.getWorkspaceId(), job.getNotebookId());
+  }
+
+  private List<SearchOrphanCandidateRow> findOrphanCandidates(SearchReindexJob job, int size) {
+    return documentRepository.findActiveOrphansForReindex(
+        job.getId(), job.getWorkspaceId(), job.getNotebookId(), size);
+  }
+
+  private int archiveOrphanCandidates(SearchReindexJob job, Instant now) {
+    return documentRepository.archiveActiveOrphansForReindex(
+        job.getId(), job.getWorkspaceId(), job.getNotebookId(), now);
   }
 
   private Map<String, Object> metadata(SearchReindexJob job, String error) {
@@ -254,6 +359,10 @@ public class SearchReindexService {
                 job.isCleanupOrphansRequested(),
                 "cleanupOrphansExecuted",
                 job.isCleanupOrphansExecuted(),
+                "dryRunCleanup",
+                job.isDryRunCleanup(),
+                "cleanupPreviewCount",
+                job.getCleanupPreviewCount(),
                 "archivedCount",
                 job.getTotalArchivedOrphans()));
     if (job.getNotebookId() != null) {
@@ -265,6 +374,14 @@ public class SearchReindexService {
     if (error != null && !error.isBlank()) {
       metadata.put("error", error);
     }
+    return Map.copyOf(metadata);
+  }
+
+  private Map<String, Object> previewMetadata(
+      SearchReindexJob job, long orphanCount, int sampleSize) {
+    Map<String, Object> metadata = new java.util.LinkedHashMap<>(metadata(job, null));
+    metadata.put("orphanCount", orphanCount);
+    metadata.put("sampleSize", sampleSize);
     return Map.copyOf(metadata);
   }
 

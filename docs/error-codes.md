@@ -83,6 +83,9 @@
 | REINDEX_JOB_ALREADY_RUNNING | 409 | search-service | A reindex job is already pending/running | second job create |
 | REINDEX_JOB_NOT_FOUND | 404 | search-service | Reindex job not found | unknown job id |
 | INVALID_REINDEX_REQUEST | 400 | search-service | Invalid mode/scope combination | NOTEBOOK without notebookId |
+| INVALID_CLEANUP_MODE | 400 | search-service | Invalid cleanup/dry-run combination | dryRunCleanup without cleanupOrphans |
+| PREVIEW_NOT_READY | 409 | search-service | Orphan preview unavailable until successful scan completion | preview running job |
+| ORPHAN_PREVIEW_ACCESS_DENIED | 401/403 | search-service | Orphan preview service JWT missing or lacks scope | missing manage scope |
 | REINDEX_SOURCE_UNAVAILABLE | 503 | search-service | Content source API unavailable | content-service down |
 | REINDEX_JOB_CANCELLED | 409 | search-service | Reindex job was cancelled | cancelled while polling |
 | REINDEX_JOB_FAILED | 500 | search-service | Reindex job failed | max failures exceeded |

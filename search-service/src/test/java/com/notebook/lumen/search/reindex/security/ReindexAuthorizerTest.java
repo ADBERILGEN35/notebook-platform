@@ -32,6 +32,18 @@ class ReindexAuthorizerTest {
         .isEqualTo("REINDEX_ACCESS_DENIED");
   }
 
+  @Test
+  void orphanPreviewUsesPreviewAccessDeniedCode() {
+    ReindexAuthorizer authorizer = new ReindexAuthorizer(properties(publicPem()));
+
+    assertThatThrownBy(
+            () ->
+                authorizer.authorizeOrphanPreview("Bearer " + token("internal:search:index:write")))
+        .isInstanceOf(SearchException.class)
+        .extracting("errorCode")
+        .isEqualTo("ORPHAN_PREVIEW_ACCESS_DENIED");
+  }
+
   private SearchProperties properties(String publicKey) {
     return new SearchProperties(
         200000,
