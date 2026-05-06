@@ -114,6 +114,7 @@ Ayrintilar: [`docs/search-service.md`](docs/search-service.md),
 [`docs/search-index-outbox.md`](docs/search-index-outbox.md) ve
 [`docs/search-reindexing.md`](docs/search-reindexing.md). Full/workspace/notebook backfill
 runbook'u: [`docs/search-reindex-backfill.md`](docs/search-reindex-backfill.md)
+Faz 28 ile mark-and-sweep orphan cleanup opt-in olarak eklendi; hard delete yapilmaz.
 
 ## Observability + Hardening
 

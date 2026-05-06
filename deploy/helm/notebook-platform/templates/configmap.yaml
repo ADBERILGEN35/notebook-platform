@@ -87,6 +87,7 @@ data:
   SEARCH_REINDEX_BATCH_SIZE: {{ .Values.config.searchReindexBatchSize | quote }}
   SEARCH_REINDEX_POLL_INTERVAL_SECONDS: {{ .Values.config.searchReindexPollIntervalSeconds | quote }}
   SEARCH_REINDEX_MAX_FAILURES: {{ .Values.config.searchReindexMaxFailures | quote }}
+  SEARCH_REINDEX_ORPHAN_CLEANUP_ENABLED: {{ .Values.config.searchReindexOrphanCleanupEnabled | quote }}
   TRUSTED_SERVICE_REINDEX_CLIENT_KID: {{ .Values.config.searchReindexClientJwtKid | quote }}
   TRUSTED_SERVICE_REINDEX_CLIENT_PUBLIC_KEY_PATH: {{ .Values.config.searchReindexClientJwtPublicKeyPath | quote }}
   TRUSTED_SERVICE_REINDEX_CLIENT_ISSUER: {{ .Values.config.searchReindexClientJwtIssuer | quote }}

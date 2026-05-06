@@ -63,7 +63,7 @@ count only. It does not record plaintext `q`.
 
 - no OpenSearch/Elasticsearch provider
 - no Kafka/RabbitMQ indexing
-- no orphan cleanup / mark-and-sweep during reindex
+- no hard delete during mark-and-sweep reindex cleanup
 - no advanced highlighting
 - no vector or semantic search
 - no autocomplete

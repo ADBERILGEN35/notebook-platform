@@ -51,6 +51,7 @@ config:
   searchReindexBatchSize: "100"
   searchReindexPollIntervalSeconds: "10"
   searchReindexMaxFailures: "100"
+  searchReindexOrphanCleanupEnabled: "false"
   searchReindexClientJwtKid: ""
   searchReindexClientJwtPublicKeyPath: ""
   searchReindexClientJwtIssuer: "ops-admin"

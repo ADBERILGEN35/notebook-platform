@@ -29,6 +29,8 @@ public class SearchDocument {
 
   private Instant indexedAt;
   private Integer sourceVersion;
+  private UUID lastSeenReindexJobId;
+  private Instant lastSeenReindexAt;
   private Instant createdAt;
   private Instant updatedAt;
 
@@ -113,6 +115,12 @@ public class SearchDocument {
     this.updatedAt = now;
   }
 
+  public void markSeenForReindex(UUID jobId, Instant now) {
+    this.lastSeenReindexJobId = jobId;
+    this.lastSeenReindexAt = now;
+    this.updatedAt = now;
+  }
+
   public UUID getId() {
     return id;
   }
@@ -147,5 +155,13 @@ public class SearchDocument {
 
   public Integer getSourceVersion() {
     return sourceVersion;
+  }
+
+  public UUID getLastSeenReindexJobId() {
+    return lastSeenReindexJobId;
+  }
+
+  public Instant getLastSeenReindexAt() {
+    return lastSeenReindexAt;
   }
 }

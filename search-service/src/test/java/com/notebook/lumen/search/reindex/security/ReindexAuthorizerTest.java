@@ -51,7 +51,7 @@ class ReindexAuthorizerTest {
                 "search-service",
                 5,
                 ReindexAuthorizer.MANAGE_SCOPE)),
-        new SearchProperties.Reindex(true, 100, 10, 100));
+        new SearchProperties.Reindex(true, 100, 10, 100, false));
   }
 
   private String token(String scope) {

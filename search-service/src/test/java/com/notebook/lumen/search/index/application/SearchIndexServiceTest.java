@@ -63,6 +63,38 @@ class SearchIndexServiceTest {
     assertThat(existing.getSourceVersion()).isEqualTo(3);
   }
 
+  @Test
+  void reindexMarksSeenDocumentAndCanRestoreArchivedDocument() throws Exception {
+    SearchDocument existing =
+        new SearchDocument(
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            "Archived",
+            "body",
+            "",
+            null,
+            null,
+            null,
+            Instant.now(),
+            Instant.now(),
+            Instant.now(),
+            1,
+            Instant.now());
+    UUID jobId = UUID.randomUUID();
+    when(repository.findByNoteId(existing.getNoteId())).thenReturn(Optional.of(existing));
+    when(extractor.extract(any())).thenReturn("new body");
+
+    service.upsertForReindex(
+        request(existing.getWorkspaceId(), existing.getNotebookId(), existing.getNoteId(), 2),
+        jobId);
+
+    assertThat(existing.getArchivedAt()).isNull();
+    assertThat(existing.getLastSeenReindexJobId()).isEqualTo(jobId);
+    assertThat(existing.getLastSeenReindexAt()).isNotNull();
+  }
+
   private IndexDocumentRequest request(int sourceVersion) throws Exception {
     return request(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), sourceVersion);
   }

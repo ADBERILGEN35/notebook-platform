@@ -84,7 +84,7 @@ class InternalIndexAuthorizerTest {
                 5,
                 "internal:search:index:write"),
             null),
-        new SearchProperties.Reindex(true, 100, 10, 100));
+        new SearchProperties.Reindex(true, 100, 10, 100, false));
   }
 
   private String privatePem() {

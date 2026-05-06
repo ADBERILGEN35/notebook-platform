@@ -16,6 +16,7 @@ config:
   searchReindexWorkerEnabled: "true"
   searchReindexBatchSize: "50"
   searchReindexPollIntervalSeconds: "5"
+  searchReindexOrphanCleanupEnabled: "false"
 
 secrets:
   mode: native-kubernetes-secret

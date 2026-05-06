@@ -1,14 +1,17 @@
 package com.notebook.lumen.search.reindex.application;
 
 import com.notebook.lumen.search.index.application.SearchAuditService;
+import com.notebook.lumen.search.index.infrastructure.SearchDocumentRepository;
 import com.notebook.lumen.search.reindex.api.SearchReindexJobRequest;
 import com.notebook.lumen.search.reindex.api.SearchReindexJobResponse;
 import com.notebook.lumen.search.reindex.domain.SearchReindexJob;
 import com.notebook.lumen.search.reindex.domain.SearchReindexJobStatus;
 import com.notebook.lumen.search.reindex.domain.SearchReindexMode;
 import com.notebook.lumen.search.reindex.infrastructure.SearchReindexJobRepository;
+import com.notebook.lumen.search.shared.config.SearchProperties;
 import com.notebook.lumen.search.shared.exception.SearchException;
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
@@ -25,14 +28,20 @@ public class SearchReindexService {
       List.of(SearchReindexJobStatus.PENDING, SearchReindexJobStatus.RUNNING);
 
   private final SearchReindexJobRepository repository;
+  private final SearchDocumentRepository documentRepository;
+  private final SearchProperties properties;
   private final SearchAuditService auditService;
   private final MeterRegistry meterRegistry;
 
   public SearchReindexService(
       SearchReindexJobRepository repository,
+      SearchDocumentRepository documentRepository,
+      SearchProperties properties,
       SearchAuditService auditService,
       MeterRegistry meterRegistry) {
     this.repository = repository;
+    this.documentRepository = documentRepository;
+    this.properties = properties;
     this.auditService = auditService;
     this.meterRegistry = meterRegistry;
   }
@@ -54,6 +63,7 @@ public class SearchReindexService {
             request.mode(),
             request.workspaceId(),
             request.notebookId(),
+            request.cleanupOrphansRequested(),
             requestedByService,
             now);
     repository.save(job);
@@ -126,6 +136,39 @@ public class SearchReindexService {
   }
 
   @Transactional
+  public SearchReindexJob cleanupAfterSuccessfulScan(UUID jobId) {
+    SearchReindexJob job = load(jobId);
+    if (job.getStatus() == SearchReindexJobStatus.CANCELLED) {
+      return job;
+    }
+    if (!job.isCleanupOrphansRequested() || !properties.reindex().orphanCleanupEnabled()) {
+      job.skipCleanup(Instant.now());
+      meterRegistry.counter("search_reindex_cleanup_skipped_total").increment();
+      auditService.record(
+          "SEARCH_REINDEX_CLEANUP_SKIPPED", job.getWorkspaceId(), job.getId(), metadata(job, null));
+      return job;
+    }
+    Instant now = Instant.now();
+    job.startCleanup(now);
+    Timer.Sample sample = Timer.start(meterRegistry);
+    auditService.record(
+        "SEARCH_REINDEX_CLEANUP_STARTED", job.getWorkspaceId(), job.getId(), metadata(job, null));
+    int archived;
+    try {
+      archived =
+          documentRepository.archiveActiveOrphansForReindex(
+              job.getId(), job.getWorkspaceId(), job.getNotebookId(), now);
+    } finally {
+      sample.stop(meterRegistry.timer("search_reindex_cleanup_duration"));
+    }
+    job.completeCleanup(archived, Instant.now());
+    meterRegistry.counter("search_reindex_orphans_archived_total").increment(archived);
+    auditService.record(
+        "SEARCH_REINDEX_CLEANUP_COMPLETED", job.getWorkspaceId(), job.getId(), metadata(job, null));
+    return job;
+  }
+
+  @Transactional
   public void fail(UUID jobId, RuntimeException failure) {
     SearchReindexJob job = load(jobId);
     if (job.getStatus() == SearchReindexJobStatus.CANCELLED) {
@@ -179,10 +222,15 @@ public class SearchReindexService {
         job.getTotalScanned(),
         job.getTotalIndexed(),
         job.getTotalFailed(),
+        job.getTotalArchivedOrphans(),
         job.getLastCursor(),
         job.getStartedAt(),
         job.getCompletedAt(),
         job.getFailedAt(),
+        job.getCleanupStartedAt(),
+        job.getCleanupCompletedAt(),
+        job.isCleanupOrphansRequested(),
+        job.isCleanupOrphansExecuted(),
         job.getLastError(),
         job.getCreatedAt(),
         job.getUpdatedAt());
@@ -201,7 +249,13 @@ public class SearchReindexService {
                 "totalIndexed",
                 job.getTotalIndexed(),
                 "totalFailed",
-                job.getTotalFailed()));
+                job.getTotalFailed(),
+                "cleanupOrphansRequested",
+                job.isCleanupOrphansRequested(),
+                "cleanupOrphansExecuted",
+                job.isCleanupOrphansExecuted(),
+                "archivedCount",
+                job.getTotalArchivedOrphans()));
     if (job.getNotebookId() != null) {
       metadata.put("notebookId", job.getNotebookId().toString());
     }

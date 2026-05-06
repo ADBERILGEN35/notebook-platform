@@ -26,10 +26,15 @@ public class SearchReindexJob {
   private long totalScanned;
   private long totalIndexed;
   private long totalFailed;
+  private long totalArchivedOrphans;
   private String lastCursor;
   private Instant startedAt;
   private Instant completedAt;
   private Instant failedAt;
+  private Instant cleanupStartedAt;
+  private Instant cleanupCompletedAt;
+  private boolean cleanupOrphansRequested;
+  private boolean cleanupOrphansExecuted;
   private String lastError;
   private Instant createdAt;
   private Instant updatedAt;
@@ -41,12 +46,14 @@ public class SearchReindexJob {
       SearchReindexMode mode,
       UUID workspaceId,
       UUID notebookId,
+      boolean cleanupOrphansRequested,
       String requestedByService,
       Instant now) {
     this.id = id;
     this.mode = mode;
     this.workspaceId = workspaceId;
     this.notebookId = notebookId;
+    this.cleanupOrphansRequested = cleanupOrphansRequested;
     this.requestedByService = requestedByService;
     this.status = SearchReindexJobStatus.PENDING;
     this.createdAt = now;
@@ -70,6 +77,24 @@ public class SearchReindexJob {
   public void complete(Instant now) {
     this.status = SearchReindexJobStatus.COMPLETED;
     this.completedAt = now;
+    this.updatedAt = now;
+  }
+
+  public void startCleanup(Instant now) {
+    this.cleanupStartedAt = now;
+    this.updatedAt = now;
+  }
+
+  public void completeCleanup(long archivedOrphans, Instant now) {
+    this.totalArchivedOrphans = archivedOrphans;
+    this.cleanupOrphansExecuted = true;
+    this.cleanupCompletedAt = now;
+    this.updatedAt = now;
+  }
+
+  public void skipCleanup(Instant now) {
+    this.cleanupOrphansExecuted = false;
+    this.cleanupCompletedAt = now;
     this.updatedAt = now;
   }
 
@@ -135,6 +160,10 @@ public class SearchReindexJob {
     return totalFailed;
   }
 
+  public long getTotalArchivedOrphans() {
+    return totalArchivedOrphans;
+  }
+
   public String getLastCursor() {
     return lastCursor;
   }
@@ -149,6 +178,22 @@ public class SearchReindexJob {
 
   public Instant getFailedAt() {
     return failedAt;
+  }
+
+  public Instant getCleanupStartedAt() {
+    return cleanupStartedAt;
+  }
+
+  public Instant getCleanupCompletedAt() {
+    return cleanupCompletedAt;
+  }
+
+  public boolean isCleanupOrphansRequested() {
+    return cleanupOrphansRequested;
+  }
+
+  public boolean isCleanupOrphansExecuted() {
+    return cleanupOrphansExecuted;
   }
 
   public String getLastError() {

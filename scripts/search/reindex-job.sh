@@ -6,6 +6,7 @@ SERVICE_JWT="${SERVICE_JWT:-}"
 MODE="${MODE:-FULL}"
 WORKSPACE_ID="${WORKSPACE_ID:-}"
 NOTEBOOK_ID="${NOTEBOOK_ID:-}"
+CLEANUP_ORPHANS="${CLEANUP_ORPHANS:-false}"
 TIMEOUT_SECONDS="${TIMEOUT_SECONDS:-600}"
 POLL_SECONDS="${POLL_SECONDS:-5}"
 
@@ -14,7 +15,7 @@ if [[ -z "$SERVICE_JWT" ]]; then
   exit 1
 fi
 
-payload="{\"mode\":\"${MODE}\""
+payload="{\"mode\":\"${MODE}\",\"cleanupOrphans\":${CLEANUP_ORPHANS}}"
 if [[ -n "$WORKSPACE_ID" ]]; then
   payload="${payload},\"workspaceId\":\"${WORKSPACE_ID}\""
 fi
@@ -46,6 +47,11 @@ while (( SECONDS < deadline )); do
       "${SEARCH_SERVICE_URL}/internal/search/reindex-jobs/${job_id}"
   )"
   echo "$status_response"
+  archived="$(printf '%s' "$status_response" | sed -n 's/.*"totalArchivedOrphans"[[:space:]]*:[[:space:]]*\([0-9][0-9]*\).*/\1/p')"
+  cleanup_executed="$(printf '%s' "$status_response" | sed -n 's/.*"cleanupOrphansExecuted"[[:space:]]*:[[:space:]]*\(true\|false\).*/\1/p')"
+  if [[ -n "$archived" ]]; then
+    echo "archived_orphans=${archived} cleanup_executed=${cleanup_executed:-unknown}" >&2
+  fi
 
   if printf '%s' "$status_response" | grep -Eq '"status"[[:space:]]*:[[:space:]]*"(COMPLETED|FAILED|CANCELLED)"'; then
     printf '%s' "$status_response" | grep -q '"status"[[:space:]]*:[[:space:]]*"COMPLETED"'

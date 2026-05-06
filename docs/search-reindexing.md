@@ -16,8 +16,9 @@ Search-service pages through that source and upserts documents into the index.
 
 ## Full Backfill
 
-Use `POST /internal/search/reindex-jobs` to create `FULL`, `WORKSPACE` or `NOTEBOOK` jobs. See
-[`search-reindex-backfill.md`](search-reindex-backfill.md).
+Use `POST /internal/search/reindex-jobs` to create `FULL`, `WORKSPACE` or `NOTEBOOK` jobs. Set
+`cleanupOrphans=true` only after enabling `SEARCH_REINDEX_ORPHAN_CLEANUP_ENABLED=true` and
+validating the scope in staging. See [`search-reindex-backfill.md`](search-reindex-backfill.md).
 
 ## Recovery Options
 
@@ -30,6 +31,5 @@ If indexing failures occur:
 
 ## Future Requirements
 
-- orphan cleanup / mark-and-sweep
 - dry-run mode
 - no plaintext query or note body in operator logs

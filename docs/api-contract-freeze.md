@@ -171,6 +171,10 @@ Content:
 - `GET /internal/search/reindex-jobs/{jobId}`
 - `POST /internal/search/reindex-jobs/{jobId}/cancel`
 
+`POST /internal/search/reindex-jobs` accepts optional `cleanupOrphans`. Responses include
+`totalArchivedOrphans`, `cleanupStartedAt`, `cleanupCompletedAt`, `cleanupOrphansRequested` and
+`cleanupOrphansExecuted`.
+
 ## Idempotency
 
 - Safe/idempotent: `GET`, most `DELETE` soft archive/delete endpoints from client perspective.

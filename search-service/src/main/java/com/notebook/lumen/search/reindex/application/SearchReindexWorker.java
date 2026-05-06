@@ -68,7 +68,7 @@ public class SearchReindexWorker {
         long failed = 0;
         for (SearchIndexSourceNoteResponse item : page.items()) {
           try {
-            indexService.upsert(toIndexRequest(item));
+            indexService.upsertForReindex(toIndexRequest(item), job.getId());
             indexed++;
           } catch (RuntimeException e) {
             failed++;
@@ -89,7 +89,10 @@ public class SearchReindexWorker {
         cursor = page.nextCursor();
         hasNext = page.hasNext();
       } while (hasNext);
-      reindexService.complete(job.getId());
+      if (!reindexService.cancelled(job.getId())) {
+        reindexService.cleanupAfterSuccessfulScan(job.getId());
+        reindexService.complete(job.getId());
+      }
     } catch (RuntimeException e) {
       reindexService.fail(job.getId(), e);
     } finally {

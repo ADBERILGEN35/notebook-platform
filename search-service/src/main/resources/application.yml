@@ -81,3 +81,4 @@ search:
     batch-size: ${SEARCH_REINDEX_BATCH_SIZE:100}
     poll-interval-seconds: ${SEARCH_REINDEX_POLL_INTERVAL_SECONDS:10}
     max-failures: ${SEARCH_REINDEX_MAX_FAILURES:100}
+    orphan-cleanup-enabled: ${SEARCH_REINDEX_ORPHAN_CLEANUP_ENABLED:false}

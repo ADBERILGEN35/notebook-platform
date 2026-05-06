@@ -18,6 +18,7 @@ config:
   searchReindexWorkerEnabled: "true"
   searchReindexBatchSize: "50"
   searchReindexPollIntervalSeconds: "5"
+  searchReindexOrphanCleanupEnabled: "false"
 
 externalDatabase:
   identityUrl: "jdbc:postgresql://postgres:5432/notebook_platform"

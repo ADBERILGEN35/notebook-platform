@@ -39,7 +39,11 @@ public record SearchProperties(
       TrustedService trustedIndexingClient, TrustedService trustedReindexClient) {}
 
   public record Reindex(
-      boolean workerEnabled, int batchSize, int pollIntervalSeconds, int maxFailures) {
+      boolean workerEnabled,
+      int batchSize,
+      int pollIntervalSeconds,
+      int maxFailures,
+      boolean orphanCleanupEnabled) {
     public int effectiveBatchSize() {
       return batchSize <= 0 ? 100 : Math.min(batchSize, 500);
     }

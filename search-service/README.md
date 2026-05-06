@@ -27,9 +27,11 @@ Faz 27 adds internal reindex jobs:
 
 Modes are `FULL`, `WORKSPACE` and `NOTEBOOK`. The worker pulls source notes from content-service
 `GET /internal/search-index-source/notes` and upserts through the same indexing service.
+`cleanupOrphans=true` archives unseen active documents only when
+`SEARCH_REINDEX_ORPHAN_CLEANUP_ENABLED=true`; hard delete is never used.
 
 ## Current Limits
 
 - PostgreSQL FTS only; OpenSearch/Elasticsearch provider is future work.
-- Orphan cleanup / mark-and-sweep is future work.
+- Dry-run orphan preview is future work.
 - Advanced highlighting, ranking tuning and semantic/vector search are future work.

@@ -19,6 +19,7 @@ config:
   searchReindexWorkerEnabled: "true"
   searchReindexBatchSize: "100"
   searchReindexPollIntervalSeconds: "10"
+  searchReindexOrphanCleanupEnabled: "false"
 
 secrets:
   mode: external-secrets

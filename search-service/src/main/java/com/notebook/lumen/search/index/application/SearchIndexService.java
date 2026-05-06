@@ -27,14 +27,28 @@ public class SearchIndexService {
 
   @Transactional
   public IndexDocumentResponse upsert(IndexDocumentRequest request) {
+    return upsert(request, null);
+  }
+
+  @Transactional
+  public IndexDocumentResponse upsertForReindex(IndexDocumentRequest request, UUID reindexJobId) {
+    return upsert(request, reindexJobId);
+  }
+
+  private IndexDocumentResponse upsert(IndexDocumentRequest request, UUID reindexJobId) {
     Instant now = Instant.now();
     String contentText = textExtractor.extract(request.contentBlocks());
     String tagsText = request.tags() == null ? null : String.join(" ", request.tags());
     SearchDocument document =
         repository
             .findByNoteId(request.noteId())
-            .map(existing -> updateExisting(existing, request, contentText, tagsText, now))
+            .map(
+                existing ->
+                    updateExisting(existing, request, contentText, tagsText, now, reindexJobId))
             .orElseGet(() -> create(request, contentText, tagsText, now));
+    if (reindexJobId != null) {
+      document.markSeenForReindex(reindexJobId, now);
+    }
     repository.save(document);
     auditService.record(
         "SEARCH_DOCUMENT_INDEXED",
@@ -71,8 +85,12 @@ public class SearchIndexService {
       IndexDocumentRequest request,
       String contentText,
       String tagsText,
-      Instant now) {
+      Instant now,
+      UUID reindexJobId) {
     if (existing.newerThan(request.sourceVersion())) {
+      if (reindexJobId != null) {
+        existing.markSeenForReindex(reindexJobId, now);
+      }
       return existing;
     }
     existing.apply(

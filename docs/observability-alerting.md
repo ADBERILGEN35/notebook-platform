@@ -88,6 +88,11 @@ Faz 27 search reindex metrics include `search_reindex_jobs_total`, `search_reind
 `search_reindex_last_run_timestamp`. Alert on failed jobs, jobs running too long and repeated
 content-source API failures.
 
+Faz 28 cleanup metrics include `search_reindex_orphans_archived_total`,
+`search_reindex_cleanup_duration` and `search_reindex_cleanup_skipped_total`. Alert if archived
+orphan count is unexpectedly high for the requested scope or if cleanup fails after a successful
+scan.
+
 ## GitOps Promotion Usage
 
 Staging and prod GitOps values enable `serviceMonitor.enabled=true` so Prometheus Operator based

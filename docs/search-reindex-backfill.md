@@ -56,11 +56,22 @@ Auth:
 - `aud=search-service`
 - scope `internal:search:reindex:manage`
 
+Request:
+
+```json
+{
+  "mode": "WORKSPACE",
+  "workspaceId": "00000000-0000-0000-0000-000000000000",
+  "notebookId": null,
+  "cleanupOrphans": false
+}
+```
+
 ## Worker
 
 The scheduled worker claims a pending job with `FOR UPDATE SKIP LOCKED`, marks it `RUNNING`, then
 pulls batches from content-service. Each source item is converted to the existing
-`IndexDocumentRequest` and sent through `SearchIndexService.upsert`.
+`IndexDocumentRequest` and sent through the existing upsert path.
 
 State transitions:
 
@@ -68,6 +79,35 @@ State transitions:
 - `RUNNING` -> `COMPLETED`
 - `RUNNING` -> `FAILED`
 - `PENDING`/`RUNNING` -> `CANCELLED`
+
+## Mark And Sweep Cleanup
+
+Faz 28 adds an opt-in mark-and-sweep phase. `search_documents` stores:
+
+- `last_seen_reindex_job_id`
+- `last_seen_reindex_at`
+
+Every document seen during a reindex job is marked with the current job id. After a successful full
+scan, cleanup can archive active documents in the job scope that were not seen by the job. Cleanup
+never hard-deletes documents.
+
+Cleanup runs only when both conditions are true:
+
+- `SEARCH_REINDEX_ORPHAN_CLEANUP_ENABLED=true`
+- request `cleanupOrphans=true`
+
+If either is false, cleanup is skipped and the job can still complete. Cancelled and failed jobs do
+not run cleanup because their source scan may be incomplete.
+
+Scope rules:
+
+- `FULL`: all active search documents
+- `WORKSPACE`: active documents in `workspaceId`
+- `NOTEBOOK`: active documents in `workspaceId + notebookId`
+
+If an archived source note is seen, it remains archived in search. If an active source note is seen
+for an archived search document, the upsert clears `archivedAt` and restores it to active search
+eligibility.
 
 ## Consistency
 
@@ -78,8 +118,8 @@ State transitions:
 - archived source notes remain searchable only as archived documents and are excluded from public
   search results
 
-MVP does not perform orphan cleanup. Documents present in search-service but absent from
-content-service are not hard-deleted or archived by this phase.
+Documents present in search-service but absent from content-service are archived only when
+mark-and-sweep cleanup is enabled and requested. Hard delete remains out of scope.
 
 ## Observability
 
@@ -93,6 +133,9 @@ Metrics:
 - `search_reindex_indexed_total`
 - `search_reindex_duration`
 - `search_reindex_last_run_timestamp`
+- `search_reindex_orphans_archived_total`
+- `search_reindex_cleanup_duration`
+- `search_reindex_cleanup_skipped_total`
 
 Audit events:
 
@@ -101,5 +144,8 @@ Audit events:
 - `SEARCH_REINDEX_JOB_COMPLETED`
 - `SEARCH_REINDEX_JOB_FAILED`
 - `SEARCH_REINDEX_JOB_CANCELLED`
+- `SEARCH_REINDEX_CLEANUP_STARTED`
+- `SEARCH_REINDEX_CLEANUP_COMPLETED`
+- `SEARCH_REINDEX_CLEANUP_SKIPPED`
 
 Audit metadata does not include note body or extracted content.

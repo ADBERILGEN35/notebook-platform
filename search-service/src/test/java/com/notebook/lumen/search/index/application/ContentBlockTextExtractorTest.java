@@ -50,6 +50,6 @@ class ContentBlockTextExtractorTest {
         new SearchProperties.ContentSource("http://localhost", 1000, "content-service"),
         null,
         new SearchProperties.Internal(null, null),
-        new SearchProperties.Reindex(true, 100, 10, 100));
+        new SearchProperties.Reindex(true, 100, 10, 100, false));
   }
 }
