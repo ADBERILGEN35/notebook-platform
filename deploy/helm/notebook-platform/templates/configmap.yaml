@@ -137,6 +137,7 @@ data:
   EMAIL_WEBHOOK_SIGNATURE_HEADER: {{ .Values.config.emailWebhookSignatureHeader | quote }}
   EMAIL_WEBHOOK_TIMESTAMP_HEADER: {{ .Values.config.emailWebhookTimestampHeader | quote }}
   EMAIL_WEBHOOK_TOLERANCE_SECONDS: {{ .Values.config.emailWebhookToleranceSeconds | quote }}
+  EMAIL_WEBHOOK_REQUIRE_TIMESTAMP: {{ .Values.config.emailWebhookRequireTimestamp | quote }}
   EMAIL_GENERIC_HTTP_URL: {{ .Values.config.emailGenericHttpUrl | quote }}
   EMAIL_GENERIC_HTTP_AUTHORIZATION_HEADER: {{ .Values.config.emailGenericHttpAuthorizationHeader | quote }}
   EMAIL_GENERIC_HTTP_CONNECT_TIMEOUT_MS: {{ .Values.config.emailGenericHttpConnectTimeoutMs | quote }}
@@ -144,4 +145,5 @@ data:
   SMTP_HOST: {{ .Values.config.smtpHost | quote }}
   SMTP_PORT: {{ .Values.config.smtpPort | quote }}
   SMTP_FROM: {{ .Values.config.smtpFrom | quote }}
+  EMAIL_REPLY_TO: {{ .Values.config.emailReplyTo | quote }}
   SMTP_TLS_ENABLED: {{ .Values.config.smtpTlsEnabled | quote }}

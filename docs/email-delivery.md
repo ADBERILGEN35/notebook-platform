@@ -1,7 +1,8 @@
 # Email Delivery
 
 Email delivery is provider-agnostic. Faz 32 adds a generic HTTP provider, webhook event handling and
-suppression list behavior.
+suppression list behavior. Faz 33 adds deliverability readiness, replay-hardened webhooks and
+suppression ops.
 
 ## Providers
 
@@ -27,11 +28,13 @@ SMTP config:
 - `SMTP_USERNAME`
 - `SMTP_PASSWORD`
 - `SMTP_FROM`
+- `EMAIL_REPLY_TO`
 - `SMTP_TLS_ENABLED`
 - `EMAIL_GENERIC_HTTP_URL`
 - `EMAIL_GENERIC_HTTP_API_KEY`
 - `EMAIL_WEBHOOKS_ENABLED`
 - `EMAIL_WEBHOOK_SECRET`
+- `EMAIL_WEBHOOK_REQUIRE_TIMESTAMP`
 
 ## Security Rules
 
@@ -41,7 +44,9 @@ SMTP config:
 - Provider implementations must not log email bodies in production.
 - Service JWT private keys are mounted as files and never embedded in `application.yml`.
 - Webhook signatures are required when webhooks are enabled.
+- Production webhooks should require timestamp replay protection.
 - Provider payloads are sanitized before persistence/audit.
+- SPF/DKIM/DMARC records must be verified before real provider cutover.
 
 ## Deployment
 
@@ -55,8 +60,10 @@ Helm values expose:
 - `config.smtpHost`
 - `config.smtpPort`
 - `config.smtpFrom`
+- `config.emailReplyTo`
 - `config.smtpTlsEnabled`
 - `config.emailWebhooksEnabled`
+- `config.emailWebhookRequireTimestamp`
 - `config.emailGenericHttpUrl`
 - `secrets.data.smtpUsername`
 - `secrets.data.smtpPassword`

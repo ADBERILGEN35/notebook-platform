@@ -34,7 +34,10 @@ public class EmailProviderEventService {
 
   @Transactional
   public void process(String provider, EmailProviderWebhookEvent event) {
-    if (eventRepository.findByProviderAndProviderEventId(provider, event.providerEventId()).isPresent()) {
+    if (eventRepository
+        .findByProviderAndProviderEventId(provider, event.providerEventId())
+        .isPresent()) {
+      meterRegistry.counter("email_webhook_duplicate_total", "provider", provider).increment();
       return;
     }
     Instant now = Instant.now();
@@ -74,6 +77,16 @@ public class EmailProviderEventService {
                 case DELIVERED -> {
                   notification.markDelivered(
                       event.providerEventId(), event.occurredAt(), event.sanitizedPayload(), now);
+                  meterRegistry
+                      .counter(
+                          "email_delivery_status_total",
+                          "status",
+                          "delivered",
+                          "type",
+                          notification.getType().name().toLowerCase(java.util.Locale.ROOT),
+                          "provider",
+                          provider)
+                      .increment();
                   auditService.record(
                       "EMAIL_DELIVERED",
                       "EMAIL_NOTIFICATION",
@@ -90,6 +103,16 @@ public class EmailProviderEventService {
                       event.providerEventId(),
                       "WEBHOOK");
                   meterRegistry.counter("email_bounces_total", "provider", provider).increment();
+                  meterRegistry
+                      .counter(
+                          "email_delivery_status_total",
+                          "status",
+                          "bounced",
+                          "type",
+                          notification.getType().name().toLowerCase(java.util.Locale.ROOT),
+                          "provider",
+                          provider)
+                      .increment();
                   auditService.record(
                       "EMAIL_BOUNCED",
                       "EMAIL_NOTIFICATION",
@@ -106,6 +129,16 @@ public class EmailProviderEventService {
                       event.providerEventId(),
                       "WEBHOOK");
                   meterRegistry.counter("email_complaints_total", "provider", provider).increment();
+                  meterRegistry
+                      .counter(
+                          "email_delivery_status_total",
+                          "status",
+                          "complained",
+                          "type",
+                          notification.getType().name().toLowerCase(java.util.Locale.ROOT),
+                          "provider",
+                          provider)
+                      .increment();
                   auditService.record(
                       "EMAIL_COMPLAINED",
                       "EMAIL_NOTIFICATION",

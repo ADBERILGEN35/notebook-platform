@@ -5,6 +5,7 @@ import com.notebook.lumen.notification.email.provider.EmailProvider;
 import com.notebook.lumen.notification.email.provider.EmailProviderException;
 import com.notebook.lumen.notification.email.provider.EmailSendResult;
 import com.notebook.lumen.notification.shared.config.NotificationProperties;
+import io.micrometer.core.instrument.MeterRegistry;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -21,10 +22,15 @@ public class GenericHttpEmailProvider implements EmailProvider {
   private final String providerName;
   private final HttpClient httpClient;
   private final ObjectMapper objectMapper;
+  private final MeterRegistry meterRegistry;
 
-  public GenericHttpEmailProvider(NotificationProperties.GenericHttp properties, String providerName) {
+  public GenericHttpEmailProvider(
+      NotificationProperties.GenericHttp properties,
+      String providerName,
+      MeterRegistry meterRegistry) {
     this.properties = properties;
     this.providerName = providerName;
+    this.meterRegistry = meterRegistry;
     this.httpClient =
         HttpClient.newBuilder()
             .connectTimeout(Duration.ofMillis(effectiveConnectTimeoutMs()))
@@ -62,6 +68,14 @@ public class GenericHttpEmailProvider implements EmailProvider {
       }
       HttpResponse<String> response =
           httpClient.send(builder.build(), HttpResponse.BodyHandlers.ofString());
+      meterRegistry
+          .counter(
+              "email_provider_response_status_total",
+              "provider",
+              providerName,
+              "statusCode",
+              Integer.toString(response.statusCode()))
+          .increment();
       if (response.statusCode() < 200 || response.statusCode() >= 300) {
         throw new EmailProviderException(
             "Generic HTTP email provider returned status " + response.statusCode());
@@ -96,13 +110,14 @@ public class GenericHttpEmailProvider implements EmailProvider {
 
   private String body(EmailMessage message) {
     return """
-        {"to":"%s","subject":"%s","text":"%s","html":"%s","metadata":{"notificationId":"%s","type":"%s"}}
+        {"to":"%s","subject":"%s","text":"%s","html":"%s","replyTo":"%s","metadata":{"notificationId":"%s","type":"%s"}}
         """
         .formatted(
             json(message.recipient()),
             json(message.subject()),
             json(message.bodyText()),
             json(message.bodyHtml()),
+            json(message.replyTo()),
             json(message.metadata().getOrDefault("notificationId", "")),
             json(message.metadata().getOrDefault("type", "")));
   }

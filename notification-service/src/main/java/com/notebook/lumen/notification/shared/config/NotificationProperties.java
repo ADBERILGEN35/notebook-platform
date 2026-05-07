@@ -11,6 +11,7 @@ public record NotificationProperties(String workerInstanceId, Email email, Inter
   public record Email(
       String provider,
       String from,
+      String replyTo,
       boolean workerEnabled,
       int maxAttempts,
       long retryInitialDelaySeconds,
@@ -38,9 +39,11 @@ public record NotificationProperties(String workerInstanceId, Email email, Inter
       String signatureHeader,
       String timestampHeader,
       long toleranceSeconds,
+      boolean requireTimestamp,
       boolean allowNoopVerifier) {}
 
-  public record Internal(TrustedService trustedNotificationClient, TrustedService trustedIdentityClient) {}
+  public record Internal(
+      TrustedService trustedNotificationClient, TrustedService trustedIdentityClient) {}
 
   public record TrustedService(
       String kid,

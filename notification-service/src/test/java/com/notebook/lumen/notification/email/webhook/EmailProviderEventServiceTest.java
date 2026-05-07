@@ -21,7 +21,8 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 class EmailProviderEventServiceTest {
-  private final EmailProviderEventRepository eventRepository = mock(EmailProviderEventRepository.class);
+  private final EmailProviderEventRepository eventRepository =
+      mock(EmailProviderEventRepository.class);
   private final EmailNotificationRepository notificationRepository =
       mock(EmailNotificationRepository.class);
   private final EmailSuppressionService suppressionService = mock(EmailSuppressionService.class);
@@ -44,7 +45,12 @@ class EmailProviderEventServiceTest {
     service.process(
         "generic-http",
         new EmailProviderWebhookEvent(
-            "evt-1", "msg-1", EmailProviderEventType.DELIVERED, "user@example.com", Instant.now(), "{}"));
+            "evt-1",
+            "msg-1",
+            EmailProviderEventType.DELIVERED,
+            "user@example.com",
+            Instant.now(),
+            "{}"));
 
     assertThat(notification.getDeliveryStatus()).isEqualTo(EmailDeliveryStatus.DELIVERED);
     verify(suppressionService, never()).createIfAbsent(any(), any(), any(), any(), any());
@@ -61,7 +67,12 @@ class EmailProviderEventServiceTest {
     service.process(
         "generic-http",
         new EmailProviderWebhookEvent(
-            "evt-2", "msg-1", EmailProviderEventType.BOUNCE, "user@example.com", Instant.now(), "{}"));
+            "evt-2",
+            "msg-1",
+            EmailProviderEventType.BOUNCE,
+            "user@example.com",
+            Instant.now(),
+            "{}"));
 
     assertThat(notification.getDeliveryStatus()).isEqualTo(EmailDeliveryStatus.BOUNCED);
     verify(suppressionService)
@@ -77,7 +88,12 @@ class EmailProviderEventServiceTest {
     service.process(
         "generic-http",
         new EmailProviderWebhookEvent(
-            "evt-1", "msg-1", EmailProviderEventType.COMPLAINT, "user@example.com", Instant.now(), "{}"));
+            "evt-1",
+            "msg-1",
+            EmailProviderEventType.COMPLAINT,
+            "user@example.com",
+            Instant.now(),
+            "{}"));
 
     verify(notificationRepository, never()).findByProviderAndProviderMessageId(any(), any());
   }

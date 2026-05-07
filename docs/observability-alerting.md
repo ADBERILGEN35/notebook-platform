@@ -78,8 +78,16 @@ Faz 32 notification-service exposes provider lifecycle metrics:
 `email_provider_send_total{provider,status}`, `email_provider_send_failure_total{provider}`,
 `email_webhook_events_total{provider,eventType}`,
 `email_webhook_signature_failures_total{provider}`, `email_bounces_total{provider}`,
-`email_complaints_total{provider}` and `email_suppressed_total{reason}`. Alert on provider send
-failure spikes, webhook signature failures, bounce/complaint rate spikes and suppression spikes.
+`email_complaints_total{provider}` and `email_suppressed_total{reason}`.
+
+Faz 33 adds deliverability counters/gauges:
+`email_delivery_status_total{status,type,provider}`,
+`email_suppression_active_total{reason}`, `email_suppression_created_total{reason}`,
+`email_suppression_released_total{reason}`, `email_webhook_duplicate_total{provider}`,
+`email_webhook_replay_rejected_total{provider}` and
+`email_provider_response_status_total{provider,statusCode}`. Alert on provider send failure spikes,
+webhook signature/replay spikes, bounce/complaint rate spikes, provider 4xx/5xx spikes, suppression
+spikes and security notification failure spikes.
 
 Faz 26 content-service exposes search outbox metrics:
 `search_outbox_pending`, `search_outbox_failed`, `search_outbox_processed_total`,

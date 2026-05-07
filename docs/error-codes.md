@@ -67,10 +67,16 @@
 | DUPLICATE_NOTIFICATION | 409 | notification-service | Duplicate idempotency key | future strict duplicate mode |
 | INVALID_EMAIL_PROVIDER_CONFIG | 500 | notification-service | Email provider config invalid | unsupported provider |
 | EMAIL_WEBHOOK_DISABLED | 403 | notification-service | Provider webhook endpoint is disabled | webhook called before enablement |
-| INVALID_EMAIL_WEBHOOK_SIGNATURE | 401 | notification-service | Webhook signature invalid or replayed | bad HMAC |
+| INVALID_EMAIL_WEBHOOK_SIGNATURE | 401 | notification-service | Webhook signature invalid | bad HMAC |
+| EMAIL_WEBHOOK_REPLAY_REJECTED | 401 | notification-service | Webhook timestamp missing or outside tolerance | stale provider event |
 | EMAIL_WEBHOOK_EVENT_INVALID | 400 | notification-service | Webhook payload cannot be parsed | invalid provider JSON |
 | EMAIL_PROVIDER_EVENT_DUPLICATE | 200 | notification-service | Duplicate provider event ignored idempotently | repeated webhook |
 | EMAIL_RECIPIENT_SUPPRESSED | 409 | notification-service | Recipient is on active suppression list | bounced recipient |
+| EMAIL_SUPPRESSION_ACCESS_DENIED | 403 | notification-service | Suppression ops scope is missing | wrong service JWT scope |
+| EMAIL_SUPPRESSION_ALREADY_EXISTS | 409 | notification-service | Active suppression already exists | duplicate manual suppression |
+| EMAIL_SUPPRESSION_NOT_FOUND | 404 | notification-service | Suppression record was not found | release unknown id |
+| INVALID_EMAIL_SUPPRESSION_REQUEST | 400 | notification-service | Suppression request is invalid | missing email/reason |
+| EMAIL_PROVIDER_READINESS_FAILED | 1 | scripts | Email provider readiness check failed | missing DNS/provider config |
 | EMAIL_SUPPRESSION_NOT_FOUND | 404 | notification-service | Suppression record not found | future operator API |
 | SEARCH_ACCESS_DENIED | 401/403 | search-service | Missing/insufficient search auth | missing service JWT |
 | INVALID_SEARCH_QUERY | 400 | search-service | Search query is missing or invalid | blank q |

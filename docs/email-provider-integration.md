@@ -22,6 +22,7 @@ Config:
 - `EMAIL_GENERIC_HTTP_URL`
 - `EMAIL_GENERIC_HTTP_API_KEY`
 - `EMAIL_GENERIC_HTTP_AUTHORIZATION_HEADER=Authorization`
+- `EMAIL_REPLY_TO` optional monitored reply address
 - `EMAIL_GENERIC_HTTP_CONNECT_TIMEOUT_MS=1000`
 - `EMAIL_GENERIC_HTTP_REQUEST_TIMEOUT_MS=3000`
 
@@ -34,6 +35,15 @@ Production fail-fast:
 - `EMAIL_PROVIDER=generic-http|sendgrid` requires URL and API key.
 
 SMTP remains a fallback provider. The generic HTTP provider is intended for managed providers that expose HTTPS send APIs.
+
+## Production Readiness
+
+Before switching production traffic to a real provider:
+
+- publish provider-specific SPF/DKIM/DMARC records from [`email-dns-records.md`](email-dns-records.md);
+- complete the domain checklist in [`email-deliverability.md`](email-deliverability.md);
+- run `scripts/email/provider-readiness-check.sh` in staging;
+- enable signed delivery/bounce/complaint webhooks with timestamp replay protection.
 
 ## Identity Security Email
 

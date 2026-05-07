@@ -250,8 +250,8 @@ Prod:
   search reindex config are synced.
 - OpenSearch is externally managed, reachable from search-service, and fallback is intentionally
   enabled or disabled according to the approved rollout step.
-- Email webhooks remain disabled until provider HMAC validation and replay behavior are verified
-  through staging.
+- Email webhooks remain disabled until provider HMAC validation, timestamp replay behavior and
+  `scripts/email/provider-readiness-check.sh` are verified through staging.
 - NetworkPolicy is enabled.
 - Resource requests support HPA.
 - Grafana dashboards and Prometheus alert rules are loaded.

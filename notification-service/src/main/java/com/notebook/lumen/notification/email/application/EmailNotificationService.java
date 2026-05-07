@@ -73,9 +73,7 @@ public class EmailNotificationService {
           UUID.nameUUIDFromBytes(recipientEmail.getBytes(java.nio.charset.StandardCharsets.UTF_8)),
           Map.of("recipientEmailMasked", maskEmail(recipientEmail), "source", "enqueue"));
       throw new NotificationException(
-          HttpStatus.CONFLICT,
-          "EMAIL_RECIPIENT_SUPPRESSED",
-          "Email recipient is suppressed");
+          HttpStatus.CONFLICT, "EMAIL_RECIPIENT_SUPPRESSED", "Email recipient is suppressed");
     }
     EmailNotification notification =
         new EmailNotification(
@@ -135,6 +133,16 @@ public class EmailNotificationService {
               "recipientEmailMasked",
               maskEmail(notification.getRecipientEmail())));
       meterRegistry.counter("email_suppressed_total", "reason", "existing").increment();
+      meterRegistry
+          .counter(
+              "email_delivery_status_total",
+              "status",
+              "suppressed",
+              "type",
+              notification.getType().name().toLowerCase(java.util.Locale.ROOT),
+              "provider",
+              provider.providerName())
+          .increment();
       return;
     }
     notification.markSending(workerInstanceId, now, now.plusSeconds(effectiveLockTimeoutSeconds()));
@@ -146,6 +154,7 @@ public class EmailNotificationService {
                   notification.getSubject(),
                   notification.getBodyText(),
                   notification.getBodyHtml(),
+                  blankToNull(properties.email().replyTo()),
                   Map.of(
                       "notificationId",
                       notification.getId().toString(),
@@ -159,6 +168,16 @@ public class EmailNotificationService {
               result.provider(),
               "status",
               safeValue(result.providerStatus()))
+          .increment();
+      meterRegistry
+          .counter(
+              "email_delivery_status_total",
+              "status",
+              "accepted",
+              "type",
+              notification.getType().name().toLowerCase(java.util.Locale.ROOT),
+              "provider",
+              result.provider())
           .increment();
       auditService.record(
           "EMAIL_NOTIFICATION_SENT",
@@ -177,7 +196,8 @@ public class EmailNotificationService {
               workerInstanceId));
     } catch (RuntimeException e) {
       meterRegistry
-          .counter("email_provider_send_failure_total", "provider", safeValue(provider.providerName()))
+          .counter(
+              "email_provider_send_failure_total", "provider", safeValue(provider.providerName()))
           .increment();
       handleFailure(notification, e);
     }

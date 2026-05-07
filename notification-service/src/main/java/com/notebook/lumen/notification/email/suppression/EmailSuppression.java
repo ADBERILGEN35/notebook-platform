@@ -22,6 +22,7 @@ public class EmailSuppression {
   private String source;
   private Instant createdAt;
   private Instant expiresAt;
+  private Instant releasedAt;
 
   protected EmailSuppression() {}
 
@@ -54,5 +55,53 @@ public class EmailSuppression {
 
   public EmailSuppressionReason getReason() {
     return reason;
+  }
+
+  public String getProvider() {
+    return provider;
+  }
+
+  public String getProviderEventId() {
+    return providerEventId;
+  }
+
+  public String getSource() {
+    return source;
+  }
+
+  public Instant getCreatedAt() {
+    return createdAt;
+  }
+
+  public Instant getExpiresAt() {
+    return expiresAt;
+  }
+
+  public Instant getReleasedAt() {
+    return releasedAt;
+  }
+
+  public boolean active(Instant now) {
+    return releasedAt == null && (expiresAt == null || expiresAt.isAfter(now));
+  }
+
+  public void release(Instant now) {
+    this.releasedAt = now;
+  }
+
+  public void replace(
+      EmailSuppressionReason reason,
+      String provider,
+      String providerEventId,
+      String source,
+      Instant now,
+      Instant expiresAt) {
+    this.reason = reason;
+    this.provider = provider;
+    this.providerEventId = providerEventId;
+    this.source = source;
+    this.createdAt = now;
+    this.expiresAt = expiresAt;
+    this.releasedAt = null;
   }
 }

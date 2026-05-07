@@ -73,6 +73,7 @@ class InternalNotificationAuthorizerTest {
         new NotificationProperties.Email(
             "noop",
             "no-reply@example.com",
+            "",
             true,
             5,
             60,
@@ -83,7 +84,14 @@ class InternalNotificationAuthorizerTest {
             new NotificationProperties.Smtp("localhost", 587, "", "", true),
             new NotificationProperties.GenericHttp("", "", "Authorization", 1000, 3000),
             new NotificationProperties.Webhooks(
-                false, "generic-http", "", "X-Email-Signature", "X-Email-Timestamp", 300, false)),
+                false,
+                "generic-http",
+                "",
+                "X-Email-Signature",
+                "X-Email-Timestamp",
+                300,
+                false,
+                false)),
         new NotificationProperties.Internal(
             new NotificationProperties.TrustedService(
                 "workspace-key-1",

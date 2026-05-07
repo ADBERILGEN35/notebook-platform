@@ -42,6 +42,7 @@ notification:
   email:
     provider: ${EMAIL_PROVIDER:log}
     from: ${SMTP_FROM:no-reply@example.com}
+    reply-to: ${EMAIL_REPLY_TO:}
     worker-enabled: ${EMAIL_WORKER_ENABLED:true}
     max-attempts: ${EMAIL_MAX_ATTEMPTS:5}
     retry-initial-delay-seconds: ${EMAIL_RETRY_INITIAL_DELAY_SECONDS:60}
@@ -62,6 +63,7 @@ notification:
       signature-header: ${EMAIL_WEBHOOK_SIGNATURE_HEADER:X-Email-Signature}
       timestamp-header: ${EMAIL_WEBHOOK_TIMESTAMP_HEADER:X-Email-Timestamp}
       tolerance-seconds: ${EMAIL_WEBHOOK_TOLERANCE_SECONDS:300}
+      require-timestamp: ${EMAIL_WEBHOOK_REQUIRE_TIMESTAMP:false}
       allow-noop-verifier: ${EMAIL_WEBHOOK_ALLOW_NOOP_VERIFIER:false}
     smtp:
       host: ${SMTP_HOST:localhost}

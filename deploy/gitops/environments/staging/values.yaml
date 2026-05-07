@@ -28,7 +28,9 @@ config:
   emailProvider: "generic-http"
   emailWebhooksEnabled: "true"
   emailWebhookProvider: "generic-http"
+  emailWebhookRequireTimestamp: "true"
   emailGenericHttpUrl: "https://email-provider.staging.example.internal/send"
+  emailReplyTo: "support@example.com"
   identitySecurityNotificationsEnabled: "true"
 
 secrets:

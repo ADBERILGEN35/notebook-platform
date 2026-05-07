@@ -20,11 +20,16 @@ POST /webhooks/email/{provider}
 
 Webhooks are disabled by default and require HMAC-SHA256 verification when enabled. The endpoint is
 public-routable through api-gateway but does not accept user JWT as authentication.
+Production webhook mode requires a timestamp header and replay tolerance.
 
 ## Suppression
 
 Bounce and complaint events create suppression records. Sending to a suppressed recipient returns
 `409 EMAIL_RECIPIENT_SUPPRESSED` and the provider is not called.
+
+Internal suppression operations are available at `/internal/email/suppressions` with service JWT
+scopes `internal:notification:suppression:read` and
+`internal:notification:suppression:manage`.
 
 Docs:
 
@@ -33,3 +38,5 @@ Docs:
 - [`../docs/email-provider-integration.md`](../docs/email-provider-integration.md)
 - [`../docs/email-webhooks.md`](../docs/email-webhooks.md)
 - [`../docs/email-suppression.md`](../docs/email-suppression.md)
+- [`../docs/email-deliverability.md`](../docs/email-deliverability.md)
+- [`../docs/email-dns-records.md`](../docs/email-dns-records.md)

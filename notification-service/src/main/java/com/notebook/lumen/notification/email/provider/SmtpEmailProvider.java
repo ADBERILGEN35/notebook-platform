@@ -34,6 +34,9 @@ public class SmtpEmailProvider implements EmailProvider {
       MimeMessageHelper helper =
           new MimeMessageHelper(mimeMessage, true, StandardCharsets.UTF_8.name());
       helper.setFrom(from);
+      if (hasText(message.replyTo())) {
+        helper.setReplyTo(message.replyTo());
+      }
       helper.setTo(message.recipient());
       helper.setSubject(message.subject());
       if (hasText(message.bodyHtml())) {

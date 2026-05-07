@@ -18,25 +18,41 @@ public class HmacSha256EmailWebhookVerifier implements EmailWebhookVerifier {
   }
 
   @Override
-  public boolean verify(String provider, HttpHeaders headers, String body) {
+  public boolean supports(String provider) {
+    return provider != null
+        && (provider.equalsIgnoreCase("generic-http")
+            || provider.equalsIgnoreCase("sendgrid")
+            || provider.equalsIgnoreCase(properties.email().webhooks().provider()));
+  }
+
+  @Override
+  public EmailWebhookVerificationResult verify(HttpHeaders headers, String body) {
     var webhooks = properties.email().webhooks();
     if (!hasText(webhooks.secret())) {
-      return webhooks.allowNoopVerifier();
+      return webhooks.allowNoopVerifier()
+          ? EmailWebhookVerificationResult.accepted()
+          : EmailWebhookVerificationResult.rejected();
     }
     String signature = headers.getFirst(webhooks.signatureHeader());
     if (!hasText(signature)) {
-      return false;
+      return EmailWebhookVerificationResult.rejected();
     }
     String timestamp =
         hasText(webhooks.timestampHeader()) ? headers.getFirst(webhooks.timestampHeader()) : null;
+    if (!hasText(timestamp) && webhooks.requireTimestamp()) {
+      return EmailWebhookVerificationResult.rejectedAsReplay();
+    }
     if (hasText(timestamp) && replay(timestamp, webhooks.toleranceSeconds())) {
-      return false;
+      return EmailWebhookVerificationResult.rejectedAsReplay();
     }
     String payload = hasText(timestamp) ? timestamp + "." + body : body;
     String expected = hmac(webhooks.secret(), payload);
-    String normalized = signature.startsWith("sha256=") ? signature.substring("sha256=".length()) : signature;
+    String normalized =
+        signature.startsWith("sha256=") ? signature.substring("sha256=".length()) : signature;
     return java.security.MessageDigest.isEqual(
-        expected.getBytes(StandardCharsets.UTF_8), normalized.getBytes(StandardCharsets.UTF_8));
+            expected.getBytes(StandardCharsets.UTF_8), normalized.getBytes(StandardCharsets.UTF_8))
+        ? EmailWebhookVerificationResult.accepted()
+        : EmailWebhookVerificationResult.rejected();
   }
 
   private boolean replay(String timestamp, long toleranceSeconds) {

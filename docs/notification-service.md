@@ -46,6 +46,17 @@ Response:
 
 Normal user access tokens are not accepted. The endpoint is for internal service callers only.
 
+Suppression operations are also internal-only:
+
+```http
+GET /internal/email/suppressions
+POST /internal/email/suppressions
+POST /internal/email/suppressions/{id}/release
+```
+
+Required scopes are `internal:notification:suppression:read` for listing and
+`internal:notification:suppression:manage` for create/release.
+
 ## Domain Model
 
 `email_notifications` stores DB-backed email queue state:
@@ -110,6 +121,8 @@ notification-service writes internal audit events:
 - `EMAIL_COMPLAINED`
 - `EMAIL_SUPPRESSED`
 - `EMAIL_SUPPRESSION_CREATED`
+- `EMAIL_SUPPRESSION_MANUALLY_CREATED`
+- `EMAIL_SUPPRESSION_RELEASED`
 - `EMAIL_WEBHOOK_SIGNATURE_REJECTED`
 
 Email addresses are masked in notification audit metadata. Accept URLs are not written to audit
@@ -124,6 +137,8 @@ suppression state. See:
 - [`email-provider-integration.md`](email-provider-integration.md)
 - [`email-webhooks.md`](email-webhooks.md)
 - [`email-suppression.md`](email-suppression.md)
+- [`email-deliverability.md`](email-deliverability.md)
+- [`email-dns-records.md`](email-dns-records.md)
 
 `SENT` still means provider accepted the message. Delivery lifecycle is tracked separately through
 `deliveryStatus`.

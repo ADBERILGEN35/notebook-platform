@@ -7,4 +7,5 @@ public record EmailMessage(
     String subject,
     String bodyText,
     String bodyHtml,
+    String replyTo,
     Map<String, String> metadata) {}

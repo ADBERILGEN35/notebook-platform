@@ -206,8 +206,12 @@ endpoint.
 The chart keeps notification-service as an internal ClusterIP service. api-gateway may route
 `/webhooks/email/**` to notification-service so external providers can deliver signed events without
 user JWT. Keep `EMAIL_WEBHOOKS_ENABLED=false` until an ExternalSecret-backed `email-webhook-secret`
-is present and ingress/network allow rules are reviewed.
+is present, `EMAIL_WEBHOOK_REQUIRE_TIMESTAMP=true` is set and ingress/network allow rules are
+reviewed.
 
 Provider API keys are Secret values (`email-provider-api-key`). Webhook secrets are Secret values
 (`email-webhook-secret`). Do not put provider keys or webhook secrets into ConfigMaps or GitOps
 plain values.
+
+Run `scripts/email/provider-readiness-check.sh` with the environment values before enabling a real
+provider.

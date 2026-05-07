@@ -11,7 +11,9 @@ import org.springframework.stereotype.Component;
 @Component
 public class InternalNotificationAuthorizer {
   public static final String HEADER_NAME = "X-Service-Authorization";
-  public static final String REQUIRED_SCOPE = "internal:notification:email:send";
+  public static final String EMAIL_SEND_SCOPE = "internal:notification:email:send";
+  public static final String SUPPRESSION_READ_SCOPE = "internal:notification:suppression:read";
+  public static final String SUPPRESSION_MANAGE_SCOPE = "internal:notification:suppression:manage";
 
   private final NotificationProperties properties;
 
@@ -20,6 +22,10 @@ public class InternalNotificationAuthorizer {
   }
 
   public void authorize(String serviceAuthorization) {
+    authorize(serviceAuthorization, EMAIL_SEND_SCOPE);
+  }
+
+  public void authorize(String serviceAuthorization, String requiredScope) {
     if (serviceAuthorization == null || serviceAuthorization.isBlank()) {
       throw new NotificationException(
           HttpStatus.UNAUTHORIZED, "NOTIFICATION_ACCESS_DENIED", "Service JWT is required");
@@ -48,7 +54,7 @@ public class InternalNotificationAuthorizer {
                     trustedService.audience(),
                     trustedService.clockSkew(),
                     trustedService.allowedScopeSet()))
-            .verify(bearerToken(serviceAuthorization), REQUIRED_SCOPE);
+            .verify(bearerToken(serviceAuthorization), requiredScope);
         return;
       } catch (ServiceJwtValidationException e) {
         validationFailure = e;

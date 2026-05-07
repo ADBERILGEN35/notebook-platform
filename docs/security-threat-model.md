@@ -118,8 +118,8 @@
 
 - Risk: An attacker forges bounce/complaint events and suppresses valid recipients.
 - Current mitigation: notification-service requires HMAC-SHA256 signatures for enabled webhooks and
-  rejects timestamp replay outside `EMAIL_WEBHOOK_TOLERANCE_SECONDS` when a timestamp header is
-  present.
+  can require timestamp headers with `EMAIL_WEBHOOK_REQUIRE_TIMESTAMP=true`; replay outside
+  `EMAIL_WEBHOOK_TOLERANCE_SECONDS` is rejected.
 - Remaining gap: Provider-specific signature schemes such as SendGrid signed event webhooks and AWS
   SNS certificate validation are future adapters.
 - Recommended next action: Keep generic webhook secrets in External Secrets and validate provider

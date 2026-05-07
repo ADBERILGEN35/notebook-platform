@@ -162,6 +162,9 @@ Content:
 - `GET /internal/notebooks/{notebookId}/permissions?userId={userId}`
 - `GET /internal/workspaces/{workspaceId}/tags/{tagId}/exists?scope=NOTE`
 - `POST /internal/notifications/email`
+- `GET /internal/email/suppressions`
+- `POST /internal/email/suppressions`
+- `POST /internal/email/suppressions/{id}/release`
 - `POST /webhooks/email/{provider}`
 - `POST /internal/search/documents`
 - `DELETE /internal/search/documents/{noteId}`
@@ -183,6 +186,9 @@ title/content/query text are excluded.
 `POST /webhooks/email/{provider}` is public-routable through api-gateway but authenticated by
 provider signature, not user JWT. It accepts provider-specific JSON and returns an accepted event
 count.
+
+Suppression ops endpoints are internal-only and require service JWT scopes
+`internal:notification:suppression:read` or `internal:notification:suppression:manage`.
 
 ## Idempotency
 

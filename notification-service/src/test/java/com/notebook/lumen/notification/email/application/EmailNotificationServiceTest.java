@@ -19,8 +19,8 @@ import com.notebook.lumen.notification.email.provider.EmailProvider;
 import com.notebook.lumen.notification.email.provider.EmailProviderException;
 import com.notebook.lumen.notification.email.provider.EmailSendResult;
 import com.notebook.lumen.notification.email.suppression.EmailSuppressionService;
-import com.notebook.lumen.notification.shared.exception.NotificationException;
 import com.notebook.lumen.notification.shared.config.NotificationProperties;
+import com.notebook.lumen.notification.shared.exception.NotificationException;
 import com.notebook.lumen.notification.template.application.EmailTemplateRenderer;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import java.time.Instant;
@@ -134,7 +134,9 @@ class EmailNotificationServiceTest {
     when(renderer.render(any(), any()))
         .thenReturn(new EmailTemplateRenderer.RenderedEmail("body text", "body html"));
     when(suppressionService.active("user@example.com"))
-        .thenReturn(Optional.of(mock(com.notebook.lumen.notification.email.suppression.EmailSuppression.class)));
+        .thenReturn(
+            Optional.of(
+                mock(com.notebook.lumen.notification.email.suppression.EmailSuppression.class)));
 
     assertThatThrownBy(() -> service.enqueue(request("workspace-invitation:1")))
         .isInstanceOf(NotificationException.class)
@@ -218,6 +220,7 @@ class EmailNotificationServiceTest {
         new NotificationProperties.Email(
             "noop",
             "no-reply@example.com",
+            "",
             true,
             5,
             60,
@@ -228,7 +231,14 @@ class EmailNotificationServiceTest {
             new NotificationProperties.Smtp("localhost", 587, "", "", true),
             new NotificationProperties.GenericHttp("", "", "Authorization", 1000, 3000),
             new NotificationProperties.Webhooks(
-                false, "generic-http", "", "X-Email-Signature", "X-Email-Timestamp", 300, false)),
+                false,
+                "generic-http",
+                "",
+                "X-Email-Signature",
+                "X-Email-Timestamp",
+                300,
+                false,
+                false)),
         new NotificationProperties.Internal(
             new NotificationProperties.TrustedService(
                 "", "", "", "workspace-service", "notification-service", 5, ""),
@@ -241,6 +251,7 @@ class EmailNotificationServiceTest {
         new NotificationProperties.Email(
             "noop",
             "no-reply@example.com",
+            "",
             false,
             5,
             60,
@@ -251,7 +262,14 @@ class EmailNotificationServiceTest {
             new NotificationProperties.Smtp("localhost", 587, "", "", true),
             new NotificationProperties.GenericHttp("", "", "Authorization", 1000, 3000),
             new NotificationProperties.Webhooks(
-                false, "generic-http", "", "X-Email-Signature", "X-Email-Timestamp", 300, false)),
+                false,
+                "generic-http",
+                "",
+                "X-Email-Signature",
+                "X-Email-Timestamp",
+                300,
+                false,
+                false)),
         new NotificationProperties.Internal(
             new NotificationProperties.TrustedService(
                 "", "", "", "workspace-service", "notification-service", 5, ""),

@@ -33,8 +33,14 @@ public class ProductionSecurityValidator implements ApplicationRunner {
       throw new IllegalStateException(
           "EMAIL_GENERIC_HTTP_URL and EMAIL_GENERIC_HTTP_API_KEY are required for HTTP email provider in prod");
     }
-    if (properties.email().webhooks().enabled() && isBlank(properties.email().webhooks().secret())) {
+    if (properties.email().webhooks().enabled()
+        && isBlank(properties.email().webhooks().secret())) {
       throw new IllegalStateException("EMAIL_WEBHOOK_SECRET is required when webhooks are enabled");
+    }
+    if (properties.email().webhooks().enabled()
+        && !properties.email().webhooks().requireTimestamp()) {
+      throw new IllegalStateException(
+          "EMAIL_WEBHOOK_REQUIRE_TIMESTAMP=true is required when webhooks are enabled in prod");
     }
     if (properties.internal().trustedNotificationClient() == null
         || !properties.internal().trustedNotificationClient().configured()) {

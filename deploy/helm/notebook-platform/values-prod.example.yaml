@@ -20,6 +20,7 @@ config:
   smtpHost: "smtp.example.internal"
   smtpPort: "587"
   smtpFrom: "security@example.com"
+  emailReplyTo: "support@example.com"
   smtpTlsEnabled: "true"
   workspaceServiceJwtActiveKid: "workspace-service-key-1"
   searchOutboxWorkerEnabled: "true"

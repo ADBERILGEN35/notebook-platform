@@ -20,7 +20,7 @@ class HmacSha256EmailWebhookVerifierTest {
     headers.set("X-Email-Timestamp", timestamp);
     headers.set("X-Email-Signature", "sha256=" + hmac("secret", timestamp + "." + body));
 
-    assertThat(verifier().verify("generic-http", headers, body)).isTrue();
+    assertThat(verifier(false).verify(headers, body).verified()).isTrue();
   }
 
   @Test
@@ -29,7 +29,7 @@ class HmacSha256EmailWebhookVerifierTest {
     headers.set("X-Email-Timestamp", String.valueOf(Instant.now().getEpochSecond()));
     headers.set("X-Email-Signature", "sha256=bad");
 
-    assertThat(verifier().verify("generic-http", headers, "{}")).isFalse();
+    assertThat(verifier(false).verify(headers, "{}").verified()).isFalse();
   }
 
   @Test
@@ -40,19 +40,52 @@ class HmacSha256EmailWebhookVerifierTest {
     headers.set("X-Email-Timestamp", timestamp);
     headers.set("X-Email-Signature", "sha256=" + hmac("secret", timestamp + "." + body));
 
-    assertThat(verifier().verify("generic-http", headers, body)).isFalse();
+    var result = verifier(false).verify(headers, body);
+
+    assertThat(result.verified()).isFalse();
+    assertThat(result.replayRejected()).isTrue();
   }
 
-  private HmacSha256EmailWebhookVerifier verifier() {
-    return new HmacSha256EmailWebhookVerifier(properties());
+  @Test
+  void rejectsFutureTimestampOutsideTolerance() {
+    String body = "{}";
+    String timestamp = String.valueOf(Instant.now().plusSeconds(1000).getEpochSecond());
+    HttpHeaders headers = new HttpHeaders();
+    headers.set("X-Email-Timestamp", timestamp);
+    headers.set("X-Email-Signature", "sha256=" + hmac("secret", timestamp + "." + body));
+
+    assertThat(verifier(false).verify(headers, body).replayRejected()).isTrue();
   }
 
-  private NotificationProperties properties() {
+  @Test
+  void rejectsMissingTimestampWhenRequired() {
+    String body = "{}";
+    HttpHeaders headers = new HttpHeaders();
+    headers.set("X-Email-Signature", "sha256=" + hmac("secret", body));
+
+    assertThat(verifier(true).verify(headers, body).replayRejected()).isTrue();
+  }
+
+  @Test
+  void acceptsMissingTimestampWhenNotRequired() {
+    String body = "{}";
+    HttpHeaders headers = new HttpHeaders();
+    headers.set("X-Email-Signature", "sha256=" + hmac("secret", body));
+
+    assertThat(verifier(false).verify(headers, body).verified()).isTrue();
+  }
+
+  private HmacSha256EmailWebhookVerifier verifier(boolean requireTimestamp) {
+    return new HmacSha256EmailWebhookVerifier(properties(requireTimestamp));
+  }
+
+  private NotificationProperties properties(boolean requireTimestamp) {
     return new NotificationProperties(
         "",
         new NotificationProperties.Email(
             "generic-http",
             "no-reply@example.com",
+            "",
             true,
             5,
             60,
@@ -69,6 +102,7 @@ class HmacSha256EmailWebhookVerifierTest {
                 "X-Email-Signature",
                 "X-Email-Timestamp",
                 300,
+                requireTimestamp,
                 false)),
         new NotificationProperties.Internal(null, null));
   }

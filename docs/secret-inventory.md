@@ -39,6 +39,7 @@ Faz 9 standardizes runtime secrets around environment variables, file-based secr
 | `SMTP_PASSWORD` | notification-service | Yes | Yes when `EMAIL_PROVIDER=smtp` in prod | Yes | Empty allowed in dev/log/noop | Yes |
 | `EMAIL_GENERIC_HTTP_API_KEY` | notification-service | Yes | Yes when `EMAIL_PROVIDER=generic-http` or `sendgrid` in prod | Yes | Empty allowed outside HTTP provider mode | Yes |
 | `EMAIL_WEBHOOK_SECRET` | notification-service | Yes | Yes when `EMAIL_WEBHOOKS_ENABLED=true` | Yes | Empty allowed when webhooks disabled | Yes |
+| `EMAIL_REPLY_TO` | notification-service | No | Optional monitored reply mailbox | Yes | Empty allowed | No |
 | `IDENTITY_SERVICE_JWT_PRIVATE_KEY_PATH` | identity-service | No, points to secret | Required when identity security notifications are enabled | Yes | Empty allowed when disabled | Do not log contents |
 | `TRUSTED_SERVICE_IDENTITY_SERVICE_PUBLIC_KEY_PATH` | notification-service | No, points to public key | Required when accepting identity-service security email requests | Yes | Empty rejects identity caller | Do not log contents |
 | `SEARCH_DB_PASSWORD` | search-service | Yes | Yes | Yes | Empty only in local dev | Yes |

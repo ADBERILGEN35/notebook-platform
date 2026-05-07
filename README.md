@@ -89,8 +89,9 @@ Ayrintilar ve curl ornekleri: [`content-service/README.md`](content-service/READ
 
 Faz 24 ile `notification-service` invitation ve security email altyapisi icin eklendi. Faz 32
 generic HTTP provider, signed provider webhook, bounce/complaint handling ve suppression list
-ekler. Internal send endpointi `X-Service-Authorization` service JWT ile korunur; webhook route'u
-user JWT yerine provider signature ile korunur.
+ekler. Faz 33 SPF/DKIM/DMARC readiness, timestamp replay hardening ve internal suppression ops
+standardini ekler. Internal send endpointi `X-Service-Authorization` service JWT ile korunur;
+webhook route'u user JWT yerine provider signature ile korunur.
 
 Workspace invitation create akisi notification-service'e email request'i gonderir. Notification
 request kabul edilmezse invitation transaction rollback olur ve `503 NOTIFICATION_SERVICE_UNAVAILABLE`
@@ -100,7 +101,9 @@ Ayrintilar: [`docs/notification-service.md`](docs/notification-service.md),
 [`docs/email-delivery.md`](docs/email-delivery.md),
 [`docs/email-provider-integration.md`](docs/email-provider-integration.md),
 [`docs/email-webhooks.md`](docs/email-webhooks.md) ve
-[`docs/email-suppression.md`](docs/email-suppression.md)
+[`docs/email-suppression.md`](docs/email-suppression.md),
+[`docs/email-deliverability.md`](docs/email-deliverability.md),
+[`docs/email-dns-records.md`](docs/email-dns-records.md)
 
 ## Search Service
 
@@ -299,3 +302,5 @@ Dokumanlar:
 - [`docs/email-provider-integration.md`](docs/email-provider-integration.md)
 - [`docs/email-webhooks.md`](docs/email-webhooks.md)
 - [`docs/email-suppression.md`](docs/email-suppression.md)
+- [`docs/email-deliverability.md`](docs/email-deliverability.md)
+- [`docs/email-dns-records.md`](docs/email-dns-records.md)

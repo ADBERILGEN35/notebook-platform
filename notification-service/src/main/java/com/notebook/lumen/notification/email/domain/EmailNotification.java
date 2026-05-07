@@ -26,6 +26,7 @@ public class EmailNotification {
 
   private String provider;
   private String providerMessageId;
+
   @Enumerated(EnumType.STRING)
   private EmailDeliveryStatus deliveryStatus;
 
@@ -121,7 +122,8 @@ public class EmailNotification {
     this.updatedAt = now;
   }
 
-  public void markDelivered(String providerEventId, Instant occurredAt, String payload, Instant now) {
+  public void markDelivered(
+      String providerEventId, Instant occurredAt, String payload, Instant now) {
     this.deliveryStatus = EmailDeliveryStatus.DELIVERED;
     this.providerEventId = providerEventId;
     this.providerEventPayload = truncate(payload);

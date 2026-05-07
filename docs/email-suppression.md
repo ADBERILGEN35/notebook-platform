@@ -1,6 +1,6 @@
 # Email Suppression
 
-Faz 32 adds recipient suppression to prevent repeated sends to bounced or complained addresses.
+Recipient suppression prevents repeated sends to bounced, complained or manually suppressed addresses.
 
 ## Domain
 
@@ -11,8 +11,9 @@ Faz 32 adds recipient suppression to prevent repeated sends to bounced or compla
 - provider and provider event id
 - source
 - created and optional expiry timestamps
+- optional release timestamp
 
-The table enforces uniqueness on `lower(email)`.
+The table enforces uniqueness on `lower(email)`. Active behavior is determined by `released_at is null` and `expires_at is null or expires_at > now`.
 
 ## Behavior
 
@@ -36,3 +37,30 @@ Workspace invitation behavior:
 - invitation creation fails instead of creating an invitation with no deliverable email.
 
 Marketing unsubscribe/preferences are not part of Faz 32.
+
+## Internal Ops API
+
+Suppression management is internal-only and requires `X-Service-Authorization` service JWT.
+
+```http
+GET /internal/email/suppressions?email=user@example.com&reason=MANUAL&activeOnly=true&page=0&size=50
+POST /internal/email/suppressions
+POST /internal/email/suppressions/{id}/release
+```
+
+Scopes:
+
+- Read: `internal:notification:suppression:read`
+- Create/release: `internal:notification:suppression:manage`
+
+Manual create request:
+
+```json
+{
+  "email": "user@example.com",
+  "reason": "MANUAL",
+  "expiresAt": null
+}
+```
+
+Active suppressions block notification enqueue and worker sends. Expired or released suppressions do not block future sends. Internal responses include full email addresses; operators must treat this endpoint as sensitive personal data access.

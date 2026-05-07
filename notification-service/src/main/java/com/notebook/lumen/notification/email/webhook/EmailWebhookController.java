@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/webhooks/email")
 public class EmailWebhookController {
   private final NotificationProperties properties;
-  private final EmailWebhookVerifier verifier;
+  private final EmailWebhookVerifierRegistry verifierRegistry;
   private final EmailWebhookParser parser;
   private final EmailProviderEventService eventService;
   private final AuditService auditService;
@@ -27,13 +27,13 @@ public class EmailWebhookController {
 
   public EmailWebhookController(
       NotificationProperties properties,
-      EmailWebhookVerifier verifier,
+      EmailWebhookVerifierRegistry verifierRegistry,
       EmailWebhookParser parser,
       EmailProviderEventService eventService,
       AuditService auditService,
       MeterRegistry meterRegistry) {
     this.properties = properties;
-    this.verifier = verifier;
+    this.verifierRegistry = verifierRegistry;
     this.parser = parser;
     this.eventService = eventService;
     this.auditService = auditService;
@@ -48,14 +48,31 @@ public class EmailWebhookController {
           HttpStatus.FORBIDDEN, "EMAIL_WEBHOOK_DISABLED", "Email webhooks are disabled");
     }
     String normalizedProvider = provider.trim().toLowerCase(java.util.Locale.ROOT);
-    if (!verifier.verify(normalizedProvider, headers, body)) {
+    var verification = verifierRegistry.verifierFor(normalizedProvider).verify(headers, body);
+    if (!verification.verified()) {
+      if (verification.replayRejected()) {
+        meterRegistry
+            .counter("email_webhook_replay_rejected_total", "provider", normalizedProvider)
+            .increment();
+        auditService.record(
+            "EMAIL_WEBHOOK_SIGNATURE_REJECTED",
+            "EMAIL_WEBHOOK",
+            UUID.nameUUIDFromBytes(
+                normalizedProvider.getBytes(java.nio.charset.StandardCharsets.UTF_8)),
+            Map.of("provider", normalizedProvider, "reason", "replay"));
+        throw new NotificationException(
+            HttpStatus.UNAUTHORIZED,
+            "EMAIL_WEBHOOK_REPLAY_REJECTED",
+            "Email webhook timestamp is outside tolerance");
+      }
       meterRegistry
           .counter("email_webhook_signature_failures_total", "provider", normalizedProvider)
           .increment();
       auditService.record(
           "EMAIL_WEBHOOK_SIGNATURE_REJECTED",
           "EMAIL_WEBHOOK",
-          UUID.nameUUIDFromBytes(normalizedProvider.getBytes(java.nio.charset.StandardCharsets.UTF_8)),
+          UUID.nameUUIDFromBytes(
+              normalizedProvider.getBytes(java.nio.charset.StandardCharsets.UTF_8)),
           Map.of("provider", normalizedProvider));
       throw new NotificationException(
           HttpStatus.UNAUTHORIZED,
