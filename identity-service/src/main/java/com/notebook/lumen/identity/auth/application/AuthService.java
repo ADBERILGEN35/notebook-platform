@@ -8,6 +8,7 @@ import com.notebook.lumen.identity.auth.api.RefreshTokenRequest;
 import com.notebook.lumen.identity.auth.api.RevokeAllRequest;
 import com.notebook.lumen.identity.auth.api.RevokeAllResponse;
 import com.notebook.lumen.identity.auth.api.SignupRequest;
+import com.notebook.lumen.identity.notification.SecurityNotificationService;
 import com.notebook.lumen.identity.shared.exception.AccessTokenRequiredException;
 import com.notebook.lumen.identity.shared.exception.EmailAlreadyExistsException;
 import com.notebook.lumen.identity.shared.exception.InvalidCredentialsException;
@@ -50,6 +51,7 @@ public class AuthService {
   private final JwtTokenService jwtTokenService;
   private final UserMapper userMapper;
   private final AuditService auditService;
+  private final SecurityNotificationService securityNotificationService;
 
   public AuthService(
       UserRepository userRepository,
@@ -57,13 +59,15 @@ public class AuthService {
       PasswordEncoder passwordEncoder,
       JwtTokenService jwtTokenService,
       UserMapper userMapper,
-      AuditService auditService) {
+      AuditService auditService,
+      SecurityNotificationService securityNotificationService) {
     this.userRepository = userRepository;
     this.refreshTokenRepository = refreshTokenRepository;
     this.passwordEncoder = passwordEncoder;
     this.jwtTokenService = jwtTokenService;
     this.userMapper = userMapper;
     this.auditService = auditService;
+    this.securityNotificationService = securityNotificationService;
   }
 
   @Transactional
@@ -286,6 +290,10 @@ public class AuthService {
       token.revoke(now, null, reason, authenticatedUserId);
     }
     refreshTokenRepository.saveAll(activeTokens);
+    User user =
+        userRepository
+            .findById(authenticatedUserId)
+            .orElseThrow(() -> new UserNotFoundException(authenticatedUserId));
 
     auditService.record(
         "REFRESH_TOKENS_REVOKED_ALL",
@@ -294,6 +302,7 @@ public class AuthService {
         authenticatedUserId,
         httpRequest,
         Map.of("revokedCount", activeTokens.size(), "reason", reason));
+    securityNotificationService.refreshTokensRevoked(user, activeTokens.size(), httpRequest);
     return new RevokeAllResponse(activeTokens.size());
   }
 

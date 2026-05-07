@@ -70,6 +70,8 @@ public class GatewaySecurityConfig {
                 exchanges
                     .pathMatchers(HttpMethod.POST, "/auth/signup", "/auth/login", "/auth/refresh")
                     .permitAll()
+                    .pathMatchers(HttpMethod.POST, "/webhooks/email/**")
+                    .permitAll()
                     .pathMatchers(HttpMethod.GET, "/actuator/health", "/actuator/health/**")
                     .permitAll()
                     .pathMatchers(

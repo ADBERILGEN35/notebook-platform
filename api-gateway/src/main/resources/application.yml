@@ -61,6 +61,11 @@ spring:
               uri: ${SEARCH_SERVICE_URL:http://search-service:8085}
               predicates:
                 - Path=/search/**
+            - id: notification-email-webhooks
+              uri: ${NOTIFICATION_SERVICE_URL:http://notification-service:8084}
+              predicates:
+                - Method=POST
+                - Path=/webhooks/email/**
 
 management:
   tracing:

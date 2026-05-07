@@ -12,6 +12,11 @@ public record SearchProperties(
     int maxQueryLength,
     int minQueryLength,
     int maxPageSize,
+    String workerInstanceId,
+    String provider,
+    boolean dualWriteEnabled,
+    boolean fallbackToPostgres,
+    OpenSearch opensearch,
     Workspace workspace,
     ContentSource contentSource,
     ServiceJwt serviceJwt,
@@ -20,6 +25,32 @@ public record SearchProperties(
   public record Workspace(String serviceUrl, long timeoutMs, int retryMaxAttempts) {}
 
   public record ContentSource(String serviceUrl, long timeoutMs, String audience) {}
+
+  public record OpenSearch(
+      String url,
+      String username,
+      String password,
+      String indexNotes,
+      long connectTimeoutMs,
+      long socketTimeoutMs,
+      boolean tlsEnabled,
+      String truststorePath) {
+    public String effectiveIndexNotes() {
+      return hasText(indexNotes) ? indexNotes : "notebook-notes";
+    }
+
+    public long effectiveConnectTimeoutMs() {
+      return connectTimeoutMs <= 0 ? 1000 : connectTimeoutMs;
+    }
+
+    public long effectiveSocketTimeoutMs() {
+      return socketTimeoutMs <= 0 ? 3000 : socketTimeoutMs;
+    }
+
+    public boolean configured() {
+      return hasText(url);
+    }
+  }
 
   public record ServiceJwt(
       String activeKid,
@@ -43,7 +74,9 @@ public record SearchProperties(
       int batchSize,
       int pollIntervalSeconds,
       int maxFailures,
-      boolean orphanCleanupEnabled) {
+      boolean orphanCleanupEnabled,
+      long lockTimeoutSeconds,
+      long heartbeatIntervalSeconds) {
     public int effectiveBatchSize() {
       return batchSize <= 0 ? 100 : Math.min(batchSize, 500);
     }
@@ -54,6 +87,14 @@ public record SearchProperties(
 
     public int effectiveMaxFailures() {
       return maxFailures <= 0 ? 100 : maxFailures;
+    }
+
+    public long effectiveLockTimeoutSeconds() {
+      return lockTimeoutSeconds <= 0 ? 300 : lockTimeoutSeconds;
+    }
+
+    public long effectiveHeartbeatIntervalSeconds() {
+      return heartbeatIntervalSeconds <= 0 ? 30 : heartbeatIntervalSeconds;
     }
   }
 

@@ -21,6 +21,7 @@ spec:
         {{- include "notebook-platform.podAnnotations" . | nindent 8 }}
     spec:
       serviceAccountName: {{ include "notebook-platform.serviceAccountName" . }}
+      terminationGracePeriodSeconds: {{ .Values.services.content.terminationGracePeriodSeconds }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
@@ -40,6 +41,10 @@ spec:
               value: {{ .Values.services.content.port | quote }}
             - name: SERVICE_NAME
               value: content-service
+            - name: WORKER_INSTANCE_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
             {{- include "notebook-platform.otelSecretEnv" . | nindent 12 }}
             - name: DB_RUNTIME_URL
               valueFrom:

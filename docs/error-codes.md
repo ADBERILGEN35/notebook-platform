@@ -43,6 +43,7 @@
 | NOTEBOOK_NOT_FOUND | 404 | workspace-service | Notebook not found | Internal permission lookup for unknown notebook |
 | INVALID_INVITATION_TOKEN | 400 | workspace-service | Invite token invalid | Unknown token |
 | NOTIFICATION_SERVICE_UNAVAILABLE | 503 | workspace-service | Invitation email enqueue failed | notification-service down |
+| NOTIFICATION_RECIPIENT_SUPPRESSED | 409 | workspace-service | Invitation email recipient is suppressed | bounced/complained address |
 | INVITATION_EXPIRED | 400 | workspace-service | Invite expired | `expiresAt` is past |
 | INVITATION_REVOKED | 400 | workspace-service | Invite revoked | `revokedAt` set |
 | INVITATION_ALREADY_ACCEPTED | 400 | workspace-service | Invite already used | `acceptedAt` set |
@@ -65,12 +66,22 @@
 | EMAIL_SEND_FAILED | 500 | notification-service | Email send failed unexpectedly | provider runtime error |
 | DUPLICATE_NOTIFICATION | 409 | notification-service | Duplicate idempotency key | future strict duplicate mode |
 | INVALID_EMAIL_PROVIDER_CONFIG | 500 | notification-service | Email provider config invalid | unsupported provider |
+| EMAIL_WEBHOOK_DISABLED | 403 | notification-service | Provider webhook endpoint is disabled | webhook called before enablement |
+| INVALID_EMAIL_WEBHOOK_SIGNATURE | 401 | notification-service | Webhook signature invalid or replayed | bad HMAC |
+| EMAIL_WEBHOOK_EVENT_INVALID | 400 | notification-service | Webhook payload cannot be parsed | invalid provider JSON |
+| EMAIL_PROVIDER_EVENT_DUPLICATE | 200 | notification-service | Duplicate provider event ignored idempotently | repeated webhook |
+| EMAIL_RECIPIENT_SUPPRESSED | 409 | notification-service | Recipient is on active suppression list | bounced recipient |
+| EMAIL_SUPPRESSION_NOT_FOUND | 404 | notification-service | Suppression record not found | future operator API |
 | SEARCH_ACCESS_DENIED | 401/403 | search-service | Missing/insufficient search auth | missing service JWT |
 | INVALID_SEARCH_QUERY | 400 | search-service | Search query is missing or invalid | blank q |
 | SEARCH_QUERY_TOO_SHORT | 400 | search-service | Search query shorter than configured minimum | q=a |
 | SEARCH_QUERY_TOO_LONG | 400 | search-service | Search query exceeds configured maximum | q > 120 chars |
 | SEARCH_INDEX_REQUEST_INVALID | 400 | search-service | Search indexing request invalid | missing noteId |
 | SEARCH_SERVICE_UNAVAILABLE | 503 | content/search | Search dependency unavailable | indexing API down |
+| SEARCH_PROVIDER_UNAVAILABLE | 503 | search-service | Selected search provider unavailable | OpenSearch down |
+| OPENSEARCH_UNAVAILABLE | 503 | search-service | OpenSearch request failed | non-2xx or connection failure |
+| SEARCH_PROVIDER_MISCONFIGURED | 400/503 | search-service | Provider config invalid or incomplete | missing OPENSEARCH_URL |
+| SEARCH_PROVIDER_TIMEOUT | 503 | search-service | Provider request timed out | OpenSearch timeout |
 | WORKSPACE_PERMISSION_UNAVAILABLE | 503 | search-service | Workspace permission filtering failed | workspace-service down |
 | INVALID_WORKSPACE_CONTEXT | 400 | search-service | Header workspace and query workspace conflict | mismatched X-Workspace-Id |
 | SEARCH_OUTBOX_EVENT_NOT_FOUND | 404 | content-service | Search outbox event missing | unknown event id |

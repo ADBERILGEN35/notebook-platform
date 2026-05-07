@@ -10,6 +10,7 @@ import static org.mockito.Mockito.when;
 import com.notebook.lumen.search.index.application.SearchAuditService;
 import com.notebook.lumen.search.index.infrastructure.SearchDocumentRepository;
 import com.notebook.lumen.search.index.infrastructure.SearchOrphanCandidateRow;
+import com.notebook.lumen.search.provider.SearchProviderRouter;
 import com.notebook.lumen.search.reindex.api.SearchReindexJobRequest;
 import com.notebook.lumen.search.reindex.api.SearchReindexJobResponse;
 import com.notebook.lumen.search.reindex.api.SearchReindexOrphanPreviewResponse;
@@ -34,12 +35,15 @@ class SearchReindexServiceTest {
       org.mockito.Mockito.mock(SearchDocumentRepository.class);
   private final SearchAuditService auditService =
       org.mockito.Mockito.mock(SearchAuditService.class);
+  private final SearchProviderRouter providerRouter =
+      org.mockito.Mockito.mock(SearchProviderRouter.class);
   private final SearchReindexService service =
       new SearchReindexService(
           repository,
           documentRepository,
           properties(true),
           auditService,
+          providerRouter,
           new SimpleMeterRegistry());
 
   @Test
@@ -90,9 +94,41 @@ class SearchReindexServiceTest {
   }
 
   @Test
+  void expiredRunningJobIsFailedBeforeClaimingNextPendingJob() {
+    SearchReindexJob stale = job();
+    start(stale);
+    SearchReindexJob pending = job();
+    when(repository.findExpiredRunningForUpdate(
+            org.mockito.ArgumentMatchers.eq(SearchReindexJobStatus.RUNNING.name()), any()))
+        .thenReturn(List.of(stale));
+    when(repository.findNextForUpdate(SearchReindexJobStatus.PENDING.name()))
+        .thenReturn(List.of(pending));
+
+    Optional<SearchReindexJob> claimed = service.claimNextPending();
+
+    assertThat(stale.getStatus()).isEqualTo(SearchReindexJobStatus.FAILED);
+    assertThat(stale.getLastError()).contains("lock expired");
+    assertThat(claimed).contains(pending);
+    assertThat(pending.getStatus()).isEqualTo(SearchReindexJobStatus.RUNNING);
+  }
+
+  @Test
+  void recordBatchRefreshesHeartbeatAndLockExpiry() {
+    SearchReindexJob job = job();
+    start(job);
+    Instant previousHeartbeat = job.getHeartbeatAt();
+    when(repository.findById(job.getId())).thenReturn(Optional.of(job));
+
+    service.recordBatch(job.getId(), 1, 1, 0, null);
+
+    assertThat(job.getHeartbeatAt()).isAfterOrEqualTo(previousHeartbeat);
+    assertThat(job.getLockExpiresAt()).isNotNull();
+  }
+
+  @Test
   void recordBatchAndFailUpdateProgress() {
     SearchReindexJob job = job();
-    job.start(Instant.now());
+    start(job);
     when(repository.findById(job.getId())).thenReturn(Optional.of(job));
 
     service.recordBatch(job.getId(), 10, 9, 1, "cursor");
@@ -108,7 +144,7 @@ class SearchReindexServiceTest {
   @Test
   void cleanupRequiresGlobalAndRequestFlags() {
     SearchReindexJob job = job(false);
-    job.start(Instant.now());
+    start(job);
     when(repository.findById(job.getId())).thenReturn(Optional.of(job));
 
     service.cleanupAfterSuccessfulScan(job.getId());
@@ -120,7 +156,7 @@ class SearchReindexServiceTest {
   @Test
   void cleanupArchivesScopedOrphansWhenEnabledAndRequested() {
     SearchReindexJob job = job(true);
-    job.start(Instant.now());
+    start(job);
     when(repository.findById(job.getId())).thenReturn(Optional.of(job));
     when(documentRepository.archiveActiveOrphansForReindex(
             org.mockito.ArgumentMatchers.eq(job.getId()),
@@ -153,7 +189,7 @@ class SearchReindexServiceTest {
   @Test
   void dryRunCleanupCountsOrphansWithoutArchiving() {
     SearchReindexJob job = job(true, true);
-    job.start(Instant.now());
+    start(job);
     when(repository.findById(job.getId())).thenReturn(Optional.of(job));
     when(documentRepository.countActiveOrphansForReindex(
             org.mockito.ArgumentMatchers.eq(job.getId()),
@@ -178,9 +214,10 @@ class SearchReindexServiceTest {
             documentRepository,
             properties(false),
             auditService,
+            providerRouter,
             new SimpleMeterRegistry());
     SearchReindexJob job = job(true, true);
-    job.start(Instant.now());
+    start(job);
     when(repository.findById(job.getId())).thenReturn(Optional.of(job));
     when(documentRepository.countActiveOrphansForReindex(any(), any(), any())).thenReturn(3L);
 
@@ -199,9 +236,10 @@ class SearchReindexServiceTest {
             documentRepository,
             properties(false),
             auditService,
+            providerRouter,
             new SimpleMeterRegistry());
     SearchReindexJob job = job(true, false);
-    job.start(Instant.now());
+    start(job);
     when(repository.findById(job.getId())).thenReturn(Optional.of(job));
 
     disabledCleanupService.cleanupAfterSuccessfulScan(job.getId());
@@ -213,7 +251,7 @@ class SearchReindexServiceTest {
   @Test
   void orphanPreviewRequiresCompletedJob() {
     SearchReindexJob job = job(true, true);
-    job.start(Instant.now());
+    start(job);
     when(repository.findById(job.getId())).thenReturn(Optional.of(job));
 
     assertThatThrownBy(() -> service.orphanPreview(job.getId(), 20))
@@ -225,7 +263,7 @@ class SearchReindexServiceTest {
   @Test
   void orphanPreviewReturnsScopedSampleWithoutTitleOrContent() {
     SearchReindexJob job = job(true, true);
-    job.start(Instant.now());
+    start(job);
     job.completeDryRunCleanup(1, Instant.now());
     job.complete(Instant.now());
     when(repository.findById(job.getId())).thenReturn(Optional.of(job));
@@ -267,6 +305,11 @@ class SearchReindexServiceTest {
         dryRunCleanup,
         "ops-admin",
         Instant.now());
+  }
+
+  private void start(SearchReindexJob job) {
+    Instant now = Instant.now();
+    job.start("test-worker", now, now.plusSeconds(300));
   }
 
   private SearchOrphanCandidateRow row(UUID workspaceId, UUID notebookId) {
@@ -316,10 +359,15 @@ class SearchReindexServiceTest {
         120,
         2,
         50,
+        "",
+        "postgres",
+        false,
+        false,
+        new SearchProperties.OpenSearch("", "", "", "notebook-notes", 1000, 3000, false, ""),
         new SearchProperties.Workspace("http://localhost", 1000, 2),
         new SearchProperties.ContentSource("http://localhost", 1000, "content-service"),
         null,
         new SearchProperties.Internal(null, null),
-        new SearchProperties.Reindex(true, 100, 10, 100, orphanCleanupEnabled));
+        new SearchProperties.Reindex(true, 100, 10, 100, orphanCleanupEnabled, 300, 30));
   }
 }

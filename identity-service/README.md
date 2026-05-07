@@ -129,6 +129,11 @@ Response:
 Existing access tokens are not immediately invalidated; they remain valid until their short TTL
 expires. Future work may add session listing or access token blacklist/introspection.
 
+If `IDENTITY_SECURITY_NOTIFICATIONS_ENABLED=true`, revoke-all also requests a
+`SECURITY_REFRESH_TOKENS_REVOKED` email from notification-service using service JWT scope
+`internal:notification:email:send`. Notification failure is fail-open and does not roll back token
+revocation.
+
 ## Testler
 
 ```bash
@@ -149,4 +154,3 @@ expires. Future work may add session listing or access token blacklist/introspec
 - Duplicate `kid` veya `activeKid` config'te yoksa servis fail-fast eder.
 - Kritik auth aksiyonlari `identity_audit_events` tablosuna yazilir; token/password gibi hassas metadata alanlari maskelenir.
 - Refresh token plaintext DB, response veya audit metadata icine yazilmaz. DB yalnizca hash ve session metadata saklar.
-

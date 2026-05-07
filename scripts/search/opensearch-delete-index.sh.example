@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ "${CONFIRM_DELETE_INDEX:-false}" != "true" ]]; then
+  echo "Refusing to delete index. Set CONFIRM_DELETE_INDEX=true for an intentional delete." >&2
+  exit 1
+fi
+
+OPENSEARCH_URL="${OPENSEARCH_URL:?OPENSEARCH_URL is required}"
+OPENSEARCH_INDEX_NOTES="${OPENSEARCH_INDEX_NOTES:-notebook-notes}"
+
+auth_args=()
+if [[ -n "${OPENSEARCH_USERNAME:-}" ]]; then
+  auth_args=(-u "${OPENSEARCH_USERNAME}:${OPENSEARCH_PASSWORD:-}")
+fi
+
+curl -fsS "${auth_args[@]}" -X DELETE "${OPENSEARCH_URL%/}/${OPENSEARCH_INDEX_NOTES}"

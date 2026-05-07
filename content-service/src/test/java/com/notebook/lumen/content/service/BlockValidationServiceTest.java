@@ -13,6 +13,7 @@ class BlockValidationServiceTest {
   private final BlockValidationService service =
       new BlockValidationService(
           new ContentProperties(
+              "",
               new ContentProperties.Blocks(false, 8, 262144),
               new ContentProperties.Workspace(
                   "http://localhost", 1000, 50, 10000, 2, "", "", "", "dual"),
@@ -47,6 +48,7 @@ class BlockValidationServiceTest {
     BlockValidationService strict =
         new BlockValidationService(
             new ContentProperties(
+                "",
                 new ContentProperties.Blocks(false, 1, 262144),
                 new ContentProperties.Workspace(
                     "http://localhost", 1000, 50, 10000, 2, "", "", "", "dual"),

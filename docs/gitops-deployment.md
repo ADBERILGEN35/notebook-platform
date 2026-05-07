@@ -66,6 +66,11 @@ later if production change control requires tighter permissions or a different a
 - `INTERNAL_AUTH_MODE=service-jwt`
 - RLS flags are tied to the rollout stage, not changed automatically
 
+Worker-owning services use DB-backed leases. GitOps values keep worker lock timeouts explicit:
+`EMAIL_WORKER_LOCK_TIMEOUT_SECONDS`, `SEARCH_OUTBOX_LOCK_TIMEOUT_SECONDS` and
+`SEARCH_REINDEX_LOCK_TIMEOUT_SECONDS`. HPA can scale these services, but queue depth and stale
+recovery metrics must be watched during rollout.
+
 FORCE RLS is never applied by GitOps auto-sync. Use the DBA/ops SQL scripts and the staged rollout
 in `docs/runtime-rls-rollout.md`.
 
@@ -226,6 +231,10 @@ Staging:
 - ServiceMonitor is scraping metrics.
 - Search-service DB credentials, content/search service JWT keys, search outbox worker config and
   search reindex config are synced.
+- OpenSearch endpoint, credentials, index creation and `search.provider` rollout settings are
+  validated if staging uses `SEARCH_PROVIDER=opensearch`.
+- Email provider API key, webhook secret, identity-service signing key and notification-service
+  trust config are synced before enabling `EMAIL_PROVIDER=generic-http` or webhooks.
 - SBOM and image scan gates passed.
 - Cosign signing and verification dry-run or audit validation passed.
 - RLS Stage 1 strict smoke passed before moving to later stages.
@@ -239,6 +248,10 @@ Prod:
 - External Secrets are configured.
 - Search-service DB credentials, content/search service JWT keys, search outbox worker config and
   search reindex config are synced.
+- OpenSearch is externally managed, reachable from search-service, and fallback is intentionally
+  enabled or disabled according to the approved rollout step.
+- Email webhooks remain disabled until provider HMAC validation and replay behavior are verified
+  through staging.
 - NetworkPolicy is enabled.
 - Resource requests support HPA.
 - Grafana dashboards and Prometheus alert rules are loaded.

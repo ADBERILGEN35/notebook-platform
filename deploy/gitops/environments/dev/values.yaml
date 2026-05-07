@@ -13,10 +13,15 @@ config:
   searchOutboxWorkerEnabled: "true"
   searchOutboxBatchSize: "10"
   searchOutboxPollIntervalSeconds: "5"
+  searchOutboxLockTimeoutSeconds: "300"
   searchReindexWorkerEnabled: "true"
   searchReindexBatchSize: "50"
   searchReindexPollIntervalSeconds: "5"
   searchReindexOrphanCleanupEnabled: "false"
+  searchReindexLockTimeoutSeconds: "300"
+  searchReindexHeartbeatIntervalSeconds: "30"
+  emailWorkerBatchSize: "10"
+  emailWorkerLockTimeoutSeconds: "300"
 
 secrets:
   mode: native-kubernetes-secret

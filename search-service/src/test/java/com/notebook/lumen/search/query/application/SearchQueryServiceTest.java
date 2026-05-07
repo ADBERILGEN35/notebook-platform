@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 
 import com.notebook.lumen.search.index.application.SearchAuditService;
-import com.notebook.lumen.search.index.infrastructure.SearchDocumentRepository;
+import com.notebook.lumen.search.provider.SearchProviderRouter;
 import com.notebook.lumen.search.shared.config.SearchProperties;
 import com.notebook.lumen.search.shared.exception.SearchException;
 import java.util.UUID;
@@ -12,8 +12,8 @@ import org.junit.jupiter.api.Test;
 
 class SearchQueryServiceTest {
   private final SearchQueryService service =
-      new SearchQueryService(
-          mock(SearchDocumentRepository.class),
+          new SearchQueryService(
+          mock(SearchProviderRouter.class),
           mock(SearchPermissionService.class),
           properties(),
           mock(SearchAuditService.class));
@@ -44,10 +44,15 @@ class SearchQueryServiceTest {
         120,
         2,
         50,
+        "",
+        "postgres",
+        false,
+        false,
+        new SearchProperties.OpenSearch("", "", "", "notebook-notes", 1000, 3000, false, ""),
         new SearchProperties.Workspace("http://localhost", 1000, 2),
         new SearchProperties.ContentSource("http://localhost", 1000, "content-service"),
         null,
         new SearchProperties.Internal(null, null),
-        new SearchProperties.Reindex(true, 100, 10, 100, false));
+        new SearchProperties.Reindex(true, 100, 10, 100, false, 300, 30));
   }
 }

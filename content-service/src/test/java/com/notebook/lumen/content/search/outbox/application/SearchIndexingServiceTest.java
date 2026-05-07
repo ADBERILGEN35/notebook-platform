@@ -121,10 +121,14 @@ class SearchIndexingServiceTest {
 
   private ContentProperties properties(boolean enabled) {
     return new ContentProperties(
-        null, null, null, new ContentProperties.Search("", 1000, enabled, null, null, outbox()));
+        "",
+        null,
+        null,
+        null,
+        new ContentProperties.Search("", 1000, enabled, null, null, outbox()));
   }
 
   private ContentProperties.SearchOutbox outbox() {
-    return new ContentProperties.SearchOutbox(true, 50, 10, 30, 3600, 10, null);
+    return new ContentProperties.SearchOutbox(true, 50, 10, 30, 3600, 10, 300, null);
   }
 }

@@ -141,6 +141,30 @@ public class SearchDocument {
     return title;
   }
 
+  public String getContentText() {
+    return contentText;
+  }
+
+  public String getTagsText() {
+    return tagsText;
+  }
+
+  public String getNotebookName() {
+    return notebookName;
+  }
+
+  public UUID getCreatedBy() {
+    return createdBy;
+  }
+
+  public UUID getUpdatedBy() {
+    return updatedBy;
+  }
+
+  public Instant getNoteCreatedAt() {
+    return noteCreatedAt;
+  }
+
   public Instant getNoteUpdatedAt() {
     return noteUpdatedAt;
   }

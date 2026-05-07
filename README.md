@@ -87,17 +87,20 @@ Ayrintilar ve curl ornekleri: [`content-service/README.md`](content-service/READ
 
 ## Notification Service
 
-Faz 24 ile `notification-service` invitation ve security email altyapisi icin eklendi. Servis
-internal-only calisir, gateway route'u yoktur ve `POST /internal/notifications/email` endpointi
-`X-Service-Authorization` service JWT ile korunur. Local/dev icin `EMAIL_PROVIDER=log`, production
-icin `EMAIL_PROVIDER=smtp` onerilir.
+Faz 24 ile `notification-service` invitation ve security email altyapisi icin eklendi. Faz 32
+generic HTTP provider, signed provider webhook, bounce/complaint handling ve suppression list
+ekler. Internal send endpointi `X-Service-Authorization` service JWT ile korunur; webhook route'u
+user JWT yerine provider signature ile korunur.
 
 Workspace invitation create akisi notification-service'e email request'i gonderir. Notification
 request kabul edilmezse invitation transaction rollback olur ve `503 NOTIFICATION_SERVICE_UNAVAILABLE`
 doner.
 
-Ayrintilar: [`docs/notification-service.md`](docs/notification-service.md) ve
-[`docs/email-delivery.md`](docs/email-delivery.md)
+Ayrintilar: [`docs/notification-service.md`](docs/notification-service.md),
+[`docs/email-delivery.md`](docs/email-delivery.md),
+[`docs/email-provider-integration.md`](docs/email-provider-integration.md),
+[`docs/email-webhooks.md`](docs/email-webhooks.md) ve
+[`docs/email-suppression.md`](docs/email-suppression.md)
 
 ## Search Service
 
@@ -116,6 +119,8 @@ Ayrintilar: [`docs/search-service.md`](docs/search-service.md),
 runbook'u: [`docs/search-reindex-backfill.md`](docs/search-reindex-backfill.md)
 Faz 28 ile mark-and-sweep orphan cleanup opt-in olarak eklendi; hard delete yapilmaz. Faz 29 ile
 real cleanup oncesi dry-run cleanup ve orphan preview eklendi.
+Faz 30 ile notification, content search outbox ve search reindex worker'lari DB lease, worker
+instance id, stale recovery ve graceful shutdown davranisi ile multi-pod icin sertlestirildi.
 
 ## Observability + Hardening
 
@@ -290,3 +295,7 @@ Dokumanlar:
 - [`docs/service-contract-testing.md`](docs/service-contract-testing.md)
 - [`docs/pagination-design.md`](docs/pagination-design.md)
 - [`docs/auth-token-revocation.md`](docs/auth-token-revocation.md)
+- [`docs/opensearch-provider.md`](docs/opensearch-provider.md)
+- [`docs/email-provider-integration.md`](docs/email-provider-integration.md)
+- [`docs/email-webhooks.md`](docs/email-webhooks.md)
+- [`docs/email-suppression.md`](docs/email-suppression.md)

@@ -69,6 +69,7 @@ class InternalNotificationAuthorizerTest {
 
   private NotificationProperties properties(String publicKey) {
     return new NotificationProperties(
+        "",
         new NotificationProperties.Email(
             "noop",
             "no-reply@example.com",
@@ -77,7 +78,12 @@ class InternalNotificationAuthorizerTest {
             60,
             3600,
             5000,
-            new NotificationProperties.Smtp("localhost", 587, "", "", true)),
+            25,
+            300,
+            new NotificationProperties.Smtp("localhost", 587, "", "", true),
+            new NotificationProperties.GenericHttp("", "", "Authorization", 1000, 3000),
+            new NotificationProperties.Webhooks(
+                false, "generic-http", "", "X-Email-Signature", "X-Email-Timestamp", 300, false)),
         new NotificationProperties.Internal(
             new NotificationProperties.TrustedService(
                 "workspace-key-1",
@@ -86,7 +92,8 @@ class InternalNotificationAuthorizerTest {
                 "workspace-service",
                 "notification-service",
                 5,
-                "internal:notification:email:send")));
+                "internal:notification:email:send"),
+            null));
   }
 
   private String privatePem() {

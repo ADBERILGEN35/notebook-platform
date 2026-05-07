@@ -162,6 +162,7 @@ Content:
 - `GET /internal/notebooks/{notebookId}/permissions?userId={userId}`
 - `GET /internal/workspaces/{workspaceId}/tags/{tagId}/exists?scope=NOTE`
 - `POST /internal/notifications/email`
+- `POST /webhooks/email/{provider}`
 - `POST /internal/search/documents`
 - `DELETE /internal/search/documents/{noteId}`
 - `GET /internal/search-index-outbox/status`
@@ -179,6 +180,10 @@ Responses include
 `cleanupPreviewGeneratedAt`. `orphan-preview` returns scoped orphan identifiers and timestamps only;
 title/content/query text are excluded.
 
+`POST /webhooks/email/{provider}` is public-routable through api-gateway but authenticated by
+provider signature, not user JWT. It accepts provider-specific JSON and returns an accepted event
+count.
+
 ## Idempotency
 
 - Safe/idempotent: `GET`, most `DELETE` soft archive/delete endpoints from client perspective.
@@ -190,7 +195,10 @@ title/content/query text are excluded.
 ## Pagination
 
 Pagination is implemented for workspace-service and content-service list endpoints. Cursor
-pagination remains future work for high-volume notes/comments/search flows.
+pagination remains future work for high-volume notes/comments/search flows. With
+`SEARCH_PROVIDER=opensearch`, `GET /search/notes` keeps the same response contract, but
+`totalElements` is limited by provider candidate oversampling plus permission filtering until
+permission snapshot indexing or cursor pagination is added.
 
 ## Versioning Strategy
 

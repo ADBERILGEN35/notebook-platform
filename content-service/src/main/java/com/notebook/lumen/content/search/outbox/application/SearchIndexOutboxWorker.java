@@ -7,6 +7,7 @@ import com.notebook.lumen.content.search.outbox.SearchIndexOutboxEventType;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -22,6 +23,7 @@ public class SearchIndexOutboxWorker {
   private final ContentProperties properties;
   private final ObjectMapper objectMapper;
   private final MeterRegistry meterRegistry;
+  private final AtomicBoolean acceptingClaims = new AtomicBoolean(true);
 
   public SearchIndexOutboxWorker(
       SearchIndexOutboxService outboxService,
@@ -38,7 +40,7 @@ public class SearchIndexOutboxWorker {
 
   @Scheduled(fixedDelayString = "#{@searchIndexOutboxWorker.pollIntervalMillis()}")
   public void poll() {
-    if (!workerEnabled()) {
+    if (!acceptingClaims.get() || !workerEnabled()) {
       return;
     }
     List<SearchIndexOutboxEvent> events = outboxService.claimDueEvents();
@@ -49,6 +51,11 @@ public class SearchIndexOutboxWorker {
 
   public String pollIntervalMillis() {
     return String.valueOf(outbox().effectivePollIntervalSeconds() * 1000);
+  }
+
+  @jakarta.annotation.PreDestroy
+  void stopAcceptingClaims() {
+    acceptingClaims.set(false);
   }
 
   private void process(SearchIndexOutboxEvent event) {
@@ -92,7 +99,7 @@ public class SearchIndexOutboxWorker {
   private ContentProperties.SearchOutbox outbox() {
     ContentProperties.Search search = properties.search();
     if (search == null || search.outbox() == null) {
-      return new ContentProperties.SearchOutbox(true, 50, 10, 30, 3600, 10, null);
+      return new ContentProperties.SearchOutbox(true, 50, 10, 30, 3600, 10, 300, null);
     }
     return search.outbox();
   }

@@ -113,3 +113,14 @@
 - Remaining gap: No dedicated query redaction metric or privacy review workflow.
 - Recommended next action: Keep plaintext search queries out of audit/log metadata and add
   aggregate metrics only.
+
+## Email Webhook Forgery And Replay
+
+- Risk: An attacker forges bounce/complaint events and suppresses valid recipients.
+- Current mitigation: notification-service requires HMAC-SHA256 signatures for enabled webhooks and
+  rejects timestamp replay outside `EMAIL_WEBHOOK_TOLERANCE_SECONDS` when a timestamp header is
+  present.
+- Remaining gap: Provider-specific signature schemes such as SendGrid signed event webhooks and AWS
+  SNS certificate validation are future adapters.
+- Recommended next action: Keep generic webhook secrets in External Secrets and validate provider
+  replay semantics before enabling public ingress.

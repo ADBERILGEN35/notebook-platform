@@ -21,6 +21,7 @@ spec:
         {{- include "notebook-platform.podAnnotations" . | nindent 8 }}
     spec:
       serviceAccountName: {{ include "notebook-platform.serviceAccountName" . }}
+      terminationGracePeriodSeconds: {{ .Values.services.notification.terminationGracePeriodSeconds }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
@@ -40,6 +41,10 @@ spec:
               value: {{ .Values.services.notification.port | quote }}
             - name: SERVICE_NAME
               value: notification-service
+            - name: WORKER_INSTANCE_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
             {{- include "notebook-platform.otelSecretEnv" . | nindent 12 }}
             - name: DB_URL
               valueFrom:
@@ -68,6 +73,18 @@ spec:
                 secretKeyRef:
                   name: {{ include "notebook-platform.secretName" . }}
                   key: smtp-password
+                  optional: true
+            - name: EMAIL_GENERIC_HTTP_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "notebook-platform.secretName" . }}
+                  key: email-provider-api-key
+                  optional: true
+            - name: EMAIL_WEBHOOK_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "notebook-platform.secretName" . }}
+                  key: email-webhook-secret
                   optional: true
           readinessProbe:
             httpGet:

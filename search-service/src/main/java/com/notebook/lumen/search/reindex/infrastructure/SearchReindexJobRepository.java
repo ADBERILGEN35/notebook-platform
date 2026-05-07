@@ -2,6 +2,7 @@ package com.notebook.lumen.search.reindex.infrastructure;
 
 import com.notebook.lumen.search.reindex.domain.SearchReindexJob;
 import com.notebook.lumen.search.reindex.domain.SearchReindexJobStatus;
+import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
@@ -26,4 +27,20 @@ public interface SearchReindexJobRepository extends JpaRepository<SearchReindexJ
           """,
       nativeQuery = true)
   List<SearchReindexJob> findNextForUpdate(@Param("status") String status);
+
+  @Query(
+      value =
+          """
+          SELECT *
+          FROM search_reindex_jobs
+          WHERE status = :status
+            AND lock_expires_at IS NOT NULL
+            AND lock_expires_at <= :now
+          ORDER BY lock_expires_at ASC
+          LIMIT 5
+          FOR UPDATE SKIP LOCKED
+          """,
+      nativeQuery = true)
+  List<SearchReindexJob> findExpiredRunningForUpdate(
+      @Param("status") String status, @Param("now") Instant now);
 }

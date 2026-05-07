@@ -45,6 +45,7 @@ class SearchIndexSourceAuthorizerTest {
             5,
             SearchIndexSourceAuthorizer.REQUIRED_SCOPE);
     return new ContentProperties(
+        "",
         null,
         null,
         null,
@@ -54,7 +55,7 @@ class SearchIndexSourceAuthorizerTest {
             true,
             null,
             new ContentProperties.SearchIndexSource(trusted),
-            new ContentProperties.SearchOutbox(true, 50, 10, 30, 3600, 10, null)));
+            new ContentProperties.SearchOutbox(true, 50, 10, 30, 3600, 10, 300, null)));
   }
 
   private String token(String scope) {

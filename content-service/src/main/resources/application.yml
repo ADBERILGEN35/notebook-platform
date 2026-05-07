@@ -47,6 +47,7 @@ springdoc:
     path: /swagger-ui.html
 
 content:
+  worker-instance-id: ${WORKER_INSTANCE_ID:}
   blocks:
     allow-unknown-block-types: ${ALLOW_UNKNOWN_BLOCK_TYPES:false}
     max-depth: ${CONTENT_BLOCKS_MAX_DEPTH:8}
@@ -100,6 +101,7 @@ content:
       initial-delay-seconds: ${SEARCH_OUTBOX_INITIAL_DELAY_SECONDS:30}
       max-delay-seconds: ${SEARCH_OUTBOX_MAX_DELAY_SECONDS:3600}
       poll-interval-seconds: ${SEARCH_OUTBOX_POLL_INTERVAL_SECONDS:10}
+      lock-timeout-seconds: ${SEARCH_OUTBOX_LOCK_TIMEOUT_SECONDS:300}
       admin:
         kid: ${SEARCH_OUTBOX_ADMIN_SERVICE_JWT_KID:}
         public-key: ${SEARCH_OUTBOX_ADMIN_SERVICE_JWT_PUBLIC_KEY:}

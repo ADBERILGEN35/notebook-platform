@@ -30,6 +30,10 @@ config:
   invitationExposeTokenInResponse: "false"
   jwtAllowEphemeralKeys: "false"
   jwtActiveKid: "prod-key-1"
+  identityServiceJwtActiveKid: "identity-service-key-1"
+  identityServiceJwtIssuer: "identity-service"
+  identityServiceJwtTtlSeconds: "60"
+  identitySecurityNotificationsEnabled: "false"
   internalServiceJwtActiveKid: "content-service-key-1"
   internalServiceJwtIssuer: "content-service"
   internalServiceJwtTtlSeconds: "60"
@@ -44,6 +48,7 @@ config:
   searchOutboxInitialDelaySeconds: "30"
   searchOutboxMaxDelaySeconds: "3600"
   searchOutboxPollIntervalSeconds: "10"
+  searchOutboxLockTimeoutSeconds: "300"
   searchOutboxAdminServiceJwtKid: ""
   searchOutboxAdminServiceJwtPublicKeyPath: ""
   searchOutboxAdminServiceJwtIssuer: "ops-admin"
@@ -52,6 +57,8 @@ config:
   searchReindexPollIntervalSeconds: "10"
   searchReindexMaxFailures: "100"
   searchReindexOrphanCleanupEnabled: "false"
+  searchReindexLockTimeoutSeconds: "300"
+  searchReindexHeartbeatIntervalSeconds: "30"
   searchReindexClientJwtKid: ""
   searchReindexClientJwtPublicKeyPath: ""
   searchReindexClientJwtIssuer: "ops-admin"
@@ -60,6 +67,17 @@ config:
   emailMaxAttempts: "5"
   emailRetryInitialDelaySeconds: "60"
   emailRetryMaxDelaySeconds: "3600"
+  emailWorkerBatchSize: "25"
+  emailWorkerLockTimeoutSeconds: "300"
+  emailWebhooksEnabled: "false"
+  emailWebhookProvider: "generic-http"
+  emailWebhookSignatureHeader: "X-Email-Signature"
+  emailWebhookTimestampHeader: "X-Email-Timestamp"
+  emailWebhookToleranceSeconds: "300"
+  emailGenericHttpUrl: ""
+  emailGenericHttpAuthorizationHeader: "Authorization"
+  emailGenericHttpConnectTimeoutMs: "1000"
+  emailGenericHttpRequestTimeoutMs: "3000"
   smtpHost: "smtp.example.internal"
   smtpPort: "587"
   smtpFrom: "no-reply@example.com"
@@ -70,6 +88,9 @@ config:
   trustedWorkspaceServiceIssuer: "workspace-service"
   trustedWorkspaceServiceAudience: "notification-service"
   trustedWorkspaceServiceKid: "workspace-service-key-1"
+  trustedIdentityServiceIssuer: "identity-service"
+  trustedIdentityServiceAudience: "notification-service"
+  trustedIdentityServiceKid: "identity-service-key-1"
   searchServiceJwtActiveKid: "search-service-key-1"
   searchServiceJwtIssuer: "search-service"
   dbName: "notebook_platform"
@@ -92,6 +113,20 @@ externalRedis:
   host: "redis.example.internal"
   port: "6379"
   tlsEnabled: false
+
+search:
+  provider: postgres
+  dualWriteEnabled: "false"
+  fallbackToPostgres: "false"
+  opensearch:
+    url: ""
+    usernameSecretKey: opensearch-username
+    passwordSecretKey: opensearch-password
+    indexNotes: notebook-notes
+    connectTimeoutMs: "1000"
+    socketTimeoutMs: "3000"
+    tlsEnabled: "false"
+    truststorePath: ""
 
 secrets:
   mode: native-kubernetes-secret # native-kubernetes-secret | external-secrets
@@ -116,12 +151,18 @@ secrets:
     jwtPublicKeyPem: ""
     serviceJwtPrivateKeyPem: ""
     serviceJwtPublicKeyPem: ""
+    identityServiceJwtPrivateKeyPem: ""
+    identityServiceJwtPublicKeyPem: ""
     workspaceServiceJwtPrivateKeyPem: ""
     workspaceServiceJwtPublicKeyPem: ""
     searchServiceJwtPrivateKeyPem: ""
     searchServiceJwtPublicKeyPem: ""
     smtpUsername: ""
     smtpPassword: ""
+    emailProviderApiKey: ""
+    emailWebhookSecret: ""
+    opensearchUsername: ""
+    opensearchPassword: ""
   externalSecrets:
     enabled: false
     refreshInterval: 1h
@@ -144,6 +185,12 @@ secrets:
       - secretKey: content-service-jwt-public-key.pem
         remoteRef:
           key: notebook-platform/prod/content-service-jwt-public-key
+      - secretKey: identity-service-jwt-private-key.pem
+        remoteRef:
+          key: notebook-platform/prod/identity-service-jwt-private-key
+      - secretKey: identity-service-jwt-public-key.pem
+        remoteRef:
+          key: notebook-platform/prod/identity-service-jwt-public-key
       - secretKey: workspace-service-jwt-private-key.pem
         remoteRef:
           key: notebook-platform/prod/workspace-service-jwt-private-key
@@ -201,6 +248,18 @@ secrets:
       - secretKey: smtp-password
         remoteRef:
           key: notebook-platform/prod/smtp-password
+      - secretKey: email-provider-api-key
+        remoteRef:
+          key: notebook-platform/prod/email-provider-api-key
+      - secretKey: email-webhook-secret
+        remoteRef:
+          key: notebook-platform/prod/email-webhook-secret
+      - secretKey: opensearch-username
+        remoteRef:
+          key: notebook-platform/prod/opensearch-username
+      - secretKey: opensearch-password
+        remoteRef:
+          key: notebook-platform/prod/opensearch-password
 
 serviceAccount:
   create: true
@@ -287,6 +346,7 @@ services:
   content:
     enabled: true
     replicas: 2
+    terminationGracePeriodSeconds: 60
     image:
       repository: notebook-platform/content-service
       tag: "0.0.1"
@@ -302,6 +362,7 @@ services:
   notification:
     enabled: true
     replicas: 2
+    terminationGracePeriodSeconds: 60
     image:
       repository: notebook-platform/notification-service
       tag: "0.0.1"
@@ -317,6 +378,7 @@ services:
   search:
     enabled: true
     replicas: 2
+    terminationGracePeriodSeconds: 120
     image:
       repository: notebook-platform/search-service
       tag: "0.0.1"

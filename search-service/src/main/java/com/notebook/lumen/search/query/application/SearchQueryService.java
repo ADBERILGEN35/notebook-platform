@@ -1,33 +1,31 @@
 package com.notebook.lumen.search.query.application;
 
 import com.notebook.lumen.search.index.application.SearchAuditService;
-import com.notebook.lumen.search.index.infrastructure.SearchDocumentRepository;
-import com.notebook.lumen.search.index.infrastructure.SearchDocumentSearchRow;
+import com.notebook.lumen.search.provider.SearchProviderRouter;
+import com.notebook.lumen.search.provider.SearchQuery;
 import com.notebook.lumen.search.query.dto.PageResponse;
 import com.notebook.lumen.search.query.dto.SearchNoteResult;
 import com.notebook.lumen.search.shared.config.SearchProperties;
 import com.notebook.lumen.search.shared.exception.SearchException;
 import java.util.Map;
 import java.util.UUID;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class SearchQueryService {
-  private final SearchDocumentRepository repository;
+  private final SearchProviderRouter providerRouter;
   private final SearchPermissionService permissionService;
   private final SearchProperties properties;
   private final SearchAuditService auditService;
 
   public SearchQueryService(
-      SearchDocumentRepository repository,
+      SearchProviderRouter providerRouter,
       SearchPermissionService permissionService,
       SearchProperties properties,
       SearchAuditService auditService) {
-    this.repository = repository;
+    this.providerRouter = providerRouter;
     this.permissionService = permissionService;
     this.properties = properties;
     this.auditService = auditService;
@@ -45,21 +43,24 @@ public class SearchQueryService {
     validateContext(headerWorkspaceId, workspaceId);
     String query = validateQuery(q);
     int safeSize = Math.min(Math.max(size, 1), Math.max(1, properties.maxPageSize()));
-    var pageable = PageRequest.of(Math.max(page, 0), safeSize);
-    var candidatePage = repository.search(workspaceId, notebookId, query, pageable);
+    int safePage = Math.max(page, 0);
+    var candidatePage =
+        providerRouter.search(new SearchQuery(workspaceId, notebookId, query, safePage, safeSize, true));
     var permitted =
-        candidatePage.getContent().stream()
+        candidatePage.items().stream()
             .filter(
                 document ->
-                    permissionService.canRead(userId, workspaceId, document.getNotebookId()))
-            .map(document -> toResult(document, query))
+                    permissionService.canRead(userId, workspaceId, document.notebookId()))
+            .limit(safeSize)
             .toList();
     auditService.record(
         "SEARCH_QUERY_EXECUTED",
         workspaceId,
         workspaceId,
         Map.of("qLength", query.length(), "resultCount", permitted.size()));
-    return PageResponse.from(new PageImpl<>(permitted, pageable, permitted.size()));
+    int totalPages = permitted.size() < safeSize ? safePage + 1 : safePage + 2;
+    return new PageResponse<>(
+        permitted, safePage, safeSize, permitted.size(), totalPages, permitted.size() < safeSize);
   }
 
   private void validateContext(UUID headerWorkspaceId, UUID workspaceId) {
@@ -87,21 +88,4 @@ public class SearchQueryService {
     return trimmed;
   }
 
-  private SearchNoteResult toResult(SearchDocumentSearchRow document, String query) {
-    return new SearchNoteResult(
-        document.getNoteId(),
-        document.getWorkspaceId(),
-        document.getNotebookId(),
-        document.getTitle(),
-        snippet(document.getTitle(), query),
-        document.getRank() == null ? 0.0d : document.getRank(),
-        document.getNoteUpdatedAt());
-  }
-
-  private String snippet(String title, String query) {
-    if (title == null || title.isBlank()) {
-      return "";
-    }
-    return title.length() <= 180 ? title : title.substring(0, 180);
-  }
 }

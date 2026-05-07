@@ -38,6 +38,7 @@ management:
       show-details: never
 
 notification:
+  worker-instance-id: ${WORKER_INSTANCE_ID:}
   email:
     provider: ${EMAIL_PROVIDER:log}
     from: ${SMTP_FROM:no-reply@example.com}
@@ -46,6 +47,22 @@ notification:
     retry-initial-delay-seconds: ${EMAIL_RETRY_INITIAL_DELAY_SECONDS:60}
     retry-max-delay-seconds: ${EMAIL_RETRY_MAX_DELAY_SECONDS:3600}
     worker-fixed-delay-ms: ${EMAIL_WORKER_FIXED_DELAY_MS:5000}
+    worker-batch-size: ${EMAIL_WORKER_BATCH_SIZE:25}
+    worker-lock-timeout-seconds: ${EMAIL_WORKER_LOCK_TIMEOUT_SECONDS:300}
+    generic-http:
+      url: ${EMAIL_GENERIC_HTTP_URL:}
+      api-key: ${EMAIL_GENERIC_HTTP_API_KEY:}
+      authorization-header: ${EMAIL_GENERIC_HTTP_AUTHORIZATION_HEADER:Authorization}
+      connect-timeout-ms: ${EMAIL_GENERIC_HTTP_CONNECT_TIMEOUT_MS:1000}
+      request-timeout-ms: ${EMAIL_GENERIC_HTTP_REQUEST_TIMEOUT_MS:3000}
+    webhooks:
+      enabled: ${EMAIL_WEBHOOKS_ENABLED:false}
+      provider: ${EMAIL_WEBHOOK_PROVIDER:generic-http}
+      secret: ${EMAIL_WEBHOOK_SECRET:}
+      signature-header: ${EMAIL_WEBHOOK_SIGNATURE_HEADER:X-Email-Signature}
+      timestamp-header: ${EMAIL_WEBHOOK_TIMESTAMP_HEADER:X-Email-Timestamp}
+      tolerance-seconds: ${EMAIL_WEBHOOK_TOLERANCE_SECONDS:300}
+      allow-noop-verifier: ${EMAIL_WEBHOOK_ALLOW_NOOP_VERIFIER:false}
     smtp:
       host: ${SMTP_HOST:localhost}
       port: ${SMTP_PORT:587}
@@ -61,3 +78,11 @@ notification:
       audience: ${TRUSTED_SERVICE_WORKSPACE_SERVICE_AUDIENCE:notification-service}
       clock-skew-seconds: ${TRUSTED_SERVICE_WORKSPACE_SERVICE_CLOCK_SKEW_SECONDS:5}
       allowed-scopes: ${TRUSTED_SERVICE_WORKSPACE_SERVICE_ALLOWED_SCOPES:internal:notification:email:send}
+    trusted-identity-client:
+      kid: ${TRUSTED_SERVICE_IDENTITY_SERVICE_KID:}
+      public-key: ${TRUSTED_SERVICE_IDENTITY_SERVICE_PUBLIC_KEY:}
+      public-key-path: ${TRUSTED_SERVICE_IDENTITY_SERVICE_PUBLIC_KEY_PATH:}
+      issuer: ${TRUSTED_SERVICE_IDENTITY_SERVICE_ISSUER:identity-service}
+      audience: ${TRUSTED_SERVICE_IDENTITY_SERVICE_AUDIENCE:notification-service}
+      clock-skew-seconds: ${TRUSTED_SERVICE_IDENTITY_SERVICE_CLOCK_SKEW_SECONDS:5}
+      allowed-scopes: ${TRUSTED_SERVICE_IDENTITY_SERVICE_ALLOWED_SCOPES:internal:notification:email:send}

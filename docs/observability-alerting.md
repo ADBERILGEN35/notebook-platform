@@ -74,10 +74,24 @@ services. Custom notification counters such as `email_notifications_total` and q
 remain future hardening; until then, alert on service health, HTTP 5xx and logs containing
 `EMAIL_NOTIFICATION_FAILED`.
 
+Faz 32 notification-service exposes provider lifecycle metrics:
+`email_provider_send_total{provider,status}`, `email_provider_send_failure_total{provider}`,
+`email_webhook_events_total{provider,eventType}`,
+`email_webhook_signature_failures_total{provider}`, `email_bounces_total{provider}`,
+`email_complaints_total{provider}` and `email_suppressed_total{reason}`. Alert on provider send
+failure spikes, webhook signature failures, bounce/complaint rate spikes and suppression spikes.
+
 Faz 26 content-service exposes search outbox metrics:
 `search_outbox_pending`, `search_outbox_failed`, `search_outbox_processed_total`,
 `search_outbox_failed_total`, `search_outbox_retry_total`,
 `search_outbox_processing_duration` and `search_outbox_oldest_pending_age`.
+
+Faz 31 search-service exposes provider metrics:
+`search_provider_requests_total{provider,operation}`,
+`search_provider_failures_total{provider,operation}`,
+`search_provider_latency{provider,operation}`, `search_provider_fallback_total{operation}`,
+`opensearch_index_upserts_total` and `opensearch_search_queries_total`. Alert on OpenSearch
+failure spikes, fallback spikes, upsert failures and high search p95 latency.
 
 Alert on failed outbox count, oldest pending age, retry spikes and search-service 5xx/unavailable
 symptoms. Query text and note body should not be logged or stored in audit metadata.
@@ -98,6 +112,15 @@ Faz 29 dry-run metrics include `search_reindex_cleanup_dry_run_total`,
 real cleanup rollout, run a scoped dry-run and compare the preview count with the expected orphan
 range. Alert or block promotion when dry-run orphan count is unexpectedly high. A future alert can
 compare real cleanup archived count against the most recent dry-run count for the same scope.
+
+Faz 30 worker coordination metrics include `email_worker_claimed_total`,
+`email_worker_stale_recovered_total`, `email_worker_lock_expired_total`,
+`search_outbox_claimed_total`, `search_outbox_stale_recovered_total`,
+`search_outbox_lock_expired_total`, `search_reindex_claimed_total`,
+`search_reindex_stale_failed_total`, `search_reindex_lock_expired_total` and
+`search_reindex_heartbeat_timestamp`. Alert when stuck `SENDING` or `PROCESSING` counts rise,
+stale recovery spikes, reindex jobs run too long, or queue depth grows while claimed counters remain
+flat.
 
 ## GitOps Promotion Usage
 

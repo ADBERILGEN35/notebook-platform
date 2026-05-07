@@ -1,8 +1,8 @@
 # Search Service
 
-Faz 25 introduces `search-service` as the provider-agnostic search foundation. The initial provider
-is PostgreSQL full-text search with `simple` text configuration. OpenSearch or Elasticsearch remain
-future providers.
+Faz 25 introduced `search-service` with PostgreSQL full-text search. Faz 31 adds the provider
+abstraction and OpenSearch projection support while keeping PostgreSQL as the default and canonical
+local index state.
 
 ## Responsibilities
 
@@ -61,6 +61,15 @@ Preview samples return only ids and timestamps, not titles or note content.
 The index uses PostgreSQL `simple` config. Turkish and English stemming are future work because
 portable PostgreSQL language configuration differs by installation.
 
+## Provider Architecture
+
+`SEARCH_PROVIDER=postgres|opensearch` selects the query provider. `SEARCH_DUAL_WRITE_ENABLED=true`
+projects accepted index writes to OpenSearch for migration. `SEARCH_FALLBACK_TO_POSTGRES=false` is
+the default because result consistency is preferred over silent fallback; staging may enable it
+during rollout.
+
+See [`opensearch-provider.md`](opensearch-provider.md) for mapping, migration and rollback details.
+
 ## Permission Model
 
 Search-service applies workspace-level filtering in SQL. It then checks notebook candidates against
@@ -74,10 +83,10 @@ count only. It does not record plaintext `q`.
 
 ## Limitations
 
-- no OpenSearch/Elasticsearch provider
 - no Kafka/RabbitMQ indexing
 - no hard delete during mark-and-sweep reindex cleanup
 - real cleanup production rollout still requires staged approval
+- permission-aware exact total count for OpenSearch is future work
 - no advanced highlighting
 - no vector or semantic search
 - no autocomplete

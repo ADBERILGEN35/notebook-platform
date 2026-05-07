@@ -7,7 +7,7 @@ import java.util.stream.Collectors;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties(prefix = "notification")
-public record NotificationProperties(Email email, Internal internal) {
+public record NotificationProperties(String workerInstanceId, Email email, Internal internal) {
   public record Email(
       String provider,
       String from,
@@ -16,11 +16,31 @@ public record NotificationProperties(Email email, Internal internal) {
       long retryInitialDelaySeconds,
       long retryMaxDelaySeconds,
       long workerFixedDelayMs,
-      Smtp smtp) {}
+      int workerBatchSize,
+      long workerLockTimeoutSeconds,
+      Smtp smtp,
+      GenericHttp genericHttp,
+      Webhooks webhooks) {}
 
   public record Smtp(String host, int port, String username, String password, boolean tlsEnabled) {}
 
-  public record Internal(TrustedService trustedNotificationClient) {}
+  public record GenericHttp(
+      String url,
+      String apiKey,
+      String authorizationHeader,
+      long connectTimeoutMs,
+      long requestTimeoutMs) {}
+
+  public record Webhooks(
+      boolean enabled,
+      String provider,
+      String secret,
+      String signatureHeader,
+      String timestampHeader,
+      long toleranceSeconds,
+      boolean allowNoopVerifier) {}
+
+  public record Internal(TrustedService trustedNotificationClient, TrustedService trustedIdentityClient) {}
 
   public record TrustedService(
       String kid,

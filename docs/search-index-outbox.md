@@ -29,8 +29,9 @@ dispatches outside the note write path:
 Failures are retried with exponential backoff. After `SEARCH_OUTBOX_MAX_ATTEMPTS`, the event moves
 to `FAILED` and waits for operator reprocess.
 
-If a pod dies after marking an event `PROCESSING`, later workers recover stale locks after the max
-retry delay window and put the event back into the retry path.
+Claimed rows store `lockedBy`, `lockedAt` and `lockExpiresAt`. If a pod dies after marking an event
+`PROCESSING`, later workers recover expired locks after `SEARCH_OUTBOX_LOCK_TIMEOUT_SECONDS` and put
+the event back into the retry path.
 
 Config:
 
@@ -40,6 +41,8 @@ Config:
 - `SEARCH_OUTBOX_INITIAL_DELAY_SECONDS`
 - `SEARCH_OUTBOX_MAX_DELAY_SECONDS`
 - `SEARCH_OUTBOX_POLL_INTERVAL_SECONDS`
+- `SEARCH_OUTBOX_LOCK_TIMEOUT_SECONDS`
+- `WORKER_INSTANCE_ID`
 
 ## Ops API
 
@@ -76,6 +79,7 @@ Audit events:
 - `SEARCH_INDEX_OUTBOX_PROCESSED`
 - `SEARCH_INDEX_OUTBOX_RETRY_SCHEDULED`
 - `SEARCH_INDEX_OUTBOX_FAILED`
+- `SEARCH_INDEX_OUTBOX_STALE_RECOVERED`
 
 Audit metadata intentionally excludes note body and search payload. It includes note/workspace IDs,
 event type, attempt count and sanitized error class/message only.
@@ -85,3 +89,7 @@ event type, attempt count and sanitized error class/message only.
 Note create/update/restore/archive success is independent from search-service availability. Search
 consistency is eventual. If the worker cannot reach search-service, events stay retryable or move to
 `FAILED` for reprocess.
+
+Faz 31 does not change the content-service outbox contract. Outbox delivery still targets
+search-service indexing endpoints; search-service then decides whether accepted writes are only kept
+in PostgreSQL canonical state or also projected to OpenSearch.

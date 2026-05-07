@@ -31,6 +31,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.HttpClientErrorException;
 
 @Service
 public class InvitationService {
@@ -261,6 +262,9 @@ public class InvitationService {
               invitation,
               inviterEmail == null || inviterEmail.isBlank() ? "unknown" : inviterEmail,
               acceptUrl));
+    } catch (HttpClientErrorException.Conflict e) {
+      throw Exceptions.conflict(
+          "NOTIFICATION_RECIPIENT_SUPPRESSED", "Invitation email recipient is suppressed");
     } catch (RuntimeException e) {
       throw Exceptions.serviceUnavailable(
           "NOTIFICATION_SERVICE_UNAVAILABLE", "Notification service is unavailable");

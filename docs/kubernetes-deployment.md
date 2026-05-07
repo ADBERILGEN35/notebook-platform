@@ -59,6 +59,9 @@ Production should use managed/external PostgreSQL and Redis:
   It remains inside content-service; no separate Deployment, Kafka or RabbitMQ is required.
 - search-service reindex worker is controlled by `SEARCH_REINDEX_*` env values and calls
   content-service internal source API over ClusterIP.
+- content, notification and search pods set `WORKER_INSTANCE_ID` from pod name. Worker-owned
+  deployments define `terminationGracePeriodSeconds` so shutdown stops new claims while in-flight
+  work finishes.
 - `SEARCH_REINDEX_ORPHAN_CLEANUP_ENABLED` defaults to `false`; run dry-run cleanup and inspect
   orphan preview in staging before enabling real cleanup with scoped operator approval.
 - notification-service uses `externalDatabase.notificationUrl` and `notification-db-password`.
@@ -188,3 +191,23 @@ Faz 20 adds provider-agnostic GitOps examples:
 
 The examples use Argo CD as the primary controller model and keep Flux as a documented alternative.
 They do not install Argo CD, deploy to a real cluster or include real registry/secret credentials.
+
+## OpenSearch Provider
+
+The chart does not install OpenSearch and does not declare an OpenSearch chart dependency.
+Configure `search.provider`, `search.dualWriteEnabled`, `search.fallbackToPostgres` and
+`search.opensearch.*` for an external or managed endpoint. Credentials are read from Secret keys
+`opensearch-username` and `opensearch-password` by default. If egress is restricted, add an
+environment-specific NetworkPolicy allow rule for search-service to the external OpenSearch
+endpoint.
+
+## Email Provider And Webhooks
+
+The chart keeps notification-service as an internal ClusterIP service. api-gateway may route
+`/webhooks/email/**` to notification-service so external providers can deliver signed events without
+user JWT. Keep `EMAIL_WEBHOOKS_ENABLED=false` until an ExternalSecret-backed `email-webhook-secret`
+is present and ingress/network allow rules are reviewed.
+
+Provider API keys are Secret values (`email-provider-api-key`). Webhook secrets are Secret values
+(`email-webhook-secret`). Do not put provider keys or webhook secrets into ConfigMaps or GitOps
+plain values.

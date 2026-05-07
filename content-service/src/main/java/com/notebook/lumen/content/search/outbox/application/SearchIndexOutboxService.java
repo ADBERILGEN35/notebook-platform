@@ -1,5 +1,6 @@
 package com.notebook.lumen.content.search.outbox.application;
 
+import com.notebook.lumen.common.security.worker.WorkerInstanceIds;
 import com.notebook.lumen.content.audit.AuditService;
 import com.notebook.lumen.content.config.ContentProperties;
 import com.notebook.lumen.content.search.outbox.SearchIndexOutboxEvent;
@@ -21,6 +22,7 @@ public class SearchIndexOutboxService {
   private final ContentProperties properties;
   private final AuditService auditService;
   private final MeterRegistry meterRegistry;
+  private final String workerInstanceId;
 
   public SearchIndexOutboxService(
       SearchIndexOutboxRepository repository,
@@ -31,6 +33,8 @@ public class SearchIndexOutboxService {
     this.properties = properties;
     this.auditService = auditService;
     this.meterRegistry = meterRegistry;
+    this.workerInstanceId =
+        WorkerInstanceIds.resolve(properties.workerInstanceId(), "search-outbox-worker");
   }
 
   @Transactional
@@ -40,7 +44,13 @@ public class SearchIndexOutboxService {
     List<SearchIndexOutboxEvent> events =
         repository.findDueForUpdate(
             SearchIndexOutboxStatus.PENDING.name(), now, outbox().effectiveBatchSize());
-    events.forEach(event -> event.markProcessing(now));
+    events.forEach(
+        event ->
+            event.markProcessing(
+                workerInstanceId, now, now.plusSeconds(outbox().effectiveLockTimeoutSeconds())));
+    if (!events.isEmpty()) {
+      meterRegistry.counter("search_outbox_claimed_total").increment(events.size());
+    }
     return events;
   }
 
@@ -128,18 +138,34 @@ public class SearchIndexOutboxService {
   }
 
   private void recoverStaleProcessing(Instant now) {
-    Instant lockedBefore = now.minusSeconds(outbox().effectiveMaxDelaySeconds());
-    repository
-        .findStaleProcessingForUpdate(
-            SearchIndexOutboxStatus.PROCESSING.name(), lockedBefore, outbox().effectiveBatchSize())
-        .forEach(event -> event.markRetry("Processing lock expired", now, now));
+    List<SearchIndexOutboxEvent> expired =
+        repository.findStaleProcessingForUpdate(
+            SearchIndexOutboxStatus.PROCESSING.name(), now, outbox().effectiveBatchSize());
+    if (expired == null) {
+      expired = List.of();
+    }
+    expired.forEach(
+        event -> {
+          String lockedBy = event.getLockedBy();
+          event.markRetry("Processing lock expired", now, now);
+          auditService.record(
+              "SEARCH_INDEX_OUTBOX_STALE_RECOVERED",
+              null,
+              event.getWorkspaceId(),
+              "NOTE",
+              event.getNoteId(),
+              staleRecoveryMetadata(event, lockedBy));
+        });
+    if (!expired.isEmpty()) {
+      meterRegistry.counter("search_outbox_stale_recovered_total").increment(expired.size());
+      meterRegistry.counter("search_outbox_lock_expired_total").increment(expired.size());
+    }
   }
 
   private Map<String, Object> auditMetadata(SearchIndexOutboxEvent event, String error) {
     if (error == null || error.isBlank()) {
       return Map.of(
-          "eventType", event.getEventType().name(),
-          "attemptCount", event.getAttemptCount());
+          "eventType", event.getEventType().name(), "attemptCount", event.getAttemptCount());
     }
     return Map.of(
         "eventType",
@@ -148,6 +174,22 @@ public class SearchIndexOutboxService {
         event.getAttemptCount(),
         "error",
         error);
+  }
+
+  private Map<String, Object> staleRecoveryMetadata(SearchIndexOutboxEvent event, String lockedBy) {
+    return Map.of(
+        "eventType",
+        event.getEventType().name(),
+        "oldStatus",
+        SearchIndexOutboxStatus.PROCESSING.name(),
+        "newStatus",
+        SearchIndexOutboxStatus.PENDING.name(),
+        "lockedBy",
+        lockedBy == null || lockedBy.isBlank() ? "unknown" : lockedBy,
+        "workerInstanceId",
+        workerInstanceId,
+        "attemptCount",
+        event.getAttemptCount());
   }
 
   private String sanitizedError(RuntimeException failure) {
@@ -166,7 +208,7 @@ public class SearchIndexOutboxService {
   private ContentProperties.SearchOutbox outbox() {
     ContentProperties.Search search = properties.search();
     if (search == null || search.outbox() == null) {
-      return new ContentProperties.SearchOutbox(true, 50, 10, 30, 3600, 10, null);
+      return new ContentProperties.SearchOutbox(true, 50, 10, 30, 3600, 10, 300, null);
     }
     return search.outbox();
   }

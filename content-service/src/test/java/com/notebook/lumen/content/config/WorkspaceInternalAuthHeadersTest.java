@@ -48,6 +48,7 @@ class WorkspaceInternalAuthHeadersTest {
 
   private ContentProperties properties(String mode) {
     return new ContentProperties(
+        "",
         null,
         new ContentProperties.Workspace(
             "http://localhost", 1000, 50, 10000, 2, "", "static-token", "", mode),

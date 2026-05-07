@@ -9,7 +9,11 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties(prefix = "content")
 public record ContentProperties(
-    Blocks blocks, Workspace workspace, ServiceJwt serviceJwt, Search search) {
+    String workerInstanceId,
+    Blocks blocks,
+    Workspace workspace,
+    ServiceJwt serviceJwt,
+    Search search) {
   public record Blocks(boolean allowUnknownBlockTypes, int maxDepth, int maxJsonBytes) {}
 
   public record Workspace(
@@ -120,6 +124,7 @@ public record ContentProperties(
       long initialDelaySeconds,
       long maxDelaySeconds,
       long pollIntervalSeconds,
+      long lockTimeoutSeconds,
       SearchOutboxAdmin admin) {
     public int effectiveBatchSize() {
       return batchSize <= 0 ? 50 : batchSize;
@@ -139,6 +144,10 @@ public record ContentProperties(
 
     public long effectivePollIntervalSeconds() {
       return pollIntervalSeconds <= 0 ? 10 : pollIntervalSeconds;
+    }
+
+    public long effectiveLockTimeoutSeconds() {
+      return lockTimeoutSeconds <= 0 ? 300 : lockTimeoutSeconds;
     }
   }
 

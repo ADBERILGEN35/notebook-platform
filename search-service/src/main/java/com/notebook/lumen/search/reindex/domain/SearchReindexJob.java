@@ -38,6 +38,9 @@ public class SearchReindexJob {
   private boolean dryRunCleanup;
   private long cleanupPreviewCount;
   private Instant cleanupPreviewGeneratedAt;
+  private String lockedBy;
+  private Instant lockExpiresAt;
+  private Instant heartbeatAt;
   private String lastError;
   private Instant createdAt;
   private Instant updatedAt;
@@ -65,9 +68,18 @@ public class SearchReindexJob {
     this.updatedAt = now;
   }
 
-  public void start(Instant now) {
+  public void start(String lockedBy, Instant now, Instant lockExpiresAt) {
     this.status = SearchReindexJobStatus.RUNNING;
     this.startedAt = now;
+    this.lockedBy = lockedBy;
+    this.lockExpiresAt = lockExpiresAt;
+    this.heartbeatAt = now;
+    this.updatedAt = now;
+  }
+
+  public void heartbeat(Instant now, Instant lockExpiresAt) {
+    this.heartbeatAt = now;
+    this.lockExpiresAt = lockExpiresAt;
     this.updatedAt = now;
   }
 
@@ -82,6 +94,7 @@ public class SearchReindexJob {
   public void complete(Instant now) {
     this.status = SearchReindexJobStatus.COMPLETED;
     this.completedAt = now;
+    clearLock();
     this.updatedAt = now;
   }
 
@@ -117,13 +130,20 @@ public class SearchReindexJob {
     this.status = SearchReindexJobStatus.FAILED;
     this.failedAt = now;
     this.lastError = truncate(error);
+    clearLock();
     this.updatedAt = now;
   }
 
   public void cancel(Instant now) {
     this.status = SearchReindexJobStatus.CANCELLED;
     this.completedAt = now;
+    clearLock();
     this.updatedAt = now;
+  }
+
+  private void clearLock() {
+    this.lockedBy = null;
+    this.lockExpiresAt = null;
   }
 
   public boolean terminal() {
@@ -221,6 +241,18 @@ public class SearchReindexJob {
 
   public Instant getCleanupPreviewGeneratedAt() {
     return cleanupPreviewGeneratedAt;
+  }
+
+  public String getLockedBy() {
+    return lockedBy;
+  }
+
+  public Instant getLockExpiresAt() {
+    return lockExpiresAt;
+  }
+
+  public Instant getHeartbeatAt() {
+    return heartbeatAt;
   }
 
   public String getLastError() {

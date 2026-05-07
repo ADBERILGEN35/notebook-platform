@@ -1,5 +1,6 @@
 package com.notebook.lumen.notification.email.provider;
 
+import com.notebook.lumen.notification.email.provider.http.GenericHttpEmailProvider;
 import com.notebook.lumen.notification.shared.config.NotificationProperties;
 import java.util.Properties;
 import org.springframework.context.annotation.Bean;
@@ -15,6 +16,8 @@ public class EmailProviderConfig {
     return switch (provider.toLowerCase()) {
       case "noop" -> new NoopEmailProvider();
       case "smtp" -> new SmtpEmailProvider(javaMailSender(properties), properties.email().from());
+      case "generic-http" -> new GenericHttpEmailProvider(properties.email().genericHttp(), "generic-http");
+      case "sendgrid" -> new GenericHttpEmailProvider(properties.email().genericHttp(), "sendgrid");
       case "log" -> new LogEmailProvider();
       default -> throw new IllegalStateException("Unsupported EMAIL_PROVIDER: " + provider);
     };

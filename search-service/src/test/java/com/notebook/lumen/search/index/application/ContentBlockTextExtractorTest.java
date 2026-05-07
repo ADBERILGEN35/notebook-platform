@@ -46,10 +46,15 @@ class ContentBlockTextExtractorTest {
         120,
         2,
         50,
+        "",
+        "postgres",
+        false,
+        false,
+        new SearchProperties.OpenSearch("", "", "", "notebook-notes", 1000, 3000, false, ""),
         new SearchProperties.Workspace("http://localhost", 1000, 2),
         new SearchProperties.ContentSource("http://localhost", 1000, "content-service"),
         null,
         new SearchProperties.Internal(null, null),
-        new SearchProperties.Reindex(true, 100, 10, 100, false));
+        new SearchProperties.Reindex(true, 100, 10, 100, false, 300, 30));
   }
 }

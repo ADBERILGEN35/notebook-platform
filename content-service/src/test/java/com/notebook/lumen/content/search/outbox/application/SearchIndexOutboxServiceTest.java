@@ -39,7 +39,26 @@ class SearchIndexOutboxServiceTest {
     assertThat(events).containsExactly(event);
     assertThat(event.getStatus()).isEqualTo(SearchIndexOutboxStatus.PROCESSING);
     assertThat(event.getLockedAt()).isNotNull();
+    assertThat(event.getLockedBy()).isNotBlank();
+    assertThat(event.getLockExpiresAt()).isNotNull();
     verify(repository).findDueForUpdate(any(), any(), org.mockito.ArgumentMatchers.eq(25));
+  }
+
+  @Test
+  void expiredProcessingEventIsRecoveredBeforeClaimingPendingEvents() {
+    SearchIndexOutboxEvent stale = event();
+    Instant now = Instant.now();
+    stale.markProcessing("old-worker", now.minusSeconds(600), now.minusSeconds(300));
+    when(repository.findStaleProcessingForUpdate(any(), any(), any(Integer.class)))
+        .thenReturn(List.of(stale));
+    when(repository.findDueForUpdate(any(), any(), any(Integer.class))).thenReturn(List.of());
+
+    service.claimDueEvents();
+
+    assertThat(stale.getStatus()).isEqualTo(SearchIndexOutboxStatus.PENDING);
+    assertThat(stale.getAttemptCount()).isEqualTo(1);
+    assertThat(stale.getLockedBy()).isNull();
+    assertThat(stale.getLockExpiresAt()).isNull();
   }
 
   @Test
@@ -110,10 +129,10 @@ class SearchIndexOutboxServiceTest {
 
   private ContentProperties properties() {
     return new ContentProperties(
-        null, null, null, new ContentProperties.Search("", 1000, true, null, null, outbox()));
+        "", null, null, null, new ContentProperties.Search("", 1000, true, null, null, outbox()));
   }
 
   private ContentProperties.SearchOutbox outbox() {
-    return new ContentProperties.SearchOutbox(true, 25, 2, 30, 3600, 10, null);
+    return new ContentProperties.SearchOutbox(true, 25, 2, 30, 3600, 10, 300, null);
   }
 }

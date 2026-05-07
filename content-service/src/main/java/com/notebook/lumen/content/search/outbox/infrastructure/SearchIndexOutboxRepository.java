@@ -37,17 +37,15 @@ public interface SearchIndexOutboxRepository extends JpaRepository<SearchIndexOu
           SELECT *
           FROM search_index_outbox
           WHERE status = :status
-            AND locked_at IS NOT NULL
-            AND locked_at <= :lockedBefore
-          ORDER BY locked_at ASC
+            AND lock_expires_at IS NOT NULL
+            AND lock_expires_at <= :now
+          ORDER BY lock_expires_at ASC
           LIMIT :limit
           FOR UPDATE SKIP LOCKED
           """,
       nativeQuery = true)
   List<SearchIndexOutboxEvent> findStaleProcessingForUpdate(
-      @Param("status") String status,
-      @Param("lockedBefore") Instant lockedBefore,
-      @Param("limit") int limit);
+      @Param("status") String status, @Param("now") Instant now, @Param("limit") int limit);
 
   @Query(
       """

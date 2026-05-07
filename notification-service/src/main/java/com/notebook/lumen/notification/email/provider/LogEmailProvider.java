@@ -9,12 +9,23 @@ public class LogEmailProvider implements EmailProvider {
   private static final Logger log = LoggerFactory.getLogger(LogEmailProvider.class);
 
   @Override
+  public String providerName() {
+    return "log";
+  }
+
+  @Override
+  public boolean supportsWebhooks() {
+    return false;
+  }
+
+  @Override
   public EmailSendResult send(EmailMessage message) {
     log.info(
         "Email accepted by log provider recipient={} subject={} metadata={}",
         message.recipient(),
         message.subject(),
         message.metadata());
-    return new EmailSendResult("log", "log-" + UUID.randomUUID(), Instant.now());
+    return new EmailSendResult(
+        providerName(), "log-" + UUID.randomUUID(), Instant.now(), "accepted", null);
   }
 }

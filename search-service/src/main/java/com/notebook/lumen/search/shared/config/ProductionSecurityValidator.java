@@ -1,5 +1,6 @@
 package com.notebook.lumen.search.shared.config;
 
+import com.notebook.lumen.search.provider.SearchProviderType;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.core.env.Environment;
@@ -32,6 +33,10 @@ public class ProductionSecurityValidator implements ApplicationRunner {
     String dbPassword = environment.getProperty("spring.datasource.password");
     if (dbPassword == null || dbPassword.isBlank()) {
       throw new IllegalStateException("DB_PASSWORD is required for search-service in prod");
+    }
+    SearchProviderType provider = SearchProviderType.from(properties.provider());
+    if (provider == SearchProviderType.OPENSEARCH && !properties.opensearch().configured()) {
+      throw new IllegalStateException("OPENSEARCH_URL is required when SEARCH_PROVIDER=opensearch");
     }
   }
 }

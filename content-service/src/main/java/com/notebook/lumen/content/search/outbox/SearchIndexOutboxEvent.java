@@ -36,6 +36,8 @@ public class SearchIndexOutboxEvent {
   private Instant nextAttemptAt;
   private String lastError;
   private Instant lockedAt;
+  private String lockedBy;
+  private Instant lockExpiresAt;
   private Instant processedAt;
   private Instant failedAt;
   private Instant createdAt;
@@ -68,9 +70,11 @@ public class SearchIndexOutboxEvent {
     this.updatedAt = now;
   }
 
-  public void markProcessing(Instant now) {
+  public void markProcessing(String lockedBy, Instant now, Instant lockExpiresAt) {
     this.status = SearchIndexOutboxStatus.PROCESSING;
     this.lockedAt = now;
+    this.lockedBy = lockedBy;
+    this.lockExpiresAt = lockExpiresAt;
     this.updatedAt = now;
   }
 
@@ -78,6 +82,7 @@ public class SearchIndexOutboxEvent {
     this.status = SearchIndexOutboxStatus.PROCESSED;
     this.processedAt = now;
     this.lastError = null;
+    clearLock();
     this.updatedAt = now;
   }
 
@@ -86,7 +91,7 @@ public class SearchIndexOutboxEvent {
     this.attemptCount++;
     this.nextAttemptAt = nextAttemptAt;
     this.lastError = truncate(error);
-    this.lockedAt = null;
+    clearLock();
     this.updatedAt = now;
   }
 
@@ -96,7 +101,7 @@ public class SearchIndexOutboxEvent {
     this.nextAttemptAt = null;
     this.lastError = truncate(error);
     this.failedAt = now;
-    this.lockedAt = null;
+    clearLock();
     this.updatedAt = now;
   }
 
@@ -105,9 +110,15 @@ public class SearchIndexOutboxEvent {
     this.attemptCount = 0;
     this.nextAttemptAt = now;
     this.lastError = null;
-    this.lockedAt = null;
+    clearLock();
     this.failedAt = null;
     this.updatedAt = now;
+  }
+
+  private void clearLock() {
+    this.lockedAt = null;
+    this.lockedBy = null;
+    this.lockExpiresAt = null;
   }
 
   private String truncate(String value) {
@@ -171,6 +182,14 @@ public class SearchIndexOutboxEvent {
 
   public Instant getLockedAt() {
     return lockedAt;
+  }
+
+  public String getLockedBy() {
+    return lockedBy;
+  }
+
+  public Instant getLockExpiresAt() {
+    return lockExpiresAt;
   }
 
   public Instant getProcessedAt() {

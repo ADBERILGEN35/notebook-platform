@@ -14,10 +14,20 @@ config:
   searchOutboxWorkerEnabled: "true"
   searchOutboxBatchSize: "50"
   searchOutboxPollIntervalSeconds: "10"
+  searchOutboxLockTimeoutSeconds: "300"
   searchReindexWorkerEnabled: "true"
   searchReindexBatchSize: "100"
   searchReindexPollIntervalSeconds: "10"
   searchReindexOrphanCleanupEnabled: "false"
+  searchReindexLockTimeoutSeconds: "300"
+  searchReindexHeartbeatIntervalSeconds: "30"
+  emailWorkerBatchSize: "25"
+  emailWorkerLockTimeoutSeconds: "300"
+  emailProvider: "generic-http"
+  emailWebhooksEnabled: "false"
+  emailWebhookProvider: "generic-http"
+  emailGenericHttpUrl: "https://email-provider.prod.example.internal/send"
+  identitySecurityNotificationsEnabled: "true"
 
 secrets:
   mode: external-secrets
@@ -30,6 +40,16 @@ secrets:
       name: notebook-platform-prod-secret-store
       kind: ClusterSecretStore
     targetSecretName: notebook-platform-secrets
+
+search:
+  provider: opensearch
+  dualWriteEnabled: "false"
+  fallbackToPostgres: "false"
+  opensearch:
+    url: "https://opensearch.prod.example.internal:9200"
+    usernameSecretKey: opensearch-username
+    passwordSecretKey: opensearch-password
+    indexNotes: notebook-notes
 
 services:
   apiGateway:

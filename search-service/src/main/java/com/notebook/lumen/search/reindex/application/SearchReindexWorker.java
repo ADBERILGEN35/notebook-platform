@@ -9,6 +9,8 @@ import com.notebook.lumen.search.reindex.domain.SearchReindexJob;
 import com.notebook.lumen.search.shared.config.SearchProperties;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
+import java.time.Instant;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -23,6 +25,7 @@ public class SearchReindexWorker {
   private final SearchIndexService indexService;
   private final SearchProperties properties;
   private final MeterRegistry meterRegistry;
+  private final AtomicBoolean acceptingClaims = new AtomicBoolean(true);
 
   public SearchReindexWorker(
       SearchReindexService reindexService,
@@ -39,7 +42,7 @@ public class SearchReindexWorker {
 
   @Scheduled(fixedDelayString = "#{@searchReindexWorker.pollIntervalMillis()}")
   public void poll() {
-    if (!properties.reindex().workerEnabled()) {
+    if (!acceptingClaims.get() || !properties.reindex().workerEnabled()) {
       return;
     }
     reindexService.claimNextPending().ifPresent(this::runJob);
@@ -49,14 +52,26 @@ public class SearchReindexWorker {
     return String.valueOf(properties.reindex().effectivePollIntervalSeconds() * 1000);
   }
 
+  @jakarta.annotation.PreDestroy
+  void stopAcceptingClaims() {
+    acceptingClaims.set(false);
+  }
+
   private void runJob(SearchReindexJob job) {
     Timer.Sample sample = Timer.start(meterRegistry);
     try {
       String cursor = job.getLastCursor();
       boolean hasNext;
+      Instant nextHeartbeatAt = Instant.EPOCH;
       do {
         if (reindexService.cancelled(job.getId())) {
           return;
+        }
+        Instant now = Instant.now();
+        if (!now.isBefore(nextHeartbeatAt)) {
+          reindexService.heartbeat(job.getId());
+          nextHeartbeatAt =
+              now.plusSeconds(properties.reindex().effectiveHeartbeatIntervalSeconds());
         }
         SearchIndexSourcePageResponse page =
             sourceClient.notes(

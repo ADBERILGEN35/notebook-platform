@@ -95,6 +95,10 @@ app.kubernetes.io/component: {{ .component }}
         path: service-jwt/content-private.pem
       - key: content-service-jwt-public-key.pem
         path: service-jwt/content-public.pem
+      - key: identity-service-jwt-private-key.pem
+        path: service-jwt/identity-private.pem
+      - key: identity-service-jwt-public-key.pem
+        path: service-jwt/identity-public.pem
       - key: workspace-service-jwt-private-key.pem
         path: service-jwt/workspace-private.pem
       - key: workspace-service-jwt-public-key.pem

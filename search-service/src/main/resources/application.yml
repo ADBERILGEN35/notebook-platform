@@ -38,6 +38,10 @@ management:
       show-details: never
 
 search:
+  worker-instance-id: ${WORKER_INSTANCE_ID:}
+  provider: ${SEARCH_PROVIDER:postgres}
+  dual-write-enabled: ${SEARCH_DUAL_WRITE_ENABLED:false}
+  fallback-to-postgres: ${SEARCH_FALLBACK_TO_POSTGRES:false}
   max-indexed-chars: ${SEARCH_MAX_INDEXED_CHARS:200000}
   max-query-length: ${SEARCH_MAX_QUERY_LENGTH:120}
   min-query-length: ${SEARCH_MIN_QUERY_LENGTH:2}
@@ -50,6 +54,15 @@ search:
     service-url: ${CONTENT_SERVICE_URL:http://content-service:8083}
     timeout-ms: ${CONTENT_SOURCE_CLIENT_TIMEOUT_MS:5000}
     audience: ${CONTENT_SOURCE_SERVICE_JWT_AUDIENCE:content-service}
+  opensearch:
+    url: ${OPENSEARCH_URL:}
+    username: ${OPENSEARCH_USERNAME:}
+    password: ${OPENSEARCH_PASSWORD:}
+    index-notes: ${OPENSEARCH_INDEX_NOTES:notebook-notes}
+    connect-timeout-ms: ${OPENSEARCH_CONNECT_TIMEOUT_MS:1000}
+    socket-timeout-ms: ${OPENSEARCH_SOCKET_TIMEOUT_MS:3000}
+    tls-enabled: ${OPENSEARCH_TLS_ENABLED:false}
+    truststore-path: ${OPENSEARCH_TRUSTSTORE_PATH:}
   service-jwt:
     active-kid: ${INTERNAL_SERVICE_JWT_ACTIVE_KID:search-service-key-1}
     private-key: ${INTERNAL_SERVICE_JWT_PRIVATE_KEY:}
@@ -82,3 +95,5 @@ search:
     poll-interval-seconds: ${SEARCH_REINDEX_POLL_INTERVAL_SECONDS:10}
     max-failures: ${SEARCH_REINDEX_MAX_FAILURES:100}
     orphan-cleanup-enabled: ${SEARCH_REINDEX_ORPHAN_CLEANUP_ENABLED:false}
+    lock-timeout-seconds: ${SEARCH_REINDEX_LOCK_TIMEOUT_SECONDS:300}
+    heartbeat-interval-seconds: ${SEARCH_REINDEX_HEARTBEAT_INTERVAL_SECONDS:30}

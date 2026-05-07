@@ -4,6 +4,8 @@ import com.notebook.lumen.search.index.api.IndexDocumentRequest;
 import com.notebook.lumen.search.index.api.IndexDocumentResponse;
 import com.notebook.lumen.search.index.domain.SearchDocument;
 import com.notebook.lumen.search.index.infrastructure.SearchDocumentRepository;
+import com.notebook.lumen.search.provider.SearchIndexDocument;
+import com.notebook.lumen.search.provider.SearchProviderRouter;
 import java.time.Instant;
 import java.util.Map;
 import java.util.UUID;
@@ -15,14 +17,17 @@ public class SearchIndexService {
   private final SearchDocumentRepository repository;
   private final ContentBlockTextExtractor textExtractor;
   private final SearchAuditService auditService;
+  private final SearchProviderRouter providerRouter;
 
   public SearchIndexService(
       SearchDocumentRepository repository,
       ContentBlockTextExtractor textExtractor,
-      SearchAuditService auditService) {
+      SearchAuditService auditService,
+      SearchProviderRouter providerRouter) {
     this.repository = repository;
     this.textExtractor = textExtractor;
     this.auditService = auditService;
+    this.providerRouter = providerRouter;
   }
 
   @Transactional
@@ -39,17 +44,22 @@ public class SearchIndexService {
     Instant now = Instant.now();
     String contentText = textExtractor.extract(request.contentBlocks());
     String tagsText = request.tags() == null ? null : String.join(" ", request.tags());
+    boolean[] skipped = new boolean[] {false};
     SearchDocument document =
         repository
             .findByNoteId(request.noteId())
             .map(
                 existing ->
-                    updateExisting(existing, request, contentText, tagsText, now, reindexJobId))
+                    updateExisting(
+                        existing, request, contentText, tagsText, now, reindexJobId, skipped))
             .orElseGet(() -> create(request, contentText, tagsText, now));
     if (reindexJobId != null) {
       document.markSeenForReindex(reindexJobId, now);
     }
     repository.save(document);
+    if (!skipped[0]) {
+      providerRouter.projectUpsert(toProviderDocument(document));
+    }
     auditService.record(
         "SEARCH_DOCUMENT_INDEXED",
         document.getWorkspaceId(),
@@ -72,6 +82,7 @@ public class SearchIndexService {
         .ifPresent(
             document -> {
               document.archive(Instant.now(), Instant.now());
+              providerRouter.projectArchive(noteId, document.getArchivedAt());
               auditService.record(
                   "SEARCH_DOCUMENT_ARCHIVED",
                   document.getWorkspaceId(),
@@ -86,11 +97,13 @@ public class SearchIndexService {
       String contentText,
       String tagsText,
       Instant now,
-      UUID reindexJobId) {
+      UUID reindexJobId,
+      boolean[] skipped) {
     if (existing.newerThan(request.sourceVersion())) {
       if (reindexJobId != null) {
         existing.markSeenForReindex(reindexJobId, now);
       }
+      skipped[0] = true;
       return existing;
     }
     existing.apply(
@@ -129,5 +142,24 @@ public class SearchIndexService {
         request.archivedAt(),
         request.sourceVersion(),
         now);
+  }
+
+  private SearchIndexDocument toProviderDocument(SearchDocument document) {
+    return new SearchIndexDocument(
+        document.getId(),
+        document.getWorkspaceId(),
+        document.getNotebookId(),
+        document.getNoteId(),
+        document.getTitle(),
+        document.getContentText(),
+        document.getTagsText(),
+        document.getNotebookName(),
+        document.getCreatedBy(),
+        document.getUpdatedBy(),
+        document.getNoteCreatedAt(),
+        document.getNoteUpdatedAt(),
+        document.getArchivedAt(),
+        document.getSourceVersion(),
+        document.getIndexedAt());
   }
 }

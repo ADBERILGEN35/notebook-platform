@@ -29,6 +29,9 @@ or failed outbox state. See [`search-index-outbox.md`](search-index-outbox.md).
 `noteId` is unique. If an incoming `sourceVersion` is older than the indexed document version, the
 request is ignored and the current document is returned. Same or newer versions update the index.
 
+With OpenSearch enabled, PostgreSQL still makes the source-version decision first. OpenSearch is a
+remote projection and does not run a Phase 31 optimistic version script.
+
 ## Content Extraction
 
 The extractor supports best-effort text extraction from paragraph, heading, list item, code, quote,
@@ -43,3 +46,7 @@ the internal reprocess endpoint.
 
 If search-service data is lost or corrupted beyond outbox recovery, run the pull-based reindex
 backfill job documented in [`search-reindex-backfill.md`](search-reindex-backfill.md).
+
+Provider migration can enable `SEARCH_DUAL_WRITE_ENABLED=true` before switching queries to
+`SEARCH_PROVIDER=opensearch`. Keep `SEARCH_PROVIDER=postgres` as rollback until OpenSearch has been
+validated with reindex, archive and permission filtering.

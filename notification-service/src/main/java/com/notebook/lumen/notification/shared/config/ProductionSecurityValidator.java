@@ -27,6 +27,15 @@ public class ProductionSecurityValidator implements ApplicationRunner {
     if ("smtp".equalsIgnoreCase(provider) && isBlank(properties.email().smtp().password())) {
       throw new IllegalStateException("SMTP_PASSWORD is required when EMAIL_PROVIDER=smtp in prod");
     }
+    if (("generic-http".equalsIgnoreCase(provider) || "sendgrid".equalsIgnoreCase(provider))
+        && (isBlank(properties.email().genericHttp().url())
+            || isBlank(properties.email().genericHttp().apiKey()))) {
+      throw new IllegalStateException(
+          "EMAIL_GENERIC_HTTP_URL and EMAIL_GENERIC_HTTP_API_KEY are required for HTTP email provider in prod");
+    }
+    if (properties.email().webhooks().enabled() && isBlank(properties.email().webhooks().secret())) {
+      throw new IllegalStateException("EMAIL_WEBHOOK_SECRET is required when webhooks are enabled");
+    }
     if (properties.internal().trustedNotificationClient() == null
         || !properties.internal().trustedNotificationClient().configured()) {
       throw new IllegalStateException(

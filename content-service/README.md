@@ -37,8 +37,10 @@ docker compose up --build
 - `INTERNAL_SERVICE_JWT_PRIVATE_KEY_PATH`: content-service internal service JWT signing key
 - `SEARCH_OUTBOX_WORKER_ENABLED`, `SEARCH_OUTBOX_BATCH_SIZE`,
   `SEARCH_OUTBOX_MAX_ATTEMPTS`, `SEARCH_OUTBOX_INITIAL_DELAY_SECONDS`,
-  `SEARCH_OUTBOX_MAX_DELAY_SECONDS`, `SEARCH_OUTBOX_POLL_INTERVAL_SECONDS`: search indexing outbox
-  worker config
+  `SEARCH_OUTBOX_MAX_DELAY_SECONDS`, `SEARCH_OUTBOX_POLL_INTERVAL_SECONDS`,
+  `SEARCH_OUTBOX_LOCK_TIMEOUT_SECONDS`: search indexing outbox worker config
+- `WORKER_INSTANCE_ID`: optional worker instance id; Kubernetes sets pod name, local runs
+  auto-generate
 - `INTERNAL_SERVICE_JWT_ACTIVE_KID`: service JWT `kid`
 - `INTERNAL_SERVICE_JWT_TTL_SECONDS`: default `60`
 - `ALLOW_UNKNOWN_BLOCK_TYPES`: default `false`

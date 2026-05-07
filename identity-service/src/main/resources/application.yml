@@ -81,3 +81,17 @@ audit:
     clock-skew-seconds: ${AUDIT_ADMIN_SERVICE_JWT_CLOCK_SKEW_SECONDS:5}
     allowed-scopes: ${AUDIT_ADMIN_SERVICE_JWT_ALLOWED_SCOPES:internal:audit:read}
 
+identity:
+  notification:
+    enabled: ${IDENTITY_SECURITY_NOTIFICATIONS_ENABLED:false}
+    service-url: ${NOTIFICATION_SERVICE_URL:http://notification-service:8084}
+    timeout-ms: ${NOTIFICATION_CLIENT_TIMEOUT_MS:1000}
+    service-jwt:
+      active-kid: ${IDENTITY_SERVICE_JWT_ACTIVE_KID:identity-service-key-1}
+      private-key: ${IDENTITY_SERVICE_JWT_PRIVATE_KEY:}
+      private-key-path: ${IDENTITY_SERVICE_JWT_PRIVATE_KEY_PATH:}
+      issuer: ${IDENTITY_SERVICE_JWT_ISSUER:identity-service}
+      subject: ${IDENTITY_SERVICE_JWT_SUBJECT:service:identity-service}
+      service-name: ${IDENTITY_SERVICE_JWT_SERVICE_NAME:identity-service}
+      ttl-seconds: ${IDENTITY_SERVICE_JWT_TTL_SECONDS:60}
+      audience: ${IDENTITY_SERVICE_JWT_AUDIENCE:notification-service}

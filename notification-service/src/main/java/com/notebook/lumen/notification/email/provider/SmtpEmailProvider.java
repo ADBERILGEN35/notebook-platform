@@ -18,6 +18,16 @@ public class SmtpEmailProvider implements EmailProvider {
   }
 
   @Override
+  public String providerName() {
+    return "smtp";
+  }
+
+  @Override
+  public boolean supportsWebhooks() {
+    return false;
+  }
+
+  @Override
   public EmailSendResult send(EmailMessage message) {
     try {
       MimeMessage mimeMessage = mailSender.createMimeMessage();
@@ -32,7 +42,8 @@ public class SmtpEmailProvider implements EmailProvider {
         helper.setText(message.bodyText() == null ? "" : message.bodyText(), false);
       }
       mailSender.send(mimeMessage);
-      return new EmailSendResult("smtp", "smtp-" + UUID.randomUUID(), Instant.now());
+      return new EmailSendResult(
+          providerName(), "smtp-" + UUID.randomUUID(), Instant.now(), "accepted", null);
     } catch (MessagingException | RuntimeException e) {
       throw new EmailProviderException("SMTP email send failed", e);
     }

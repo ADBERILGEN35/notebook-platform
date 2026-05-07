@@ -73,6 +73,8 @@ phase.
 - worker sends due `PENDING` notifications
 - due rows are claimed with `FOR UPDATE SKIP LOCKED` to avoid duplicate sends across concurrent
   workers
+- claimed rows store `lockedBy` and `lockExpiresAt`
+- expired `SENDING` leases are recovered to `PENDING`
 - provider failure increments `attemptCount`
 - retry delay uses exponential backoff capped by `EMAIL_RETRY_MAX_DELAY_SECONDS`
 - max attempts moves the notification to `FAILED`
@@ -100,16 +102,37 @@ notification-service writes internal audit events:
 - `EMAIL_NOTIFICATION_QUEUED`
 - `EMAIL_NOTIFICATION_SENT`
 - `EMAIL_NOTIFICATION_FAILED`
+- `EMAIL_NOTIFICATION_STALE_RECOVERED`
 - `EMAIL_NOTIFICATION_CANCELLED` reserved for future operator actions
+- `EMAIL_PROVIDER_WEBHOOK_RECEIVED`
+- `EMAIL_DELIVERED`
+- `EMAIL_BOUNCED`
+- `EMAIL_COMPLAINED`
+- `EMAIL_SUPPRESSED`
+- `EMAIL_SUPPRESSION_CREATED`
+- `EMAIL_WEBHOOK_SIGNATURE_REJECTED`
 
 Email addresses are masked in notification audit metadata. Accept URLs are not written to audit
 metadata because invitation URLs contain plaintext tokens.
 
+## Provider Lifecycle
+
+Faz 32 adds `generic-http` / `sendgrid` provider mode, provider delivery status fields and
+webhook-driven delivered/bounce/complaint handling. PostgreSQL stores provider events and
+suppression state. See:
+
+- [`email-provider-integration.md`](email-provider-integration.md)
+- [`email-webhooks.md`](email-webhooks.md)
+- [`email-suppression.md`](email-suppression.md)
+
+`SENT` still means provider accepted the message. Delivery lifecycle is tracked separately through
+`deliveryStatus`.
+
 ## Limitations
 
-- No bounce or complaint webhook handling.
-- No provider-specific SDK.
 - No user notification preference or unsubscribe model.
 - No central audit service.
+- No provider-specific SDK.
+- No real DNS/SPF/DKIM/DMARC setup.
 - No event-driven workspace outbox; if notification-service rejects an invitation email request,
-  workspace-service rolls the invitation transaction back and returns `503`.
+  workspace-service rolls the invitation transaction back.

@@ -249,6 +249,10 @@ Sort allow-list:
 - tags: `name`, `createdAt`
 - invitations: `createdAt`, `expiresAt`, `email`
 
+Invitation email delivery is synchronous through notification-service. If the recipient is
+suppressed, notification-service returns `409 EMAIL_RECIPIENT_SUPPRESSED` and workspace-service maps
+that to `409 NOTIFICATION_RECIPIENT_SUPPRESSED`; the invitation is not created.
+
 ## Observability + Hardening
 
 - Console logs JSON formatindadir.

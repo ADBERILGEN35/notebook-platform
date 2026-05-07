@@ -58,6 +58,7 @@ class SearchOutboxAuthorizerTest {
             5,
             SearchOutboxAuthorizer.READ_SCOPE + "," + SearchOutboxAuthorizer.MANAGE_SCOPE);
     return new ContentProperties(
+        "",
         null,
         null,
         null,
@@ -67,7 +68,7 @@ class SearchOutboxAuthorizerTest {
             true,
             null,
             null,
-            new ContentProperties.SearchOutbox(true, 50, 10, 30, 3600, 10, admin)));
+            new ContentProperties.SearchOutbox(true, 50, 10, 30, 3600, 10, 300, admin)));
   }
 
   private String token(String scope) {

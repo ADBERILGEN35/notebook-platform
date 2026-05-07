@@ -41,6 +41,12 @@ data:
   NOTIFICATION_DB_URL: {{ .Values.externalDatabase.notificationUrl | quote }}
   SEARCH_DB_URL: {{ .Values.externalDatabase.searchUrl | quote }}
   IDENTITY_DB_USER: {{ .Values.externalDatabase.identityUser | quote }}
+  IDENTITY_SECURITY_NOTIFICATIONS_ENABLED: {{ .Values.config.identitySecurityNotificationsEnabled | quote }}
+  IDENTITY_SERVICE_JWT_ACTIVE_KID: {{ .Values.config.identityServiceJwtActiveKid | quote }}
+  IDENTITY_SERVICE_JWT_PRIVATE_KEY_PATH: "/etc/notebook/secrets/service-jwt/identity-private.pem"
+  IDENTITY_SERVICE_JWT_ISSUER: {{ .Values.config.identityServiceJwtIssuer | quote }}
+  IDENTITY_SERVICE_JWT_TTL_SECONDS: {{ .Values.config.identityServiceJwtTtlSeconds | quote }}
+  IDENTITY_SERVICE_JWT_AUDIENCE: "notification-service"
   WORKSPACE_DB_RUNTIME_USER: {{ .Values.externalDatabase.workspaceRuntimeUser | quote }}
   WORKSPACE_DB_MIGRATION_USER: {{ .Values.externalDatabase.workspaceMigrationUser | quote }}
   CONTENT_DB_RUNTIME_USER: {{ .Values.externalDatabase.contentRuntimeUser | quote }}
@@ -73,6 +79,7 @@ data:
   SEARCH_OUTBOX_INITIAL_DELAY_SECONDS: {{ .Values.config.searchOutboxInitialDelaySeconds | quote }}
   SEARCH_OUTBOX_MAX_DELAY_SECONDS: {{ .Values.config.searchOutboxMaxDelaySeconds | quote }}
   SEARCH_OUTBOX_POLL_INTERVAL_SECONDS: {{ .Values.config.searchOutboxPollIntervalSeconds | quote }}
+  SEARCH_OUTBOX_LOCK_TIMEOUT_SECONDS: {{ .Values.config.searchOutboxLockTimeoutSeconds | quote }}
   SEARCH_OUTBOX_ADMIN_SERVICE_JWT_KID: {{ .Values.config.searchOutboxAdminServiceJwtKid | quote }}
   SEARCH_OUTBOX_ADMIN_SERVICE_JWT_PUBLIC_KEY_PATH: {{ .Values.config.searchOutboxAdminServiceJwtPublicKeyPath | quote }}
   SEARCH_OUTBOX_ADMIN_SERVICE_JWT_ISSUER: {{ .Values.config.searchOutboxAdminServiceJwtIssuer | quote }}
@@ -88,11 +95,22 @@ data:
   SEARCH_REINDEX_POLL_INTERVAL_SECONDS: {{ .Values.config.searchReindexPollIntervalSeconds | quote }}
   SEARCH_REINDEX_MAX_FAILURES: {{ .Values.config.searchReindexMaxFailures | quote }}
   SEARCH_REINDEX_ORPHAN_CLEANUP_ENABLED: {{ .Values.config.searchReindexOrphanCleanupEnabled | quote }}
+  SEARCH_REINDEX_LOCK_TIMEOUT_SECONDS: {{ .Values.config.searchReindexLockTimeoutSeconds | quote }}
+  SEARCH_REINDEX_HEARTBEAT_INTERVAL_SECONDS: {{ .Values.config.searchReindexHeartbeatIntervalSeconds | quote }}
   TRUSTED_SERVICE_REINDEX_CLIENT_KID: {{ .Values.config.searchReindexClientJwtKid | quote }}
   TRUSTED_SERVICE_REINDEX_CLIENT_PUBLIC_KEY_PATH: {{ .Values.config.searchReindexClientJwtPublicKeyPath | quote }}
   TRUSTED_SERVICE_REINDEX_CLIENT_ISSUER: {{ .Values.config.searchReindexClientJwtIssuer | quote }}
   TRUSTED_SERVICE_REINDEX_CLIENT_AUDIENCE: "search-service"
   TRUSTED_SERVICE_REINDEX_CLIENT_ALLOWED_SCOPES: "internal:search:reindex:manage"
+  SEARCH_PROVIDER: {{ .Values.search.provider | quote }}
+  SEARCH_DUAL_WRITE_ENABLED: {{ .Values.search.dualWriteEnabled | quote }}
+  SEARCH_FALLBACK_TO_POSTGRES: {{ .Values.search.fallbackToPostgres | quote }}
+  OPENSEARCH_URL: {{ .Values.search.opensearch.url | quote }}
+  OPENSEARCH_INDEX_NOTES: {{ .Values.search.opensearch.indexNotes | quote }}
+  OPENSEARCH_CONNECT_TIMEOUT_MS: {{ .Values.search.opensearch.connectTimeoutMs | quote }}
+  OPENSEARCH_SOCKET_TIMEOUT_MS: {{ .Values.search.opensearch.socketTimeoutMs | quote }}
+  OPENSEARCH_TLS_ENABLED: {{ .Values.search.opensearch.tlsEnabled | quote }}
+  OPENSEARCH_TRUSTSTORE_PATH: {{ .Values.search.opensearch.truststorePath | quote }}
   WORKSPACE_SERVICE_JWT_ACTIVE_KID: {{ .Values.config.workspaceServiceJwtActiveKid | quote }}
   WORKSPACE_SERVICE_JWT_PRIVATE_KEY_PATH: "/etc/notebook/secrets/service-jwt/workspace-private.pem"
   WORKSPACE_SERVICE_JWT_PUBLIC_KEY_PATH: "/etc/notebook/secrets/service-jwt/workspace-public.pem"
@@ -103,11 +121,26 @@ data:
   TRUSTED_SERVICE_WORKSPACE_SERVICE_PUBLIC_KEY_PATH: "/etc/notebook/secrets/service-jwt/workspace-public.pem"
   TRUSTED_SERVICE_WORKSPACE_SERVICE_ISSUER: {{ .Values.config.trustedWorkspaceServiceIssuer | quote }}
   TRUSTED_SERVICE_WORKSPACE_SERVICE_AUDIENCE: {{ .Values.config.trustedWorkspaceServiceAudience | quote }}
+  TRUSTED_SERVICE_IDENTITY_SERVICE_KID: {{ .Values.config.trustedIdentityServiceKid | quote }}
+  TRUSTED_SERVICE_IDENTITY_SERVICE_PUBLIC_KEY_PATH: "/etc/notebook/secrets/service-jwt/identity-public.pem"
+  TRUSTED_SERVICE_IDENTITY_SERVICE_ISSUER: {{ .Values.config.trustedIdentityServiceIssuer | quote }}
+  TRUSTED_SERVICE_IDENTITY_SERVICE_AUDIENCE: {{ .Values.config.trustedIdentityServiceAudience | quote }}
   EMAIL_PROVIDER: {{ .Values.config.emailProvider | quote }}
   EMAIL_WORKER_ENABLED: {{ .Values.config.emailWorkerEnabled | quote }}
   EMAIL_MAX_ATTEMPTS: {{ .Values.config.emailMaxAttempts | quote }}
   EMAIL_RETRY_INITIAL_DELAY_SECONDS: {{ .Values.config.emailRetryInitialDelaySeconds | quote }}
   EMAIL_RETRY_MAX_DELAY_SECONDS: {{ .Values.config.emailRetryMaxDelaySeconds | quote }}
+  EMAIL_WORKER_BATCH_SIZE: {{ .Values.config.emailWorkerBatchSize | quote }}
+  EMAIL_WORKER_LOCK_TIMEOUT_SECONDS: {{ .Values.config.emailWorkerLockTimeoutSeconds | quote }}
+  EMAIL_WEBHOOKS_ENABLED: {{ .Values.config.emailWebhooksEnabled | quote }}
+  EMAIL_WEBHOOK_PROVIDER: {{ .Values.config.emailWebhookProvider | quote }}
+  EMAIL_WEBHOOK_SIGNATURE_HEADER: {{ .Values.config.emailWebhookSignatureHeader | quote }}
+  EMAIL_WEBHOOK_TIMESTAMP_HEADER: {{ .Values.config.emailWebhookTimestampHeader | quote }}
+  EMAIL_WEBHOOK_TOLERANCE_SECONDS: {{ .Values.config.emailWebhookToleranceSeconds | quote }}
+  EMAIL_GENERIC_HTTP_URL: {{ .Values.config.emailGenericHttpUrl | quote }}
+  EMAIL_GENERIC_HTTP_AUTHORIZATION_HEADER: {{ .Values.config.emailGenericHttpAuthorizationHeader | quote }}
+  EMAIL_GENERIC_HTTP_CONNECT_TIMEOUT_MS: {{ .Values.config.emailGenericHttpConnectTimeoutMs | quote }}
+  EMAIL_GENERIC_HTTP_REQUEST_TIMEOUT_MS: {{ .Values.config.emailGenericHttpRequestTimeoutMs | quote }}
   SMTP_HOST: {{ .Values.config.smtpHost | quote }}
   SMTP_PORT: {{ .Values.config.smtpPort | quote }}
   SMTP_FROM: {{ .Values.config.smtpFrom | quote }}

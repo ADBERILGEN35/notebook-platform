@@ -14,6 +14,10 @@ GET /internal/search-index-source/notes?cursor=&size=100
 The source response includes the same fields used by `POST /internal/search/documents`.
 Search-service pages through that source and upserts documents into the index.
 
+Faz 31 routes that upsert through the provider projection path. PostgreSQL `search_documents` stays
+canonical for source-version checks, reindex markers and orphan cleanup state; OpenSearch is filled
+as a remote projection when selected or dual-write is enabled.
+
 ## Full Backfill
 
 Use `POST /internal/search/reindex-jobs` to create `FULL`, `WORKSPACE` or `NOTEBOOK` jobs. Set
@@ -21,6 +25,9 @@ Use `POST /internal/search/reindex-jobs` to create `FULL`, `WORKSPACE` or `NOTEB
 `search_documents`. Set `cleanupOrphans=true,dryRunCleanup=false` only after enabling
 `SEARCH_REINDEX_ORPHAN_CLEANUP_ENABLED=true` and validating the scope in staging. See
 [`search-reindex-backfill.md`](search-reindex-backfill.md).
+
+Cleanup archives PostgreSQL orphan rows and projects `archivedAt` to OpenSearch when OpenSearch
+writes are enabled. Phase 31 does not add OpenSearch hard delete or remote bulk cleanup.
 
 ## Recovery Options
 

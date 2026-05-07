@@ -10,6 +10,7 @@ class ProductionSecurityValidatorTest {
   void run_requiresWorkspaceInternalTokenForProdProfile() {
     ContentProperties properties =
         new ContentProperties(
+            "",
             null,
             new ContentProperties.Workspace(
                 "http://localhost", 1000, 50, 10000, 2, "", "", "", "static-token"),
@@ -31,6 +32,7 @@ class ProductionSecurityValidatorTest {
   void run_rejectsLegacyWorkspaceInternalTokenForProdProfile() {
     ContentProperties properties =
         new ContentProperties(
+            "",
             null,
             new ContentProperties.Workspace(
                 "http://localhost", 1000, 50, 10000, 2, "legacy", "primary", "", "static-token"),

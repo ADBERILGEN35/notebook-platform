@@ -75,11 +75,20 @@ The scheduled worker claims a pending job with `FOR UPDATE SKIP LOCKED`, marks i
 pulls batches from content-service. Each source item is converted to the existing
 `IndexDocumentRequest` and sent through the existing upsert path.
 
+The upsert path writes PostgreSQL canonical state first. When `SEARCH_PROVIDER=opensearch` or
+`SEARCH_DUAL_WRITE_ENABLED=true`, the accepted document is also projected to OpenSearch. This keeps
+reindex/backfill usable for both the PostgreSQL fallback index and OpenSearch migration.
+
+The running job stores `lockedBy`, `lockExpiresAt` and `heartbeatAt`. Each batch refreshes the
+heartbeat and lease. If a `RUNNING` job lease expires, a later worker marks it `FAILED` with
+`SEARCH_REINDEX_JOB_STALE_FAILED`; it is not resumed by another pod.
+
 State transitions:
 
 - `PENDING` -> `RUNNING`
 - `RUNNING` -> `COMPLETED`
 - `RUNNING` -> `FAILED`
+- expired `RUNNING` -> `FAILED`
 - `PENDING`/`RUNNING` -> `CANCELLED`
 
 ## Mark And Sweep Cleanup
@@ -185,6 +194,7 @@ Audit events:
 - `SEARCH_REINDEX_JOB_COMPLETED`
 - `SEARCH_REINDEX_JOB_FAILED`
 - `SEARCH_REINDEX_JOB_CANCELLED`
+- `SEARCH_REINDEX_JOB_STALE_FAILED`
 - `SEARCH_REINDEX_CLEANUP_STARTED`
 - `SEARCH_REINDEX_CLEANUP_COMPLETED`
 - `SEARCH_REINDEX_CLEANUP_SKIPPED`

@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 import com.notebook.lumen.search.index.api.IndexDocumentRequest;
 import com.notebook.lumen.search.index.domain.SearchDocument;
 import com.notebook.lumen.search.index.infrastructure.SearchDocumentRepository;
+import com.notebook.lumen.search.provider.SearchProviderRouter;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -20,8 +21,9 @@ class SearchIndexServiceTest {
   private final SearchDocumentRepository repository = mock(SearchDocumentRepository.class);
   private final ContentBlockTextExtractor extractor = mock(ContentBlockTextExtractor.class);
   private final SearchAuditService auditService = mock(SearchAuditService.class);
+  private final SearchProviderRouter providerRouter = mock(SearchProviderRouter.class);
   private final SearchIndexService service =
-      new SearchIndexService(repository, extractor, auditService);
+      new SearchIndexService(repository, extractor, auditService, providerRouter);
 
   @Test
   void upsertCreatesSearchDocument() throws Exception {

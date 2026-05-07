@@ -21,6 +21,7 @@ spec:
         {{- include "notebook-platform.podAnnotations" . | nindent 8 }}
     spec:
       serviceAccountName: {{ include "notebook-platform.serviceAccountName" . }}
+      terminationGracePeriodSeconds: {{ .Values.services.search.terminationGracePeriodSeconds }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
@@ -40,6 +41,10 @@ spec:
               value: {{ .Values.services.search.port | quote }}
             - name: SERVICE_NAME
               value: search-service
+            - name: WORKER_INSTANCE_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
             {{- include "notebook-platform.otelSecretEnv" . | nindent 12 }}
             - name: DB_URL
               valueFrom:
@@ -69,6 +74,18 @@ spec:
               value: "search-service"
             - name: INTERNAL_SERVICE_JWT_AUDIENCE
               value: "workspace-service"
+            - name: OPENSEARCH_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "notebook-platform.secretName" . }}
+                  key: {{ .Values.search.opensearch.usernameSecretKey | quote }}
+                  optional: true
+            - name: OPENSEARCH_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "notebook-platform.secretName" . }}
+                  key: {{ .Values.search.opensearch.passwordSecretKey | quote }}
+                  optional: true
           readinessProbe:
             httpGet:
               path: {{ .Values.probes.readiness.path }}

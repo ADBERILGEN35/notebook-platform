@@ -26,12 +26,23 @@ public class EmailNotification {
 
   private String provider;
   private String providerMessageId;
+  @Enumerated(EnumType.STRING)
+  private EmailDeliveryStatus deliveryStatus;
+
+  private Instant deliveredAt;
+  private Instant bouncedAt;
+  private Instant complainedAt;
+  private Instant suppressedAt;
+  private String providerEventId;
+  private String providerEventPayload;
   private String idempotencyKey;
   private int attemptCount;
   private Instant nextAttemptAt;
   private String lastError;
   private Instant sentAt;
   private Instant failedAt;
+  private String lockedBy;
+  private Instant lockExpiresAt;
   private Instant createdAt;
   private Instant updatedAt;
 
@@ -53,6 +64,7 @@ public class EmailNotification {
     this.bodyText = bodyText;
     this.bodyHtml = bodyHtml;
     this.status = EmailNotificationStatus.PENDING;
+    this.deliveryStatus = EmailDeliveryStatus.UNKNOWN;
     this.idempotencyKey = idempotencyKey;
     this.attemptCount = 0;
     this.nextAttemptAt = now;
@@ -60,8 +72,10 @@ public class EmailNotification {
     this.updatedAt = now;
   }
 
-  public void markSending(Instant now) {
+  public void markSending(String lockedBy, Instant now, Instant lockExpiresAt) {
     this.status = EmailNotificationStatus.SENDING;
+    this.lockedBy = lockedBy;
+    this.lockExpiresAt = lockExpiresAt;
     this.updatedAt = now;
   }
 
@@ -69,8 +83,10 @@ public class EmailNotification {
     this.status = EmailNotificationStatus.SENT;
     this.provider = provider;
     this.providerMessageId = providerMessageId;
+    this.deliveryStatus = EmailDeliveryStatus.ACCEPTED;
     this.sentAt = now;
     this.lastError = null;
+    clearLock();
     this.updatedAt = now;
   }
 
@@ -79,6 +95,7 @@ public class EmailNotification {
     this.attemptCount++;
     this.lastError = truncate(error);
     this.nextAttemptAt = nextAttemptAt;
+    clearLock();
     this.updatedAt = now;
   }
 
@@ -88,7 +105,58 @@ public class EmailNotification {
     this.lastError = truncate(error);
     this.failedAt = now;
     this.nextAttemptAt = null;
+    clearLock();
     this.updatedAt = now;
+  }
+
+  public void markSuppressed(String provider, String providerEventId, Instant now, String payload) {
+    this.status = EmailNotificationStatus.CANCELLED;
+    this.provider = provider;
+    this.providerEventId = providerEventId;
+    this.providerEventPayload = truncate(payload);
+    this.deliveryStatus = EmailDeliveryStatus.SUPPRESSED;
+    this.suppressedAt = now;
+    this.nextAttemptAt = null;
+    clearLock();
+    this.updatedAt = now;
+  }
+
+  public void markDelivered(String providerEventId, Instant occurredAt, String payload, Instant now) {
+    this.deliveryStatus = EmailDeliveryStatus.DELIVERED;
+    this.providerEventId = providerEventId;
+    this.providerEventPayload = truncate(payload);
+    this.deliveredAt = occurredAt == null ? now : occurredAt;
+    this.updatedAt = now;
+  }
+
+  public void markBounced(String providerEventId, Instant occurredAt, String payload, Instant now) {
+    this.deliveryStatus = EmailDeliveryStatus.BOUNCED;
+    this.providerEventId = providerEventId;
+    this.providerEventPayload = truncate(payload);
+    this.bouncedAt = occurredAt == null ? now : occurredAt;
+    this.updatedAt = now;
+  }
+
+  public void markComplained(
+      String providerEventId, Instant occurredAt, String payload, Instant now) {
+    this.deliveryStatus = EmailDeliveryStatus.COMPLAINED;
+    this.providerEventId = providerEventId;
+    this.providerEventPayload = truncate(payload);
+    this.complainedAt = occurredAt == null ? now : occurredAt;
+    this.updatedAt = now;
+  }
+
+  public void recoverStaleSending(String error, Instant now) {
+    this.status = EmailNotificationStatus.PENDING;
+    this.lastError = truncate(error);
+    this.nextAttemptAt = now;
+    clearLock();
+    this.updatedAt = now;
+  }
+
+  private void clearLock() {
+    this.lockedBy = null;
+    this.lockExpiresAt = null;
   }
 
   private String truncate(String value) {
@@ -134,6 +202,10 @@ public class EmailNotification {
     return providerMessageId;
   }
 
+  public EmailDeliveryStatus getDeliveryStatus() {
+    return deliveryStatus;
+  }
+
   public String getIdempotencyKey() {
     return idempotencyKey;
   }
@@ -152,6 +224,14 @@ public class EmailNotification {
 
   public Instant getFailedAt() {
     return failedAt;
+  }
+
+  public String getLockedBy() {
+    return lockedBy;
+  }
+
+  public Instant getLockExpiresAt() {
+    return lockExpiresAt;
   }
 
   public Instant getCreatedAt() {

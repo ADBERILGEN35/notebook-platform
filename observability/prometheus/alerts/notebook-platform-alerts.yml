@@ -135,3 +135,88 @@ groups:
         annotations:
           summary: "Possible RLS DB permission failure for {{ $labels.application }}"
           description: "Check service logs for permission denied, row-level security policy or app.current_workspace_id errors."
+
+      - alert: NotebookPlatformWorkerStaleRecoverySpike
+        expr: |
+          sum(rate(email_worker_stale_recovered_total[10m]))
+          + sum(rate(search_outbox_stale_recovered_total[10m]))
+          + sum(rate(search_reindex_stale_failed_total[10m]))
+          > 0.1
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Worker stale recovery spike"
+          description: "DB-backed workers are recovering expired leases; check pod restarts, provider latency and lock timeout settings."
+
+      - alert: NotebookPlatformSearchOutboxStuckProcessing
+        expr: sum(search_outbox_pending) > 0 and sum(rate(search_outbox_claimed_total[10m])) == 0
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Search outbox worker may be stalled"
+          description: "Search outbox claimed counter is flat; compare queue depth and worker logs."
+
+      - alert: NotebookPlatformReindexStaleFailed
+        expr: increase(search_reindex_stale_failed_total[30m]) > 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Search reindex job failed after stale lease"
+          description: "A RUNNING reindex job expired and was marked FAILED. Operator should inspect and restart if needed."
+
+      - alert: NotebookPlatformOpenSearchProviderFailures
+        expr: sum(rate(search_provider_failures_total{provider="opensearch"}[5m])) > 0.1
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "OpenSearch provider failures"
+          description: "search-service is seeing sustained OpenSearch provider failures."
+
+      - alert: NotebookPlatformSearchProviderFallbackSpike
+        expr: sum(rate(search_provider_fallback_total[5m])) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Search provider fallback spike"
+          description: "search-service is falling back to PostgreSQL; check OpenSearch health and rollout state."
+
+      - alert: NotebookPlatformOpenSearchUpsertFailures
+        expr: sum(rate(search_provider_failures_total{provider="opensearch",operation="upsert"}[5m])) > 0
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "OpenSearch index upsert failures"
+          description: "OpenSearch projection writes are failing."
+
+      - alert: NotebookPlatformEmailProviderSendFailures
+        expr: sum(rate(email_provider_send_failure_total[5m])) > 0.1
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Email provider send failure spike"
+          description: "notification-service is seeing sustained provider send failures."
+
+      - alert: NotebookPlatformEmailWebhookSignatureFailures
+        expr: sum(rate(email_webhook_signature_failures_total[5m])) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Email webhook signature failure spike"
+          description: "Provider webhook signatures are failing validation."
+
+      - alert: NotebookPlatformEmailBounceComplaintSpike
+        expr: sum(rate(email_bounces_total[10m])) + sum(rate(email_complaints_total[10m])) > 0.1
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Email bounce or complaint spike"
+          description: "Review provider reputation and suppression trends."
