@@ -2,6 +2,7 @@ package com.notebook.lumen.content.api;
 
 import com.notebook.lumen.content.dto.*;
 import com.notebook.lumen.content.dto.Requests.*;
+import com.notebook.lumen.content.service.NoteEtagSupport;
 import com.notebook.lumen.content.service.NoteService;
 import com.notebook.lumen.content.shared.Pagination;
 import com.notebook.lumen.content.shared.UserContext;
@@ -12,6 +13,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Size;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,10 +21,13 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 public class NoteController {
   private final NoteService noteService;
+  private final NoteEtagSupport noteEtagSupport;
   private final UserContextResolver userContextResolver;
 
-  public NoteController(NoteService noteService, UserContextResolver userContextResolver) {
+  public NoteController(
+      NoteService noteService, NoteEtagSupport noteEtagSupport, UserContextResolver userContextResolver) {
     this.noteService = noteService;
+    this.noteEtagSupport = noteEtagSupport;
     this.userContextResolver = userContextResolver;
   }
 
@@ -38,8 +43,9 @@ public class NoteController {
 
   @GetMapping("/notes/{noteId}")
   @Operation(summary = "Get note")
-  public NoteResponse get(@PathVariable UUID noteId, HttpServletRequest http) {
-    return noteService.get(user(http), noteId);
+  public ResponseEntity<NoteResponse> get(@PathVariable UUID noteId, HttpServletRequest http) {
+    NoteResponse response = noteService.get(user(http), noteId);
+    return withEtag(response);
   }
 
   @GetMapping("/notebooks/{notebookId}/notes")
@@ -56,11 +62,13 @@ public class NoteController {
 
   @PatchMapping("/notes/{noteId}")
   @Operation(summary = "Update note")
-  public NoteResponse update(
+  public ResponseEntity<NoteResponse> update(
       @PathVariable UUID noteId,
       @Valid @RequestBody UpdateNoteRequest request,
+      @RequestHeader(value = "If-Match", required = false) String ifMatch,
       HttpServletRequest http) {
-    return noteService.update(user(http), noteId, request);
+    NoteResponse response = noteService.update(user(http), noteId, request, ifMatch);
+    return withEtag(response);
   }
 
   @DeleteMapping("/notes/{noteId}")
@@ -91,9 +99,13 @@ public class NoteController {
 
   @PostMapping("/notes/{noteId}/restore/{versionNumber}")
   @Operation(summary = "Restore note version")
-  public NoteResponse restore(
-      @PathVariable UUID noteId, @PathVariable int versionNumber, HttpServletRequest http) {
-    return noteService.restore(user(http), noteId, versionNumber);
+  public ResponseEntity<NoteResponse> restore(
+      @PathVariable UUID noteId,
+      @PathVariable int versionNumber,
+      @RequestHeader(value = "If-Match", required = false) String ifMatch,
+      HttpServletRequest http) {
+    NoteResponse response = noteService.restore(user(http), noteId, versionNumber, ifMatch);
+    return withEtag(response);
   }
 
   @GetMapping("/notes/{noteId}/links/outgoing")
@@ -138,5 +150,11 @@ public class NoteController {
 
   private UserContext user(HttpServletRequest request) {
     return userContextResolver.require(request);
+  }
+
+  private ResponseEntity<NoteResponse> withEtag(NoteResponse response) {
+    return ResponseEntity.ok()
+        .eTag(noteEtagSupport.buildEtag(response.noteRevision()))
+        .body(response);
   }
 }

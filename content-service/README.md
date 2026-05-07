@@ -44,6 +44,8 @@ docker compose up --build
 - `INTERNAL_SERVICE_JWT_ACTIVE_KID`: service JWT `kid`
 - `INTERNAL_SERVICE_JWT_TTL_SECONDS`: default `60`
 - `ALLOW_UNKNOWN_BLOCK_TYPES`: default `false`
+- `CONTENT_REQUIRE_IF_MATCH_FOR_NOTE_UPDATE`: `true` ise `PATCH /notes/{noteId}` ve
+  `POST /notes/{noteId}/restore/{versionNumber}` icin `If-Match` zorunludur (missing -> `428`)
 - `APP_RLS_ENABLED`: transaction icinde PostgreSQL tenant setting uygular
 - `APP_RLS_STRICT_WORKSPACE_HEADER`: aggregate-id endpointlerde `X-Workspace-Id` zorunlu kilar
 
@@ -52,6 +54,19 @@ Flyway `content_flyway_schema_history` tablosunu kullanir. Bu, ayni PostgreSQL d
 ## Versioning
 
 `notes` tablosu current mutable state tutar. Her create/update/restore isleminde `note_versions` tablosuna immutable snapshot eklenir. `version_number` note bazinda monoton artar; eski version kayitlari mutate edilmez.
+Faz 39 ile `note_revision` alani optimistic concurrency icin tutulur. Update/restore/archive basarili
+oldugunda revision artar.
+
+## Optimistic Concurrency (Faz 39)
+
+- `GET /notes/{noteId}` her zaman `ETag: "note-rev-{revision}"` doner.
+- `PATCH /notes/{noteId}` ve `POST /notes/{noteId}/restore/{versionNumber}` `If-Match` destekler.
+- `If-Match` mismatch -> `412 NOTE_CONFLICT`
+- `If-Match` format invalid -> `400 INVALID_IF_MATCH_HEADER`
+- `CONTENT_REQUIRE_IF_MATCH_FOR_NOTE_UPDATE=true` ise missing `If-Match` -> `428 PRECONDITION_REQUIRED`
+- `CONTENT_REQUIRE_IF_MATCH_FOR_NOTE_UPDATE=false` iken missing `If-Match` backward-compatible
+  olarak kabul edilir ve `NOTE_UPDATE_WITHOUT_IF_MATCH` / `NOTE_RESTORED_WITHOUT_IF_MATCH`
+  audit eventleri yazilir.
 
 ## Block JSON
 

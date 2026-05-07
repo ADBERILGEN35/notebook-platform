@@ -11,10 +11,18 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public record ContentProperties(
     String workerInstanceId,
     Blocks blocks,
+    Concurrency concurrency,
     Workspace workspace,
     ServiceJwt serviceJwt,
     Search search) {
+  public ContentProperties(
+      String workerInstanceId, Blocks blocks, Workspace workspace, ServiceJwt serviceJwt, Search search) {
+    this(workerInstanceId, blocks, new Concurrency(false), workspace, serviceJwt, search);
+  }
+
   public record Blocks(boolean allowUnknownBlockTypes, int maxDepth, int maxJsonBytes) {}
+
+  public record Concurrency(boolean requireIfMatchForNoteUpdate) {}
 
   public record Workspace(
       String serviceUrl,

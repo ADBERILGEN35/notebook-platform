@@ -27,7 +27,8 @@ public class ContentMapper {
         n.getUpdatedBy(),
         n.getCreatedAt(),
         n.getUpdatedAt(),
-        n.getArchivedAt());
+        n.getArchivedAt(),
+        n.getNoteRevision());
   }
 
   public NoteVersionResponse toResponse(NoteVersion v) {

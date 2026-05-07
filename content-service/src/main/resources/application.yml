@@ -52,6 +52,8 @@ content:
     allow-unknown-block-types: ${ALLOW_UNKNOWN_BLOCK_TYPES:false}
     max-depth: ${CONTENT_BLOCKS_MAX_DEPTH:8}
     max-json-bytes: ${CONTENT_BLOCKS_MAX_JSON_BYTES:262144}
+  concurrency:
+    require-if-match-for-note-update: ${CONTENT_REQUIRE_IF_MATCH_FOR_NOTE_UPDATE:false}
   workspace:
     service-url: ${WORKSPACE_SERVICE_URL:http://workspace-service:8082}
     timeout-ms: ${WORKSPACE_CLIENT_TIMEOUT_MS:1000}

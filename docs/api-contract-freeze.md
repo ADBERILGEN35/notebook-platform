@@ -6,6 +6,11 @@
 
 These are internal service-to-service contracts only (not gateway-routed).
 
+## Faz 35 Frontend Usage Note
+
+Public frontend calls continue through `api-gateway` only (`http://localhost:8080`). Frontend does
+not call backend services directly.
+
 # API Contract Freeze
 
 This document captures the backend contract before frontend work starts.
@@ -164,6 +169,15 @@ Content:
 - `GET /notes/{noteId}/tags`
 - `GET /notes/search?workspaceId={workspaceId}&q={query}`
 - `GET /search/notes?workspaceId={workspaceId}&q={query}`
+
+Content optimistic concurrency (Faz 39):
+
+- `GET /notes/{noteId}` returns `ETag: "note-rev-{revision}"`.
+- `PATCH /notes/{noteId}` and `POST /notes/{noteId}/restore/{versionNumber}` accept `If-Match`.
+- stale `If-Match` -> `412 NOTE_CONFLICT`
+- missing `If-Match` when strict config enabled (`CONTENT_REQUIRE_IF_MATCH_FOR_NOTE_UPDATE=true`)
+  -> `428 PRECONDITION_REQUIRED`
+- invalid `If-Match` format -> `400 INVALID_IF_MATCH_HEADER`
 
 ## Internal Endpoints
 

@@ -2,6 +2,7 @@ package com.notebook.lumen.content.service;
 
 import com.notebook.lumen.content.audit.AuditService;
 import com.notebook.lumen.content.client.WorkspaceClient;
+import com.notebook.lumen.content.config.ContentProperties;
 import com.notebook.lumen.content.domain.*;
 import com.notebook.lumen.content.dto.*;
 import com.notebook.lumen.content.dto.Requests.*;
@@ -16,6 +17,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -40,6 +43,11 @@ public class NoteService {
   private final TenantDatabaseSession tenantDatabaseSession;
   private final StrictWorkspaceHeaderValidator strictWorkspaceHeaderValidator;
   private final SearchIndexingService searchIndexingService;
+  private final ContentProperties contentProperties;
+  private final NoteEtagSupport noteEtagSupport;
+  private final Counter noteConflictDetectedCounter;
+  private final Counter noteUpdateWithoutIfMatchCounter;
+  private final Counter notePreconditionRequiredCounter;
 
   public NoteService(
       NoteRepository noteRepository,
@@ -52,7 +60,10 @@ public class NoteService {
       AuditService auditService,
       TenantDatabaseSession tenantDatabaseSession,
       StrictWorkspaceHeaderValidator strictWorkspaceHeaderValidator,
-      SearchIndexingService searchIndexingService) {
+      SearchIndexingService searchIndexingService,
+      ContentProperties contentProperties,
+      NoteEtagSupport noteEtagSupport,
+      MeterRegistry meterRegistry) {
     this.noteRepository = noteRepository;
     this.versionRepository = versionRepository;
     this.linkRepository = linkRepository;
@@ -64,6 +75,14 @@ public class NoteService {
     this.tenantDatabaseSession = tenantDatabaseSession;
     this.strictWorkspaceHeaderValidator = strictWorkspaceHeaderValidator;
     this.searchIndexingService = searchIndexingService;
+    this.contentProperties = contentProperties;
+    this.noteEtagSupport = noteEtagSupport;
+    this.noteConflictDetectedCounter =
+        meterRegistry.counter("note_conflict_detected_total", "service", "content-service");
+    this.noteUpdateWithoutIfMatchCounter =
+        meterRegistry.counter("note_update_without_if_match_total", "service", "content-service");
+    this.notePreconditionRequiredCounter =
+        meterRegistry.counter("note_precondition_required_total", "service", "content-service");
   }
 
   @Transactional
@@ -126,11 +145,13 @@ public class NoteService {
   }
 
   @Transactional
-  public NoteResponse update(UserContext user, UUID noteId, UpdateNoteRequest request) {
+  public NoteResponse update(
+      UserContext user, UUID noteId, UpdateNoteRequest request, String ifMatchHeader) {
     Note note = load(noteId);
     tenantDatabaseSession.applyWorkspace(note.getWorkspaceId());
     assertAggregateWorkspaceHeader(user, note.getWorkspaceId());
     permissionService.requireWritable(user.userId(), note.getNotebookId());
+    enforceIfMatch(note, ifMatchHeader, user, "NOTE_UPDATE_WITHOUT_IF_MATCH");
     blockValidationService.validate(request.contentBlocks());
     int versionNumber = nextVersion(note.getId());
     note.update(
@@ -185,11 +206,12 @@ public class NoteService {
   }
 
   @Transactional
-  public NoteResponse restore(UserContext user, UUID noteId, int versionNumber) {
+  public NoteResponse restore(UserContext user, UUID noteId, int versionNumber, String ifMatchHeader) {
     Note note = load(noteId);
     tenantDatabaseSession.applyWorkspace(note.getWorkspaceId());
     assertAggregateWorkspaceHeader(user, note.getWorkspaceId());
     permissionService.requireWritable(user.userId(), note.getNotebookId());
+    enforceIfMatch(note, ifMatchHeader, user, "NOTE_RESTORED_WITHOUT_IF_MATCH");
     NoteVersion version = loadVersion(noteId, versionNumber);
     Instant now = Instant.now();
     int newVersionNumber = nextVersion(noteId);
@@ -316,5 +338,52 @@ public class NoteService {
 
   private ContentException bad(String code, String message) {
     return new ContentException(HttpStatus.BAD_REQUEST, code, message);
+  }
+
+  private void enforceIfMatch(Note note, String ifMatchHeader, UserContext user, String missingEventType) {
+    boolean requiresIfMatch = contentProperties.concurrency() != null
+        && contentProperties.concurrency().requireIfMatchForNoteUpdate();
+    if (ifMatchHeader == null || ifMatchHeader.isBlank()) {
+      if (requiresIfMatch) {
+        notePreconditionRequiredCounter.increment();
+        throw new ContentException(
+            HttpStatus.PRECONDITION_REQUIRED,
+            "PRECONDITION_REQUIRED",
+            "If-Match header is required for note updates");
+      }
+      noteUpdateWithoutIfMatchCounter.increment();
+      auditService.record(
+          missingEventType,
+          user.userId(),
+          note.getWorkspaceId(),
+          "NOTE",
+          note.getId(),
+          Map.of("notebookId", note.getNotebookId().toString()));
+      return;
+    }
+
+    long expectedRevision = noteEtagSupport.parseIfMatchRevision(ifMatchHeader);
+    if (expectedRevision == note.getNoteRevision()) {
+      return;
+    }
+
+    noteConflictDetectedCounter.increment();
+    auditService.record(
+        "NOTE_CONFLICT_DETECTED",
+        user.userId(),
+        note.getWorkspaceId(),
+        "NOTE",
+        note.getId(),
+        Map.of(
+            "notebookId",
+            note.getNotebookId().toString(),
+            "expectedRevision",
+            expectedRevision,
+            "actualRevision",
+            note.getNoteRevision()));
+    throw new ContentException(
+        HttpStatus.PRECONDITION_FAILED,
+        "NOTE_CONFLICT",
+        "Note changed on server, reload latest version before saving");
   }
 }

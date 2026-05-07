@@ -16,4 +16,5 @@ public record NoteResponse(
     UUID updatedBy,
     Instant createdAt,
     Instant updatedAt,
-    Instant archivedAt) {}
+    Instant archivedAt,
+    long noteRevision) {}

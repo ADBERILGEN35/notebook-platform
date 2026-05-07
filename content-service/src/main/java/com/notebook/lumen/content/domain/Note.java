@@ -28,6 +28,8 @@ public class Note {
   private Instant createdAt;
   private Instant updatedAt;
   private Instant archivedAt;
+  @Column(name = "note_revision")
+  private long noteRevision;
 
   protected Note() {}
 
@@ -51,6 +53,7 @@ public class Note {
     this.createdBy = createdBy;
     this.createdAt = now;
     this.updatedAt = now;
+    this.noteRevision = 0L;
   }
 
   public UUID getId() {
@@ -101,6 +104,10 @@ public class Note {
     return archivedAt;
   }
 
+  public long getNoteRevision() {
+    return noteRevision;
+  }
+
   public void update(
       String title, String contentBlocks, int contentSchemaVersion, UUID updatedBy, Instant now) {
     this.title = title;
@@ -108,11 +115,13 @@ public class Note {
     this.contentSchemaVersion = contentSchemaVersion;
     this.updatedBy = updatedBy;
     this.updatedAt = now;
+    this.noteRevision = this.noteRevision + 1;
   }
 
   public void archive(Instant now, UUID updatedBy) {
     this.archivedAt = now;
     this.updatedBy = updatedBy;
     this.updatedAt = now;
+    this.noteRevision = this.noteRevision + 1;
   }
 }

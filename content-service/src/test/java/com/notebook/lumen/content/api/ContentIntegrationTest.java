@@ -177,6 +177,44 @@ class ContentIntegrationTest {
     assertThat(error.get("errorCode").asText()).isEqualTo("TAG_NOT_FOUND");
   }
 
+  @Test
+  void noteUpdateAndRestore_supportIfMatchAndReturnEtag() throws Exception {
+    JsonNode note = createNote(OWNER, "ETag", blocks("paragraph", ""));
+    String noteId = note.get("id").asText();
+
+    HttpResponse<String> getResponse = sendResponse("GET", "/notes/" + noteId, OWNER, WORKSPACE_ID, null);
+    assertThat(getResponse.statusCode()).isEqualTo(200);
+    String etag = getResponse.headers().firstValue("etag").orElse(null);
+    assertThat(etag).isNotBlank();
+
+    JsonNode updated =
+        patchWithIfMatch(
+            "/notes/" + noteId,
+            OWNER,
+            "{\"title\":\"Updated with If-Match\",\"contentBlocks\":[{\"id\":\"b1\",\"type\":\"paragraph\"}]}",
+            etag,
+            200);
+    assertThat(updated.get("title").asText()).isEqualTo("Updated with If-Match");
+
+    JsonNode staleConflict =
+        patchWithIfMatch(
+            "/notes/" + noteId,
+            OWNER,
+            "{\"title\":\"Should conflict\",\"contentBlocks\":[{\"id\":\"b1\",\"type\":\"paragraph\"}]}",
+            etag,
+            412);
+    assertThat(staleConflict.get("errorCode").asText()).isEqualTo("NOTE_CONFLICT");
+
+    JsonNode invalidIfMatch =
+        patchWithIfMatch(
+            "/notes/" + noteId,
+            OWNER,
+            "{\"title\":\"Invalid\",\"contentBlocks\":[{\"id\":\"b1\",\"type\":\"paragraph\"}]}",
+            "\"bad-etag\"",
+            400);
+    assertThat(invalidIfMatch.get("errorCode").asText()).isEqualTo("INVALID_IF_MATCH_HEADER");
+  }
+
   private JsonNode createNote(User user, String title, String blocks) throws Exception {
     return post(
         "/notebooks/" + NOTEBOOK_ID + "/notes",
@@ -222,8 +260,40 @@ class ContentIntegrationTest {
     return send("PATCH", path, user, WORKSPACE_ID, body, status);
   }
 
+  private JsonNode patchWithIfMatch(
+      String path, User user, String body, String ifMatch, int status) throws Exception {
+    return send("PATCH", path, user, WORKSPACE_ID, body, status, ifMatch);
+  }
+
   private JsonNode send(
       String method, String path, User user, UUID workspaceId, String body, int expected)
+      throws Exception {
+    return send(method, path, user, workspaceId, body, expected, null);
+  }
+
+  private JsonNode send(
+      String method,
+      String path,
+      User user,
+      UUID workspaceId,
+      String body,
+      int expected,
+      String ifMatch)
+      throws Exception {
+    HttpResponse<String> response = sendResponse(method, path, user, workspaceId, body, ifMatch);
+    assertThat(response.statusCode()).as(response.body()).isEqualTo(expected);
+    return response.body().isBlank()
+        ? objectMapper.createObjectNode()
+        : objectMapper.readTree(response.body());
+  }
+
+  private HttpResponse<String> sendResponse(
+      String method, String path, User user, UUID workspaceId, String body) throws Exception {
+    return sendResponse(method, path, user, workspaceId, body, null);
+  }
+
+  private HttpResponse<String> sendResponse(
+      String method, String path, User user, UUID workspaceId, String body, String ifMatch)
       throws Exception {
     HttpRequest.Builder builder =
         HttpRequest.newBuilder()
@@ -233,20 +303,18 @@ class ContentIntegrationTest {
     if (workspaceId != null) {
       builder.header("X-Workspace-Id", workspaceId.toString());
     }
-    HttpResponse<String> response =
-        http.send(
-            builder
-                .method(
-                    method,
-                    body == null
-                        ? HttpRequest.BodyPublishers.noBody()
-                        : HttpRequest.BodyPublishers.ofString(body))
-                .build(),
-            HttpResponse.BodyHandlers.ofString());
-    assertThat(response.statusCode()).as(response.body()).isEqualTo(expected);
-    return response.body().isBlank()
-        ? objectMapper.createObjectNode()
-        : objectMapper.readTree(response.body());
+    if (ifMatch != null) {
+      builder.header("If-Match", ifMatch);
+    }
+    return http.send(
+        builder
+            .method(
+                method,
+                body == null
+                    ? HttpRequest.BodyPublishers.noBody()
+                    : HttpRequest.BodyPublishers.ofString(body))
+            .build(),
+        HttpResponse.BodyHandlers.ofString());
   }
 
   private record User(UUID id) {}

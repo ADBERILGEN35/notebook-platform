@@ -300,8 +300,13 @@ Dokumanlar:
 - [`docs/auth-token-revocation.md`](docs/auth-token-revocation.md)
 - [`docs/opensearch-provider.md`](docs/opensearch-provider.md)
 - [`docs/search-permission-snapshot.md`](docs/search-permission-snapshot.md)
+- [`docs/frontend-mvp.md`](docs/frontend-mvp.md)
+- [`docs/frontend-e2e.md`](docs/frontend-e2e.md)
 - [`docs/email-provider-integration.md`](docs/email-provider-integration.md)
 - [`docs/email-webhooks.md`](docs/email-webhooks.md)
 - [`docs/email-suppression.md`](docs/email-suppression.md)
 - [`docs/email-deliverability.md`](docs/email-deliverability.md)
 - [`docs/email-dns-records.md`](docs/email-dns-records.md)
+
+Frontend note editor currently uses BlockNote with debounced auto-save (Faz 38) while preserving
+existing backend `contentBlocks` contract.

@@ -55,7 +55,10 @@
 | COMMENT_ACCESS_DENIED | 403 | content-service | Comment permission denied | User edits another comment |
 | INVALID_BLOCK_CONTENT | 400 | content-service | Block JSON invalid | Unknown block type |
 | INVALID_NOTE_LINK | 400 | content-service | Note link invalid | Target note missing |
+| INVALID_IF_MATCH_HEADER | 400 | content-service | `If-Match` ETag formati gecersiz | `If-Match: "v1"` |
 | INVALID_WORKSPACE_CONTEXT | 400 | content-service | Workspace header conflict | `X-Workspace-Id` mismatch |
+| PRECONDITION_REQUIRED | 428 | content-service | `If-Match` zorunlu oldugunda header eksik | update/restore without header in strict mode |
+| NOTE_CONFLICT | 412 | content-service | Stale `If-Match` nedeniyle optimistic concurrency conflict | two tabs edit same note |
 | DUPLICATE_NOTE_TAG | 409 | content-service | Tag already attached | Reattach same tag |
 | TAG_NOT_FOUND | 404 | content-service | Workspace tag missing | Attach unknown tag |
 | WORKSPACE_SERVICE_UNAVAILABLE | 503 | content-service | Permission dependency failed | Workspace permission client down |
