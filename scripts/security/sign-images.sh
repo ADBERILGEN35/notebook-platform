@@ -10,7 +10,7 @@ COSIGN_EXPERIMENTAL="${COSIGN_EXPERIMENTAL:-true}"
 COSIGN_YES="${COSIGN_YES:-true}"
 ALLOW_SECURITY_TOOL_SKIP="${ALLOW_SECURITY_TOOL_SKIP:-false}"
 COSIGN_DRY_RUN="${COSIGN_DRY_RUN:-true}"
-SERVICES=(api-gateway identity-service workspace-service content-service notification-service search-service)
+SERVICES=(api-gateway identity-service workspace-service content-service notification-service search-service frontend)
 
 if [[ -z "$IMAGE_REGISTRY" ]]; then
   echo "IMAGE_REGISTRY is required for signing because cosign signs registry image references." >&2

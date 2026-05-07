@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { apiRequest } from '../../shared/api/api-client'
 import type { AuthResponse } from '../../shared/types/api'
+import { isCookieMode } from '../../shared/config/auth-transport'
 
 export const loginSchema = z.object({
   email: z.string().email(),
@@ -29,10 +30,12 @@ export const signup = (payload: SignupInput) =>
     body: JSON.stringify({ ...payload, avatarUrl: payload.avatarUrl || null }),
   })
 
-export const logout = (refreshToken: string) =>
+export const me = () => apiRequest<{ userId: string; email: string; roles: string[]; name: string; avatarUrl?: string | null }>('/auth/me')
+
+export const logout = (refreshToken?: string | null) =>
   apiRequest<void>('/auth/logout', {
     method: 'POST',
-    body: JSON.stringify({ refreshToken }),
+    body: JSON.stringify(isCookieMode() ? {} : { refreshToken }),
   })
 
 export const revokeAll = () =>

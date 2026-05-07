@@ -22,6 +22,9 @@ Included:
 - Optional Prometheus Operator `ServiceMonitor`.
 - Optional HorizontalPodAutoscaler resources, disabled by default.
 - Probes, resource requests/limits and non-root security contexts.
+- Frontend Deployment/Service/Ingress with runtime config (`FRONTEND_API_BASE_URL`) and `/healthz`.
+- Auth transport/CORS cookie settings through Helm values (`AUTH_TOKEN_TRANSPORT`,
+  `CORS_ALLOW_CREDENTIALS`, cookie flags).
 
 Not included:
 
@@ -118,6 +121,7 @@ The default container security context:
 NetworkPolicy is disabled by default for dev. The production example enables it and allows:
 
 - external ingress only to api-gateway
+- external ingress to frontend when `frontend.ingress.enabled=true`
 - internal traffic among notebook-platform pods
 - egress to external DB/Redis/OTel endpoints through configurable CIDR
 
@@ -197,6 +201,11 @@ Faz 20 adds provider-agnostic GitOps examples:
 
 The examples use Argo CD as the primary controller model and keep Flux as a documented alternative.
 They do not install Argo CD, deploy to a real cluster or include real registry/secret credentials.
+
+Frontend ingress recommendation:
+
+- separate hosts (`app.*` frontend, `api.*` gateway) as default
+- same-host path-based routing remains optional future model
 
 ## OpenSearch Provider
 

@@ -7,6 +7,10 @@ config:
   otelEnabled: "true"
   otelExporterOtlpEndpoint: "http://otel-collector.observability:4318/v1/traces"
   corsAllowedOrigins: "https://app.example.com"
+  corsAllowCredentials: "true"
+  authTokenTransport: "cookie"
+  authCookieSecure: "true"
+  authCookieSameSite: "None"
   appRlsEnabled: "false"
   appRlsStrictWorkspaceHeader: "true"
   internalAuthMode: "service-jwt"
@@ -84,6 +88,33 @@ services:
     image:
       tag: "prod-placeholder"
       digest: ""
+
+frontend:
+  enabled: true
+  replicaCount: 2
+  image:
+    tag: "prod-placeholder"
+    digest: ""
+  env:
+    FRONTEND_API_BASE_URL: "https://api.example.com"
+    FRONTEND_AUTH_TRANSPORT: "cookie"
+    FRONTEND_ADMIN_UI_ENABLED: "false"
+    FRONTEND_ADMIN_UI_DEV_OPEN: "false"
+    FRONTEND_AUDIT_API_MODE: "real"
+  ingress:
+    enabled: true
+    className: "nginx"
+    hosts:
+      - host: app.example.com
+        paths:
+          - path: /
+            pathType: Prefix
+    tls:
+      - secretName: app-example-com-tls
+        hosts:
+          - app.example.com
+  autoscaling:
+    enabled: false
 
 ingress:
   enabled: true

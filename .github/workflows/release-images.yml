@@ -90,6 +90,20 @@ jobs:
       - name: Run Java and packaging checks
         run: ./gradlew --no-daemon spotlessCheck clean check bootJar
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Frontend quality and build
+        working-directory: frontend
+        run: |
+          npm ci
+          npm test -- --run
+          npm run build
+
       - name: Check repository for accidental secrets
         run: bash scripts/check-no-secrets.sh
 
@@ -133,7 +147,7 @@ jobs:
       - name: Push images
         if: inputs.dry_run == false && inputs.push_images == true
         run: |
-          for service in api-gateway identity-service workspace-service content-service; do
+          for service in api-gateway identity-service workspace-service content-service notification-service search-service frontend; do
             docker push "$IMAGE_REGISTRY/$IMAGE_REPOSITORY_PREFIX/$service:$IMAGE_TAG"
           done
 
@@ -157,6 +171,9 @@ jobs:
           echo "identity_service=$(docker buildx imagetools inspect "$IMAGE_REGISTRY/$IMAGE_REPOSITORY_PREFIX/identity-service:$IMAGE_TAG" --format '{{.Manifest.Digest}}')" >> "$GITHUB_OUTPUT"
           echo "workspace_service=$(docker buildx imagetools inspect "$IMAGE_REGISTRY/$IMAGE_REPOSITORY_PREFIX/workspace-service:$IMAGE_TAG" --format '{{.Manifest.Digest}}')" >> "$GITHUB_OUTPUT"
           echo "content_service=$(docker buildx imagetools inspect "$IMAGE_REGISTRY/$IMAGE_REPOSITORY_PREFIX/content-service:$IMAGE_TAG" --format '{{.Manifest.Digest}}')" >> "$GITHUB_OUTPUT"
+          echo "notification_service=$(docker buildx imagetools inspect "$IMAGE_REGISTRY/$IMAGE_REPOSITORY_PREFIX/notification-service:$IMAGE_TAG" --format '{{.Manifest.Digest}}')" >> "$GITHUB_OUTPUT"
+          echo "search_service=$(docker buildx imagetools inspect "$IMAGE_REGISTRY/$IMAGE_REPOSITORY_PREFIX/search-service:$IMAGE_TAG" --format '{{.Manifest.Digest}}')" >> "$GITHUB_OUTPUT"
+          echo "frontend=$(docker buildx imagetools inspect "$IMAGE_REGISTRY/$IMAGE_REPOSITORY_PREFIX/frontend:$IMAGE_TAG" --format '{{.Manifest.Digest}}')" >> "$GITHUB_OUTPUT"
 
       - name: Attest api-gateway provenance
         if: inputs.generate_provenance == true && inputs.dry_run == false && inputs.push_images == true
@@ -188,6 +205,30 @@ jobs:
         with:
           subject-name: ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_REPOSITORY_PREFIX }}/content-service
           subject-digest: ${{ steps.image-digests.outputs.content_service }}
+          push-to-registry: true
+
+      - name: Attest notification-service provenance
+        if: inputs.generate_provenance == true && inputs.dry_run == false && inputs.push_images == true
+        uses: actions/attest-build-provenance@v1
+        with:
+          subject-name: ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_REPOSITORY_PREFIX }}/notification-service
+          subject-digest: ${{ steps.image-digests.outputs.notification_service }}
+          push-to-registry: true
+
+      - name: Attest search-service provenance
+        if: inputs.generate_provenance == true && inputs.dry_run == false && inputs.push_images == true
+        uses: actions/attest-build-provenance@v1
+        with:
+          subject-name: ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_REPOSITORY_PREFIX }}/search-service
+          subject-digest: ${{ steps.image-digests.outputs.search_service }}
+          push-to-registry: true
+
+      - name: Attest frontend provenance
+        if: inputs.generate_provenance == true && inputs.dry_run == false && inputs.push_images == true
+        uses: actions/attest-build-provenance@v1
+        with:
+          subject-name: ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_REPOSITORY_PREFIX }}/frontend
+          subject-digest: ${{ steps.image-digests.outputs.frontend }}
           push-to-registry: true
 
       - name: Show GitOps promotion diff

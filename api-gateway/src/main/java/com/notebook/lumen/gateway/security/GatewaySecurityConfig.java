@@ -1,6 +1,7 @@
 package com.notebook.lumen.gateway.security;
 
 import com.notebook.lumen.gateway.config.GatewayJwtProperties;
+import com.notebook.lumen.gateway.config.GatewayAuthProperties;
 import com.notebook.lumen.gateway.error.ErrorCode;
 import com.notebook.lumen.gateway.error.GatewayErrorResponseWriter;
 import org.springframework.context.annotation.Bean;
@@ -92,10 +93,21 @@ public class GatewaySecurityConfig {
 
   @Bean
   ServerAuthenticationEntryPoint authenticationEntryPoint(
-      GatewayErrorResponseWriter errorResponseWriter) {
+      GatewayErrorResponseWriter errorResponseWriter, GatewayAuthProperties authProperties) {
     return (exchange, ex) -> {
       String authorization = exchange.getRequest().getHeaders().getFirst("Authorization");
       if (authorization == null || authorization.isBlank()) {
+        if ("cookie".equals(authProperties.effectiveTransport())) {
+          var accessCookie =
+              exchange.getRequest().getCookies().getFirst(authProperties.effectiveAccessCookieName());
+          if (accessCookie == null || accessCookie.getValue() == null || accessCookie.getValue().isBlank()) {
+            return errorResponseWriter.write(
+                exchange,
+                HttpStatus.UNAUTHORIZED,
+                ErrorCode.COOKIE_ACCESS_TOKEN_REQUIRED,
+                "Missing access token cookie");
+          }
+        }
         return errorResponseWriter.write(
             exchange,
             HttpStatus.UNAUTHORIZED,

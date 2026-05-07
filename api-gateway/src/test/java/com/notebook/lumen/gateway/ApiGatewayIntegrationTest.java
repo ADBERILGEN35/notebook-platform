@@ -263,6 +263,49 @@ class ApiGatewayIntegrationTest {
         .exists();
   }
 
+  @Test
+  void cookieAccessToken_routesWithoutAuthorizationHeader() {
+    webTestClient
+        .get()
+        .uri("/workspaces/test")
+        .cookie("__Host-np_access", jwt(USER_ID, USER_EMAIL, "access", 0, 300))
+        .exchange()
+        .expectStatus()
+        .isOk()
+        .expectBody()
+        .jsonPath("$.service")
+        .isEqualTo("workspace-service");
+  }
+
+  @Test
+  void cookieModeUnsafeRequest_requiresCsrfHeader() {
+    webTestClient
+        .post()
+        .uri("/workspaces")
+        .cookie("__Host-np_access", jwt(USER_ID, USER_EMAIL, "access", 0, 300))
+        .bodyValue(Map.of("name", "ws"))
+        .exchange()
+        .expectStatus()
+        .isEqualTo(403)
+        .expectBody()
+        .jsonPath("$.errorCode")
+        .isEqualTo("CSRF_TOKEN_REQUIRED");
+  }
+
+  @Test
+  void cookieModeUnsafeRequest_withMatchingCsrf_succeeds() {
+    webTestClient
+        .post()
+        .uri("/workspaces")
+        .cookie("__Host-np_access", jwt(USER_ID, USER_EMAIL, "access", 0, 300))
+        .cookie("NP-XSRF-TOKEN", "csrf-value")
+        .header("X-CSRF-Token", "csrf-value")
+        .bodyValue(Map.of("name", "ws"))
+        .exchange()
+        .expectStatus()
+        .isOk();
+  }
+
   private static KeyPair generateKeys() {
     try {
       KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");

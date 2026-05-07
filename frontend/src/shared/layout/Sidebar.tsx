@@ -6,9 +6,16 @@ type Props = {
   notebooks: Notebook[]
   activeWorkspaceId: string | null
   onWorkspaceSelect: (workspaceId: string) => void
+  showAdminNav?: boolean
 }
 
-export function Sidebar({ workspaces, notebooks, activeWorkspaceId, onWorkspaceSelect }: Props) {
+export function Sidebar({
+  workspaces,
+  notebooks,
+  activeWorkspaceId,
+  onWorkspaceSelect,
+  showAdminNav,
+}: Props) {
   return (
     <aside className="w-72 border-r border-slate-200 bg-white p-3">
       <div className="mb-4">
@@ -43,6 +50,11 @@ export function Sidebar({ workspaces, notebooks, activeWorkspaceId, onWorkspaceS
         <Link to="/app/search" className="block rounded px-2 py-1 hover:bg-slate-100">
           Search
         </Link>
+        {showAdminNav ? (
+          <Link to="/app/admin" className="block rounded px-2 py-1 hover:bg-slate-100">
+            Admin
+          </Link>
+        ) : null}
         <Link to="/app/settings" className="block rounded px-2 py-1 hover:bg-slate-100">
           Settings
         </Link>

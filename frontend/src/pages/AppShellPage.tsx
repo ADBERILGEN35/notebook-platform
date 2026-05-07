@@ -3,7 +3,9 @@ import { useMutation, useQuery } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
 import { listWorkspaces } from '../features/workspaces/workspace-api'
 import { listNotebooks, createNotebook } from '../features/notebooks/notebook-api'
+import { canShowAdminNavigation } from '../features/admin/access/admin-access'
 import { useWorkspaceStore } from '../features/workspaces/workspace-store'
+import { useAuthStore } from '../features/auth/auth-store'
 import { Sidebar } from '../shared/layout/Sidebar'
 import { Topbar } from '../shared/layout/Topbar'
 import { Modal } from '../shared/components/Modal'
@@ -17,6 +19,8 @@ export function AppShellPage() {
   const [newNotebookName, setNewNotebookName] = useState('')
   const activeWorkspaceId = useWorkspaceStore((state) => state.activeWorkspaceId)
   const setActiveWorkspaceId = useWorkspaceStore((state) => state.setActiveWorkspaceId)
+  const user = useAuthStore((state) => state.user)
+  const showAdminNav = canShowAdminNavigation(user)
 
   const workspaceQuery = useQuery({
     queryKey: ['workspaces'],
@@ -50,6 +54,7 @@ export function AppShellPage() {
         workspaces={workspaceQuery.data?.items || []}
         notebooks={notebooksQuery.data?.items || []}
         activeWorkspaceId={activeWorkspaceId}
+        showAdminNav={showAdminNav}
         onWorkspaceSelect={(id) => {
           setActiveWorkspaceId(id)
           navigate(`/app/workspaces/${id}`)

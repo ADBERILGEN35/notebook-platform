@@ -1,7 +1,7 @@
 import { useMutation } from '@tanstack/react-query'
 import { useNavigate, Link } from 'react-router-dom'
 import { useState } from 'react'
-import { signup, signupSchema } from '../features/auth/auth-api'
+import { signup, signupSchema, me } from '../features/auth/auth-api'
 import { useAuthStore } from '../features/auth/auth-store'
 import { Card } from '../shared/components/Card'
 import { Input } from '../shared/components/Input'
@@ -15,10 +15,29 @@ export function SignupPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
 
+  const setUser = useAuthStore((state) => state.setUser)
+
   const mutation = useMutation({
     mutationFn: signup,
-    onSuccess: (data) => {
-      setSession({ accessToken: data.accessToken, refreshToken: data.refreshToken, user: data.user })
+    onSuccess: async (data) => {
+      setSession({
+        accessToken: data.accessToken ?? null,
+        refreshToken: data.refreshToken ?? null,
+        user: data.user,
+      })
+      try {
+        const m = await me()
+        setUser({
+          id: m.userId,
+          email: m.email,
+          name: m.name,
+          avatarUrl: m.avatarUrl ?? null,
+          status: data.user.status,
+          roles: m.roles ?? [],
+        })
+      } catch {
+        // ignore enrichment failure
+      }
       navigate('/app')
     },
   })

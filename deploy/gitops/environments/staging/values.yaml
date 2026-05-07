@@ -7,6 +7,10 @@ config:
   otelEnabled: "true"
   otelExporterOtlpEndpoint: "http://otel-collector.observability:4318/v1/traces"
   corsAllowedOrigins: "https://staging.example.com"
+  corsAllowCredentials: "true"
+  authTokenTransport: "cookie"
+  authCookieSecure: "true"
+  authCookieSameSite: "None"
   # Stage 1 keeps strict header validation on while DB tenant context remains off.
   # Move to "true" only for Stage 2 after rlsIntegrationTest and staging smoke validation.
   appRlsEnabled: "false"
@@ -86,6 +90,31 @@ services:
     image:
       tag: "staging-placeholder"
       digest: ""
+
+frontend:
+  enabled: true
+  replicaCount: 1
+  image:
+    tag: "staging-placeholder"
+    digest: ""
+  env:
+    FRONTEND_API_BASE_URL: "https://api.staging.example.com"
+    FRONTEND_AUTH_TRANSPORT: "cookie"
+    FRONTEND_ADMIN_UI_ENABLED: "false"
+    FRONTEND_ADMIN_UI_DEV_OPEN: "false"
+    FRONTEND_AUDIT_API_MODE: "mock"
+  ingress:
+    enabled: true
+    className: "nginx"
+    hosts:
+      - host: app.staging.example.com
+        paths:
+          - path: /
+            pathType: Prefix
+    tls:
+      - secretName: app-staging-example-com-tls
+        hosts:
+          - app.staging.example.com
 
 ingress:
   enabled: true

@@ -92,6 +92,8 @@ curl -s http://localhost:8081/auth/refresh \
   }'
 ```
 
+Cookie mode refresh body olmadan da calisabilir (refresh cookie kullanilir).
+
 ### Logout
 
 `/auth/logout` revokes one refresh token. It requires an access token and the refresh token body must
@@ -126,6 +128,10 @@ Response:
 {"revokedCount":2}
 ```
 
+### Current session
+
+`GET /auth/me` authenticated session bilgisi doner.
+
 Existing access tokens are not immediately invalidated; they remain valid until their short TTL
 expires. Future work may add session listing or access token blacklist/introspection.
 
@@ -151,6 +157,10 @@ revocation.
 - Production'da coklu key config veya legacy `JWT_PRIVATE_KEY`/`JWT_PRIVATE_KEY_PATH` mutlaka verilmelidir; ephemeral key uretimi sadece dev/test icindir.
 - Production'da `DB_PASSWORD` bos olamaz.
 - `SPRING_PROFILES_ACTIVE=prod` ile `jwt.allow-ephemeral-keys=false` olur; JWT key path/env yoksa servis fail-fast eder.
+- Faz 41 auth transport mode: `AUTH_TOKEN_TRANSPORT=bearer|cookie|dual`.
+- Cookie mode envleri: `AUTH_COOKIE_SECURE`, `AUTH_COOKIE_SAMESITE`, `AUTH_COOKIE_DOMAIN`,
+  `AUTH_ACCESS_COOKIE_NAME`, `AUTH_REFRESH_COOKIE_NAME`, `AUTH_CSRF_COOKIE_NAME`,
+  `AUTH_CSRF_HEADER_NAME`.
 - Duplicate `kid` veya `activeKid` config'te yoksa servis fail-fast eder.
 - Kritik auth aksiyonlari `identity_audit_events` tablosuna yazilir; token/password gibi hassas metadata alanlari maskelenir.
 - Refresh token plaintext DB, response veya audit metadata icine yazilmaz. DB yalnizca hash ve session metadata saklar.

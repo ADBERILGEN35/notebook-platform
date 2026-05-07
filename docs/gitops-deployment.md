@@ -54,6 +54,7 @@ later if production change control requires tighter permissions or a different a
 - `INTERNAL_AUTH_MODE=dual`
 - `APP_RLS_ENABLED=false`
 - `APP_RLS_STRICT_WORKSPACE_HEADER=false`
+- frontend enabled, ingress optional
 
 `staging` is the promotion proving ground:
 
@@ -64,6 +65,9 @@ later if production change control requires tighter permissions or a different a
 - `INTERNAL_AUTH_MODE=service-jwt`
 - `APP_RLS_STRICT_WORKSPACE_HEADER=true`
 - `APP_RLS_ENABLED=false` until the RLS rollout stage explicitly enables tenant context
+- frontend enabled with `FRONTEND_API_BASE_URL=https://api.staging.example.com`
+- frontend ingress host example: `app.staging.example.com`
+- cookie auth target mode (`AUTH_TOKEN_TRANSPORT=cookie`) with credentials-enabled explicit origins
 
 `prod` is conservative:
 
@@ -74,6 +78,8 @@ later if production change control requires tighter permissions or a different a
 - HPA enabled with CPU targets
 - `INTERNAL_AUTH_MODE=service-jwt`
 - RLS flags are tied to the rollout stage, not changed automatically
+- frontend enabled with separate app host (`app.example.com`) and api host (`api.example.com`)
+- cookie auth target mode with strict CORS origin allow-list and credentials enabled
 
 Worker-owning services use DB-backed leases. GitOps values keep worker lock timeouts explicit:
 `EMAIL_WORKER_LOCK_TIMEOUT_SECONDS`, `SEARCH_OUTBOX_LOCK_TIMEOUT_SECONDS` and
@@ -142,6 +148,7 @@ Recommended flow:
 5. Production promotion is a PR that changes only prod values and requires manual approval.
 6. Prod promotion requires SBOM artifact upload, CRITICAL-free scan result, signed image status and
    provenance readiness.
+7. Frontend image tag/digest should be promoted with backend services in the same release set.
 
 For RLS:
 

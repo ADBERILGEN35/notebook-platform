@@ -41,6 +41,25 @@ jobs:
       - name: Build executable jars
         run: ./gradlew --no-daemon bootJar
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Frontend build
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run build
+
+      - name: Frontend image build
+        env:
+          FRONTEND_IMAGE: notebook-platform/frontend
+          IMAGE_TAG: ci-${{ github.sha }}
+        run: bash scripts/frontend/docker-build.sh
+
       - name: Install Syft
         uses: anchore/sbom-action/download-syft@v0.20.5
 

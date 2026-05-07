@@ -8,7 +8,7 @@ if git -C "$ROOT_DIR" ls-files --error-unmatch .env >/dev/null 2>&1; then
   exit 1
 fi
 
-if grep -RIn --exclude-dir=.git --exclude-dir=.gradle --exclude-dir=build \
+if grep -RIn --exclude-dir=.git --exclude-dir=.gradle --exclude-dir=build --exclude-dir=node_modules --exclude-dir=dist \
   --exclude='*.md' --exclude='.env.example' --exclude='.env.production.example' \
   --exclude='check-no-secrets.sh' \
   -- '-----BEGIN \(RSA \)\?PRIVATE KEY-----' "$ROOT_DIR"; then
@@ -16,7 +16,7 @@ if grep -RIn --exclude-dir=.git --exclude-dir=.gradle --exclude-dir=build \
   exit 1
 fi
 
-if grep -RIn --exclude-dir=.git --exclude-dir=.gradle --exclude-dir=build \
+if grep -RIn --exclude-dir=.git --exclude-dir=.gradle --exclude-dir=build --exclude-dir=node_modules --exclude-dir=dist \
   --exclude='*.md' --exclude='.env.example' --exclude='.env.production.example' \
   --exclude='check-no-secrets.sh' \
   -E -- '(PASSWORD|TOKEN|SECRET|PRIVATE_KEY)[A-Za-z0-9_ -]*[:=][[:space:]]*[A-Za-z0-9+/=._-]{24,}' \

@@ -29,11 +29,12 @@ export type AuthUser = {
   name: string
   avatarUrl?: string | null
   status?: string
+  roles?: string[]
 }
 
 export type AuthResponse = {
-  accessToken: string
-  refreshToken: string
+  accessToken?: string | null
+  refreshToken?: string | null
   tokenType: string
   expiresIn: number
   user: AuthUser

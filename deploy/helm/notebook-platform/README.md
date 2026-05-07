@@ -8,6 +8,7 @@ Provider-agnostic umbrella chart for the backend services:
 - content-service
 - notification-service
 - search-service
+- frontend
 
 The chart intentionally does not install PostgreSQL, Redis, OTel Collector, Prometheus or a cloud
 secret manager. Production deployments should use managed/external dependencies.
@@ -150,8 +151,11 @@ Secrets Operator or any cloud integration.
 
 ## Network Model
 
-Only api-gateway should be public through Ingress. identity-service, workspace-service,
-content-service, notification-service and search-service are ClusterIP only.
+Recommended public ingress model:
+
+- frontend (`app.*`) public through frontend ingress
+- api-gateway (`api.*`) public through gateway ingress
+- identity/workspace/content/notification/search remain ClusterIP only
 
 Service discovery:
 

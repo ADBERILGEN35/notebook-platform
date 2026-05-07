@@ -3,6 +3,7 @@ package com.notebook.lumen.gateway;
 import com.notebook.lumen.gateway.config.GatewayCorsProperties;
 import com.notebook.lumen.gateway.config.GatewayJwtProperties;
 import com.notebook.lumen.gateway.config.GatewayRateLimitProperties;
+import com.notebook.lumen.gateway.config.GatewayAuthProperties;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -10,6 +11,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 @SpringBootApplication
 @EnableConfigurationProperties({
   GatewayCorsProperties.class,
+  GatewayAuthProperties.class,
   GatewayJwtProperties.class,
   GatewayRateLimitProperties.class
 })

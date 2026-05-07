@@ -1,6 +1,8 @@
 package com.notebook.lumen.identity.auth.api;
 
 import com.notebook.lumen.identity.auth.application.AuthService;
+import com.notebook.lumen.identity.auth.application.AuthCookieService;
+import com.notebook.lumen.identity.shared.config.AuthTransportProperties;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -13,6 +15,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.GetMapping;
+import jakarta.servlet.http.HttpServletResponse;
 
 @RestController
 @RequestMapping("/auth")
@@ -20,9 +24,16 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
   private final AuthService authService;
+  private final AuthCookieService authCookieService;
+  private final AuthTransportProperties authTransportProperties;
 
-  public AuthController(AuthService authService) {
+  public AuthController(
+      AuthService authService,
+      AuthCookieService authCookieService,
+      AuthTransportProperties authTransportProperties) {
     this.authService = authService;
+    this.authCookieService = authCookieService;
+    this.authTransportProperties = authTransportProperties;
   }
 
   @Operation(
@@ -32,9 +43,11 @@ public class AuthController {
       path = "/signup",
       consumes = MediaType.APPLICATION_JSON_VALUE,
       produces = MediaType.APPLICATION_JSON_VALUE)
-  public AuthResponse signup(
-      @Valid @RequestBody SignupRequest request, HttpServletRequest httpRequest) {
-    return authService.signup(request, httpRequest);
+  public ResponseEntity<AuthResponse> signup(
+      @Valid @RequestBody SignupRequest request,
+      HttpServletRequest httpRequest,
+      HttpServletResponse httpResponse) {
+    return withCookieIfNeeded(authService.signup(request, httpRequest), httpRequest, httpResponse);
   }
 
   @Operation(summary = "Login", description = "Authenticate user and return access/refresh tokens.")
@@ -42,9 +55,11 @@ public class AuthController {
       path = "/login",
       consumes = MediaType.APPLICATION_JSON_VALUE,
       produces = MediaType.APPLICATION_JSON_VALUE)
-  public AuthResponse login(
-      @Valid @RequestBody LoginRequest request, HttpServletRequest httpRequest) {
-    return authService.login(request, httpRequest);
+  public ResponseEntity<AuthResponse> login(
+      @Valid @RequestBody LoginRequest request,
+      HttpServletRequest httpRequest,
+      HttpServletResponse httpResponse) {
+    return withCookieIfNeeded(authService.login(request, httpRequest), httpRequest, httpResponse);
   }
 
   @Operation(summary = "Refresh", description = "Rotate refresh token and return new tokens.")
@@ -52,9 +67,13 @@ public class AuthController {
       path = "/refresh",
       consumes = MediaType.APPLICATION_JSON_VALUE,
       produces = MediaType.APPLICATION_JSON_VALUE)
-  public AuthResponse refresh(
-      @Valid @RequestBody RefreshTokenRequest request, HttpServletRequest httpRequest) {
-    return authService.refresh(request, httpRequest);
+  public ResponseEntity<AuthResponse> refresh(
+      @RequestBody(required = false) RefreshTokenRequest request,
+      HttpServletRequest httpRequest,
+      HttpServletResponse httpResponse) {
+    String refreshTokenCookie = authCookieService.readRefreshTokenCookie(httpRequest);
+    return withCookieIfNeeded(
+        authService.refresh(request, httpRequest, refreshTokenCookie), httpRequest, httpResponse);
   }
 
   @Operation(
@@ -62,10 +81,15 @@ public class AuthController {
       description = "Revoke one refresh token owned by the access token subject.")
   @PostMapping(path = "/logout", consumes = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Void> logout(
-      @Valid @RequestBody LogoutRequest request,
+      @RequestBody(required = false) LogoutRequest request,
       @AuthenticationPrincipal Jwt accessToken,
-      HttpServletRequest httpRequest) {
-    authService.logout(request, accessToken, httpRequest);
+      HttpServletRequest httpRequest,
+      HttpServletResponse httpResponse) {
+    String refreshTokenCookie = authCookieService.readRefreshTokenCookie(httpRequest);
+    authService.logout(request, accessToken, httpRequest, refreshTokenCookie);
+    if (authTransportProperties.cookieTransportEnabled()) {
+      authCookieService.clearAuthCookies(httpResponse);
+    }
     return ResponseEntity.noContent().build();
   }
 
@@ -79,7 +103,29 @@ public class AuthController {
   public RevokeAllResponse revokeAll(
       @RequestBody(required = false) RevokeAllRequest request,
       @AuthenticationPrincipal Jwt accessToken,
-      HttpServletRequest httpRequest) {
-    return authService.revokeAll(request, accessToken, httpRequest);
+      HttpServletRequest httpRequest,
+      HttpServletResponse httpResponse) {
+    RevokeAllResponse response = authService.revokeAll(request, accessToken, httpRequest);
+    if (authTransportProperties.cookieTransportEnabled()) {
+      authCookieService.clearAuthCookies(httpResponse);
+    }
+    return response;
+  }
+
+  @GetMapping(path = "/me", produces = MediaType.APPLICATION_JSON_VALUE)
+  public AuthMeResponse me(@AuthenticationPrincipal Jwt accessToken) {
+    return authService.me(accessToken);
+  }
+
+  private ResponseEntity<AuthResponse> withCookieIfNeeded(
+      AuthResponse response, HttpServletRequest httpRequest, HttpServletResponse httpResponse) {
+    if (authTransportProperties.cookieTransportEnabled()) {
+      authCookieService.writeAuthCookies(httpResponse, httpRequest, response);
+    }
+    if (authTransportProperties.bearerTransportEnabled()) {
+      return ResponseEntity.ok(response);
+    }
+    return ResponseEntity.ok(
+        new AuthResponse(null, null, "Cookie", response.expiresIn(), response.user()));
   }
 }

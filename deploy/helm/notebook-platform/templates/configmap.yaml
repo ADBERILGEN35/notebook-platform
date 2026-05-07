@@ -14,6 +14,16 @@ data:
   MANAGEMENT_TRACING_SAMPLING_PROBABILITY: {{ .Values.config.managementTracingSamplingProbability | quote }}
   MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: {{ .Values.config.managementEndpointsWebExposureInclude | quote }}
   CORS_ALLOWED_ORIGINS: {{ .Values.config.corsAllowedOrigins | quote }}
+  CORS_ALLOW_CREDENTIALS: {{ .Values.config.corsAllowCredentials | quote }}
+  AUTH_TOKEN_TRANSPORT: {{ .Values.config.authTokenTransport | quote }}
+  AUTH_COOKIE_SECURE: {{ .Values.config.authCookieSecure | quote }}
+  AUTH_COOKIE_SAMESITE: {{ .Values.config.authCookieSameSite | quote }}
+  AUTH_COOKIE_DOMAIN: {{ .Values.config.authCookieDomain | quote }}
+  AUTH_COOKIE_PATH: {{ .Values.config.authCookiePath | quote }}
+  AUTH_ACCESS_COOKIE_NAME: {{ .Values.config.authAccessCookieName | quote }}
+  AUTH_REFRESH_COOKIE_NAME: {{ .Values.config.authRefreshCookieName | quote }}
+  AUTH_CSRF_COOKIE_NAME: {{ .Values.config.authCsrfCookieName | quote }}
+  AUTH_CSRF_HEADER_NAME: {{ .Values.config.authCsrfHeaderName | quote }}
   APP_RLS_ENABLED: {{ .Values.config.appRlsEnabled | quote }}
   APP_RLS_STRICT_WORKSPACE_HEADER: {{ .Values.config.appRlsStrictWorkspaceHeader | quote }}
   INTERNAL_AUTH_MODE: {{ .Values.config.internalAuthMode | quote }}

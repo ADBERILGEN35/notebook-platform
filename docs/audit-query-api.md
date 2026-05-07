@@ -103,3 +103,8 @@ The response is a page wrapper. workspace-service and content-service use the ex
 curl -sS 'http://localhost:8082/internal/audit-events?eventType=WORKSPACE_CREATED&size=25' \
   -H "X-Service-Authorization: Bearer $SERVICE_JWT"
 ```
+
+## Frontend Note (Faz 42)
+
+SPA clients must not attach service JWT headers. The MVP admin UI uses deterministic **mock** adapters and
+documents a future user-auth proxy at `GET /admin/audit-events` (see [`docs/admin-audit-ui.md`](admin-audit-ui.md)).

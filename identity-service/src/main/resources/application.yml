@@ -71,6 +71,17 @@ security:
     memory-in-kb: ${ARGON2_MEMORY_IN_KB:65536}
     iterations: ${ARGON2_ITERATIONS:3}
 
+auth:
+  token-transport: ${AUTH_TOKEN_TRANSPORT:bearer}
+  cookie-secure: ${AUTH_COOKIE_SECURE:false}
+  cookie-same-site: ${AUTH_COOKIE_SAMESITE:Lax}
+  cookie-domain: ${AUTH_COOKIE_DOMAIN:}
+  cookie-path: ${AUTH_COOKIE_PATH:/}
+  access-cookie-name: ${AUTH_ACCESS_COOKIE_NAME:__Host-np_access}
+  refresh-cookie-name: ${AUTH_REFRESH_COOKIE_NAME:__Host-np_refresh}
+  csrf-cookie-name: ${AUTH_CSRF_COOKIE_NAME:NP-XSRF-TOKEN}
+  csrf-header-name: ${AUTH_CSRF_HEADER_NAME:X-CSRF-Token}
+
 audit:
   admin:
     kid: ${AUDIT_ADMIN_SERVICE_JWT_KID:}

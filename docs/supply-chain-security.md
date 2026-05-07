@@ -67,6 +67,9 @@ Artifact naming:
 - `sbom/identity-service-${IMAGE_TAG}.spdx.json`
 - `sbom/workspace-service-${IMAGE_TAG}.spdx.json`
 - `sbom/content-service-${IMAGE_TAG}.spdx.json`
+- `sbom/notification-service-${IMAGE_TAG}.spdx.json`
+- `sbom/search-service-${IMAGE_TAG}.spdx.json`
+- `sbom/frontend-${IMAGE_TAG}.spdx.json`
 
 Read SBOMs by service first, then inspect packages by ecosystem and version. During CVE triage,
 connect each finding to:

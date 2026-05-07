@@ -17,11 +17,21 @@ global:
   commonLabels: {}
 
 config:
+  authTokenTransport: "bearer"
+  authCookieSecure: "false"
+  authCookieSameSite: "Lax"
+  authCookieDomain: ""
+  authCookiePath: "/"
+  authAccessCookieName: "__Host-np_access"
+  authRefreshCookieName: "__Host-np_refresh"
+  authCsrfCookieName: "NP-XSRF-TOKEN"
+  authCsrfHeaderName: "X-CSRF-Token"
   otelEnabled: "false"
   otelExporterOtlpEndpoint: "http://otel-collector:4318/v1/traces"
   managementTracingSamplingProbability: "1.0"
   managementEndpointsWebExposureInclude: "health,info,metrics,prometheus"
   corsAllowedOrigins: "https://app.example.com"
+  corsAllowCredentials: "false"
   appRlsEnabled: "false"
   appRlsStrictWorkspaceHeader: "false"
   internalAuthMode: "service-jwt"
@@ -393,6 +403,54 @@ services:
       limits:
         cpu: 750m
         memory: 1Gi
+
+frontend:
+  enabled: true
+  replicaCount: 1
+  image:
+    repository: notebook-platform/frontend
+    tag: "0.0.1"
+    digest: ""
+  service:
+    type: ClusterIP
+    port: 80
+    targetPort: 8080
+  env:
+    FRONTEND_API_BASE_URL: "http://localhost:8080"
+    FRONTEND_AUTH_TRANSPORT: "bearer"
+    FRONTEND_ADMIN_UI_ENABLED: "false"
+    FRONTEND_ADMIN_UI_DEV_OPEN: "false"
+    FRONTEND_AUDIT_API_MODE: "mock"
+  resources: {}
+  podSecurityContext:
+    runAsNonRoot: true
+    runAsUser: 101
+    runAsGroup: 101
+    fsGroup: 101
+    seccompProfile:
+      type: RuntimeDefault
+  containerSecurityContext:
+    runAsNonRoot: true
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    capabilities:
+      drop:
+        - ALL
+  autoscaling:
+    enabled: false
+    minReplicas: 2
+    maxReplicas: 4
+    targetCPUUtilizationPercentage: 70
+  ingress:
+    enabled: false
+    className: ""
+    annotations: {}
+    hosts:
+      - host: app.example.com
+        paths:
+          - path: /
+            pathType: Prefix
+    tls: []
 
 ingress:
   enabled: false

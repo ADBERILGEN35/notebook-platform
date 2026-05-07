@@ -1,8 +1,10 @@
 import { useAuthStore } from '../../features/auth/auth-store'
 import { useWorkspaceStore } from '../../features/workspaces/workspace-store'
 import type { AuthResponse, ErrorResponse } from '../types/api'
+import { getAuthTransport, isCookieMode } from '../config/auth-transport'
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
+const runtimeApiBaseUrl = window.__NOTEBOOK_CONFIG__?.API_BASE_URL?.trim()
+const API_BASE_URL = runtimeApiBaseUrl || import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
 
 export class ApiError extends Error {
   status: number
@@ -21,6 +23,8 @@ export class ApiError extends Error {
 
 type RequestOptions = RequestInit & { skipAuthRefresh?: boolean }
 type ApiResponseWithMeta<T> = { data: T; response: Response }
+const CSRF_COOKIE_NAME = 'NP-XSRF-TOKEN'
+const CSRF_HEADER_NAME = 'X-CSRF-Token'
 
 const normalizePagination = <T extends { last?: boolean; hasNext?: boolean; hasPrevious?: boolean }>(
   payload: T
@@ -55,22 +59,49 @@ const parseError = async (response: Response): Promise<ApiError> => {
   return new ApiError(payload)
 }
 
+const unsafeMethod = (method: string | undefined): boolean => {
+  const normalized = (method || 'GET').toUpperCase()
+  return normalized === 'POST' || normalized === 'PUT' || normalized === 'PATCH' || normalized === 'DELETE'
+}
+
+const readCookie = (name: string): string | null => {
+  const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  const match = document.cookie.match(new RegExp(`(?:^|; )${escaped}=([^;]*)`))
+  if (!match) return null
+  try {
+    return decodeURIComponent(match[1])
+  } catch {
+    return match[1]
+  }
+}
+
 const refreshAccessToken = async (): Promise<boolean> => {
   const authStore = useAuthStore.getState()
-  if (!authStore.refreshToken) return false
+  if (!isCookieMode() && !authStore.refreshToken) return false
+  const transport = getAuthTransport()
   try {
+    const headers = new Headers({ 'Content-Type': 'application/json' })
+    const csrfToken = readCookie(CSRF_COOKIE_NAME)
+    if (csrfToken) {
+      headers.set(CSRF_HEADER_NAME, csrfToken)
+    }
     const response = await fetch(`${API_BASE_URL}/auth/refresh`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ refreshToken: authStore.refreshToken }),
+      headers,
+      credentials: isCookieMode() ? 'include' : 'same-origin',
+      body: JSON.stringify(isCookieMode() ? {} : { refreshToken: authStore.refreshToken }),
     })
     if (!response.ok) return false
     const data = (await response.json()) as AuthResponse
-    useAuthStore.getState().setSession({
-      accessToken: data.accessToken,
-      refreshToken: data.refreshToken,
-      user: data.user,
-    })
+    if (transport !== 'cookie') {
+      useAuthStore.getState().setSession({
+        accessToken: data.accessToken ?? null,
+        refreshToken: data.refreshToken ?? null,
+        user: data.user,
+      })
+    } else if (data.user) {
+      useAuthStore.getState().setUser(data.user)
+    }
     return true
   } catch {
     return false
@@ -87,13 +118,25 @@ export const apiRequestWithMeta = async <T>(
   options: RequestOptions = {}
 ): Promise<ApiResponseWithMeta<T>> => {
   const token = useAuthStore.getState().accessToken
+  const transport = getAuthTransport()
   const workspaceId = useWorkspaceStore.getState().activeWorkspaceId
   const headers = new Headers(options.headers || {})
   headers.set('Content-Type', 'application/json')
-  if (token) headers.set('Authorization', `Bearer ${token}`)
+  const shouldSendBearer = (transport === 'bearer' || transport === 'dual') && Boolean(token)
+  if (shouldSendBearer) headers.set('Authorization', `Bearer ${token}`)
   if (workspaceId) headers.set('X-Workspace-Id', workspaceId)
+  if (isCookieMode() && unsafeMethod(options.method)) {
+    const csrfToken = readCookie(CSRF_COOKIE_NAME)
+    if (csrfToken) {
+      headers.set(CSRF_HEADER_NAME, csrfToken)
+    }
+  }
 
-  const response = await fetch(`${API_BASE_URL}${path}`, { ...options, headers })
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    ...options,
+    headers,
+    credentials: isCookieMode() ? 'include' : options.credentials,
+  })
   if (response.status === 401 && !options.skipAuthRefresh) {
     const refreshed = await refreshAccessToken()
     if (refreshed) {

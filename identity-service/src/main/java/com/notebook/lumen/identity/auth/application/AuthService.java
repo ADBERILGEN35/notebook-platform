@@ -2,6 +2,7 @@ package com.notebook.lumen.identity.auth.application;
 
 import com.notebook.lumen.identity.audit.AuditService;
 import com.notebook.lumen.identity.auth.api.AuthResponse;
+import com.notebook.lumen.identity.auth.api.AuthMeResponse;
 import com.notebook.lumen.identity.auth.api.LoginRequest;
 import com.notebook.lumen.identity.auth.api.LogoutRequest;
 import com.notebook.lumen.identity.auth.api.RefreshTokenRequest;
@@ -15,6 +16,8 @@ import com.notebook.lumen.identity.shared.exception.InvalidCredentialsException;
 import com.notebook.lumen.identity.shared.exception.InvalidRefreshTokenException;
 import com.notebook.lumen.identity.shared.exception.InvalidTokenTypeException;
 import com.notebook.lumen.identity.shared.exception.RefreshTokenUserMismatchException;
+import com.notebook.lumen.identity.shared.exception.RefreshCookieRequiredException;
+import com.notebook.lumen.identity.shared.exception.SessionNotFoundException;
 import com.notebook.lumen.identity.shared.exception.UserDisabledException;
 import com.notebook.lumen.identity.shared.exception.UserNotFoundException;
 import com.notebook.lumen.identity.shared.exception.ValidationFailedException;
@@ -155,10 +158,13 @@ public class AuthService {
   }
 
   @Transactional
-  public AuthResponse refresh(RefreshTokenRequest request, HttpServletRequest httpRequest) {
-    String refreshTokenPlaintext = request.refreshToken();
+  public AuthResponse refresh(RefreshTokenRequest request, HttpServletRequest httpRequest, String refreshTokenFallback) {
+    String refreshTokenPlaintext =
+        request != null && request.refreshToken() != null && !request.refreshToken().isBlank()
+            ? request.refreshToken()
+            : refreshTokenFallback;
     if (refreshTokenPlaintext == null || refreshTokenPlaintext.isBlank()) {
-      throw new ValidationFailedException("refreshToken is required");
+      throw new RefreshCookieRequiredException();
     }
 
     JwtTokenService.RefreshTokenJwtClaims decoded =
@@ -240,11 +246,15 @@ public class AuthService {
   }
 
   @Transactional
-  public void logout(LogoutRequest request, Jwt accessToken, HttpServletRequest httpRequest) {
+  public void logout(
+      LogoutRequest request, Jwt accessToken, HttpServletRequest httpRequest, String refreshTokenFallback) {
     UUID authenticatedUserId = authenticatedAccessUserId(accessToken);
-    String refreshTokenPlaintext = request.refreshToken();
+    String refreshTokenPlaintext =
+        request != null && request.refreshToken() != null && !request.refreshToken().isBlank()
+            ? request.refreshToken()
+            : refreshTokenFallback;
     if (refreshTokenPlaintext == null || refreshTokenPlaintext.isBlank()) {
-      throw new ValidationFailedException("refreshToken is required");
+      throw new RefreshCookieRequiredException();
     }
 
     JwtTokenService.RefreshTokenJwtClaims decoded =
@@ -304,6 +314,19 @@ public class AuthService {
         Map.of("revokedCount", activeTokens.size(), "reason", reason));
     securityNotificationService.refreshTokensRevoked(user, activeTokens.size(), httpRequest);
     return new RevokeAllResponse(activeTokens.size());
+  }
+
+  @Transactional(readOnly = true)
+  public AuthMeResponse me(Jwt accessToken) {
+    UUID authenticatedUserId = authenticatedAccessUserId(accessToken);
+    User user =
+        userRepository.findById(authenticatedUserId).orElseThrow(SessionNotFoundException::new);
+    return new AuthMeResponse(
+        user.getId(),
+        user.getEmail(),
+        user.getName(),
+        user.getAvatarUrl(),
+        java.util.List.of("ROLE_USER"));
   }
 
   private AuthResponse issueTokens(User user, HttpServletRequest httpRequest) {

@@ -86,12 +86,18 @@ management:
       show-details: never
 
 gateway:
+  auth:
+    token-transport: ${AUTH_TOKEN_TRANSPORT:bearer}
+    access-cookie-name: ${AUTH_ACCESS_COOKIE_NAME:__Host-np_access}
+    csrf-cookie-name: ${AUTH_CSRF_COOKIE_NAME:NP-XSRF-TOKEN}
+    csrf-header-name: ${AUTH_CSRF_HEADER_NAME:X-CSRF-Token}
   jwt:
     jwks-uri: ${JWT_JWKS_URI:}
     public-key-path: ${JWT_PUBLIC_KEY_PATH:}
     public-key: ${JWT_PUBLIC_KEY:}
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:5173}
+    allow-credentials: ${CORS_ALLOW_CREDENTIALS:false}
   rate-limit:
     auth:
       replenish-rate: ${AUTH_RATE_LIMIT_REPLENISH_RATE:5}

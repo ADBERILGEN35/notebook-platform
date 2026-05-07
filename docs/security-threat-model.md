@@ -14,6 +14,15 @@
 - Remaining gap: No adaptive risk scoring or account lock policy.
 - Recommended next action: Add per-account throttling and alerting before production.
 
+## Browser Token Theft (XSS)
+
+- Risk: `localStorage` token theft through XSS.
+- Current mitigation: Faz 41 adds cookie transport (`httpOnly` access/refresh cookie) and frontend
+  cookie mode that does not require localStorage tokens.
+- Remaining gap: legacy bearer mode remains for backward compatibility and CSP is not fully locked
+  down.
+- Recommended next action: move staging/prod to cookie mode and harden CSP in a dedicated phase.
+
 ## JWT Key Management
 
 - Risk: Private/public key mismatch or accidental dev key use in production.
@@ -90,6 +99,24 @@
 - Current mitigation: Gateway CORS origins come from `CORS_ALLOWED_ORIGINS`; credentials are disabled.
 - Remaining gap: Environment mistakes can broaden origins.
 - Recommended next action: Validate production CORS env during deployment.
+
+## CSRF
+
+- Risk: Browser sends authenticated cookie requests without explicit user intent.
+- Current mitigation: Faz 41 adds gateway double-submit CSRF validation for unsafe methods using
+  csrf cookie + `X-CSRF-Token` header.
+- Remaining gap: bypassed bootstrap paths (`/auth/login`, `/auth/signup`) still rely on rate limit
+  and credential checks.
+- Recommended next action: monitor 403 CSRF error rates and tune client error UX.
+
+## Admin / Audit UI Exposure (Faz 42)
+
+- Risk: Showing operational audit context to unintended browser sessions before hardened RBAC.
+- Current mitigation: Route + navigation gates behind `ADMIN_UI_ENABLED`; mock-only adapters by default for local
+  dev; Helm prod examples keep the UI disabled until the proxy arrives.
+- Remaining gap: No authenticated audit proxy translating user sessions to narrowly scoped downstream queries yet.
+- Recommended next action: Implement Faz 43 platform-admin role + audited gateway proxy documented in
+  [`docs/admin-audit-ui.md`](admin-audit-ui.md).
 
 ## Rate Limiting
 

@@ -6,6 +6,7 @@ import { useWorkspaceStore } from '../../features/workspaces/workspace-store'
 describe('api client', () => {
   beforeEach(() => {
     localStorage.clear()
+    window.__NOTEBOOK_CONFIG__ = undefined
     useAuthStore.getState().clearSession()
     useWorkspaceStore.getState().setActiveWorkspaceId(null)
     vi.restoreAllMocks()
@@ -97,6 +98,25 @@ describe('api client', () => {
     const data = await apiRequest<{ hasNext: boolean; hasPrevious: boolean }>('/search/notes')
     expect(data.hasNext).toBe(false)
     expect(data.hasPrevious).toBe(true)
+  })
+
+  it('cookie mode sends credentials and csrf header without authorization', async () => {
+    window.__NOTEBOOK_CONFIG__ = { AUTH_TRANSPORT: 'cookie' }
+    Object.defineProperty(document, 'cookie', {
+      value: 'NP-XSRF-TOKEN=csrf-cookie',
+      configurable: true,
+    })
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(JSON.stringify({ ok: true }), { status: 200 })
+    )
+
+    await apiRequest('/workspaces', { method: 'POST', body: JSON.stringify({ name: 'ws' }) })
+
+    const request = fetchMock.mock.calls[0][1] as RequestInit
+    const headers = request.headers as Headers
+    expect(request.credentials).toBe('include')
+    expect(headers.get('Authorization')).toBeNull()
+    expect(headers.get('X-CSRF-Token')).toBe('csrf-cookie')
   })
 })
 

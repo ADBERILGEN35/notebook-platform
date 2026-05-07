@@ -19,6 +19,8 @@ This document captures the backend contract before frontend work starts.
 
 - Public auth endpoints do not require `Authorization`.
 - Protected gateway routes require `Authorization: Bearer <accessToken>`.
+- Faz 41 ile gateway auth transport `bearer|cookie|dual` destekler.
+- Cookie transportta access token `AUTH_ACCESS_COOKIE_NAME` cookie'den okunur.
 - Gateway strips client-provided identity headers and forwards:
   - `X-User-Id`
   - `X-User-Email`
@@ -116,6 +118,18 @@ Identity:
 - `POST /auth/refresh`
 - `POST /auth/logout`
 - `POST /auth/revoke-all`
+- `GET /auth/me`
+
+Auth cookie + csrf contract (Faz 41):
+
+- cookie mode login/signup/refresh cevaplari auth cookie set eder
+- `/auth/refresh` refresh tokeni body veya refresh cookie'den alabilir
+- gateway unsafe methodlerde double-submit csrf uygular (cookie+header match)
+- csrf error codes: `CSRF_TOKEN_REQUIRED`, `CSRF_TOKEN_INVALID`
+
+Planned gateway admin audit proxy (Faz 43; SPA uses mock adapters until deployed — [`docs/admin-audit-ui.md`](admin-audit-ui.md)):
+
+- `GET /admin/audit-events?source=identity|workspace|content&...filters` → server-mediated calls to each service `/internal/audit-events`.
 
 Workspace:
 

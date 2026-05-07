@@ -43,6 +43,10 @@ Compose ile calistirirken tercih edilen yontem `JWT_JWKS_URI=http://identity-ser
 - `REDIS_HOST`, `REDIS_PORT`: Redis rate limiting icin
 - `REDIS_PASSWORD`: Redis auth etkinse kullanilir; dev'de bos olabilir, production'da Redis auth onerilir
 - `CORS_ALLOWED_ORIGINS`: virgulle ayrilmis origin listesi, default `http://localhost:3000,http://localhost:5173`
+- `CORS_ALLOW_CREDENTIALS`: cookie auth mode icin `true`
+- `AUTH_TOKEN_TRANSPORT`: `bearer|cookie|dual`
+- `AUTH_ACCESS_COOKIE_NAME`: cookie transportta access token cookie adi
+- `AUTH_CSRF_COOKIE_NAME`, `AUTH_CSRF_HEADER_NAME`: CSRF double-submit alanlari
 - `AUTH_RATE_LIMIT_REPLENISH_RATE`, `AUTH_RATE_LIMIT_BURST_CAPACITY`, `AUTH_RATE_LIMIT_REQUESTED_TOKENS`
 - `PROTECTED_RATE_LIMIT_REPLENISH_RATE`, `PROTECTED_RATE_LIMIT_BURST_CAPACITY`, `PROTECTED_RATE_LIMIT_REQUESTED_TOKENS`
 
@@ -68,7 +72,7 @@ Public actuator:
 
 ## JWT ve Header Propagation
 
-Protected endpointlerde `Authorization: Bearer <accessToken>` zorunludur. Gateway `JWT_JWKS_URI` varsa JWT header `kid` degerine gore JWKS'ten dogru public key'i secer. JWKS URI yoksa statik public key fallback ile validate eder. `token_type=access` disindaki tokenlari reddeder.
+Protected endpointlerde bearer mode `Authorization: Bearer <accessToken>` zorunludur. Cookie mode aktifse gateway access tokeni cookie'den okuyabilir. Gateway `JWT_JWKS_URI` varsa JWT header `kid` degerine gore JWKS'ten dogru public key'i secer. JWKS URI yoksa statik public key fallback ile validate eder. `token_type=access` disindaki tokenlari reddeder.
 
 Production profilinde `JWT_JWKS_URI`, `JWT_PUBLIC_KEY` veya `JWT_PUBLIC_KEY_PATH` zorunludur; JWKS onerilen yontemdir. Unknown `kid`, invalid signature ve malformed token `401 INVALID_ACCESS_TOKEN`; expired token `401 EXPIRED_ACCESS_TOKEN`; refresh token `401 INVALID_TOKEN_TYPE` doner.
 
@@ -162,5 +166,7 @@ done
 ## Production Hardening
 
 - `SPRING_PROFILES_ACTIVE=prod` ile `JWT_PUBLIC_KEY_PATH` veya `JWT_PUBLIC_KEY` zorunlu olur.
+- Cookie mode icin explicit `CORS_ALLOWED_ORIGINS` ve `CORS_ALLOW_CREDENTIALS=true` birlikte
+  kullanilmalidir.
 - Actuator exposure env ile daraltilmalidir; public internet'e acik birakilmamalidir.
 - Redis password ileride `REDIS_PASSWORD` ile verilebilir; local dev default'u bos kalir.

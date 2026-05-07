@@ -76,5 +76,30 @@ Provide a production-looking, minimal product shell that consumes existing backe
 - `412 NOTE_CONFLICT` and `428 PRECONDITION_REQUIRED` map to editor `conflict` state.
 - Conflict banner action is `Reload latest`; merge/overwrite UX remains deferred.
 
+## Faz 40 Deployment Foundation
+
+- Frontend now has production Docker image and nginx runtime.
+- Runtime config is environment-driven (`FRONTEND_API_BASE_URL`) via `/runtime-config.js`.
+- Helm/GitOps values include frontend deployment/service/ingress.
+- Security headers and cache policy are applied at nginx layer.
+- Separate-host ingress model is the primary recommendation:
+  - app host -> frontend
+  - api host -> api-gateway
+
 E2E scope moved to [`docs/frontend-e2e.md`](frontend-e2e.md).
+
+## Faz 41 Cookie Auth + CSRF
+
+- Frontend auth transport now supports `bearer|cookie|dual`.
+- Cookie mode uses `credentials: include` and does not require localStorage token state.
+- Unsafe requests add `X-CSRF-Token` from `NP-XSRF-TOKEN` cookie.
+- Session restore in cookie mode is handled with `GET /auth/me`.
+
+
+## Faz 42 Admin / Audit UI Shell
+
+- Routes: `/app/admin`, `/app/admin/audit`, `/app/admin/audit/:eventId`.
+- Mock-backed audit explorer with URL-synced filters, paging, masked metadata drawer, deterministic fixtures for tests.
+- Gated behind `ADMIN_UI_ENABLED` (and optional trusted `ADMIN_UI_DEV_OPEN` for local environments).
+- See `docs/admin-audit-ui.md` for operational + security rollout notes.
 

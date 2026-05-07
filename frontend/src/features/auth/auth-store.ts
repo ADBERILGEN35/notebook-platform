@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import type { AuthUser } from '../../shared/types/api'
+import { isCookieMode } from '../../shared/config/auth-transport'
 
 const ACCESS_TOKEN_KEY = 'np_access_token'
 const REFRESH_TOKEN_KEY = 'np_refresh_token'
@@ -9,7 +10,8 @@ type AuthState = {
   accessToken: string | null
   refreshToken: string | null
   user: AuthUser | null
-  setSession: (payload: { accessToken: string; refreshToken: string; user: AuthUser }) => void
+  setSession: (payload: { accessToken?: string | null; refreshToken?: string | null; user: AuthUser }) => void
+  setUser: (user: AuthUser | null) => void
   clearSession: () => void
 }
 
@@ -24,14 +26,35 @@ const readUser = (): AuthUser | null => {
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
-  accessToken: localStorage.getItem(ACCESS_TOKEN_KEY),
-  refreshToken: localStorage.getItem(REFRESH_TOKEN_KEY),
+  accessToken: isCookieMode() ? null : localStorage.getItem(ACCESS_TOKEN_KEY),
+  refreshToken: isCookieMode() ? null : localStorage.getItem(REFRESH_TOKEN_KEY),
   user: readUser(),
   setSession: ({ accessToken, refreshToken, user }) => {
-    localStorage.setItem(ACCESS_TOKEN_KEY, accessToken)
-    localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken)
+    const cookieMode = isCookieMode()
+    if (!cookieMode && accessToken) {
+      localStorage.setItem(ACCESS_TOKEN_KEY, accessToken)
+    } else {
+      localStorage.removeItem(ACCESS_TOKEN_KEY)
+    }
+    if (!cookieMode && refreshToken) {
+      localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken)
+    } else {
+      localStorage.removeItem(REFRESH_TOKEN_KEY)
+    }
     localStorage.setItem(USER_KEY, JSON.stringify(user))
-    set({ accessToken, refreshToken, user })
+    set({
+      accessToken: cookieMode ? null : accessToken ?? null,
+      refreshToken: cookieMode ? null : refreshToken ?? null,
+      user,
+    })
+  },
+  setUser: (user) => {
+    if (user) {
+      localStorage.setItem(USER_KEY, JSON.stringify(user))
+    } else {
+      localStorage.removeItem(USER_KEY)
+    }
+    set({ user })
   },
   clearSession: () => {
     localStorage.removeItem(ACCESS_TOKEN_KEY)

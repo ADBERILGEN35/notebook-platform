@@ -209,7 +209,8 @@ bash scripts/helm-template-check.sh
 
 Production chart usage assumes external PostgreSQL, external Redis and one of the supported secret
 delivery modes: dev-only Helm-managed native Secret, pre-created `existingSecret`, or production
-target ExternalSecret. Only api-gateway should be exposed through Ingress.
+target ExternalSecret. Faz 40 ile frontend de Helm/GitOps modeline dahil edilir; onerilen ingress
+modeli ayri hostlar (`app.*` frontend, `api.*` gateway) uzerindendir.
 
 ExternalSecret provider examples are under
 `deploy/helm/notebook-platform/examples/external-secrets/`. They contain placeholders only and do
@@ -302,6 +303,9 @@ Dokumanlar:
 - [`docs/search-permission-snapshot.md`](docs/search-permission-snapshot.md)
 - [`docs/frontend-mvp.md`](docs/frontend-mvp.md)
 - [`docs/frontend-e2e.md`](docs/frontend-e2e.md)
+- [`docs/frontend-deployment.md`](docs/frontend-deployment.md)
+- [`docs/auth-cookie-csrf.md`](docs/auth-cookie-csrf.md)
+- [`docs/admin-audit-ui.md`](docs/admin-audit-ui.md)
 - [`docs/email-provider-integration.md`](docs/email-provider-integration.md)
 - [`docs/email-webhooks.md`](docs/email-webhooks.md)
 - [`docs/email-suppression.md`](docs/email-suppression.md)
@@ -310,3 +314,5 @@ Dokumanlar:
 
 Frontend note editor currently uses BlockNote with debounced auto-save (Faz 38) while preserving
 existing backend `contentBlocks` contract.
+Phase 42 adds an operational **Admin / Audit UI** shell with mock adapters; production requires the
+Phase 43 admin proxy described in `docs/admin-audit-ui.md`.

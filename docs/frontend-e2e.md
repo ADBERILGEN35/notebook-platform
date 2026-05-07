@@ -20,6 +20,7 @@ No new backend feature is introduced in this phase.
 - Search: create note and validate query result with eventual consistency polling
 - Comments/versions: smoke checks for add/resolve/reopen and version list visibility
 - Settings/security: security note + revoke-all + error-state interceptions
+- Admin/audit: mocked audit explorer with pagination + metadata masking (`e2e/admin-audit.spec.ts`)
 
 ## Error-State Validation
 
@@ -43,4 +44,11 @@ Using Playwright route interception:
 - Data cleanup is best-effort; test artifacts are prefixed with `E2E`.
 - BlockNote DOM can be selector-sensitive; helper-level wrappers are used to reduce flaky behavior.
 - Autosave timing is debounce-based; tests should wait on save status indicator rather than fixed sleeps.
+
+## Deployed Environment Mode (Faz 40)
+
+- Local Vite mode: existing developer flow.
+- Docker frontend mode: run frontend image and point `FRONTEND_API_BASE_URL` to gateway URL.
+- Deployed cluster mode: use frontend ingress host as Playwright base URL and gateway host as API target.
+- `scripts/smoke-test-frontend.sh` can be used as pre-E2E quick gate for deployed frontend runtime.
 

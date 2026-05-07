@@ -11,7 +11,8 @@ class ProductionSecurityValidatorTest {
     MockEnvironment environment = new MockEnvironment();
     environment.setActiveProfiles("prod");
     ProductionSecurityValidator validator =
-        new ProductionSecurityValidator(new GatewayJwtProperties("", "", ""), environment);
+        new ProductionSecurityValidator(
+            new GatewayJwtProperties("", "", ""), new GatewayCorsProperties("https://app.example.com", true), environment);
 
     assertThatThrownBy(() -> validator.run(null))
         .isInstanceOf(IllegalStateException.class)

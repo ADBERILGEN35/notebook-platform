@@ -8,7 +8,7 @@ IMAGE_TAG="${IMAGE_TAG:-phase21-local}"
 PROVENANCE_DIR="${PROVENANCE_DIR:-$ROOT_DIR/provenance}"
 PROVENANCE_MODE="${PROVENANCE_MODE:-placeholder}" # placeholder | github-attestation
 ALLOW_SECURITY_TOOL_SKIP="${ALLOW_SECURITY_TOOL_SKIP:-false}"
-SERVICES=(api-gateway identity-service workspace-service content-service notification-service search-service)
+SERVICES=(api-gateway identity-service workspace-service content-service notification-service search-service frontend)
 
 mkdir -p "$PROVENANCE_DIR"
 

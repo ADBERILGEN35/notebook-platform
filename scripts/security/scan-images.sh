@@ -9,7 +9,17 @@ BUILD_IMAGES="${BUILD_IMAGES:-true}"
 ALLOW_SECURITY_TOOL_SKIP="${ALLOW_SECURITY_TOOL_SKIP:-false}"
 HIGH_EXIT_CODE="${HIGH_EXIT_CODE:-0}"
 MEDIUM_LOW_EXIT_CODE="${MEDIUM_LOW_EXIT_CODE:-0}"
-SERVICES=(api-gateway identity-service workspace-service content-service notification-service search-service)
+SERVICES=(api-gateway identity-service workspace-service content-service notification-service search-service frontend)
+
+build_image() {
+  local service="$1"
+  local image="$2"
+  if [[ "$service" == "frontend" ]]; then
+    docker build -f "$ROOT_DIR/frontend/Dockerfile" -t "$image" "$ROOT_DIR/frontend"
+  else
+    docker build -f "$ROOT_DIR/$service/Dockerfile" -t "$image" "$ROOT_DIR"
+  fi
+}
 
 if ! command -v trivy >/dev/null 2>&1; then
   if [[ "$ALLOW_SECURITY_TOOL_SKIP" == "true" ]]; then
@@ -36,7 +46,7 @@ for service in "${SERVICES[@]}"; do
     image="$IMAGE_REPOSITORY_PREFIX/$service:$IMAGE_TAG"
   fi
   if [[ "$BUILD_IMAGES" == "true" ]]; then
-    docker build -f "$ROOT_DIR/$service/Dockerfile" -t "$image" "$ROOT_DIR"
+    build_image "$service" "$image"
   fi
 
   echo "Scanning $image for CRITICAL vulnerabilities"

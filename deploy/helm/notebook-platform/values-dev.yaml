@@ -5,6 +5,10 @@ global:
 config:
   otelEnabled: "false"
   corsAllowedOrigins: "http://localhost:3000,http://localhost:5173"
+  corsAllowCredentials: "true"
+  authTokenTransport: "dual"
+  authCookieSecure: "false"
+  authCookieSameSite: "Lax"
   appRlsEnabled: "false"
   appRlsStrictWorkspaceHeader: "false"
   internalAuthMode: "dual"
@@ -61,6 +65,18 @@ services:
     replicas: 1
   search:
     replicas: 1
+
+frontend:
+  enabled: true
+  replicaCount: 1
+  env:
+    FRONTEND_API_BASE_URL: "http://localhost:8080"
+    FRONTEND_AUTH_TRANSPORT: "bearer"
+    FRONTEND_ADMIN_UI_ENABLED: "true"
+    FRONTEND_ADMIN_UI_DEV_OPEN: "true"
+    FRONTEND_AUDIT_API_MODE: "mock"
+  ingress:
+    enabled: false
 
 ingress:
   enabled: false
