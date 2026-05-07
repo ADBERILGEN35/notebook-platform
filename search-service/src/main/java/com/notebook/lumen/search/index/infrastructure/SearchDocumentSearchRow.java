@@ -15,4 +15,12 @@ public interface SearchDocumentSearchRow {
   Instant getNoteUpdatedAt();
 
   Double getRank();
+
+  String getVisibilityMode();
+
+  Integer getPermissionVersion();
+
+  boolean getWorkspaceReadable();
+
+  boolean getRestricted();
 }

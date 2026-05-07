@@ -140,6 +140,10 @@ The Helm chart mounts service JWT keys from Kubernetes Secret:
   `aud=search-service`.
 - search-service permission filtering calls workspace-service with
   `internal:workspace:permission:read` and `aud=workspace-service`.
+- workspace-service permission refresh callback to search-service uses
+  `internal:search:permission:write` and `aud=search-service`.
+- search-service trusts workspace-service refresh caller via
+  `search.internal.trusted-workspace-client`.
 
 `values-prod.example.yaml` sets `INTERNAL_AUTH_MODE=service-jwt`. Static tokens should only be kept
 for a controlled rollback window.

@@ -22,6 +22,10 @@ public interface SearchDocumentRepository extends JpaRepository<SearchDocument, 
                  sd.note_id AS noteId,
                  sd.title AS title,
                  sd.note_updated_at AS noteUpdatedAt,
+                 sd.visibility_mode AS visibilityMode,
+                 sd.permission_version AS permissionVersion,
+                 sd.workspace_readable AS workspaceReadable,
+                 sd.restricted AS restricted,
                  ts_rank_cd(sd.search_vector, plainto_tsquery('simple', :query)) AS rank
           FROM search_documents sd
           WHERE sd.workspace_id = :workspaceId
@@ -120,4 +124,6 @@ public interface SearchDocumentRepository extends JpaRepository<SearchDocument, 
       @Param("workspaceId") UUID workspaceId,
       @Param("notebookId") UUID notebookId,
       @Param("limit") int limit);
+
+  List<SearchDocument> findByNotebookId(UUID notebookId);
 }

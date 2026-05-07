@@ -165,3 +165,17 @@ Rollback:
 3. Keep OpenSearch index intact for investigation unless explicit deletion is approved.
 
 Deletion script is intentionally an example and requires `CONFIRM_DELETE_INDEX=true`.
+
+## Faz 34 Permission Projection Fields
+
+OpenSearch `_source` projection now includes:
+
+- `visibilityMode` (keyword)
+- `permissionVersion` (integer)
+- `workspaceReadable` (boolean)
+- `restricted` (boolean)
+- `permissionIndexedAt` (date)
+
+Query shape remains `workspaceId + archivedAt + q` in MVP. Permission filtering stays in
+application layer, where unrestricted candidates are fast-pathed and restricted candidates require
+runtime permission verification.

@@ -16,12 +16,49 @@ public record SearchProperties(
     String provider,
     boolean dualWriteEnabled,
     boolean fallbackToPostgres,
+    boolean permissionSnapshotEnabled,
+    boolean permissionRuntimeCheckEnabled,
+    boolean permissionRefreshEnabled,
     OpenSearch opensearch,
     Workspace workspace,
     ContentSource contentSource,
     ServiceJwt serviceJwt,
     Internal internal,
     Reindex reindex) {
+  public SearchProperties(
+      int maxIndexedChars,
+      int maxQueryLength,
+      int minQueryLength,
+      int maxPageSize,
+      String workerInstanceId,
+      String provider,
+      boolean dualWriteEnabled,
+      boolean fallbackToPostgres,
+      OpenSearch opensearch,
+      Workspace workspace,
+      ContentSource contentSource,
+      ServiceJwt serviceJwt,
+      Internal internal,
+      Reindex reindex) {
+    this(
+        maxIndexedChars,
+        maxQueryLength,
+        minQueryLength,
+        maxPageSize,
+        workerInstanceId,
+        provider,
+        dualWriteEnabled,
+        fallbackToPostgres,
+        true,
+        true,
+        true,
+        opensearch,
+        workspace,
+        contentSource,
+        serviceJwt,
+        internal,
+        reindex);
+  }
   public record Workspace(String serviceUrl, long timeoutMs, int retryMaxAttempts) {}
 
   public record ContentSource(String serviceUrl, long timeoutMs, String audience) {}
@@ -67,7 +104,13 @@ public record SearchProperties(
   }
 
   public record Internal(
-      TrustedService trustedIndexingClient, TrustedService trustedReindexClient) {}
+      TrustedService trustedIndexingClient,
+      TrustedService trustedReindexClient,
+      TrustedService trustedWorkspaceClient) {
+    public Internal(TrustedService trustedIndexingClient, TrustedService trustedReindexClient) {
+      this(trustedIndexingClient, trustedReindexClient, null);
+    }
+  }
 
   public record Reindex(
       boolean workerEnabled,

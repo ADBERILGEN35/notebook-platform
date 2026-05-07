@@ -2,7 +2,9 @@ package com.notebook.lumen.workspace.api;
 
 import com.notebook.lumen.workspace.domain.TagScope;
 import com.notebook.lumen.workspace.dto.InternalResponses.NotebookPermissionResponse;
+import com.notebook.lumen.workspace.dto.InternalResponses.SearchPermissionSnapshotResponse;
 import com.notebook.lumen.workspace.dto.InternalResponses.TagExistsResponse;
+import com.notebook.lumen.workspace.dto.InternalResponses.WorkspaceMembershipResponse;
 import com.notebook.lumen.workspace.service.InternalWorkspaceService;
 import com.notebook.lumen.workspace.shared.InternalApiTokenValidator;
 import java.util.UUID;
@@ -37,6 +39,35 @@ public class InternalWorkspaceController {
     tokenValidator.validate(
         internalToken, serviceAuthorization, "internal:workspace:permission:read");
     return internalWorkspaceService.notebookPermissions(notebookId, userId);
+  }
+
+  @GetMapping(
+      value = "/internal/workspaces/{workspaceId}/permissions",
+      produces = MediaType.APPLICATION_JSON_VALUE)
+  public WorkspaceMembershipResponse workspaceMembership(
+      @RequestHeader(value = InternalApiTokenValidator.HEADER_NAME, required = false)
+          String internalToken,
+      @RequestHeader(value = InternalApiTokenValidator.SERVICE_AUTH_HEADER_NAME, required = false)
+          String serviceAuthorization,
+      @PathVariable UUID workspaceId,
+      @RequestParam UUID userId) {
+    tokenValidator.validate(
+        internalToken, serviceAuthorization, "internal:workspace:permission:read");
+    return internalWorkspaceService.workspaceMembership(workspaceId, userId);
+  }
+
+  @GetMapping(
+      value = "/internal/notebooks/{notebookId}/search-permission-snapshot",
+      produces = MediaType.APPLICATION_JSON_VALUE)
+  public SearchPermissionSnapshotResponse searchPermissionSnapshot(
+      @RequestHeader(value = InternalApiTokenValidator.HEADER_NAME, required = false)
+          String internalToken,
+      @RequestHeader(value = InternalApiTokenValidator.SERVICE_AUTH_HEADER_NAME, required = false)
+          String serviceAuthorization,
+      @PathVariable UUID notebookId) {
+    tokenValidator.validate(
+        internalToken, serviceAuthorization, "internal:workspace:permission:read");
+    return internalWorkspaceService.searchPermissionSnapshot(notebookId);
   }
 
   @GetMapping(

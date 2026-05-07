@@ -91,6 +91,11 @@ public class PostgreSqlSearchProvider implements SearchProvider {
         document.noteUpdatedAt(),
         document.archivedAt(),
         document.sourceVersion(),
+        document.permissionVersion(),
+        document.visibilityMode(),
+        document.workspaceReadable(),
+        document.restricted(),
+        document.permissionIndexedAt(),
         document.indexedAt());
     return existing;
   }
@@ -111,6 +116,11 @@ public class PostgreSqlSearchProvider implements SearchProvider {
         document.noteUpdatedAt(),
         document.archivedAt(),
         document.sourceVersion(),
+        document.permissionVersion(),
+        document.visibilityMode(),
+        document.workspaceReadable(),
+        document.restricted(),
+        document.permissionIndexedAt(),
         document.indexedAt());
   }
 
@@ -122,7 +132,11 @@ public class PostgreSqlSearchProvider implements SearchProvider {
         document.getTitle(),
         snippet(document.getTitle(), query),
         document.getRank() == null ? 0.0d : document.getRank(),
-        document.getNoteUpdatedAt());
+        document.getNoteUpdatedAt(),
+        document.getVisibilityMode(),
+        document.getPermissionVersion(),
+        document.getWorkspaceReadable(),
+        document.getRestricted());
   }
 
   private String snippet(String title, String query) {

@@ -1,3 +1,11 @@
+## Faz 34 Internal Contract Additions
+
+- `GET /internal/notebooks/{notebookId}/search-permission-snapshot`
+- `GET /internal/workspaces/{workspaceId}/permissions?userId=...`
+- `POST /internal/search/permissions/notebooks/{notebookId}/refresh`
+
+These are internal service-to-service contracts only (not gateway-routed).
+
 # API Contract Freeze
 
 This document captures the backend contract before frontend work starts.

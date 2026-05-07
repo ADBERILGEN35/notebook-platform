@@ -137,3 +137,21 @@ clusters can scrape the actuator Prometheus endpoints after sync. Dev keeps it d
 
 Before production promotion, import the Grafana dashboards, load the Prometheus rules and run the
 post-sync health/smoke checks from `docs/gitops-deployment.md`.
+
+## Faz 34 Permission Snapshot Metrics
+
+Search permission pipeline metrics:
+
+- `search_permission_snapshot_fetch_total{status}`
+- `search_permission_snapshot_fetch_failure_total`
+- `search_permission_runtime_checks_total{check,result}`
+- `search_permission_restricted_candidates_total`
+- `search_permission_refresh_total{status}`
+- `search_permission_snapshot_stale_total`
+
+Alerting suggestions:
+
+- snapshot fetch failure spikes
+- runtime permission check failure spikes
+- refresh failure spikes
+- abnormal restricted candidate ratio increases

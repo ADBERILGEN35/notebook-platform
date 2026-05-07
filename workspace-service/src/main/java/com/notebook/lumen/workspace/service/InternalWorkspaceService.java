@@ -7,6 +7,8 @@ import com.notebook.lumen.workspace.domain.TagScope;
 import com.notebook.lumen.workspace.domain.WorkspaceMember;
 import com.notebook.lumen.workspace.domain.WorkspaceRole;
 import com.notebook.lumen.workspace.dto.InternalResponses.NotebookPermissionResponse;
+import com.notebook.lumen.workspace.dto.InternalResponses.SearchPermissionSnapshotResponse;
+import com.notebook.lumen.workspace.dto.InternalResponses.WorkspaceMembershipResponse;
 import com.notebook.lumen.workspace.dto.InternalResponses.TagExistsResponse;
 import com.notebook.lumen.workspace.repository.NotebookMemberRepository;
 import com.notebook.lumen.workspace.repository.NotebookRepository;
@@ -54,6 +56,43 @@ public class InternalWorkspaceService {
             () ->
                 new NotebookPermissionResponse(
                     notebook.getWorkspaceId(), notebook.getId(), null, false, false, false, false));
+  }
+
+  @Transactional(readOnly = true)
+  public WorkspaceMembershipResponse workspaceMembership(UUID workspaceId, UUID userId) {
+    tenantDatabaseSession.applyWorkspace(workspaceId);
+    return workspaceMemberRepository
+        .findByIdWorkspaceIdAndIdUserId(workspaceId, userId)
+        .map(
+            member ->
+                new WorkspaceMembershipResponse(
+                    workspaceId, userId, true, member.getRole().name()))
+        .orElseGet(() -> new WorkspaceMembershipResponse(workspaceId, userId, false, null));
+  }
+
+  @Transactional(readOnly = true)
+  public SearchPermissionSnapshotResponse searchPermissionSnapshot(UUID notebookId) {
+    Notebook notebook =
+        notebookRepository
+            .findByIdAndArchivedAtIsNull(notebookId)
+            .orElseThrow(() -> Exceptions.notFound("NOTEBOOK_NOT_FOUND", "Notebook not found"));
+    tenantDatabaseSession.applyWorkspace(notebook.getWorkspaceId());
+
+    boolean hasExplicitMembers =
+        notebookMemberRepository.countByIdNotebookId(notebook.getId()) > 0;
+    boolean restricted = hasExplicitMembers;
+    boolean workspaceReadable = !restricted;
+    String visibilityMode = restricted ? "RESTRICTED" : "WORKSPACE";
+    int permissionVersion = notebook.getPermissionVersion() == null ? 0 : notebook.getPermissionVersion();
+
+    return new SearchPermissionSnapshotResponse(
+        notebook.getWorkspaceId(),
+        notebook.getId(),
+        visibilityMode,
+        workspaceReadable,
+        restricted,
+        permissionVersion,
+        notebook.getUpdatedAt());
   }
 
   @Transactional(readOnly = true)

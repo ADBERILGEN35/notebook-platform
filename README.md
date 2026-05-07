@@ -299,6 +299,7 @@ Dokumanlar:
 - [`docs/pagination-design.md`](docs/pagination-design.md)
 - [`docs/auth-token-revocation.md`](docs/auth-token-revocation.md)
 - [`docs/opensearch-provider.md`](docs/opensearch-provider.md)
+- [`docs/search-permission-snapshot.md`](docs/search-permission-snapshot.md)
 - [`docs/email-provider-integration.md`](docs/email-provider-integration.md)
 - [`docs/email-webhooks.md`](docs/email-webhooks.md)
 - [`docs/email-suppression.md`](docs/email-suppression.md)

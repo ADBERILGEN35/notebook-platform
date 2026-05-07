@@ -1,3 +1,10 @@
+## Faz 34 Readiness Notes
+
+- Configure `SEARCH_PERMISSION_SNAPSHOT_ENABLED`, `SEARCH_PERMISSION_RUNTIME_CHECK_ENABLED` and
+  `SEARCH_PERMISSION_REFRESH_ENABLED`.
+- Monitor snapshot fetch/runtime check/refresh metrics for spikes before promotion.
+- Keep fallback and fail-closed behavior enabled; do not disable runtime checks for restricted docs.
+
 # Production Readiness Checklist
 
 | Area | Status | Notes | Owner / next step |

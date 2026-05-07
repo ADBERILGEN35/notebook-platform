@@ -42,6 +42,9 @@ search:
   provider: ${SEARCH_PROVIDER:postgres}
   dual-write-enabled: ${SEARCH_DUAL_WRITE_ENABLED:false}
   fallback-to-postgres: ${SEARCH_FALLBACK_TO_POSTGRES:false}
+  permission-snapshot-enabled: ${SEARCH_PERMISSION_SNAPSHOT_ENABLED:true}
+  permission-runtime-check-enabled: ${SEARCH_PERMISSION_RUNTIME_CHECK_ENABLED:true}
+  permission-refresh-enabled: ${SEARCH_PERMISSION_REFRESH_ENABLED:true}
   max-indexed-chars: ${SEARCH_MAX_INDEXED_CHARS:200000}
   max-query-length: ${SEARCH_MAX_QUERY_LENGTH:120}
   min-query-length: ${SEARCH_MIN_QUERY_LENGTH:2}
@@ -89,6 +92,14 @@ search:
       audience: ${TRUSTED_SERVICE_REINDEX_CLIENT_AUDIENCE:search-service}
       clock-skew-seconds: ${TRUSTED_SERVICE_REINDEX_CLIENT_CLOCK_SKEW_SECONDS:5}
       allowed-scopes: ${TRUSTED_SERVICE_REINDEX_CLIENT_ALLOWED_SCOPES:internal:search:reindex:manage}
+    trusted-workspace-client:
+      kid: ${TRUSTED_SERVICE_WORKSPACE_CLIENT_KID:}
+      public-key: ${TRUSTED_SERVICE_WORKSPACE_CLIENT_PUBLIC_KEY:}
+      public-key-path: ${TRUSTED_SERVICE_WORKSPACE_CLIENT_PUBLIC_KEY_PATH:}
+      issuer: ${TRUSTED_SERVICE_WORKSPACE_CLIENT_ISSUER:workspace-service}
+      audience: ${TRUSTED_SERVICE_WORKSPACE_CLIENT_AUDIENCE:search-service}
+      clock-skew-seconds: ${TRUSTED_SERVICE_WORKSPACE_CLIENT_CLOCK_SKEW_SECONDS:5}
+      allowed-scopes: ${TRUSTED_SERVICE_WORKSPACE_CLIENT_ALLOWED_SCOPES:internal:search:permission:write}
   reindex:
     worker-enabled: ${SEARCH_REINDEX_WORKER_ENABLED:true}
     batch-size: ${SEARCH_REINDEX_BATCH_SIZE:100}

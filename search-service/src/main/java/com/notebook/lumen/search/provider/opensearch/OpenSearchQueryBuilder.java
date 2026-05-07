@@ -26,7 +26,7 @@ public class OpenSearchQueryBuilder {
 
   public String upsertBody(SearchIndexDocument document) {
     return """
-        {"noteId":"%s","workspaceId":"%s","notebookId":%s,"title":"%s","contentText":"%s","tagsText":"%s","notebookName":"%s","createdBy":%s,"updatedBy":%s,"noteCreatedAt":%s,"noteUpdatedAt":%s,"archivedAt":%s,"sourceVersion":%s,"indexedAt":"%s"}
+        {"noteId":"%s","workspaceId":"%s","notebookId":%s,"title":"%s","contentText":"%s","tagsText":"%s","notebookName":"%s","createdBy":%s,"updatedBy":%s,"noteCreatedAt":%s,"noteUpdatedAt":%s,"archivedAt":%s,"sourceVersion":%s,"permissionVersion":%s,"visibilityMode":%s,"workspaceReadable":%s,"restricted":%s,"permissionIndexedAt":%s,"indexedAt":"%s"}
         """
         .formatted(
             document.noteId(),
@@ -42,6 +42,11 @@ public class OpenSearchQueryBuilder {
             nullableInstant(document.noteUpdatedAt()),
             nullableInstant(document.archivedAt()),
             document.sourceVersion() == null ? "null" : document.sourceVersion().toString(),
+            document.permissionVersion() == null ? "null" : document.permissionVersion().toString(),
+            nullableString(document.visibilityMode()),
+            String.valueOf(document.workspaceReadable()),
+            String.valueOf(document.restricted()),
+            nullableInstant(document.permissionIndexedAt()),
             document.indexedAt());
   }
 
@@ -58,6 +63,10 @@ public class OpenSearchQueryBuilder {
 
   private String nullableInstant(Instant value) {
     return value == null ? "null" : "\"" + value + "\"";
+  }
+
+  private String nullableString(String value) {
+    return value == null ? "null" : "\"" + json(value) + "\"";
   }
 
   private String json(String value) {

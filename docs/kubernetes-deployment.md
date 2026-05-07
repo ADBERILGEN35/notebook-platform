@@ -1,3 +1,9 @@
+## Faz 34 Network Paths
+
+- Allow egress `search-service -> workspace-service` for internal permission snapshot/membership/check
+  calls.
+- Allow egress `workspace-service -> search-service` for notebook permission refresh calls.
+
 # Kubernetes Deployment
 
 Faz 14 adds a provider-agnostic Helm chart under

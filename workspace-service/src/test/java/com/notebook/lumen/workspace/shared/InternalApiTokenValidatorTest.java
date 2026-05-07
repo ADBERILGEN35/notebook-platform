@@ -35,6 +35,7 @@ class InternalApiTokenValidatorTest {
                         5,
                         "internal:workspace:permission:read"),
                     null),
+                null,
                 null));
     String token =
         new ServiceJwtSigner(

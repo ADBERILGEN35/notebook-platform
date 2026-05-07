@@ -17,6 +17,7 @@ public class Notebook {
   private Instant createdAt;
   private Instant updatedAt;
   private Instant archivedAt;
+  private Integer permissionVersion;
 
   protected Notebook() {}
 
@@ -29,6 +30,7 @@ public class Notebook {
     this.createdBy = createdBy;
     this.createdAt = now;
     this.updatedAt = now;
+    this.permissionVersion = 0;
   }
 
   public UUID getId() {
@@ -63,6 +65,10 @@ public class Notebook {
     return archivedAt;
   }
 
+  public Integer getPermissionVersion() {
+    return permissionVersion;
+  }
+
   public void update(String name, String icon, Instant now) {
     this.name = name;
     this.icon = icon;
@@ -71,6 +77,12 @@ public class Notebook {
 
   public void archive(Instant now) {
     this.archivedAt = now;
+    this.updatedAt = now;
+  }
+
+  public void incrementPermissionVersion(Instant now) {
+    int current = permissionVersion == null ? 0 : permissionVersion;
+    this.permissionVersion = current + 1;
     this.updatedAt = now;
   }
 }

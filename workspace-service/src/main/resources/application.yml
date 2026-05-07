@@ -91,6 +91,19 @@ workspace:
       service-name: ${WORKSPACE_SERVICE_JWT_SERVICE_NAME:workspace-service}
       ttl-seconds: ${WORKSPACE_SERVICE_JWT_TTL_SECONDS:60}
       audience: ${WORKSPACE_SERVICE_JWT_AUDIENCE:notification-service}
+  search:
+    service-url: ${SEARCH_SERVICE_URL:http://search-service:8085}
+    timeout-ms: ${SEARCH_CLIENT_TIMEOUT_MS:1000}
+    permission-refresh-enabled: ${SEARCH_PERMISSION_REFRESH_ENABLED:true}
+    service-jwt:
+      active-kid: ${WORKSPACE_SERVICE_JWT_ACTIVE_KID:workspace-service-key-1}
+      private-key: ${WORKSPACE_SERVICE_JWT_PRIVATE_KEY:}
+      private-key-path: ${WORKSPACE_SERVICE_JWT_PRIVATE_KEY_PATH:}
+      issuer: ${WORKSPACE_SERVICE_JWT_ISSUER:workspace-service}
+      subject: ${WORKSPACE_SERVICE_JWT_SUBJECT:service:workspace-service}
+      service-name: ${WORKSPACE_SERVICE_JWT_SERVICE_NAME:workspace-service}
+      ttl-seconds: ${WORKSPACE_SERVICE_JWT_TTL_SECONDS:60}
+      audience: ${WORKSPACE_SERVICE_JWT_SEARCH_AUDIENCE:search-service}
 
 audit:
   admin:

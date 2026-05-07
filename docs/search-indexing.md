@@ -50,3 +50,16 @@ backfill job documented in [`search-reindex-backfill.md`](search-reindex-backfil
 Provider migration can enable `SEARCH_DUAL_WRITE_ENABLED=true` before switching queries to
 `SEARCH_PROVIDER=opensearch`. Keep `SEARCH_PROVIDER=postgres` as rollback until OpenSearch has been
 validated with reindex, archive and permission filtering.
+
+## Faz 34 Permission Snapshot During Indexing
+
+On upsert, search-service fetches notebook snapshot from workspace-service internal API and stores
+permission projection in `search_documents`.
+
+If snapshot fetch fails, indexing uses conservative fallback:
+
+- `restricted=true`
+- `workspaceReadable=false`
+- null version/indexed-at metadata
+
+This keeps authorization fail-closed while preserving indexing availability.

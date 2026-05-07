@@ -15,4 +15,6 @@ public interface NotebookMemberRepository extends JpaRepository<NotebookMember, 
   Page<NotebookMember> findByIdNotebookId(UUID notebookId, Pageable pageable);
 
   Optional<NotebookMember> findByIdNotebookIdAndIdUserId(UUID notebookId, UUID userId);
+
+  long countByIdNotebookId(UUID notebookId);
 }

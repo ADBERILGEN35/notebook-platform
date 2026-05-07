@@ -55,3 +55,13 @@ The reindex worker uses a DB lease with `lockedBy`, `lockExpiresAt` and `heartbe
 - Production real cleanup rollout is future work.
 - Advanced highlighting, ranking tuning and semantic/vector search are future work.
 - Permission-aware exact total count for OpenSearch is future work.
+
+## Faz 34 Permission Snapshot
+
+- Search index stores `visibilityMode`, `permissionVersion`, `workspaceReadable`, `restricted`,
+  `permissionIndexedAt`.
+- Query flow first validates workspace membership, then fast-pathes unrestricted docs and runtime
+  checks restricted docs.
+- Workspace-service can trigger snapshot refresh with
+  `POST /internal/search/permissions/notebooks/{notebookId}/refresh`.
+- Snapshot fetch failures during indexing use conservative restricted fallback.

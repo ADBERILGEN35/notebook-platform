@@ -144,7 +144,11 @@ public class OpenSearchSearchProvider implements SearchProvider {
         text(source.get("title")),
         snippet(text(source.get("title"))),
         hit.get("_score") == null ? 0.0d : hit.get("_score").asDouble(0.0d),
-        instantOrNull(source.get("noteUpdatedAt")));
+        instantOrNull(source.get("noteUpdatedAt")),
+        textOrNull(source.get("visibilityMode")),
+        intOrNull(source.get("permissionVersion")),
+        boolOrDefault(source.get("workspaceReadable"), true),
+        boolOrDefault(source.get("restricted"), false));
   }
 
   private UUID uuidOrNull(JsonNode node) {
@@ -163,6 +167,18 @@ public class OpenSearchSearchProvider implements SearchProvider {
 
   private String text(JsonNode node) {
     return node == null || node.isNull() ? "" : node.asText();
+  }
+
+  private String textOrNull(JsonNode node) {
+    return node == null || node.isNull() ? null : node.asText();
+  }
+
+  private Integer intOrNull(JsonNode node) {
+    return node == null || node.isNull() ? null : node.asInt();
+  }
+
+  private boolean boolOrDefault(JsonNode node, boolean defaultValue) {
+    return node == null || node.isNull() ? defaultValue : node.asBoolean(defaultValue);
   }
 
   private String snippet(String title) {

@@ -29,6 +29,11 @@ public class SearchDocument {
 
   private Instant indexedAt;
   private Integer sourceVersion;
+  private Integer permissionVersion;
+  private String visibilityMode;
+  private boolean workspaceReadable;
+  private boolean restricted;
+  private Instant permissionIndexedAt;
   private UUID lastSeenReindexJobId;
   private Instant lastSeenReindexAt;
   private Instant createdAt;
@@ -51,6 +56,11 @@ public class SearchDocument {
       Instant noteUpdatedAt,
       Instant archivedAt,
       Integer sourceVersion,
+      Integer permissionVersion,
+      String visibilityMode,
+      boolean workspaceReadable,
+      boolean restricted,
+      Instant permissionIndexedAt,
       Instant now) {
     this.id = id;
     this.createdAt = now;
@@ -68,6 +78,50 @@ public class SearchDocument {
         noteUpdatedAt,
         archivedAt,
         sourceVersion,
+        permissionVersion,
+        visibilityMode,
+        workspaceReadable,
+        restricted,
+        permissionIndexedAt,
+        now);
+  }
+
+  public SearchDocument(
+      UUID id,
+      UUID workspaceId,
+      UUID notebookId,
+      UUID noteId,
+      String title,
+      String contentText,
+      String tagsText,
+      String notebookName,
+      UUID createdBy,
+      UUID updatedBy,
+      Instant noteCreatedAt,
+      Instant noteUpdatedAt,
+      Instant archivedAt,
+      Integer sourceVersion,
+      Instant now) {
+    this(
+        id,
+        workspaceId,
+        notebookId,
+        noteId,
+        title,
+        contentText,
+        tagsText,
+        notebookName,
+        createdBy,
+        updatedBy,
+        noteCreatedAt,
+        noteUpdatedAt,
+        archivedAt,
+        sourceVersion,
+        null,
+        null,
+        true,
+        false,
+        null,
         now);
   }
 
@@ -91,6 +145,11 @@ public class SearchDocument {
       Instant noteUpdatedAt,
       Instant archivedAt,
       Integer sourceVersion,
+      Integer permissionVersion,
+      String visibilityMode,
+      boolean workspaceReadable,
+      boolean restricted,
+      Instant permissionIndexedAt,
       Instant now) {
     this.workspaceId = workspaceId;
     this.notebookId = notebookId;
@@ -105,6 +164,11 @@ public class SearchDocument {
     this.noteUpdatedAt = noteUpdatedAt;
     this.archivedAt = archivedAt;
     this.sourceVersion = sourceVersion;
+    this.permissionVersion = permissionVersion;
+    this.visibilityMode = visibilityMode;
+    this.workspaceReadable = workspaceReadable;
+    this.restricted = restricted;
+    this.permissionIndexedAt = permissionIndexedAt;
     this.indexedAt = now;
     this.updatedAt = now;
   }
@@ -179,6 +243,26 @@ public class SearchDocument {
 
   public Integer getSourceVersion() {
     return sourceVersion;
+  }
+
+  public Integer getPermissionVersion() {
+    return permissionVersion;
+  }
+
+  public String getVisibilityMode() {
+    return visibilityMode;
+  }
+
+  public boolean isWorkspaceReadable() {
+    return workspaceReadable;
+  }
+
+  public boolean isRestricted() {
+    return restricted;
+  }
+
+  public Instant getPermissionIndexedAt() {
+    return permissionIndexedAt;
   }
 
   public UUID getLastSeenReindexJobId() {

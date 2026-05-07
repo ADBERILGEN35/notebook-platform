@@ -1,3 +1,10 @@
+## Faz 34 Permission Snapshot Risk Notes
+
+- Snapshot staleness is accepted as eventual consistency.
+- Restricted documents always require runtime permission checks.
+- Snapshot fetch and runtime permission check failures are fail-closed for restricted candidates.
+- Full ACL indexing is deferred to a future phase.
+
 # Security Threat Model
 
 ## Authentication

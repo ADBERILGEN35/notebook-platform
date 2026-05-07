@@ -1,3 +1,12 @@
+## Faz 34 Values Additions
+
+Recommended environment values:
+
+- `SEARCH_PERMISSION_SNAPSHOT_ENABLED=true`
+- `SEARCH_PERMISSION_RUNTIME_CHECK_ENABLED=true`
+- `SEARCH_PERMISSION_REFRESH_ENABLED=true`
+- trusted service JWT configs for workspace/search refresh path
+
 # GitOps Deployment
 
 Faz 20 defines a provider-agnostic GitOps deployment model for the existing Helm chart. It does not

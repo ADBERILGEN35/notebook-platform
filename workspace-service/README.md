@@ -264,3 +264,13 @@ that to `409 NOTIFICATION_RECIPIENT_SUPPRESSED`; the invitation is not created.
 - `SPRING_PROFILES_ACTIVE=prod` ve `INTERNAL_AUTH_MODE=service-jwt` ile trusted content-service public key zorunludur.
 - `APP_RLS_ENABLED=true` tenant-scoped transactionlarda PostgreSQL `app.current_workspace_id` ayarini yapar.
 - Kritik workspace/notebook/invitation aksiyonlari `workspace_audit_events` tablosuna yazilir.
+
+## Faz 34 Search Permission Snapshot
+
+- Internal snapshot endpoint eklendi:
+  `GET /internal/notebooks/{notebookId}/search-permission-snapshot`.
+- Internal workspace membership endpoint eklendi:
+  `GET /internal/workspaces/{workspaceId}/permissions?userId=...`.
+- `notebooks.permission_version` alanı notebook member degisikliklerinde artirilir.
+- Notebook member add/update/remove sonrasinda search-service refresh endpointi tetiklenir.
+- Refresh tetikleme hatasi notebook permission mutation islemini fail etmez (audit + log).

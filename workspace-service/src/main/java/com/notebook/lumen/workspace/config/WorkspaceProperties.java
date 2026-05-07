@@ -8,7 +8,11 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties(prefix = "workspace")
 public record WorkspaceProperties(
-    Invitations invitations, Identity identity, Internal internal, Notification notification) {
+    Invitations invitations,
+    Identity identity,
+    Internal internal,
+    Notification notification,
+    Search search) {
   public record Invitations(long ttlDays, String acceptBaseUrl, boolean exposeTokenInResponse) {}
 
   public record Identity(
@@ -92,6 +96,9 @@ public record WorkspaceProperties(
 
   public record Notification(
       String serviceUrl, long timeoutMs, boolean enabled, ServiceJwt serviceJwt) {}
+
+  public record Search(
+      String serviceUrl, long timeoutMs, boolean permissionRefreshEnabled, ServiceJwt serviceJwt) {}
 
   public record ServiceJwt(
       String activeKid,

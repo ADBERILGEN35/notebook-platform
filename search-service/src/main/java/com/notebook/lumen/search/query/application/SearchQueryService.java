@@ -7,6 +7,8 @@ import com.notebook.lumen.search.query.dto.PageResponse;
 import com.notebook.lumen.search.query.dto.SearchNoteResult;
 import com.notebook.lumen.search.shared.config.SearchProperties;
 import com.notebook.lumen.search.shared.exception.SearchException;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import java.util.Map;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
@@ -19,16 +21,27 @@ public class SearchQueryService {
   private final SearchPermissionService permissionService;
   private final SearchProperties properties;
   private final SearchAuditService auditService;
+  private final MeterRegistry meterRegistry;
+
+  public SearchQueryService(
+      SearchProviderRouter providerRouter,
+      SearchPermissionService permissionService,
+      SearchProperties properties,
+      SearchAuditService auditService,
+      MeterRegistry meterRegistry) {
+    this.providerRouter = providerRouter;
+    this.permissionService = permissionService;
+    this.properties = properties;
+    this.auditService = auditService;
+    this.meterRegistry = meterRegistry;
+  }
 
   public SearchQueryService(
       SearchProviderRouter providerRouter,
       SearchPermissionService permissionService,
       SearchProperties properties,
       SearchAuditService auditService) {
-    this.providerRouter = providerRouter;
-    this.permissionService = permissionService;
-    this.properties = properties;
-    this.auditService = auditService;
+    this(providerRouter, permissionService, properties, auditService, new SimpleMeterRegistry());
   }
 
   @Transactional(readOnly = true)
@@ -44,13 +57,33 @@ public class SearchQueryService {
     String query = validateQuery(q);
     int safeSize = Math.min(Math.max(size, 1), Math.max(1, properties.maxPageSize()));
     int safePage = Math.max(page, 0);
+    if (!permissionService.isWorkspaceMember(userId, workspaceId)) {
+      auditService.record(
+          "SEARCH_PERMISSION_ACCESS_DENIED",
+          workspaceId,
+          workspaceId,
+          Map.of("reason", "workspace-membership-denied"));
+      return new PageResponse<>(java.util.List.of(), safePage, safeSize, 0, 0, true);
+    }
+
     var candidatePage =
         providerRouter.search(new SearchQuery(workspaceId, notebookId, query, safePage, safeSize, true));
+
+    long restrictedCandidates = candidatePage.items().stream().filter(SearchNoteResult::restricted).count();
+    meterRegistry.counter("search_permission_restricted_candidates_total").increment(restrictedCandidates);
+    long staleCandidates =
+        candidatePage.items().stream()
+            .filter(item -> item.permissionVersion() == null || item.visibilityMode() == null)
+            .count();
+    meterRegistry.counter("search_permission_snapshot_stale_total").increment(staleCandidates);
+
     var permitted =
         candidatePage.items().stream()
             .filter(
                 document ->
-                    permissionService.canRead(userId, workspaceId, document.notebookId()))
+                    (!document.restricted() && document.workspaceReadable())
+                        || permissionService.canReadRestrictedNotebook(
+                            userId, workspaceId, document.notebookId()))
             .limit(safeSize)
             .toList();
     auditService.record(

@@ -28,6 +28,7 @@ public class NotebookService {
   private final AuthorizationService authorizationService;
   private final WorkspaceMapper mapper;
   private final AuditService auditService;
+  private final SearchPermissionRefreshService searchPermissionRefreshService;
   private final TenantDatabaseSession tenantDatabaseSession;
   private final StrictWorkspaceHeaderValidator strictWorkspaceHeaderValidator;
 
@@ -37,6 +38,7 @@ public class NotebookService {
       AuthorizationService authorizationService,
       WorkspaceMapper mapper,
       AuditService auditService,
+      SearchPermissionRefreshService searchPermissionRefreshService,
       TenantDatabaseSession tenantDatabaseSession,
       StrictWorkspaceHeaderValidator strictWorkspaceHeaderValidator) {
     this.notebookRepository = notebookRepository;
@@ -44,6 +46,7 @@ public class NotebookService {
     this.authorizationService = authorizationService;
     this.mapper = mapper;
     this.auditService = auditService;
+    this.searchPermissionRefreshService = searchPermissionRefreshService;
     this.tenantDatabaseSession = tenantDatabaseSession;
     this.strictWorkspaceHeaderValidator = strictWorkspaceHeaderValidator;
   }
@@ -137,6 +140,7 @@ public class NotebookService {
                         Instant.now()));
     member.changeRole(request.role(), Instant.now());
     NotebookMember saved = notebookMemberRepository.save(member);
+    notebook.incrementPermissionVersion(Instant.now());
     auditService.record(
         "NOTEBOOK_MEMBER_CHANGED",
         user.userId(),
@@ -144,6 +148,15 @@ public class NotebookService {
         "NOTEBOOK_MEMBER",
         targetUserId,
         Map.of("notebookId", notebookId.toString(), "role", request.role().name()));
+    auditService.record(
+        "NOTEBOOK_PERMISSION_VERSION_INCREMENTED",
+        user.userId(),
+        notebook.getWorkspaceId(),
+        "NOTEBOOK",
+        notebook.getId(),
+        Map.of("permissionVersion", String.valueOf(notebook.getPermissionVersion())));
+    searchPermissionRefreshService.triggerNotebookRefresh(
+        user.userId(), notebook.getWorkspaceId(), notebook.getId());
     return mapper.toResponse(saved);
   }
 
@@ -164,6 +177,7 @@ public class NotebookService {
                 () ->
                     Exceptions.notFound("NOTEBOOK_MEMBER_NOT_FOUND", "Notebook member not found"));
     member.changeRole(request.role(), Instant.now());
+    notebook.incrementPermissionVersion(Instant.now());
     auditService.record(
         "NOTEBOOK_MEMBER_CHANGED",
         user.userId(),
@@ -171,6 +185,15 @@ public class NotebookService {
         "NOTEBOOK_MEMBER",
         targetUserId,
         Map.of("notebookId", notebookId.toString(), "role", request.role().name()));
+    auditService.record(
+        "NOTEBOOK_PERMISSION_VERSION_INCREMENTED",
+        user.userId(),
+        notebook.getWorkspaceId(),
+        "NOTEBOOK",
+        notebook.getId(),
+        Map.of("permissionVersion", String.valueOf(notebook.getPermissionVersion())));
+    searchPermissionRefreshService.triggerNotebookRefresh(
+        user.userId(), notebook.getWorkspaceId(), notebook.getId());
     return mapper.toResponse(member);
   }
 
@@ -187,6 +210,16 @@ public class NotebookService {
                 () ->
                     Exceptions.notFound("NOTEBOOK_MEMBER_NOT_FOUND", "Notebook member not found"));
     notebookMemberRepository.delete(member);
+    notebook.incrementPermissionVersion(Instant.now());
+    auditService.record(
+        "NOTEBOOK_PERMISSION_VERSION_INCREMENTED",
+        user.userId(),
+        notebook.getWorkspaceId(),
+        "NOTEBOOK",
+        notebook.getId(),
+        Map.of("permissionVersion", String.valueOf(notebook.getPermissionVersion())));
+    searchPermissionRefreshService.triggerNotebookRefresh(
+        user.userId(), notebook.getWorkspaceId(), notebook.getId());
   }
 
   Notebook load(UUID notebookId) {

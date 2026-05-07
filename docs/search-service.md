@@ -90,3 +90,20 @@ count only. It does not record plaintext `q`.
 - no advanced highlighting
 - no vector or semantic search
 - no autocomplete
+
+## Faz 34 Permission Snapshot
+
+Search-service now stores permission projection fields (`visibilityMode`, `permissionVersion`,
+`workspaceReadable`, `restricted`, `permissionIndexedAt`) in `search_documents` and provider
+projection payloads.
+
+Runtime flow is hybrid:
+
+- workspace membership is validated first.
+- unrestricted snapshots (`workspaceReadable=true`, `restricted=false`) are returned without
+  notebook-level calls.
+- restricted snapshots require runtime notebook permission checks.
+- runtime permission errors are fail-closed for restricted candidates.
+
+See [`search-permission-snapshot.md`](search-permission-snapshot.md) for the full model and
+consistency trade-offs.

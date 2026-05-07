@@ -6,7 +6,10 @@ import com.notebook.lumen.search.index.domain.SearchDocument;
 import com.notebook.lumen.search.index.infrastructure.SearchDocumentRepository;
 import com.notebook.lumen.search.provider.SearchIndexDocument;
 import com.notebook.lumen.search.provider.SearchProviderRouter;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import java.time.Instant;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
@@ -18,16 +21,36 @@ public class SearchIndexService {
   private final ContentBlockTextExtractor textExtractor;
   private final SearchAuditService auditService;
   private final SearchProviderRouter providerRouter;
+  private final SearchPermissionSnapshotService permissionSnapshotService;
+  private final MeterRegistry meterRegistry;
+
+  public SearchIndexService(
+      SearchDocumentRepository repository,
+      ContentBlockTextExtractor textExtractor,
+      SearchAuditService auditService,
+      SearchProviderRouter providerRouter,
+      SearchPermissionSnapshotService permissionSnapshotService,
+      MeterRegistry meterRegistry) {
+    this.repository = repository;
+    this.textExtractor = textExtractor;
+    this.auditService = auditService;
+    this.providerRouter = providerRouter;
+    this.permissionSnapshotService = permissionSnapshotService;
+    this.meterRegistry = meterRegistry;
+  }
 
   public SearchIndexService(
       SearchDocumentRepository repository,
       ContentBlockTextExtractor textExtractor,
       SearchAuditService auditService,
       SearchProviderRouter providerRouter) {
-    this.repository = repository;
-    this.textExtractor = textExtractor;
-    this.auditService = auditService;
-    this.providerRouter = providerRouter;
+    this(
+        repository,
+        textExtractor,
+        auditService,
+        providerRouter,
+        null,
+        new SimpleMeterRegistry());
   }
 
   @Transactional
@@ -44,6 +67,11 @@ public class SearchIndexService {
     Instant now = Instant.now();
     String contentText = textExtractor.extract(request.contentBlocks());
     String tagsText = request.tags() == null ? null : String.join(" ", request.tags());
+    SearchPermissionSnapshotService.PermissionSnapshot permissionSnapshot =
+        permissionSnapshotService == null
+            ? new SearchPermissionSnapshotService.PermissionSnapshot(
+                request.workspaceId(), request.notebookId(), "WORKSPACE", true, false, null, now, false)
+            : permissionSnapshotService.resolve(request.workspaceId(), request.notebookId());
     boolean[] skipped = new boolean[] {false};
     SearchDocument document =
         repository
@@ -51,8 +79,15 @@ public class SearchIndexService {
             .map(
                 existing ->
                     updateExisting(
-                        existing, request, contentText, tagsText, now, reindexJobId, skipped))
-            .orElseGet(() -> create(request, contentText, tagsText, now));
+                        existing,
+                        request,
+                        contentText,
+                        tagsText,
+                        permissionSnapshot,
+                        now,
+                        reindexJobId,
+                        skipped))
+            .orElseGet(() -> create(request, contentText, tagsText, permissionSnapshot, now));
     if (reindexJobId != null) {
       document.markSeenForReindex(reindexJobId, now);
     }
@@ -96,6 +131,7 @@ public class SearchIndexService {
       IndexDocumentRequest request,
       String contentText,
       String tagsText,
+      SearchPermissionSnapshotService.PermissionSnapshot permissionSnapshot,
       Instant now,
       UUID reindexJobId,
       boolean[] skipped) {
@@ -120,12 +156,21 @@ public class SearchIndexService {
         request.noteUpdatedAt(),
         request.archivedAt(),
         request.sourceVersion(),
+        permissionSnapshot.permissionVersion(),
+        permissionSnapshot.visibilityMode(),
+        permissionSnapshot.workspaceReadable(),
+        permissionSnapshot.restricted(),
+        permissionSnapshot.permissionIndexedAt(),
         now);
     return existing;
   }
 
   private SearchDocument create(
-      IndexDocumentRequest request, String contentText, String tagsText, Instant now) {
+      IndexDocumentRequest request,
+      String contentText,
+      String tagsText,
+      SearchPermissionSnapshotService.PermissionSnapshot permissionSnapshot,
+      Instant now) {
     return new SearchDocument(
         UUID.randomUUID(),
         request.workspaceId(),
@@ -141,6 +186,11 @@ public class SearchIndexService {
         request.noteUpdatedAt(),
         request.archivedAt(),
         request.sourceVersion(),
+        permissionSnapshot.permissionVersion(),
+        permissionSnapshot.visibilityMode(),
+        permissionSnapshot.workspaceReadable(),
+        permissionSnapshot.restricted(),
+        permissionSnapshot.permissionIndexedAt(),
         now);
   }
 
@@ -160,6 +210,65 @@ public class SearchIndexService {
         document.getNoteUpdatedAt(),
         document.getArchivedAt(),
         document.getSourceVersion(),
+        document.getPermissionVersion(),
+        document.getVisibilityMode(),
+        document.isWorkspaceReadable(),
+        document.isRestricted(),
+        document.getPermissionIndexedAt(),
         document.getIndexedAt());
+  }
+
+  @Transactional
+  public void refreshNotebookPermissionSnapshot(UUID notebookId) {
+    List<SearchDocument> documents = repository.findByNotebookId(notebookId);
+    if (documents.isEmpty()) {
+      meterRegistry.counter("search_permission_refresh_total", "status", "success").increment();
+      return;
+    }
+
+    SearchDocument anchor = documents.getFirst();
+    SearchPermissionSnapshotService.PermissionSnapshot snapshot =
+        permissionSnapshotService.resolve(anchor.getWorkspaceId(), notebookId);
+    if (!snapshot.fromSource()) {
+      meterRegistry.counter("search_permission_refresh_total", "status", "failed").increment();
+      auditService.record(
+          "SEARCH_PERMISSION_REFRESH_FAILED",
+          anchor.getWorkspaceId(),
+          notebookId,
+          Map.of("reason", "snapshot-unavailable"));
+      return;
+    }
+
+    Instant now = Instant.now();
+    for (SearchDocument document : documents) {
+      document.apply(
+          document.getWorkspaceId(),
+          document.getNotebookId(),
+          document.getNoteId(),
+          document.getTitle(),
+          document.getContentText(),
+          document.getTagsText(),
+          document.getNotebookName(),
+          document.getCreatedBy(),
+          document.getUpdatedBy(),
+          document.getNoteCreatedAt(),
+          document.getNoteUpdatedAt(),
+          document.getArchivedAt(),
+          document.getSourceVersion(),
+          snapshot.permissionVersion(),
+          snapshot.visibilityMode(),
+          snapshot.workspaceReadable(),
+          snapshot.restricted(),
+          snapshot.permissionIndexedAt() == null ? now : snapshot.permissionIndexedAt(),
+          now);
+      providerRouter.projectUpsert(toProviderDocument(document));
+    }
+
+    meterRegistry.counter("search_permission_refresh_total", "status", "success").increment();
+    auditService.record(
+        "SEARCH_PERMISSION_REFRESH_COMPLETED",
+        anchor.getWorkspaceId(),
+        notebookId,
+        Map.of("updatedDocuments", String.valueOf(documents.size())));
   }
 }
