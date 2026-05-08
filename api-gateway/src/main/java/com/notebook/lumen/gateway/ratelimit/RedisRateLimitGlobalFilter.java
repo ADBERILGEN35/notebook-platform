@@ -21,14 +21,17 @@ public class RedisRateLimitGlobalFilter implements GlobalFilter, Ordered {
 
   private final RedisRateLimiter authRedisRateLimiter;
   private final RedisRateLimiter protectedRedisRateLimiter;
+  private final RedisRateLimiter adminAuditRedisRateLimiter;
   private final GatewayErrorResponseWriter errorResponseWriter;
 
   public RedisRateLimitGlobalFilter(
       @Qualifier("authRedisRateLimiter") RedisRateLimiter authRedisRateLimiter,
       @Qualifier("protectedRedisRateLimiter") RedisRateLimiter protectedRedisRateLimiter,
+      @Qualifier("adminAuditRedisRateLimiter") RedisRateLimiter adminAuditRedisRateLimiter,
       GatewayErrorResponseWriter errorResponseWriter) {
     this.authRedisRateLimiter = authRedisRateLimiter;
     this.protectedRedisRateLimiter = protectedRedisRateLimiter;
+    this.adminAuditRedisRateLimiter = adminAuditRedisRateLimiter;
     this.errorResponseWriter = errorResponseWriter;
   }
 
@@ -37,7 +40,14 @@ public class RedisRateLimitGlobalFilter implements GlobalFilter, Ordered {
     Route route = exchange.getAttribute(ServerWebExchangeUtils.GATEWAY_ROUTE_ATTR);
     String routeId = route == null ? "unknown" : route.getId();
     boolean authEndpoint = isPublicAuthEndpoint(exchange);
-    RedisRateLimiter limiter = authEndpoint ? authRedisRateLimiter : protectedRedisRateLimiter;
+    RedisRateLimiter limiter;
+    if (authEndpoint) {
+      limiter = authRedisRateLimiter;
+    } else if (isAdminAuditEndpoint(exchange)) {
+      limiter = adminAuditRedisRateLimiter;
+    } else {
+      limiter = protectedRedisRateLimiter;
+    }
 
     Mono<String> key = authEndpoint ? Mono.just(clientIp(exchange)) : userId(exchange);
     return key.flatMap(rateLimitKey -> limiter.isAllowed(routeId, rateLimitKey))
@@ -67,6 +77,10 @@ public class RedisRateLimitGlobalFilter implements GlobalFilter, Ordered {
     return "/auth/login".equals(path)
         || "/auth/signup".equals(path)
         || "/auth/refresh".equals(path);
+  }
+
+  private boolean isAdminAuditEndpoint(ServerWebExchange exchange) {
+    return "/admin/audit-events".equals(exchange.getRequest().getPath().value());
   }
 
   private Mono<String> userId(ServerWebExchange exchange) {

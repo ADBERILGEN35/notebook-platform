@@ -79,7 +79,7 @@ notification:
       issuer: ${TRUSTED_SERVICE_WORKSPACE_SERVICE_ISSUER:workspace-service}
       audience: ${TRUSTED_SERVICE_WORKSPACE_SERVICE_AUDIENCE:notification-service}
       clock-skew-seconds: ${TRUSTED_SERVICE_WORKSPACE_SERVICE_CLOCK_SKEW_SECONDS:5}
-      allowed-scopes: ${TRUSTED_SERVICE_WORKSPACE_SERVICE_ALLOWED_SCOPES:internal:notification:email:send}
+      allowed-scopes: ${TRUSTED_SERVICE_WORKSPACE_SERVICE_ALLOWED_SCOPES:internal:notification:email:send,internal:notification:in-app:create}
     trusted-identity-client:
       kid: ${TRUSTED_SERVICE_IDENTITY_SERVICE_KID:}
       public-key: ${TRUSTED_SERVICE_IDENTITY_SERVICE_PUBLIC_KEY:}
@@ -87,4 +87,6 @@ notification:
       issuer: ${TRUSTED_SERVICE_IDENTITY_SERVICE_ISSUER:identity-service}
       audience: ${TRUSTED_SERVICE_IDENTITY_SERVICE_AUDIENCE:notification-service}
       clock-skew-seconds: ${TRUSTED_SERVICE_IDENTITY_SERVICE_CLOCK_SKEW_SECONDS:5}
-      allowed-scopes: ${TRUSTED_SERVICE_IDENTITY_SERVICE_ALLOWED_SCOPES:internal:notification:email:send}
+      allowed-scopes: ${TRUSTED_SERVICE_IDENTITY_SERVICE_ALLOWED_SCOPES:internal:notification:email:send,internal:notification:in-app:create}
+  in-app:
+    enabled: ${NOTIFICATIONS_IN_APP_ENABLED:true}

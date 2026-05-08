@@ -11,7 +11,8 @@ Each service owns its own audit table and endpoint:
 - workspace-service: `GET /internal/audit-events`
 - content-service: `GET /internal/audit-events`
 
-These endpoints must not be routed through the public gateway.
+These endpoints remain internal-only. Public browsers access audit data through gateway proxy
+`GET /admin/audit-events` (Faz 43), never directly.
 
 ## Authorization
 
@@ -25,8 +26,8 @@ Required scope:
 
 - `internal:audit:read`
 
-Normal user access tokens are not accepted because there is no platform-admin user role or admin UI
-yet. Static token fallback is intentionally not part of the production audit query model.
+Normal user access tokens are not accepted by internal endpoints. Gateway performs platform-admin
+checks and sends service JWTs server-side.
 
 ## Filters
 
@@ -104,7 +105,8 @@ curl -sS 'http://localhost:8082/internal/audit-events?eventType=WORKSPACE_CREATE
   -H "X-Service-Authorization: Bearer $SERVICE_JWT"
 ```
 
-## Frontend Note (Faz 42)
+## Frontend / Gateway Note (Faz 43)
 
-SPA clients must not attach service JWT headers. The MVP admin UI uses deterministic **mock** adapters and
-documents a future user-auth proxy at `GET /admin/audit-events` (see [`docs/admin-audit-ui.md`](admin-audit-ui.md)).
+SPA clients must not attach service JWT headers. Admin UI calls `GET /admin/audit-events`; gateway
+validates admin access and fans out to internal audit endpoints with `internal:audit:read` service
+JWTs (see [`docs/admin-audit-proxy.md`](admin-audit-proxy.md)).

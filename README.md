@@ -304,8 +304,10 @@ Dokumanlar:
 - [`docs/frontend-mvp.md`](docs/frontend-mvp.md)
 - [`docs/frontend-e2e.md`](docs/frontend-e2e.md)
 - [`docs/frontend-deployment.md`](docs/frontend-deployment.md)
+- [`docs/frontend-csp-hardening.md`](docs/frontend-csp-hardening.md)
 - [`docs/auth-cookie-csrf.md`](docs/auth-cookie-csrf.md)
 - [`docs/admin-audit-ui.md`](docs/admin-audit-ui.md)
+- [`docs/admin-audit-proxy.md`](docs/admin-audit-proxy.md)
 - [`docs/email-provider-integration.md`](docs/email-provider-integration.md)
 - [`docs/email-webhooks.md`](docs/email-webhooks.md)
 - [`docs/email-suppression.md`](docs/email-suppression.md)
@@ -314,5 +316,9 @@ Dokumanlar:
 
 Frontend note editor currently uses BlockNote with debounced auto-save (Faz 38) while preserving
 existing backend `contentBlocks` contract.
-Phase 42 adds an operational **Admin / Audit UI** shell with mock adapters; production requires the
-Phase 43 admin proxy described in `docs/admin-audit-ui.md`.
+Phase 42 adds an operational **Admin / Audit UI** shell; Faz 43 activates secure real-mode access
+through gateway admin authorization + server-side audit proxy (`docs/admin-audit-proxy.md`).
+Faz 44 adds runtime-configurable CSP hardening and frontend runtime security rollout guidance
+(`docs/frontend-csp-hardening.md`).
+Faz 45 adds in-app Notification Center UX + user notification APIs on existing
+`notification-service` (`docs/notification-center.md`).

@@ -17,6 +17,8 @@ Frontend tek image ile farkli ortamlarda calisir:
 - env: `FRONTEND_API_BASE_URL`
 - env: `FRONTEND_AUTH_TRANSPORT`
 - optional admin/audit flags via the same script: `FRONTEND_ADMIN_UI_ENABLED`, `FRONTEND_ADMIN_UI_DEV_OPEN`, `FRONTEND_AUDIT_API_MODE`
+- CSP/runtime security flags: `FRONTEND_CSP_ENABLED`, `FRONTEND_CSP_REPORT_ONLY`, `FRONTEND_CSP_REPORT_URI`,
+  `FRONTEND_CSP_CONNECT_SRC`, `FRONTEND_CSP_IMG_SRC`, `FRONTEND_CSP_FONT_SRC`
 - startup script: `frontend/docker-entrypoint.sh`
 
 Config precedence:
@@ -37,6 +39,12 @@ Admin / audit UI runtime precedence:
 2. `VITE_ADMIN_UI_ENABLED` / `VITE_ADMIN_UI_DEV_OPEN` / `VITE_AUDIT_API_MODE`
 3. safe defaults (`false`, `mock`)
 
+CSP runtime behavior:
+
+1. `FRONTEND_CSP_ENABLED=false` -> no CSP header
+2. `FRONTEND_CSP_ENABLED=true` + `FRONTEND_CSP_REPORT_ONLY=true` -> report-only header
+3. `FRONTEND_CSP_ENABLED=true` + `FRONTEND_CSP_REPORT_ONLY=false` -> enforce header
+
 - SPA fallback: `try_files $uri $uri/ /index.html`
 - `/assets/*`: immutable cache (`max-age=31536000`)
 - `index.html` + `runtime-config.js`: no-cache
@@ -48,7 +56,9 @@ Security headers:
 - `X-Frame-Options: DENY`
 - `Referrer-Policy: strict-origin-when-cross-origin`
 - `Permissions-Policy` minimal
-- basic CSP (future phase: stricter tuning + report-only rollout)
+- `Cross-Origin-Opener-Policy: same-origin`
+- `Cross-Origin-Resource-Policy: same-origin`
+- CSP with runtime mode switch (report-only/enforce) from Faz 44
 
 ## Helm + GitOps
 
@@ -78,9 +88,15 @@ GitOps environment values include frontend overrides for dev/staging/prod.
 
 ## Known Limits
 
-- Admin UI defaults off in production Helm examples until the Phase 43 audit proxy ships.
+- Admin UI must stay disabled unless gateway admin allowlist/role config is enabled (Phase 43 proxy is now available).
+- `style-src 'unsafe-inline'` remains currently due to UI/editor styling constraints; revisit in a future phase.
 - cookie auth mode supports token-less frontend state (httpOnly cookie + CSRF model)
 - legacy bearer/localStorage mode remains for backwards compatibility
-- full CSP hardening not complete
+- CSP report collector endpoint/storage not included
 - real CDN/invalidation strategy not included
 - real cluster rollout and registry push outside scope
+
+## Faz 45 runtime flags
+
+- `FRONTEND_NOTIFICATIONS_ENABLED=true|false` controls bell/dropdown/page visibility.
+- Polling mode is intentional for MVP; no websocket/sse runtime setting is added in this phase.

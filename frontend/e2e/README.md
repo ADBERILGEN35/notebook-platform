@@ -35,6 +35,7 @@ npm run test:e2e:debug
 - `comments-versions.spec.ts`: comment and version smoke
 - `settings-security.spec.ts`: security page + 401/403/404/429/503 UI handling via interception
 - `admin-audit.spec.ts`: audit explorer (mock mode + metadata masking + pagination) via Playwright route stubs
+- `admin-audit-real-mode.spec.ts`: real-mode admin audit UI mappings (403/503/success) via gateway route interception
 
 ## Test Data Strategy
 

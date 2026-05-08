@@ -24,6 +24,13 @@ data:
   AUTH_REFRESH_COOKIE_NAME: {{ .Values.config.authRefreshCookieName | quote }}
   AUTH_CSRF_COOKIE_NAME: {{ .Values.config.authCsrfCookieName | quote }}
   AUTH_CSRF_HEADER_NAME: {{ .Values.config.authCsrfHeaderName | quote }}
+  GATEWAY_ADMIN_ENABLED: {{ .Values.config.gatewayAdminEnabled | quote }}
+  GATEWAY_ADMIN_AUDIT_ENABLED: {{ .Values.config.gatewayAdminAuditEnabled | quote }}
+  GATEWAY_ADMIN_ALLOWED_USER_IDS: {{ .Values.config.gatewayAdminAllowedUserIds | quote }}
+  GATEWAY_ADMIN_ALLOWED_EMAILS: {{ .Values.config.gatewayAdminAllowedEmails | quote }}
+  ADMIN_AUDIT_RATE_LIMIT_REPLENISH_RATE: {{ .Values.config.gatewayAdminAuditRateLimitReplenishRate | quote }}
+  ADMIN_AUDIT_RATE_LIMIT_BURST_CAPACITY: {{ .Values.config.gatewayAdminAuditRateLimitBurstCapacity | quote }}
+  ADMIN_AUDIT_RATE_LIMIT_REQUESTED_TOKENS: {{ .Values.config.gatewayAdminAuditRateLimitRequestedTokens | quote }}
   APP_RLS_ENABLED: {{ .Values.config.appRlsEnabled | quote }}
   APP_RLS_STRICT_WORKSPACE_HEADER: {{ .Values.config.appRlsStrictWorkspaceHeader | quote }}
   INTERNAL_AUTH_MODE: {{ .Values.config.internalAuthMode | quote }}
@@ -71,6 +78,16 @@ data:
   INTERNAL_SERVICE_JWT_PUBLIC_KEY_PATH: "/etc/notebook/secrets/service-jwt/content-public.pem"
   INTERNAL_SERVICE_JWT_ISSUER: {{ .Values.config.internalServiceJwtIssuer | quote }}
   INTERNAL_SERVICE_JWT_TTL_SECONDS: {{ .Values.config.internalServiceJwtTtlSeconds | quote }}
+  GATEWAY_ADMIN_AUDIT_SERVICE_JWT_ACTIVE_KID: {{ .Values.config.gatewayAdminAuditServiceJwtKid | quote }}
+  GATEWAY_ADMIN_AUDIT_SERVICE_JWT_PRIVATE_KEY_PATH: "/etc/notebook/secrets/service-jwt/content-private.pem"
+  GATEWAY_ADMIN_AUDIT_SERVICE_JWT_ISSUER: {{ .Values.config.gatewayAdminAuditServiceJwtIssuer | quote }}
+  GATEWAY_ADMIN_AUDIT_SERVICE_JWT_SUBJECT: {{ .Values.config.gatewayAdminAuditServiceJwtSubject | quote }}
+  GATEWAY_ADMIN_AUDIT_SERVICE_JWT_SERVICE_NAME: {{ .Values.config.gatewayAdminAuditServiceJwtServiceName | quote }}
+  GATEWAY_ADMIN_AUDIT_SERVICE_JWT_TTL_SECONDS: {{ .Values.config.gatewayAdminAuditServiceJwtTtlSeconds | quote }}
+  AUDIT_ADMIN_SERVICE_JWT_KID: {{ .Values.config.auditAdminServiceJwtKid | quote }}
+  AUDIT_ADMIN_SERVICE_JWT_PUBLIC_KEY_PATH: "/etc/notebook/secrets/service-jwt/content-public.pem"
+  AUDIT_ADMIN_SERVICE_JWT_ISSUER: {{ .Values.config.auditAdminServiceJwtIssuer | quote }}
+  AUDIT_ADMIN_SERVICE_JWT_ALLOWED_SCOPES: {{ .Values.config.auditAdminServiceJwtAllowedScopes | quote }}
   TRUSTED_SERVICE_CONTENT_SERVICE_KID: {{ .Values.config.trustedContentServiceKid | quote }}
   TRUSTED_SERVICE_CONTENT_SERVICE_PUBLIC_KEY_PATH: "/etc/notebook/secrets/service-jwt/content-public.pem"
   TRUSTED_SERVICE_CONTENT_SERVICE_ISSUER: {{ .Values.config.trustedContentServiceIssuer | quote }}
@@ -136,6 +153,7 @@ data:
   TRUSTED_SERVICE_IDENTITY_SERVICE_ISSUER: {{ .Values.config.trustedIdentityServiceIssuer | quote }}
   TRUSTED_SERVICE_IDENTITY_SERVICE_AUDIENCE: {{ .Values.config.trustedIdentityServiceAudience | quote }}
   EMAIL_PROVIDER: {{ .Values.config.emailProvider | quote }}
+  NOTIFICATIONS_IN_APP_ENABLED: {{ .Values.config.notificationsInAppEnabled | quote }}
   EMAIL_WORKER_ENABLED: {{ .Values.config.emailWorkerEnabled | quote }}
   EMAIL_MAX_ATTEMPTS: {{ .Values.config.emailMaxAttempts | quote }}
   EMAIL_RETRY_INITIAL_DELAY_SECONDS: {{ .Values.config.emailRetryInitialDelaySeconds | quote }}

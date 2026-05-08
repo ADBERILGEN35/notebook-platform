@@ -23,6 +23,12 @@
 | INVALID_ACCESS_TOKEN | 401 | api-gateway | Access token invalid | Bad signature/malformed token |
 | EXPIRED_ACCESS_TOKEN | 401 | api-gateway | Access token expired | Expired JWT |
 | INVALID_WORKSPACE_ID | 400 | api-gateway | Workspace header is not UUID | Bad `X-Workspace-Id` |
+| ADMIN_ACCESS_DENIED | 403 | api-gateway | Authenticated user lacks platform admin allowlist/role | non-admin calling `/admin/audit-events` |
+| ADMIN_AUDIT_DISABLED | 404 | api-gateway | Admin audit proxy is disabled by config | gateway admin audit disabled in env |
+| INVALID_AUDIT_SOURCE | 400 | api-gateway | Audit source is not identity/workspace/content | `source=foo` |
+| AUDIT_SOURCE_UNAVAILABLE | 503 | api-gateway | Target audit service unavailable | target service down/503 |
+| AUDIT_PROXY_INTERNAL_AUTH_FAILED | 502 | api-gateway | Downstream internal auth rejected proxy service JWT | invalid key/scope/kid between gateway and service |
+| AUDIT_PROXY_REQUEST_FAILED | 503 | api-gateway | Generic downstream audit proxy failure | unexpected downstream 5xx/network errors |
 | RATE_LIMIT_EXCEEDED | 429 | api-gateway | Request bucket exhausted | Too many auth requests |
 | ROUTE_UNAVAILABLE | 503 | api-gateway | Downstream route unavailable | Service connection refused |
 | MISSING_USER_CONTEXT | 401 | workspace/content | User header missing | Direct call without `X-User-Id` |

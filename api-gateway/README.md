@@ -49,6 +49,10 @@ Compose ile calistirirken tercih edilen yontem `JWT_JWKS_URI=http://identity-ser
 - `AUTH_CSRF_COOKIE_NAME`, `AUTH_CSRF_HEADER_NAME`: CSRF double-submit alanlari
 - `AUTH_RATE_LIMIT_REPLENISH_RATE`, `AUTH_RATE_LIMIT_BURST_CAPACITY`, `AUTH_RATE_LIMIT_REQUESTED_TOKENS`
 - `PROTECTED_RATE_LIMIT_REPLENISH_RATE`, `PROTECTED_RATE_LIMIT_BURST_CAPACITY`, `PROTECTED_RATE_LIMIT_REQUESTED_TOKENS`
+- `GATEWAY_ADMIN_ENABLED`, `GATEWAY_ADMIN_AUDIT_ENABLED`
+- `GATEWAY_ADMIN_ALLOWED_USER_IDS`, `GATEWAY_ADMIN_ALLOWED_EMAILS`
+- `ADMIN_AUDIT_RATE_LIMIT_REPLENISH_RATE`, `ADMIN_AUDIT_RATE_LIMIT_BURST_CAPACITY`, `ADMIN_AUDIT_RATE_LIMIT_REQUESTED_TOKENS`
+- `GATEWAY_ADMIN_AUDIT_SERVICE_JWT_*` (gateway signer for `/admin/audit-events` proxy calls)
 
 ## Routes
 
@@ -63,6 +67,7 @@ Protected routes:
 - `/auth/**` -> identity-service
 - `/workspaces/**`, `/notebooks/**`, `/tags/**`, `/invitations/**` -> workspace-service
 - `/notes/**`, `/comments/**` -> content-service
+- `/admin/audit-events` -> gateway controller (platform-admin auth + internal audit proxy fan-out)
 
 Public actuator:
 
@@ -89,6 +94,7 @@ Redis backed token bucket kullanilir.
 
 - Public auth endpointleri: key client IP
 - Protected endpointler: key JWT `sub`
+- `/admin/audit-events`: key JWT `sub` with dedicated admin-audit bucket
 
 Limitler `application.yml` ve env degiskenleri ile ayarlanabilir. Limit asilinca body formatli `429 RATE_LIMIT_EXCEEDED` doner.
 

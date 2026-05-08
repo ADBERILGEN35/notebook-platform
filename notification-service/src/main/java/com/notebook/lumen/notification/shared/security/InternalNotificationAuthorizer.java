@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 public class InternalNotificationAuthorizer {
   public static final String HEADER_NAME = "X-Service-Authorization";
   public static final String EMAIL_SEND_SCOPE = "internal:notification:email:send";
+  public static final String IN_APP_CREATE_SCOPE = "internal:notification:in-app:create";
   public static final String SUPPRESSION_READ_SCOPE = "internal:notification:suppression:read";
   public static final String SUPPRESSION_MANAGE_SCOPE = "internal:notification:suppression:manage";
 

@@ -44,7 +44,13 @@ import org.testcontainers.utility.DockerImageName;
       "gateway.rate-limit.auth.requested-tokens=1",
       "gateway.rate-limit.protected-api.replenish-rate=100",
       "gateway.rate-limit.protected-api.burst-capacity=100",
-      "gateway.rate-limit.protected-api.requested-tokens=1"
+      "gateway.rate-limit.protected-api.requested-tokens=1",
+      "gateway.rate-limit.admin-audit.replenish-rate=100",
+      "gateway.rate-limit.admin-audit.burst-capacity=100",
+      "gateway.rate-limit.admin-audit.requested-tokens=1",
+      "gateway.admin.enabled=true",
+      "gateway.admin.audit.enabled=true",
+      "gateway.admin.allowed-emails=ada@example.com"
     })
 class ApiGatewayIntegrationTest {
 
@@ -73,6 +79,8 @@ class ApiGatewayIntegrationTest {
     registry.add("WORKSPACE_SERVICE_URL", WORKSPACE::baseUrl);
     registry.add("CONTENT_SERVICE_URL", CONTENT::baseUrl);
     registry.add("SEARCH_SERVICE_URL", SEARCH::baseUrl);
+    registry.add("gateway.admin.audit-proxy.service-jwt.active-kid", () -> "gateway-admin-audit-key-1");
+    registry.add("gateway.admin.audit-proxy.service-jwt.private-key", ApiGatewayIntegrationTest::privateKeyPem);
   }
 
   @BeforeEach
@@ -123,6 +131,120 @@ class ApiGatewayIntegrationTest {
         .isEqualTo("MISSING_ACCESS_TOKEN")
         .jsonPath("$.requestId")
         .exists();
+  }
+
+  @Test
+  void adminAudit_withoutToken_returns401() {
+    webTestClient
+        .get()
+        .uri("/admin/audit-events?source=identity")
+        .exchange()
+        .expectStatus()
+        .isUnauthorized()
+        .expectBody()
+        .jsonPath("$.errorCode")
+        .isEqualTo("MISSING_ACCESS_TOKEN");
+  }
+
+  @Test
+  void adminAudit_nonAdmin_returns403() {
+    webTestClient
+        .get()
+        .uri("/admin/audit-events?source=identity")
+        .headers(headers -> headers.setBearerAuth(jwt(USER_ID, "member@example.com", "access", 0, 300)))
+        .exchange()
+        .expectStatus()
+        .isForbidden()
+        .expectBody()
+        .jsonPath("$.errorCode")
+        .isEqualTo("ADMIN_ACCESS_DENIED");
+  }
+
+  @Test
+  void adminAudit_invalidSource_returns400() {
+    webTestClient
+        .get()
+        .uri("/admin/audit-events?source=unknown")
+        .headers(headers -> headers.setBearerAuth(jwt(USER_ID, USER_EMAIL, "access", 0, 300)))
+        .exchange()
+        .expectStatus()
+        .isBadRequest()
+        .expectBody()
+        .jsonPath("$.errorCode")
+        .isEqualTo("INVALID_AUDIT_SOURCE");
+  }
+
+  @Test
+  void adminAudit_invalidFilter_returns400() {
+    webTestClient
+        .get()
+        .uri("/admin/audit-events?source=workspace&actorUserId=not-uuid")
+        .headers(headers -> headers.setBearerAuth(jwt(USER_ID, USER_EMAIL, "access", 0, 300)))
+        .exchange()
+        .expectStatus()
+        .isBadRequest()
+        .expectBody()
+        .jsonPath("$.errorCode")
+        .isEqualTo("INVALID_AUDIT_FILTER");
+  }
+
+  @Test
+  void adminAudit_allowlistAdmin_proxiesWithServiceJwt() {
+    webTestClient
+        .get()
+        .uri(
+            "/admin/audit-events?source=identity&page=1&size=25&sort=createdAt,desc&eventType=LOGIN_SUCCESS")
+        .headers(headers -> headers.setBearerAuth(jwt(USER_ID, USER_EMAIL, "access", 0, 300)))
+        .exchange()
+        .expectStatus()
+        .isOk()
+        .expectBody()
+        .jsonPath("$.service")
+        .isEqualTo("identity-service");
+
+    TestRequest request = IDENTITY.lastRequest();
+    org.assertj.core.api.Assertions.assertThat(request.path()).isEqualTo("/internal/audit-events");
+    org.assertj.core.api.Assertions.assertThat(request.query())
+        .contains("page=1")
+        .contains("size=25")
+        .contains("sort=createdAt,desc")
+        .contains("eventType=LOGIN_SUCCESS");
+    org.assertj.core.api.Assertions.assertThat(request.header("X-Service-Authorization"))
+        .singleElement()
+        .asString()
+        .startsWith("Bearer ");
+  }
+
+  @Test
+  void adminAudit_targetUnavailable_returns503() {
+    CONTENT.respondWithStatus("/internal/audit-events", 503, "{\"error\":\"down\"}");
+    webTestClient
+        .get()
+        .uri("/admin/audit-events?source=content")
+        .headers(headers -> headers.setBearerAuth(jwt(USER_ID, USER_EMAIL, "access", 0, 300)))
+        .exchange()
+        .expectStatus()
+        .isEqualTo(503)
+        .expectBody()
+        .jsonPath("$.errorCode")
+        .isEqualTo("AUDIT_SOURCE_UNAVAILABLE");
+  }
+
+  @Test
+  void adminAudit_internalAuthFailure_isMappedSafely() {
+    WORKSPACE.respondWithStatus("/internal/audit-events", 403, "{\"errorCode\":\"AUDIT_ACCESS_DENIED\"}");
+    webTestClient
+        .get()
+        .uri("/admin/audit-events?source=workspace")
+        .headers(headers -> headers.setBearerAuth(jwt(USER_ID, USER_EMAIL, "access", 0, 300)))
+        .exchange()
+        .expectStatus()
+        .isEqualTo(502)
+        .expectBody()
+        .jsonPath("$.errorCode")
+        .isEqualTo("AUDIT_PROXY_INTERNAL_AUTH_FAILED")
+        .jsonPath("$.message")
+        .isEqualTo("Internal audit authorization failed");
   }
 
   @Test
@@ -324,6 +446,14 @@ class ApiGatewayIntegrationTest {
     return "-----BEGIN PUBLIC KEY-----\n" + encoded + "\n-----END PUBLIC KEY-----";
   }
 
+  private static String privateKeyPem() {
+    RSAPrivateKey privateKey = (RSAPrivateKey) KEYS.getPrivate();
+    String encoded =
+        Base64.getMimeEncoder(64, "\n".getBytes(StandardCharsets.UTF_8))
+            .encodeToString(privateKey.getEncoded());
+    return "-----BEGIN PRIVATE KEY-----\n" + encoded + "\n-----END PRIVATE KEY-----";
+  }
+
   private static String jwt(
       String subject,
       String email,
@@ -350,7 +480,7 @@ class ApiGatewayIntegrationTest {
     }
   }
 
-  private record TestRequest(String path, Map<String, List<String>> headers) {
+  private record TestRequest(String path, String query, Map<String, List<String>> headers) {
     List<String> header(String name) {
       return headers.getOrDefault(name, List.of());
     }
@@ -360,6 +490,9 @@ class ApiGatewayIntegrationTest {
     private final String serviceName;
     private final HttpServer server;
     private volatile TestRequest lastRequest;
+    private volatile String responsePathPrefix;
+    private volatile int responseStatus = 200;
+    private volatile String responseBody;
 
     private TestDownstream(String serviceName, HttpServer server) {
       this.serviceName = serviceName;
@@ -389,6 +522,15 @@ class ApiGatewayIntegrationTest {
 
     void reset() {
       lastRequest = null;
+      responsePathPrefix = null;
+      responseStatus = 200;
+      responseBody = null;
+    }
+
+    void respondWithStatus(String pathPrefix, int status, String body) {
+      this.responsePathPrefix = pathPrefix;
+      this.responseStatus = status;
+      this.responseBody = body;
     }
 
     void stop() {
@@ -397,15 +539,21 @@ class ApiGatewayIntegrationTest {
 
     private void handle(HttpExchange exchange) throws IOException {
       lastRequest =
-          new TestRequest(exchange.getRequestURI().getPath(), exchange.getRequestHeaders());
-      byte[] response =
+          new TestRequest(
+              exchange.getRequestURI().getPath(), exchange.getRequestURI().getRawQuery(), exchange.getRequestHeaders());
+      int status = 200;
+      String body =
           """
                 {"status":"OK","service":"%s"}\
                 """
-              .formatted(serviceName)
-              .getBytes(StandardCharsets.UTF_8);
+              .formatted(serviceName);
+      if (responsePathPrefix != null && exchange.getRequestURI().getPath().startsWith(responsePathPrefix)) {
+        status = responseStatus;
+        body = responseBody == null ? "{}" : responseBody;
+      }
+      byte[] response = body.getBytes(StandardCharsets.UTF_8);
       exchange.getResponseHeaders().set("Content-Type", "application/json");
-      exchange.sendResponseHeaders(200, response.length);
+      exchange.sendResponseHeaders(status, response.length);
       exchange.getResponseBody().write(response);
       exchange.close();
     }

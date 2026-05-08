@@ -11,6 +11,9 @@ config:
   authTokenTransport: "cookie"
   authCookieSecure: "true"
   authCookieSameSite: "None"
+  gatewayAdminEnabled: "true"
+  gatewayAdminAuditEnabled: "true"
+  gatewayAdminAllowedEmails: "admin@example.com"
   # Production steady-state target only. Follow docs/runtime-rls-rollout.md stage by stage.
   # FORCE RLS is never applied by Helm or GitOps auto-sync.
   appRlsEnabled: "true"
@@ -100,9 +103,19 @@ frontend:
   env:
     FRONTEND_API_BASE_URL: "https://api.example.com"
     FRONTEND_AUTH_TRANSPORT: "cookie"
-    FRONTEND_ADMIN_UI_ENABLED: "false"
+    FRONTEND_NOTIFICATIONS_ENABLED: "true"
+    FRONTEND_ADMIN_UI_ENABLED: "true"
     FRONTEND_ADMIN_UI_DEV_OPEN: "false"
     FRONTEND_AUDIT_API_MODE: "real"
+  security:
+    csp:
+      enabled: true
+      reportOnly: false
+      reportUri: ""
+      connectSrc: ""
+      imgSrc: ""
+      fontSrc: ""
+    sourceMaps: false
   ingress:
     enabled: true
     className: "nginx"
@@ -144,3 +157,5 @@ autoscaling:
     minReplicas: 2
     maxReplicas: 5
     targetCPUUtilizationPercentage: 70
+
+

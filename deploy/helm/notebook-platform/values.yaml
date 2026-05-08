@@ -26,6 +26,18 @@ config:
   authRefreshCookieName: "__Host-np_refresh"
   authCsrfCookieName: "NP-XSRF-TOKEN"
   authCsrfHeaderName: "X-CSRF-Token"
+  gatewayAdminEnabled: "false"
+  gatewayAdminAuditEnabled: "false"
+  gatewayAdminAllowedUserIds: ""
+  gatewayAdminAllowedEmails: ""
+  gatewayAdminAuditRateLimitReplenishRate: "5"
+  gatewayAdminAuditRateLimitBurstCapacity: "20"
+  gatewayAdminAuditRateLimitRequestedTokens: "1"
+  gatewayAdminAuditServiceJwtKid: "content-service-key-1"
+  gatewayAdminAuditServiceJwtIssuer: "audit-admin"
+  gatewayAdminAuditServiceJwtSubject: "service:api-gateway"
+  gatewayAdminAuditServiceJwtServiceName: "api-gateway"
+  gatewayAdminAuditServiceJwtTtlSeconds: "60"
   otelEnabled: "false"
   otelExporterOtlpEndpoint: "http://otel-collector:4318/v1/traces"
   managementTracingSamplingProbability: "1.0"
@@ -73,6 +85,7 @@ config:
   searchReindexClientJwtPublicKeyPath: ""
   searchReindexClientJwtIssuer: "ops-admin"
   emailProvider: "smtp"
+  notificationsInAppEnabled: "true"
   emailWorkerEnabled: "true"
   emailMaxAttempts: "5"
   emailRetryInitialDelaySeconds: "60"
@@ -103,6 +116,9 @@ config:
   trustedIdentityServiceIssuer: "identity-service"
   trustedIdentityServiceAudience: "notification-service"
   trustedIdentityServiceKid: "identity-service-key-1"
+  auditAdminServiceJwtKid: "content-service-key-1"
+  auditAdminServiceJwtIssuer: "audit-admin"
+  auditAdminServiceJwtAllowedScopes: "internal:audit:read"
   searchServiceJwtActiveKid: "search-service-key-1"
   searchServiceJwtIssuer: "search-service"
   dbName: "notebook_platform"
@@ -418,9 +434,19 @@ frontend:
   env:
     FRONTEND_API_BASE_URL: "http://localhost:8080"
     FRONTEND_AUTH_TRANSPORT: "bearer"
+    FRONTEND_NOTIFICATIONS_ENABLED: "false"
     FRONTEND_ADMIN_UI_ENABLED: "false"
     FRONTEND_ADMIN_UI_DEV_OPEN: "false"
     FRONTEND_AUDIT_API_MODE: "mock"
+  security:
+    csp:
+      enabled: true
+      reportOnly: true
+      reportUri: ""
+      connectSrc: ""
+      imgSrc: ""
+      fontSrc: ""
+    sourceMaps: false
   resources: {}
   podSecurityContext:
     runAsNonRoot: true

@@ -25,6 +25,10 @@ Included:
 - Frontend Deployment/Service/Ingress with runtime config (`FRONTEND_API_BASE_URL`) and `/healthz`.
 - Auth transport/CORS cookie settings through Helm values (`AUTH_TOKEN_TRANSPORT`,
   `CORS_ALLOW_CREDENTIALS`, cookie flags).
+- Gateway admin audit proxy settings (`GATEWAY_ADMIN_*`, `ADMIN_AUDIT_RATE_LIMIT_*` and
+  service JWT path wiring).
+- Frontend CSP/runtime security settings through Helm values
+  (`FRONTEND_CSP_*` from `frontend.security.csp.*`).
 
 Not included:
 
@@ -98,6 +102,8 @@ Runtime env points the applications to those paths:
 - `TRUSTED_SERVICE_CONTENT_SERVICE_PUBLIC_KEY_PATH`
 - `WORKSPACE_SERVICE_JWT_PRIVATE_KEY_PATH`
 - `TRUSTED_SERVICE_WORKSPACE_SERVICE_PUBLIC_KEY_PATH`
+- `GATEWAY_ADMIN_AUDIT_SERVICE_JWT_PRIVATE_KEY_PATH`
+- `AUDIT_ADMIN_SERVICE_JWT_PUBLIC_KEY_PATH`
 
 notification-service is ClusterIP-only. It is not added to Ingress or api-gateway routes.
 
@@ -230,3 +236,9 @@ plain values.
 
 Run `scripts/email/provider-readiness-check.sh` with the environment values before enabling a real
 provider.
+
+## Faz 45 additions
+
+- Notification-service in-app API toggle: `NOTIFICATIONS_IN_APP_ENABLED=true`.
+- Frontend runtime toggle via ConfigMap: `FRONTEND_NOTIFICATIONS_ENABLED=true`.
+- Gateway route forwards `/notifications/**` to `notification-service` (protected user route).

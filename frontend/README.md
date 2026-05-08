@@ -88,6 +88,22 @@ Runtime Docker/Kubernetes config:
 - `VITE_AUDIT_API_MODE` / `AUDIT_API_MODE` selects `mock` (default dev) vs `real` placeholder (`GET /admin/audit-events` once the gateway exposes it).
 - See `docs/admin-audit-ui.md` for rollout guidance (service JWT never ships to browsers).
 
+## Platform Admin Proxy (Faz 43)
+
+- `GET /admin/audit-events` is now backed by gateway server-side proxying with admin authorization.
+- Browser still sends only user auth cookie/bearer token; service JWT is generated and used only in gateway.
+- `ADMIN_UI_DEV_OPEN` should be used for trusted local mock-mode only.
+
+## CSP + Runtime Security (Faz 44)
+
+- Runtime-configurable CSP via container envs:
+  - `FRONTEND_CSP_ENABLED`
+  - `FRONTEND_CSP_REPORT_ONLY`
+  - `FRONTEND_CSP_REPORT_URI`
+  - `FRONTEND_CSP_CONNECT_SRC` / `FRONTEND_CSP_IMG_SRC` / `FRONTEND_CSP_FONT_SRC`
+- `runtime-config.js` stays as external script include to keep `script-src 'self'` compatible.
+- Build sourcemap control via `VITE_SOURCEMAP=true|false` (prod recommended: `false`).
+
 ## Security Note
 
 Tokens are stored in localStorage for MVP speed when using bearer mode.
@@ -141,3 +157,11 @@ Smoke check:
 ```bash
 FRONTEND_BASE_URL=http://localhost:3000 bash scripts/smoke-test-frontend.sh
 ```
+
+## Notification Center flag
+
+Faz 45 Notification Center UI is controlled by runtime flag:
+
+- `FRONTEND_NOTIFICATIONS_ENABLED=true|false`
+
+When disabled, topbar bell and `/app/notifications` experience are hidden/blocked in UI.

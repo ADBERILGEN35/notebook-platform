@@ -13,7 +13,8 @@ import org.springframework.web.service.invoker.HttpServiceProxyFactory;
 
 @Configuration
 public class NotificationClientConfig {
-  private static final String REQUIRED_SCOPE = "internal:notification:email:send";
+  private static final String EMAIL_SCOPE = "internal:notification:email:send";
+  private static final String IN_APP_SCOPE = "internal:notification:in-app:create";
 
   @Bean
   NotificationClient identityNotificationClient(IdentityNotificationProperties properties) {
@@ -27,7 +28,7 @@ public class NotificationClientConfig {
             .requestFactory(requestFactory)
             .requestInterceptor(
                 (request, body, execution) -> {
-                  apply(request.getHeaders(), signer, properties);
+                  apply(request.getHeaders(), request.getURI().getPath(), signer, properties);
                   return execution.execute(request, body);
                 })
             .build();
@@ -37,11 +38,14 @@ public class NotificationClientConfig {
   }
 
   private void apply(
-      HttpHeaders headers, ServiceJwtSigner signer, IdentityNotificationProperties properties) {
+      HttpHeaders headers,
+      String path,
+      ServiceJwtSigner signer,
+      IdentityNotificationProperties properties) {
     if (signer != null) {
-      headers.set(
-          "X-Service-Authorization",
-          "Bearer " + signer.sign(properties.serviceJwt().audience(), REQUIRED_SCOPE));
+      String scope =
+          path != null && path.contains("/internal/notifications/in-app") ? IN_APP_SCOPE : EMAIL_SCOPE;
+      headers.set("X-Service-Authorization", "Bearer " + signer.sign(properties.serviceJwt().audience(), scope));
     }
   }
 

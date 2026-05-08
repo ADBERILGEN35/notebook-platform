@@ -8,6 +8,7 @@ import { NotebookPage } from '../pages/NotebookPage'
 import { NotePage } from '../pages/NotePage'
 import { SearchPage } from '../pages/SearchPage'
 import { SettingsPage } from '../pages/SettingsPage'
+import { NotificationsPage } from '../pages/NotificationsPage'
 import { AdminHomePage } from '../pages/admin/AdminHomePage'
 import { AdminAuditPage } from '../pages/admin/AdminAuditPage'
 import { useAuthStore } from '../features/auth/auth-store'
@@ -60,6 +61,7 @@ export const router = createBrowserRouter([
       { path: 'notebooks/:notebookId', element: <NotebookPage /> },
       { path: 'notes/:noteId', element: <NotePage /> },
       { path: 'search', element: <SearchPage /> },
+      { path: 'notifications', element: <NotificationsPage /> },
       { path: 'settings', element: <SettingsPage /> },
       { path: 'settings/security', element: <SettingsPage /> },
       {

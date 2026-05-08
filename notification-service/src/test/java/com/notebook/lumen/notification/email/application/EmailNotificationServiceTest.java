@@ -242,7 +242,8 @@ class EmailNotificationServiceTest {
         new NotificationProperties.Internal(
             new NotificationProperties.TrustedService(
                 "", "", "", "workspace-service", "notification-service", 5, ""),
-            null));
+            null),
+        new NotificationProperties.InApp(true));
   }
 
   private NotificationProperties disabledProperties() {
@@ -273,6 +274,7 @@ class EmailNotificationServiceTest {
         new NotificationProperties.Internal(
             new NotificationProperties.TrustedService(
                 "", "", "", "workspace-service", "notification-service", 5, ""),
-            null));
+            null),
+        new NotificationProperties.InApp(true));
   }
 }

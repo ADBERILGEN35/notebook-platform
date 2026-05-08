@@ -59,6 +59,12 @@ notification-service email enqueue endpoint requires:
 | --- | --- |
 | `POST /internal/notifications/email` | `internal:notification:email:send` |
 
+Faz 43 adds `api-gateway` audit proxy signing:
+
+| Gateway endpoint | Downstream scope | Audience |
+| --- | --- | --- |
+| `GET /admin/audit-events` | `internal:audit:read` | `identity-service` / `workspace-service` / `content-service` |
+
 Audit query endpoints do not accept normal user access tokens. They use service JWT because a
 platform-admin user/role model does not exist yet.
 

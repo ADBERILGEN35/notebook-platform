@@ -1,4 +1,4 @@
-import { apiRequest, ApiError } from '../../../shared/api/api-client'
+import { apiRequest } from '../../../shared/api/api-client'
 import type { PageResponse } from '../../../shared/types/api'
 import { getAuditApiMode } from '../../../shared/config/admin-feature-flags'
 import type { AuditEvent, AuditQueryFilters } from './types'
@@ -22,26 +22,12 @@ export function auditFiltersToQueryString(filters: AuditQueryFilters): string {
 }
 
 /**
- * Placeholder for Faz 43 user-admin proxy. Do NOT call `/internal/audit-events` from the browser —
+ * Faz 43 gateway proxy contract. Do NOT call `/internal/audit-events` from the browser —
  * those routes require service JWT scope `internal:audit:read`.
  */
 export async function fetchAuditEventsReal(filters: AuditQueryFilters): Promise<PageResponse<AuditEvent>> {
   const qs = auditFiltersToQueryString(filters)
-  try {
-    return await apiRequest<PageResponse<AuditEvent>>(`/admin/audit-events?${qs}`, { method: 'GET' })
-  } catch (e) {
-    if (e instanceof ApiError && e.status === 404) {
-      throw new ApiError({
-        timestamp: new Date().toISOString(),
-        status: 503,
-        errorCode: 'AUDIT_PROXY_UNAVAILABLE',
-        message:
-          'Admin audit proxy is not available. Use mock mode for development or deploy the Faz 43 proxy.',
-        path: '/admin/audit-events',
-      })
-    }
-    throw e
-  }
+  return await apiRequest<PageResponse<AuditEvent>>(`/admin/audit-events?${qs}`, { method: 'GET' })
 }
 
 export async function queryAuditEvents(filters: AuditQueryFilters): Promise<PageResponse<AuditEvent>> {

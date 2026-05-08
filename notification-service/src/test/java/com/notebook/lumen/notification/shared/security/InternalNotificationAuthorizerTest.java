@@ -101,7 +101,8 @@ class InternalNotificationAuthorizerTest {
                 "notification-service",
                 5,
                 "internal:notification:email:send"),
-            null));
+            null),
+        new NotificationProperties.InApp(true));
   }
 
   private String privatePem() {

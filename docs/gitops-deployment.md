@@ -68,6 +68,10 @@ later if production change control requires tighter permissions or a different a
 - frontend enabled with `FRONTEND_API_BASE_URL=https://api.staging.example.com`
 - frontend ingress host example: `app.staging.example.com`
 - cookie auth target mode (`AUTH_TOKEN_TRANSPORT=cookie`) with credentials-enabled explicit origins
+- gateway admin audit proxy enabled with staging allowlist (`gatewayAdminEnabled`,
+  `gatewayAdminAuditEnabled`, `gatewayAdminAllowedEmails`)
+- frontend admin audit real mode enabled (`FRONTEND_ADMIN_UI_ENABLED=true`, `FRONTEND_AUDIT_API_MODE=real`)
+- frontend CSP in report-only (`frontend.security.csp.enabled=true`, `reportOnly=true`)
 
 `prod` is conservative:
 
@@ -80,6 +84,9 @@ later if production change control requires tighter permissions or a different a
 - RLS flags are tied to the rollout stage, not changed automatically
 - frontend enabled with separate app host (`app.example.com`) and api host (`api.example.com`)
 - cookie auth target mode with strict CORS origin allow-list and credentials enabled
+- gateway admin audit proxy enabled with conservative allowlist-first rollout
+- frontend CSP target mode enforce (`frontend.security.csp.enabled=true`, `reportOnly=false`) after
+  staging report-only validation
 
 Worker-owning services use DB-backed leases. GitOps values keep worker lock timeouts explicit:
 `EMAIL_WORKER_LOCK_TIMEOUT_SECONDS`, `SEARCH_OUTBOX_LOCK_TIMEOUT_SECONDS` and
@@ -274,3 +281,9 @@ Prod:
 - Rollback has been tested.
 - DB backup/restore plan exists.
 - RLS rollout stage is explicitly approved.
+
+### Notification Center (Faz 45) rollout checks
+
+- `NOTIFICATIONS_IN_APP_ENABLED` value is explicitly set per environment.
+- `FRONTEND_NOTIFICATIONS_ENABLED` is aligned with backend toggle.
+- Gateway `/notifications/**` route is present before enabling frontend bell flag.

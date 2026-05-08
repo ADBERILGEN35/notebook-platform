@@ -9,6 +9,7 @@ import { LoadingState } from '../../shared/components/LoadingState'
 import { EmptyState } from '../../shared/components/EmptyState'
 import { ErrorAlert } from '../../shared/components/ErrorAlert'
 import { PaginationControls } from '../../shared/components/PaginationControls'
+import { PermissionDenied } from '../../shared/components/PermissionDenied'
 import type { AuditEvent, AuditQueryFilters, AuditSource } from '../../features/admin/audit/types'
 import { auditFiltersFromUrlParams, auditFiltersToUrlParams } from '../../features/admin/audit/audit-url-state'
 import {
@@ -19,6 +20,7 @@ import { queryAuditEvents } from '../../features/admin/audit/audit-api'
 import { getAuditApiMode } from '../../shared/config/admin-feature-flags'
 import { findMockAuditEventById } from '../../features/admin/audit/audit-mock-api'
 import { maskSensitiveMetadata } from '../../features/admin/audit/metadata-mask'
+import { ApiError } from '../../shared/api/api-client'
 
 type FilterDraftFields = {
   eventType: string
@@ -174,6 +176,10 @@ export function AdminAuditPage() {
   }
 
   const data = auditQuery.data
+  const queryError = auditQuery.error instanceof ApiError ? auditQuery.error : null
+  const showPermissionDenied = queryError?.errorCode === 'ADMIN_ACCESS_DENIED'
+  const showAdminDisabled = queryError?.errorCode === 'ADMIN_AUDIT_DISABLED'
+  const showSourceUnavailable = queryError?.errorCode === 'AUDIT_SOURCE_UNAVAILABLE'
 
   return (
     <div className="space-y-4">
@@ -309,7 +315,29 @@ export function AdminAuditPage() {
       </Card>
 
       {auditQuery.isLoading ? <LoadingState /> : null}
-      {auditQuery.isError ? <ErrorAlert error={auditQuery.error} /> : null}
+      {showPermissionDenied ? (
+        <PermissionDenied
+          title="Audit access denied"
+          message="Your account is authenticated but not authorized for admin audit access."
+        />
+      ) : null}
+      {showAdminDisabled ? (
+        <Card>
+          <p className="text-sm text-slate-700">
+            Admin audit endpoint is disabled on gateway (`ADMIN_AUDIT_DISABLED`).
+          </p>
+        </Card>
+      ) : null}
+      {showSourceUnavailable ? (
+        <Card>
+          <p className="text-sm text-amber-700">
+            Selected audit source is unavailable. Try another source or retry later.
+          </p>
+        </Card>
+      ) : null}
+      {auditQuery.isError && !showPermissionDenied && !showAdminDisabled && !showSourceUnavailable ? (
+        <ErrorAlert error={auditQuery.error} />
+      ) : null}
 
       {!auditQuery.isLoading && data && data.items.length === 0 ? (
         <EmptyState title="No events" message="Try another source or adjust filters." />

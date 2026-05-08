@@ -127,9 +127,11 @@ Auth cookie + csrf contract (Faz 41):
 - gateway unsafe methodlerde double-submit csrf uygular (cookie+header match)
 - csrf error codes: `CSRF_TOKEN_REQUIRED`, `CSRF_TOKEN_INVALID`
 
-Planned gateway admin audit proxy (Faz 43; SPA uses mock adapters until deployed — [`docs/admin-audit-ui.md`](admin-audit-ui.md)):
+Gateway admin audit proxy (Faz 43):
 
 - `GET /admin/audit-events?source=identity|workspace|content&...filters` → server-mediated calls to each service `/internal/audit-events`.
+- Requires authenticated platform-admin/allowlist authorization (`ADMIN_ACCESS_DENIED` on failure).
+- Gateway signs per-target service JWT (`internal:audit:read`); service JWT is never returned to client.
 
 Workspace:
 
@@ -254,3 +256,14 @@ MVP uses URI-stable unversioned endpoints. Breaking changes should either:
 - Add pagination to list endpoints.
 - Decide consistent response shape for deletes: empty `204` is current behavior.
 - Add idempotency keys for note/comment create if clients need retry-safe writes.
+
+## Faz 45 Notification Center contracts
+
+Added contracts on existing gateway + notification-service:
+
+- `GET /notifications`
+- `GET /notifications/unread-count`
+- `POST /notifications/{notificationId}/read`
+- `POST /notifications/read-all`
+- `POST /notifications/{notificationId}/archive`
+- `POST /internal/notifications/in-app` (service JWT scope: `internal:notification:in-app:create`)

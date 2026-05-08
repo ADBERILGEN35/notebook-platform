@@ -37,6 +37,13 @@ class SecurityNotificationServiceTest {
                         && request.recipientEmail().equals("user@example.com")
                         && request.templateKey().equals("security-refresh-tokens-revoked")
                         && request.idempotencyKey().startsWith("security-revoke-all:")));
+    verify(notificationClient)
+        .sendInApp(
+            org.mockito.ArgumentMatchers.argThat(
+                request ->
+                    request.type() == NotificationClient.InAppNotificationType.SECURITY_SESSIONS_REVOKED
+                        && request.recipientUserId().equals(user.getId())
+                        && "/app/settings/security".equals(request.actionUrl())));
   }
 
   @Test

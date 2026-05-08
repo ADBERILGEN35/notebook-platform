@@ -1,4 +1,4 @@
-# Admin / Audit UI (Faz 42)
+# Admin / Audit UI (Faz 42/43)
 
 Operational visibility landing in the SPA for engineering and security responders. Phase 42 ships a **UI
 foundation**: routes, mocked audit source adapter, UX for filters/table/detail drawer, pagination, masking,
@@ -28,15 +28,15 @@ reference](audit-query-api.md)).
 | Mode | Behaviour |
 |---|---|
 | `mock` (local default) | `audit-mock-api.ts` yields deterministic paging fixtures; safe for demos + Playwright |
-| `real` | Calls **placeholder proxy** route `GET /api-gateway-relative /admin/audit-events`. Returns `503 AUDIT_PROXY_UNAVAILABLE` styling until gateway implements proxy (Faz 43). |
+| `real` | Calls gateway `GET /admin/audit-events` and uses platform-admin auth + server-side service JWT proxying (Faz 43). |
 
-Production chart defaults set `AUDIT_API_MODE=real`; keep admin UI disabled until proxy + RBAC lands.
+Production rollout should enable UI only with gateway admin allowlist/role config.
 
 ### Why no service JWT in the frontend?
 
-OAuth-style user sessions must not elevate to internal service JWTs embedded in SPA bundles or localStorage.
-That would widen blast radius across all internal audits. Phase 43 should supply a **narrow user-admin token**
-validated by gateway and mapped to audited proxy calls server-side.
+OAuth-style user sessions must not elevate to internal service JWTs embedded in SPA bundles or
+localStorage. That widens blast radius across all internal audits. Faz 43 now enforces user-admin
+checks in gateway and maps approved requests to server-side service JWT calls.
 
 ## Access Model (MVP Flags)
 
@@ -45,7 +45,7 @@ Runtime / Vite knobs:
 | Key | Meaning |
 |---|---|
 | `ADMIN_UI_ENABLED` / `VITE_ADMIN_UI_ENABLED` | Master switch for routing + sidebar entry |
-| `ADMIN_UI_DEV_OPEN` / `VITE_ADMIN_UI_DEV_OPEN` | **Trusted dev only**: bypass privileged role gate |
+| `ADMIN_UI_DEV_OPEN` / `VITE_ADMIN_UI_DEV_OPEN` | **Trusted dev + mock mode only**: bypass privileged role gate |
 | Privileged JWT roles observed from `/auth/me` (`ADMIN`, `ROLE_ADMIN`, `PLATFORM_ADMIN`) | Platform admin placeholders until real RBAC exists |
 
 When disabled, navigating to `/app/admin` redirects away; tampering URLs shows `PermissionDenied` if flags allow route but RBAC denies.
@@ -60,13 +60,13 @@ consistent with those substring rules (`password`, `token`, `secret`, …). Neve
 - Vitest suites for masking, filter schema/date validation, mock pagination, URL round-trip.
 - Playwright `e2e/admin-audit.spec.ts` swaps `runtime-config.js` plus minimal `auth/signup`, `auth/me`, and workspace list routes so admin gates open **without** a live gateway while still exercising bearer-style session bootstrap.
 
-## Limitations (Phase 42)
+## Limitations (Phase 43)
 
 - No CSV export, SIEM fan-out, or central audit aggregation service.
 - No platform-wide RBAC or admin SSO roles yet.
-- `real` proxy path is speculative until backend contract freezes in Phase 43.
+- `PLATFORM_ADMIN` claim model is transitional; allowlist remains rollout fallback.
 
-## Next (Phase 43)
+## Next (Phase 44+)
 
 Ship **platform-admin authorization + audit proxy** on `api-gateway` (or audited BFF) that:
 

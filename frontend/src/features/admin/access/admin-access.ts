@@ -1,5 +1,9 @@
 import type { AuthUser } from '../../../shared/types/api'
-import { isAdminUiDevOpen, isAdminUiEnabled } from '../../../shared/config/admin-feature-flags'
+import {
+  getAuditApiMode,
+  isAdminUiDevOpen,
+  isAdminUiEnabled,
+} from '../../../shared/config/admin-feature-flags'
 
 const ADMIN_LIKE_ROLES = new Set(['ADMIN', 'ROLE_ADMIN', 'PLATFORM_ADMIN'])
 
@@ -10,6 +14,6 @@ export function hasPlatformAdminLikeRole(user: AuthUser | null): boolean {
 
 export function canShowAdminNavigation(user: AuthUser | null): boolean {
   if (!isAdminUiEnabled()) return false
-  if (isAdminUiDevOpen()) return true
+  if (isAdminUiDevOpen() && getAuditApiMode() === 'mock') return true
   return hasPlatformAdminLikeRole(user)
 }

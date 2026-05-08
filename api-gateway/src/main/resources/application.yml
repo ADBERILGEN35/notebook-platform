@@ -66,6 +66,10 @@ spring:
               predicates:
                 - Method=POST
                 - Path=/webhooks/email/**
+            - id: notification-user
+              uri: ${NOTIFICATION_SERVICE_URL:http://notification-service:8084}
+              predicates:
+                - Path=/notifications/**
 
 management:
   tracing:
@@ -107,6 +111,29 @@ gateway:
       replenish-rate: ${PROTECTED_RATE_LIMIT_REPLENISH_RATE:50}
       burst-capacity: ${PROTECTED_RATE_LIMIT_BURST_CAPACITY:100}
       requested-tokens: ${PROTECTED_RATE_LIMIT_REQUESTED_TOKENS:1}
+    admin-audit:
+      replenish-rate: ${ADMIN_AUDIT_RATE_LIMIT_REPLENISH_RATE:5}
+      burst-capacity: ${ADMIN_AUDIT_RATE_LIMIT_BURST_CAPACITY:20}
+      requested-tokens: ${ADMIN_AUDIT_RATE_LIMIT_REQUESTED_TOKENS:1}
+  admin:
+    enabled: ${GATEWAY_ADMIN_ENABLED:false}
+    allowed-user-ids: ${GATEWAY_ADMIN_ALLOWED_USER_IDS:}
+    allowed-emails: ${GATEWAY_ADMIN_ALLOWED_EMAILS:}
+    audit:
+      enabled: ${GATEWAY_ADMIN_AUDIT_ENABLED:false}
+    audit-proxy:
+      identity-service-url: ${IDENTITY_SERVICE_URL:http://identity-service:8081}
+      workspace-service-url: ${WORKSPACE_SERVICE_URL:http://workspace-service:8082}
+      content-service-url: ${CONTENT_SERVICE_URL:http://content-service:8083}
+      internal-path: ${GATEWAY_ADMIN_AUDIT_INTERNAL_PATH:/internal/audit-events}
+      service-jwt:
+        active-kid: ${GATEWAY_ADMIN_AUDIT_SERVICE_JWT_ACTIVE_KID:${INTERNAL_SERVICE_JWT_ACTIVE_KID:}}
+        private-key: ${GATEWAY_ADMIN_AUDIT_SERVICE_JWT_PRIVATE_KEY:${INTERNAL_SERVICE_JWT_PRIVATE_KEY:}}
+        private-key-path: ${GATEWAY_ADMIN_AUDIT_SERVICE_JWT_PRIVATE_KEY_PATH:${INTERNAL_SERVICE_JWT_PRIVATE_KEY_PATH:}}
+        issuer: ${GATEWAY_ADMIN_AUDIT_SERVICE_JWT_ISSUER:audit-admin}
+        subject: ${GATEWAY_ADMIN_AUDIT_SERVICE_JWT_SUBJECT:service:api-gateway}
+        service-name: ${GATEWAY_ADMIN_AUDIT_SERVICE_JWT_SERVICE_NAME:api-gateway}
+        ttl-seconds: ${GATEWAY_ADMIN_AUDIT_SERVICE_JWT_TTL_SECONDS:60}
 
 logging:
   level:

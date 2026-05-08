@@ -40,3 +40,4 @@ Docs:
 - [`../docs/email-suppression.md`](../docs/email-suppression.md)
 - [`../docs/email-deliverability.md`](../docs/email-deliverability.md)
 - [`../docs/email-dns-records.md`](../docs/email-dns-records.md)
+- [`../docs/notification-center.md`](../docs/notification-center.md)

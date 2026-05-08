@@ -151,3 +151,16 @@ suppression state. See:
 - No real DNS/SPF/DKIM/DMARC setup.
 - No event-driven workspace outbox; if notification-service rejects an invitation email request,
   workspace-service rolls the invitation transaction back.
+
+## Faz 45 In-App Notifications
+
+Notification-service now also exposes in-app user notifications (polling-first MVP):
+
+- Internal create: `POST /internal/notifications/in-app` with scope
+  `internal:notification:in-app:create`.
+- Public user API: `/notifications`, `/notifications/unread-count`, `/notifications/{id}/read`,
+  `/notifications/read-all`, `/notifications/{id}/archive`.
+- Data model: `user_notifications` table (`V6__create_user_notifications.sql`) with ownership,
+  read/archive lifecycle, and idempotent internal creation.
+
+See [`notification-center.md`](notification-center.md) for UI/API flow details.

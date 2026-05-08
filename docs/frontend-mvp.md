@@ -103,3 +103,24 @@ E2E scope moved to [`docs/frontend-e2e.md`](frontend-e2e.md).
 - Gated behind `ADMIN_UI_ENABLED` (and optional trusted `ADMIN_UI_DEV_OPEN` for local environments).
 - See `docs/admin-audit-ui.md` for operational + security rollout notes.
 
+## Faz 43 Admin Audit Real Mode
+
+- `AUDIT_API_MODE=real` now targets gateway `GET /admin/audit-events`.
+- Browser still never receives service JWT; gateway performs admin authorization and internal fan-out.
+- UI maps `ADMIN_ACCESS_DENIED`, `ADMIN_AUDIT_DISABLED`, `AUDIT_SOURCE_UNAVAILABLE` to explicit states.
+
+## Faz 44 CSP + Runtime Security
+
+- Frontend Nginx security headers are generated at runtime with CSP mode toggles.
+- CSP supports disabled / report-only / enforce rollouts via `FRONTEND_CSP_*` envs.
+- `runtime-config.js` remains external script (no inline bootstrap script), compatible with
+  `script-src 'self'`.
+
+## Faz 45 Notification Center (Polling MVP)
+
+- New topbar bell icon with unread badge and dropdown preview.
+- Dedicated page: `/app/notifications`.
+- Actions: mark as read, mark all as read, archive.
+- Filters: unread-only, type, optional workspace, pagination.
+- No realtime socket transport in this phase; polling-based refresh is used.
+

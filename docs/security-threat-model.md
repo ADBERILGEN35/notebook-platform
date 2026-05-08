@@ -23,6 +23,17 @@
   down.
 - Recommended next action: move staging/prod to cookie mode and harden CSP in a dedicated phase.
 
+## Frontend CSP Hardening (Faz 44)
+
+- Risk: Script injection can still perform authenticated actions in cookie mode even when tokens are
+  not readable from JS.
+- Current mitigation: Runtime-configurable CSP (`report-only`/`enforce`) with strict `script-src 'self'`,
+  `object-src 'none'`, `frame-ancestors 'none'`, `base-uri 'self'`, `form-action 'self'`; no
+  `dangerouslySetInnerHTML` usage in SPA code paths.
+- Remaining gap: `style-src 'unsafe-inline'` is still required for current UI/editor stack and CSP
+  violation reports are not persisted by platform backend yet.
+- Recommended next action: add CSP report collector + tighten style policy in a controlled phase.
+
 ## JWT Key Management
 
 - Risk: Private/public key mismatch or accidental dev key use in production.
@@ -96,7 +107,7 @@
 ## CORS
 
 - Risk: Over-broad browser origins.
-- Current mitigation: Gateway CORS origins come from `CORS_ALLOWED_ORIGINS`; credentials are disabled.
+- Current mitigation: Gateway CORS origins come from `CORS_ALLOWED_ORIGINS`; credentials can be enabled for cookie auth with explicit origin allow-list.
 - Remaining gap: Environment mistakes can broaden origins.
 - Recommended next action: Validate production CORS env during deployment.
 
@@ -109,14 +120,14 @@
   and credential checks.
 - Recommended next action: monitor 403 CSRF error rates and tune client error UX.
 
-## Admin / Audit UI Exposure (Faz 42)
+## Admin / Audit UI Exposure (Faz 43)
 
 - Risk: Showing operational audit context to unintended browser sessions before hardened RBAC.
-- Current mitigation: Route + navigation gates behind `ADMIN_UI_ENABLED`; mock-only adapters by default for local
-  dev; Helm prod examples keep the UI disabled until the proxy arrives.
-- Remaining gap: No authenticated audit proxy translating user sessions to narrowly scoped downstream queries yet.
-- Recommended next action: Implement Faz 43 platform-admin role + audited gateway proxy documented in
-  [`docs/admin-audit-ui.md`](admin-audit-ui.md).
+- Current mitigation: Route + navigation gates behind `ADMIN_UI_ENABLED`; gateway `GET /admin/audit-events`
+  requires authenticated admin allowlist/role checks and signs downstream service JWTs server-side.
+- Remaining gap: PLATFORM_ADMIN claim lifecycle + IdP group sync are still pending.
+- Recommended next action: Move from allowlist fallback to identity-issued PLATFORM_ADMIN claims and ship
+  audit access logs to SIEM (see [`docs/admin-audit-proxy.md`](admin-audit-proxy.md)).
 
 ## Rate Limiting
 
@@ -158,3 +169,10 @@
   SNS certificate validation are future adapters.
 - Recommended next action: Keep generic webhook secrets in External Secrets and validate provider
   replay semantics before enabling public ingress.
+
+## In-App Notification Threat Notes (Faz 45)
+
+- Ownership: user endpoints derive `recipientUserId` from gateway context (`X-User-Id`), not from client payload.
+- `actionUrl` is restricted to internal relative `/app/*` paths; protocol URLs and `javascript:` are rejected.
+- Notification metadata is sanitized server-side and not rendered directly in UI.
+- Message/title are rendered as plain React text nodes (no HTML injection path).

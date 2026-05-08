@@ -39,6 +39,20 @@ public class SecurityNotificationService {
               "security-refresh-tokens-revoked",
               Map.of("revokedAt", Instant.now().toString()),
               "security-revoke-all:" + user.getId() + ":" + Instant.now().getEpochSecond() / 60));
+      notificationClient.sendInApp(
+          new NotificationClient.InAppNotificationRequest(
+              user.getId(),
+              null,
+              NotificationClient.InAppNotificationType.SECURITY_SESSIONS_REVOKED,
+              "Security notice",
+              "All active sessions were revoked. Re-login required on other devices.",
+              "WARNING",
+              "/app/settings/security",
+              Map.of("source", "identity-revoke-all", "revokedCount", revokedCount),
+              "security-revoke-all:in-app:"
+                  + user.getId()
+                  + ":"
+                  + Instant.now().getEpochSecond() / 60));
       auditService.record(
           "SECURITY_NOTIFICATION_REQUESTED",
           user.getId(),

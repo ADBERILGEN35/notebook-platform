@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { Input } from '../components/Input'
 import { Button } from '../components/Button'
+import { NotificationBell } from '../../features/notifications/components/NotificationBell'
 
 type Props = {
   search: string
@@ -19,6 +20,7 @@ export function Topbar({ search, onSearchChange, onCreateNote }: Props) {
       <Button className="bg-primary-600 text-white hover:bg-primary-700" onClick={onCreateNote}>
         Create note
       </Button>
+      <NotificationBell />
       <Link to="/app/settings/security" className="text-sm text-slate-600">
         Security
       </Link>
