@@ -15,6 +15,9 @@ config:
   gatewayAdminAuditEnabled: "true"
   gatewayAdminAuditExportEnabled: "true"
   gatewayAdminAllowedEmails: "admin.staging@example.com"
+  adminRequireMfa: "false"
+  gatewayAdminMfaMode: "warn"
+  gatewayAdminMfaAcceptedMethods: "webauthn,recovery_code"
   # Stage 1 keeps strict header validation on while DB tenant context remains off.
   # Move to "true" only for Stage 2 after rlsIntegrationTest and staging smoke validation.
   appRlsEnabled: "false"
@@ -45,6 +48,10 @@ config:
   mfaWebauthnEnabled: "false"
   mfaChallengeTtlSeconds: "300"
   mfaRequiredForPlatformAdmin: "false"
+
+auditExport:
+  scheduled:
+    enabled: false
 
 secrets:
   mode: external-secrets

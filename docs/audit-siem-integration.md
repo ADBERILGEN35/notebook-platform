@@ -39,6 +39,15 @@ Use JSONL export (`format=jsonl`) for SIEM ingestion:
 
 ## Future work (out of Faz 48 scope)
 
-- Scheduled exports
+- Scheduled exports (Faz 53 foundation: ops-side script + CronJob template)
 - Direct SIEM streaming/push connectors
-- Object storage or WORM archival flows
+- Object storage or WORM archival provisioning
+
+## Faz 53 archive package additions
+
+For scheduled ingestion, pair JSONL export with:
+
+- manifest (`*.manifest.json`) including range/source/checksum metadata
+- SHA256 sidecar (`*.sha256`) for integrity verification
+
+Use `scripts/audit/verify-audit-archive.sh` before downstream SIEM import in high-assurance flows.

@@ -193,8 +193,20 @@ When disabled, topbar bell and `/app/notifications` experience are hidden/blocke
 - `/app/settings/notifications` route is available through Settings.
 - Mandatory security preferences are disabled in UI and cannot be toggled off.
 
-## MFA foundation UI (Faz 50)
+## MFA UI + step-up (Faz 51)
 
 - Feature flag: `FRONTEND_MFA_UI_ENABLED`.
-- Settings/security shows passkey and recovery-code foundation state.
-- Current phase is design/skeleton only; setup actions are intentionally disabled.
+- Settings/security supports passkey setup and recovery-code generation flows.
+- Login page supports MFA step-up flow (`passkey` or `recovery code`) when backend returns
+  `mfaRequired=true`.
+
+## Admin MFA UX (Faz 52)
+
+- Admin audit view handles `ADMIN_MFA_REQUIRED` with a dedicated message state.
+- CTA routes users to Settings/Security for passkey/recovery setup.
+- Settings MFA panel shows remaining recovery-code count and admin-required banner.
+
+## Scheduled export note (Faz 53)
+
+- Admin UI keeps manual export.
+- Scheduled export is operations-managed and documented in backend/ops docs (no new frontend scheduler UI).

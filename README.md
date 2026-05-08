@@ -331,3 +331,8 @@ guidance (`docs/audit-export.md`, `docs/audit-siem-integration.md`).
 Faz 49 adds notification preferences + channel control (`docs/notification-preferences.md`).
 Faz 50 adds MFA/WebAuthn design foundation (`docs/mfa-webauthn-design.md`,
 `docs/mfa-rollout-plan.md`).
+Faz 51 upgrades MFA to active WebAuthn step-up + recovery flow baseline.
+Faz 52 enforces admin MFA on sensitive gateway admin endpoints and strengthens recovery policy.
+Faz 53 adds scheduled audit export foundation via ops script/CronJob, archive manifest + checksum,
+and WORM/retention runbook preparation (`docs/audit-scheduled-export.md`,
+`docs/audit-archive-retention.md`).

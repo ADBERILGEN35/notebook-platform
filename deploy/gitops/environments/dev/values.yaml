@@ -31,6 +31,13 @@ config:
   mfaWebauthnEnabled: "false"
   mfaChallengeTtlSeconds: "300"
   mfaRequiredForPlatformAdmin: "false"
+  adminRequireMfa: "false"
+  gatewayAdminMfaMode: "off"
+  gatewayAdminMfaAcceptedMethods: "webauthn,recovery_code"
+
+auditExport:
+  scheduled:
+    enabled: false
 
 secrets:
   mode: native-kubernetes-secret

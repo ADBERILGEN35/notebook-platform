@@ -120,12 +120,22 @@ public class AuthController {
   private ResponseEntity<AuthResponse> withCookieIfNeeded(
       AuthResponse response, HttpServletRequest httpRequest, HttpServletResponse httpResponse) {
     if (authTransportProperties.cookieTransportEnabled()) {
-      authCookieService.writeAuthCookies(httpResponse, httpRequest, response);
+      if (!response.mfaRequired()) {
+        authCookieService.writeAuthCookies(httpResponse, httpRequest, response);
+      }
     }
     if (authTransportProperties.bearerTransportEnabled()) {
       return ResponseEntity.ok(response);
     }
     return ResponseEntity.ok(
-        new AuthResponse(null, null, "Cookie", response.expiresIn(), response.user()));
+        new AuthResponse(
+            null,
+            null,
+            "Cookie",
+            response.expiresIn(),
+            response.user(),
+            response.mfaRequired(),
+            response.mfaSessionId(),
+            response.availableMethods()));
   }
 }

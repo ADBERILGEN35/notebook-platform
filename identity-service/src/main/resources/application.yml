@@ -95,7 +95,12 @@ audit:
 identity:
   mfa:
     enabled: ${MFA_ENABLED:false}
-    webauthn-enabled: ${MFA_WEBAUTHN_ENABLED:false}
+    webauthn:
+      enabled: ${MFA_WEBAUTHN_ENABLED:false}
+      rp-id: ${MFA_WEBAUTHN_RP_ID:localhost}
+      rp-name: ${MFA_WEBAUTHN_RP_NAME:Notebook Platform}
+      allowed-origins: ${MFA_WEBAUTHN_ALLOWED_ORIGINS:http://localhost:5173}
+      require-user-verification: ${MFA_WEBAUTHN_REQUIRE_USER_VERIFICATION:preferred}
     challenge-ttl-seconds: ${MFA_CHALLENGE_TTL_SECONDS:300}
     required-for-platform-admin: ${MFA_REQUIRED_FOR_PLATFORM_ADMIN:false}
   notification:

@@ -1,21 +1,18 @@
-# MFA / WebAuthn Design (Faz 50)
+# MFA / WebAuthn Design (Faz 51)
 
 ## Scope Decision
 
-Faz 50 uses **design + storage + API skeleton + frontend foundation** (not full cryptographic verification).
+Faz 51 upgrades the foundation to working MFA step-up:
 
-Included:
+- login can return `mfaRequired=true` with `mfaSessionId`
+- WebAuthn registration/authentication options + verify endpoints are active
+- recovery code generate/verify is active (hash-only storage)
+- credential list/rename/remove management is active
 
-- WebAuthn data model and migration in `identity-service`
-- MFA feature flags and endpoint contracts
-- `/auth/mfa/*` API skeleton returning controlled disabled behavior
-- frontend settings/security MFA section and browser capability detection
+Library choice:
 
-Not included:
-
-- Full WebAuthn attestation/assertion cryptographic verification
-- login step-up enforcement with `mfaToken` cookie/token
-- production recovery code UX and device management
+- `com.yubico:webauthn-server-core` is integrated as the baseline WebAuthn server library for
+  standards-aligned request/response modeling and future verification hardening.
 
 ## Data Model
 
@@ -25,13 +22,16 @@ Not included:
 
 ## Challenge Strategy
 
-Redis challenge store is the planned target:
+Redis challenge store is active:
 
 - `webauthn:registration:{userId}`
 - `webauthn:authentication:{sessionId}`
 - TTL: `MFA_CHALLENGE_TTL_SECONDS` (default 300)
 
-Faz 50 keeps this as design contract, not final implementation.
+- `mfa:session:{mfaSessionId}`
+- `webauthn:registration:{userId}`
+- `webauthn:authentication:{mfaSessionId}`
+- single-use verification deletes challenge/session entries.
 
 ## API Contracts
 
@@ -44,7 +44,8 @@ Faz 50 keeps this as design contract, not final implementation.
 - `POST /auth/mfa/recovery-codes/verify`
 - `GET/PATCH/DELETE /auth/mfa/webauthn/credentials/{credentialId}`
 
-When disabled, endpoints return `MFA_NOT_ENABLED` (501).
+When disabled, endpoints return `MFA_NOT_ENABLED` (501). WebAuthn origin is validated with
+`MFA_WEBAUTHN_ALLOWED_ORIGINS`.
 
 ## Security Notes
 

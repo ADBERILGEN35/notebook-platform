@@ -9,6 +9,7 @@ import com.notebook.lumen.identity.auth.api.RefreshTokenRequest;
 import com.notebook.lumen.identity.auth.api.RevokeAllRequest;
 import com.notebook.lumen.identity.auth.api.RevokeAllResponse;
 import com.notebook.lumen.identity.auth.api.SignupRequest;
+import com.notebook.lumen.identity.mfa.application.MfaService;
 import com.notebook.lumen.identity.notification.SecurityNotificationService;
 import com.notebook.lumen.identity.shared.exception.AccessTokenRequiredException;
 import com.notebook.lumen.identity.shared.exception.EmailAlreadyExistsException;
@@ -55,6 +56,7 @@ public class AuthService {
   private final UserMapper userMapper;
   private final AuditService auditService;
   private final SecurityNotificationService securityNotificationService;
+  private final MfaService mfaService;
 
   public AuthService(
       UserRepository userRepository,
@@ -63,7 +65,8 @@ public class AuthService {
       JwtTokenService jwtTokenService,
       UserMapper userMapper,
       AuditService auditService,
-      SecurityNotificationService securityNotificationService) {
+      SecurityNotificationService securityNotificationService,
+      MfaService mfaService) {
     this.userRepository = userRepository;
     this.refreshTokenRepository = refreshTokenRepository;
     this.passwordEncoder = passwordEncoder;
@@ -71,6 +74,7 @@ public class AuthService {
     this.userMapper = userMapper;
     this.auditService = auditService;
     this.securityNotificationService = securityNotificationService;
+    this.mfaService = mfaService;
   }
 
   @Transactional
@@ -110,7 +114,7 @@ public class AuthService {
         httpRequest,
         Map.of("status", "ACTIVE"));
 
-    AuthResponse tokens = issueTokens(user, httpRequest);
+    AuthResponse tokens = issueTokens(user, httpRequest, Map.of());
     return tokens;
   }
 
@@ -154,7 +158,10 @@ public class AuthService {
     auditService.record(
         "USER_LOGIN_SUCCEEDED", user.getId(), "USER", user.getId(), httpRequest, Map.of());
 
-    return issueTokens(user, httpRequest);
+    if (mfaService.isMfaRequired(user)) {
+      return mfaService.startMfaChallenge(user);
+    }
+    return issueTokens(user, httpRequest, Map.of());
   }
 
   @Transactional
@@ -242,7 +249,8 @@ public class AuthService {
     long expiresIn = jwtTokenService.accessTokenTtlSeconds();
 
     UserResponse userResponse = userMapper.toResponse(user);
-    return new AuthResponse(accessToken, newRefreshJwt, "Bearer", expiresIn, userResponse);
+    return new AuthResponse(
+        accessToken, newRefreshJwt, "Bearer", expiresIn, userResponse, false, null, java.util.List.of());
   }
 
   @Transactional
@@ -329,7 +337,8 @@ public class AuthService {
         java.util.List.of("ROLE_USER"));
   }
 
-  private AuthResponse issueTokens(User user, HttpServletRequest httpRequest) {
+  private AuthResponse issueTokens(
+      User user, HttpServletRequest httpRequest, Map<String, Object> accessClaims) {
     UUID refreshTokenId = UUID.randomUUID();
     Instant now = Instant.now();
 
@@ -351,11 +360,30 @@ public class AuthService {
             httpRequest.getHeader("User-Agent"));
     refreshTokenRepository.save(refreshToken);
 
-    String accessToken = jwtTokenService.generateAccessToken(user.getId(), user.getEmail());
+    String accessToken = jwtTokenService.generateAccessToken(user.getId(), user.getEmail(), accessClaims);
     long expiresIn = jwtTokenService.accessTokenTtlSeconds();
 
     UserResponse userResponse = userMapper.toResponse(user);
-    return new AuthResponse(accessToken, refreshJwt, "Bearer", expiresIn, userResponse);
+    return new AuthResponse(
+        accessToken, refreshJwt, "Bearer", expiresIn, userResponse, false, null, java.util.List.of());
+  }
+
+  @Transactional
+  public AuthResponse completeMfaLogin(String mfaSessionId, HttpServletRequest httpRequest) {
+    UUID userId = mfaService.requireMfaSessionUser(mfaSessionId);
+    User user =
+        userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(userId));
+    mfaService.consumeMfaSession(mfaSessionId);
+    return issueTokens(
+        user,
+        httpRequest,
+        Map.of(
+            "mfa_verified",
+            true,
+            "amr",
+            java.util.List.of("pwd", "webauthn"),
+            "mfa_verified_at",
+            Instant.now().toString()));
   }
 
   private UUID authenticatedAccessUserId(Jwt accessToken) {

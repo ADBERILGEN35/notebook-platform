@@ -7,4 +7,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface UserWebAuthnCredentialRepository extends JpaRepository<UserWebAuthnCredential, UUID> {
   List<UserWebAuthnCredential> findByUserId(UUID userId);
+
+  java.util.Optional<UserWebAuthnCredential> findByCredentialId(String credentialId);
+
+  List<UserWebAuthnCredential> findByUserIdAndRevokedAtIsNull(UUID userId);
 }

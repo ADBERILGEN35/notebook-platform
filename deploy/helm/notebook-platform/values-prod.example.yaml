@@ -14,6 +14,9 @@ config:
   gatewayAdminEnabled: "true"
   gatewayAdminAuditEnabled: "true"
   gatewayAdminAllowedEmails: "admin@example.com"
+  adminRequireMfa: "false"
+  gatewayAdminMfaMode: "observe"
+  gatewayAdminMfaAcceptedMethods: "webauthn,recovery_code"
   # Production steady-state target only. Follow docs/runtime-rls-rollout.md stage by stage.
   # FORCE RLS is never applied by Helm or GitOps auto-sync.
   appRlsEnabled: "true"
@@ -141,6 +144,10 @@ networkPolicy:
 
 serviceMonitor:
   enabled: false
+
+auditExport:
+  scheduled:
+    enabled: false
 
 autoscaling:
   enabled: false

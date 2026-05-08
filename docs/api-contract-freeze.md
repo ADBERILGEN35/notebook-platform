@@ -1,3 +1,10 @@
+## Faz 53 contract notes
+
+- Existing endpoint reused: `GET /admin/audit-events/export`.
+- Scheduled export foundation adds **file-level contract**, not new HTTP endpoints:
+  - JSONL archive payload
+  - manifest JSON schema (versioned with `schemaVersion`)
+  - SHA256 sidecar
 ## Faz 34 Internal Contract Additions
 
 - `GET /internal/notebooks/{notebookId}/search-permission-snapshot`
@@ -293,7 +300,7 @@ routes directly.
 - `PATCH /notification-preferences`
 - Internal create responses can include `status=SKIPPED` with `skippedReason=USER_PREFERENCE_DISABLED`.
 
-## Faz 50 MFA / WebAuthn contracts (skeleton)
+## Faz 51 MFA / WebAuthn contracts
 
 - `GET /auth/mfa/settings`
 - `POST /auth/mfa/webauthn/registration/options`
@@ -303,3 +310,7 @@ routes directly.
 - `POST /auth/mfa/recovery-codes/generate`
 - `POST /auth/mfa/recovery-codes/verify`
 - `GET/PATCH/DELETE /auth/mfa/webauthn/credentials/{credentialId}`
+- `POST /auth/login` can return:
+  - `mfaRequired=true`
+  - `mfaSessionId`
+  - `availableMethods`

@@ -15,6 +15,9 @@ config:
   gatewayAdminAuditEnabled: "true"
   gatewayAdminAuditExportEnabled: "true"
   gatewayAdminAllowedEmails: "admin@example.com"
+  adminRequireMfa: "false"
+  gatewayAdminMfaMode: "observe"
+  gatewayAdminMfaAcceptedMethods: "webauthn,recovery_code"
   appRlsEnabled: "false"
   appRlsStrictWorkspaceHeader: "true"
   internalAuthMode: "service-jwt"
@@ -43,6 +46,10 @@ config:
   mfaWebauthnEnabled: "false"
   mfaChallengeTtlSeconds: "300"
   mfaRequiredForPlatformAdmin: "false"
+
+auditExport:
+  scheduled:
+    enabled: false
 
 secrets:
   mode: external-secrets

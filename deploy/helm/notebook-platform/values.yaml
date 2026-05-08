@@ -27,6 +27,9 @@ config:
   authCsrfCookieName: "NP-XSRF-TOKEN"
   authCsrfHeaderName: "X-CSRF-Token"
   gatewayAdminEnabled: "false"
+  adminRequireMfa: "false"
+  gatewayAdminMfaMode: "off"
+  gatewayAdminMfaAcceptedMethods: "webauthn,recovery_code"
   gatewayAdminAuditEnabled: "false"
   gatewayAdminAuditExportEnabled: "false"
   gatewayAdminAllowedUserIds: ""
@@ -98,6 +101,10 @@ config:
   mfaWebauthnEnabled: "false"
   mfaChallengeTtlSeconds: "300"
   mfaRequiredForPlatformAdmin: "false"
+  mfaWebauthnRpId: "localhost"
+  mfaWebauthnRpName: "Notebook Platform"
+  mfaWebauthnAllowedOrigins: "http://localhost:5173"
+  mfaWebauthnRequireUserVerification: "preferred"
   emailWorkerEnabled: "true"
   emailMaxAttempts: "5"
   emailRetryInitialDelaySeconds: "60"
@@ -134,6 +141,38 @@ config:
   searchServiceJwtActiveKid: "search-service-key-1"
   searchServiceJwtIssuer: "search-service"
   dbName: "notebook_platform"
+
+auditExport:
+  scheduled:
+    enabled: false
+    schedule: "0 2 * * *"
+    sourceList: "identity,workspace,content"
+    lookbackHours: 24
+    format: "jsonl"
+    authMode: "bearer"
+    archive:
+      outputDir: "/exports"
+      compress: "true"
+      writeManifest: "true"
+      uploadEnabled: "false"
+      provider: "local"
+      retentionLocalDays: 7
+      generatedBy: "scheduled-audit-export"
+      redactionPolicyVersion: "v1"
+    image:
+      repository: "curlimages/curl"
+      tag: "latest"
+      pullPolicy: IfNotPresent
+    resources: {}
+    securityContext:
+      runAsNonRoot: true
+      runAsUser: 10001
+      runAsGroup: 10001
+      readOnlyRootFilesystem: false
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+          - ALL
 
 externalDatabase:
   identityUrl: "jdbc:postgresql://postgres.example.internal:5432/notebook_platform"

@@ -62,7 +62,8 @@ Errors:
 - frontend `AUTH_TRANSPORT=bearer`
 - cookie clean-up logout ile devam eder
 
-## MFA note (Faz 50)
+## MFA note (Faz 51)
 
-- MFA step-up tasariminda tam auth cookie issuance MFA verify sonrasina alinacaktir.
-- Bu fazda login step-up enforcement uygulanmamis, sadece foundation contract tanimlanmistir.
+- Login MFA-required durumunda access/refresh cookie hemen yazilmaz.
+- Cookie issuance `POST /auth/mfa/webauthn/authentication/verify` veya
+  `POST /auth/mfa/recovery-codes/verify` sonrasinda tamamlanir.

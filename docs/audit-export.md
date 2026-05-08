@@ -72,3 +72,14 @@ Gateway emits structured logs:
 - exported count
 - requestId
 - durationMs
+
+## Scheduled export foundation (Faz 53)
+
+- Scheduled execution is **ops-side** (`scripts/audit/scheduled-export-audit-events.sh`) and
+  optionally rendered as Helm CronJob (`templates/cronjob-audit-export.yaml`).
+- Gateway keeps export logic; no gateway scheduler is added.
+- Recommended scheduled format: `jsonl` (`csv` remains available for manual exports).
+- Archive package includes:
+  - data file (`.jsonl` or `.jsonl.gz`)
+  - manifest (`.manifest.json`)
+  - checksum sidecar (`.sha256`)

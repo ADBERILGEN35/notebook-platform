@@ -33,6 +33,9 @@ config:
   mfaWebauthnEnabled: "false"
   mfaChallengeTtlSeconds: "300"
   mfaRequiredForPlatformAdmin: "false"
+  adminRequireMfa: "false"
+  gatewayAdminMfaMode: "off"
+  gatewayAdminMfaAcceptedMethods: "webauthn,recovery_code"
   gatewayAdminEnabled: "true"
   gatewayAdminAuditEnabled: "true"
   gatewayAdminAllowedEmails: "admin@example.com"
@@ -103,6 +106,10 @@ ingress:
 
 networkPolicy:
   enabled: false
+
+auditExport:
+  scheduled:
+    enabled: false
 
 serviceMonitor:
   enabled: false

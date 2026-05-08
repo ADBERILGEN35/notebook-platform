@@ -1,3 +1,9 @@
+## Faz 53 readiness checks
+
+- Admin MFA rollout values explicitly set per environment (`off/warn/observe` progression).
+- Scheduled export remains disabled by default until machine identity auth is approved.
+- Archive package verification (`manifest + sha256`) is part of compliance runbook.
+- Legal-hold and retention procedures are documented in `docs/audit-archive-retention.md`.
 ## Faz 34 Readiness Notes
 
 - Configure `SEARCH_PERMISSION_SNAPSHOT_ENABLED`, `SEARCH_PERMISSION_RUNTIME_CHECK_ENABLED` and
@@ -35,6 +41,6 @@
 | In-app notification center | PARTIAL | Faz 45 adds polling-based in-app notifications on existing notification-service with user APIs, bell/dropdown/page UI, read/archive lifecycle and feature flags. Faz 49 adds user channel preferences and mandatory security preference enforcement. | Add realtime delivery, invitation/comment fan-out maturity and richer per-workspace controls in future phases. |
 | Cookie auth + CSRF | PARTIAL | Auth transport supports `bearer|cookie|dual`, gateway cookie token extraction and CSRF double-submit checks are implemented, frontend cookie mode supports `credentials: include` and CSRF header injection. | Run staged rollout (`dual` -> frontend cookie mode -> prod cookie-only) and monitor 401/403 spikes. |
 | Admin / audit UI/export | PARTIAL | Faz 43 adds gateway admin audit proxy (`/admin/audit-events`) with admin allowlist/role checks and server-side service JWT fan-out. Faz 48 adds bounded export endpoint (`/admin/audit-events/export`) with CSV/JSONL, redaction and separate rate limit bucket. | Replace allowlist with PLATFORM_ADMIN claims + IdP group mapping, add scheduled exports and direct SIEM streaming. |
-| MFA / WebAuthn | PARTIAL | Faz 50 adds MFA data model, API skeleton, feature flags and frontend settings foundation for passkeys/recovery flow. | Implement full cryptographic verification, login step-up enforcement, recovery UX and admin mandatory policy rollout. |
+| MFA / WebAuthn | PARTIAL | Faz 51 adds active WebAuthn/recovery endpoints, MFA step-up session flow and token issuance after MFA verification. | Harden full cryptographic verification coverage, enforce admin policy by default and complete recovery/support UX. |
 | Pagination | DONE | Workspace/content list endpoints return `PageResponse<T>` with page/size/sort validation and sort allow-lists. | Evaluate cursor pagination for high-growth notes/comments/search after load testing. |
 | Refresh token revoke-all | DONE | `POST /auth/logout` and `POST /auth/revoke-all` revoke refresh tokens with audit events and token metadata. | Add future session listing and optional access token introspection/blacklist. |

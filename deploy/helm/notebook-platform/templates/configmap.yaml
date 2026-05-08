@@ -25,6 +25,9 @@ data:
   AUTH_CSRF_COOKIE_NAME: {{ .Values.config.authCsrfCookieName | quote }}
   AUTH_CSRF_HEADER_NAME: {{ .Values.config.authCsrfHeaderName | quote }}
   GATEWAY_ADMIN_ENABLED: {{ .Values.config.gatewayAdminEnabled | quote }}
+  ADMIN_REQUIRE_MFA: {{ .Values.config.adminRequireMfa | quote }}
+  GATEWAY_ADMIN_MFA_MODE: {{ .Values.config.gatewayAdminMfaMode | quote }}
+  GATEWAY_ADMIN_MFA_ACCEPTED_METHODS: {{ .Values.config.gatewayAdminMfaAcceptedMethods | quote }}
   GATEWAY_ADMIN_AUDIT_ENABLED: {{ .Values.config.gatewayAdminAuditEnabled | quote }}
   GATEWAY_ADMIN_AUDIT_EXPORT_ENABLED: {{ .Values.config.gatewayAdminAuditExportEnabled | quote }}
   GATEWAY_ADMIN_ALLOWED_USER_IDS: {{ .Values.config.gatewayAdminAllowedUserIds | quote }}
@@ -166,6 +169,10 @@ data:
   MFA_WEBAUTHN_ENABLED: {{ .Values.config.mfaWebauthnEnabled | quote }}
   MFA_CHALLENGE_TTL_SECONDS: {{ .Values.config.mfaChallengeTtlSeconds | quote }}
   MFA_REQUIRED_FOR_PLATFORM_ADMIN: {{ .Values.config.mfaRequiredForPlatformAdmin | quote }}
+  MFA_WEBAUTHN_RP_ID: {{ .Values.config.mfaWebauthnRpId | quote }}
+  MFA_WEBAUTHN_RP_NAME: {{ .Values.config.mfaWebauthnRpName | quote }}
+  MFA_WEBAUTHN_ALLOWED_ORIGINS: {{ .Values.config.mfaWebauthnAllowedOrigins | quote }}
+  MFA_WEBAUTHN_REQUIRE_USER_VERIFICATION: {{ .Values.config.mfaWebauthnRequireUserVerification | quote }}
   EMAIL_WORKER_ENABLED: {{ .Values.config.emailWorkerEnabled | quote }}
   EMAIL_MAX_ATTEMPTS: {{ .Values.config.emailMaxAttempts | quote }}
   EMAIL_RETRY_INITIAL_DELAY_SECONDS: {{ .Values.config.emailRetryInitialDelaySeconds | quote }}

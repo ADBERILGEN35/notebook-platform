@@ -165,7 +165,7 @@ revocation.
 - Kritik auth aksiyonlari `identity_audit_events` tablosuna yazilir; token/password gibi hassas metadata alanlari maskelenir.
 - Refresh token plaintext DB, response veya audit metadata icine yazilmaz. DB yalnizca hash ve session metadata saklar.
 
-## MFA / WebAuthn foundation (Faz 50)
+## MFA / WebAuthn (Faz 51)
 
 - Data model tables:
   - `user_webauthn_credentials`
@@ -176,8 +176,21 @@ revocation.
   - `MFA_WEBAUTHN_ENABLED`
   - `MFA_CHALLENGE_TTL_SECONDS`
   - `MFA_REQUIRED_FOR_PLATFORM_ADMIN`
-- API skeleton:
+- API:
   - `GET /auth/mfa/settings`
   - `POST /auth/mfa/webauthn/*`
   - `POST /auth/mfa/recovery-codes/*`
   - `GET/PATCH/DELETE /auth/mfa/webauthn/credentials/*`
+- Login can return `mfaRequired` + `mfaSessionId`, then final tokens are issued after MFA verify.
+
+## MFA recovery policy hardening (Faz 52 cleanup)
+
+- Recovery code regeneration revokes old unused codes (`revoked_at`) and issues a new set.
+- `GET /auth/mfa/settings` includes:
+  - `recoveryCodesRemaining`
+  - `activeCredentialCount`
+- Identity audit events include:
+  - `MFA_RECOVERY_CODES_GENERATED`
+  - `MFA_RECOVERY_CODES_REGENERATED`
+  - `MFA_RECOVERY_CODE_USED`
+  - `MFA_CREDENTIAL_REVOKED`

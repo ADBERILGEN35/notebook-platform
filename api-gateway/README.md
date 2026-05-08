@@ -187,3 +187,16 @@ done
   - max-record limit
   - dedicated export rate-limit bucket
 - Service JWT remains server-side (gateway -> internal audit endpoints).
+
+## Admin MFA preparation (Faz 51)
+
+- Config: `ADMIN_REQUIRE_MFA=false` (default).
+- When enabled, admin authorization also requires `mfa_verified=true` or `amr` containing
+  `webauthn`/`recovery_code`.
+
+## Admin MFA rollout (Faz 52+53)
+
+- `GATEWAY_ADMIN_MFA_MODE=off|observe|warn|enforce`
+- `GATEWAY_ADMIN_REQUIRE_MFA` (backward-compatible boolean)
+- `GATEWAY_ADMIN_MFA_ACCEPTED_METHODS=webauthn,recovery_code`
+- On admin endpoints, failing MFA policy returns `403 ADMIN_MFA_REQUIRED`.

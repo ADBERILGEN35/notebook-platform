@@ -53,6 +53,20 @@ public class AdminAuditController {
       return Mono.just(error(HttpStatus.NOT_FOUND, ErrorCode.ADMIN_AUDIT_DISABLED, "Admin audit is disabled", requestId));
     }
     if (!adminAuthorizationService.isAdmin(jwt)) {
+      if (adminAuthorizationService.requiresMfa()) {
+        log.warn(
+            "admin_mfa_required_blocked adminUserId={} endpoint={} requestId={} amr={}",
+            jwt == null ? null : jwt.getSubject(),
+            "/admin/audit-events",
+            requestId,
+            jwt == null ? null : jwt.getClaims().get("amr"));
+        return Mono.just(
+            error(
+                HttpStatus.FORBIDDEN,
+                ErrorCode.ADMIN_MFA_REQUIRED,
+                "Admin access requires multi-factor authentication.",
+                requestId));
+      }
       return Mono.just(error(HttpStatus.FORBIDDEN, ErrorCode.ADMIN_ACCESS_DENIED, "Admin access denied", requestId));
     }
 
@@ -99,6 +113,20 @@ public class AdminAuditController {
           error(HttpStatus.NOT_FOUND, ErrorCode.ADMIN_AUDIT_DISABLED, "Admin audit is disabled", requestId));
     }
     if (!adminAuthorizationService.isAdmin(jwt)) {
+      if (adminAuthorizationService.requiresMfa()) {
+        log.warn(
+            "admin_mfa_required_blocked adminUserId={} endpoint={} requestId={} amr={}",
+            jwt == null ? null : jwt.getSubject(),
+            "/admin/audit-events/export",
+            requestId,
+            jwt == null ? null : jwt.getClaims().get("amr"));
+        return Mono.just(
+            error(
+                HttpStatus.FORBIDDEN,
+                ErrorCode.ADMIN_MFA_REQUIRED,
+                "Admin access requires multi-factor authentication.",
+                requestId));
+      }
       return Mono.just(
           error(
               HttpStatus.FORBIDDEN,

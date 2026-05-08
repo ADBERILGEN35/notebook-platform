@@ -74,6 +74,26 @@ test('real mode shows permission denied for 403', async ({ page }) => {
   await expect(page.getByText('Audit access denied')).toBeVisible()
 })
 
+test('real mode shows mfa required state for admin surfaces', async ({ page }) => {
+  await page.route('**/admin/audit-events**', async (route) => {
+    await route.fulfill({
+      status: 403,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        timestamp: new Date().toISOString(),
+        status: 403,
+        errorCode: 'ADMIN_MFA_REQUIRED',
+        message: 'Admin access requires multi-factor authentication.',
+        path: '/admin/audit-events',
+      }),
+    })
+  })
+  await signUpAndLogin(page, `admin-audit-real-${Date.now()}@example.com`, 'Password1234!')
+  await page.goto('/app/admin/audit?source=identity')
+  await expect(page.getByText('Admin access requires multi-factor authentication.')).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Go to Security Settings' })).toBeVisible()
+})
+
 test('real mode shows source unavailable on 503', async ({ page }) => {
   await page.route('**/admin/audit-events**', async (route) => {
     await route.fulfill({

@@ -38,6 +38,9 @@ export type AuthResponse = {
   tokenType: string
   expiresIn: number
   user: AuthUser
+  mfaRequired?: boolean
+  mfaSessionId?: string | null
+  availableMethods?: string[]
 }
 
 export type Workspace = {

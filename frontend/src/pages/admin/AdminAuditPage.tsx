@@ -209,6 +209,7 @@ export function AdminAuditPage() {
   const data = auditQuery.data
   const queryError = auditQuery.error instanceof ApiError ? auditQuery.error : null
   const showPermissionDenied = queryError?.errorCode === 'ADMIN_ACCESS_DENIED'
+  const showMfaRequired = queryError?.errorCode === 'ADMIN_MFA_REQUIRED'
   const showAdminDisabled = queryError?.errorCode === 'ADMIN_AUDIT_DISABLED'
   const showSourceUnavailable = queryError?.errorCode === 'AUDIT_SOURCE_UNAVAILABLE'
 
@@ -227,6 +228,11 @@ export function AdminAuditPage() {
           Audit API mode: <strong>{getAuditApiMode()}</strong>
         </span>
       </div>
+      <Card>
+        <p className="text-xs text-slate-600">
+          Scheduled exports are configured by operations. Use this screen for ad-hoc export only.
+        </p>
+      </Card>
 
       {parseWarning ? (
         <p className="text-xs text-amber-700">{parseWarning}: using safe defaults.</p>
@@ -378,6 +384,17 @@ export function AdminAuditPage() {
           message="Your account is authenticated but not authorized for admin audit access."
         />
       ) : null}
+      {showMfaRequired ? (
+        <Card>
+          <p className="text-sm font-medium text-slate-900">Admin access requires multi-factor authentication.</p>
+          <p className="mt-1 text-sm text-slate-600">
+            Complete MFA setup or verification to continue with admin audit features.
+          </p>
+          <Link className="mt-2 inline-block text-sm text-primary-600 hover:underline" to="/app/settings">
+            Go to Security Settings
+          </Link>
+        </Card>
+      ) : null}
       {showAdminDisabled ? (
         <Card>
           <p className="text-sm text-slate-700">
@@ -392,7 +409,7 @@ export function AdminAuditPage() {
           </p>
         </Card>
       ) : null}
-      {auditQuery.isError && !showPermissionDenied && !showAdminDisabled && !showSourceUnavailable ? (
+      {auditQuery.isError && !showPermissionDenied && !showMfaRequired && !showAdminDisabled && !showSourceUnavailable ? (
         <ErrorAlert error={auditQuery.error} />
       ) : null}
 

@@ -125,6 +125,9 @@ gateway:
       requested-tokens: ${ADMIN_AUDIT_EXPORT_RATE_LIMIT_REQUESTED_TOKENS:1}
   admin:
     enabled: ${GATEWAY_ADMIN_ENABLED:false}
+    require-mfa: ${GATEWAY_ADMIN_REQUIRE_MFA:${ADMIN_REQUIRE_MFA:false}}
+    mfa-mode: ${GATEWAY_ADMIN_MFA_MODE:off}
+    mfa-accepted-methods: ${GATEWAY_ADMIN_MFA_ACCEPTED_METHODS:webauthn,recovery_code}
     allowed-user-ids: ${GATEWAY_ADMIN_ALLOWED_USER_IDS:}
     allowed-emails: ${GATEWAY_ADMIN_ALLOWED_EMAILS:}
     audit:

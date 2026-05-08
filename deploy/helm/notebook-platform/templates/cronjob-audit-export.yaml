@@ -1,0 +1,81 @@
+{{- if .Values.auditExport.scheduled.enabled }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "notebook-platform.fullname" . }}-audit-export
+  namespace: {{ include "notebook-platform.namespace" . }}
+  labels:
+    {{- include "notebook-platform.labels" . | nindent 4 }}
+spec:
+  schedule: {{ .Values.auditExport.scheduled.schedule | quote }}
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            {{- include "notebook-platform.labels" . | nindent 12 }}
+        spec:
+          restartPolicy: Never
+          containers:
+            - name: scheduled-audit-export
+              image: "{{ .Values.auditExport.scheduled.image.repository }}:{{ .Values.auditExport.scheduled.image.tag }}"
+              imagePullPolicy: {{ .Values.auditExport.scheduled.image.pullPolicy }}
+              command:
+                - /bin/sh
+                - -ec
+                - |
+                  if [ ! -x /app/scripts/audit/scheduled-export-audit-events.sh ]; then
+                    echo "scheduled-export-audit-events.sh not found in image; use ops image with scripts bundled."
+                    exit 1
+                  fi
+                  /app/scripts/audit/scheduled-export-audit-events.sh
+              env:
+                - name: BASE_URL
+                  value: "http://{{ include "notebook-platform.fullname" . }}-api-gateway:8080"
+                - name: SOURCE_LIST
+                  value: {{ .Values.auditExport.scheduled.sourceList | quote }}
+                - name: FORMAT
+                  value: {{ .Values.auditExport.scheduled.format | quote }}
+                - name: LOOKBACK_HOURS
+                  value: {{ .Values.auditExport.scheduled.lookbackHours | quote }}
+                - name: OUTPUT_DIR
+                  value: {{ .Values.auditExport.scheduled.archive.outputDir | quote }}
+                - name: AUTH_MODE
+                  value: {{ .Values.auditExport.scheduled.authMode | quote }}
+                - name: COMPRESS
+                  value: {{ .Values.auditExport.scheduled.archive.compress | quote }}
+                - name: WRITE_MANIFEST
+                  value: {{ .Values.auditExport.scheduled.archive.writeManifest | quote }}
+                - name: AUDIT_ARCHIVE_UPLOAD_ENABLED
+                  value: {{ .Values.auditExport.scheduled.archive.uploadEnabled | quote }}
+                - name: AUDIT_ARCHIVE_PROVIDER
+                  value: {{ .Values.auditExport.scheduled.archive.provider | quote }}
+                - name: GENERATED_BY
+                  value: {{ .Values.auditExport.scheduled.archive.generatedBy | quote }}
+                - name: REDACTION_POLICY_VERSION
+                  value: {{ .Values.auditExport.scheduled.archive.redactionPolicyVersion | quote }}
+                - name: BEARER_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ default (include "notebook-platform.secretName" .) .Values.secrets.existingSecret }}
+                      key: audit-export-bearer-token
+                      optional: true
+                - name: ADMIN_COOKIE
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ default (include "notebook-platform.secretName" .) .Values.secrets.existingSecret }}
+                      key: audit-export-admin-cookie
+                      optional: true
+              volumeMounts:
+                - name: exports
+                  mountPath: {{ .Values.auditExport.scheduled.archive.outputDir | quote }}
+              securityContext:
+                {{- toYaml .Values.auditExport.scheduled.securityContext | nindent 16 }}
+              resources:
+                {{- toYaml .Values.auditExport.scheduled.resources | nindent 16 }}
+          volumes:
+            - name: exports
+              emptyDir: {}
+{{- end }}

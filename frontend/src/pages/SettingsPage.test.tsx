@@ -52,9 +52,23 @@ vi.mock('../features/auth/mfa-api', () => ({
     mfaEnabled: false,
     webauthnEnabled: false,
     backupCodesEnabled: false,
+    recoveryCodesRemaining: 0,
+    activeCredentialCount: 0,
     mfaRequired: false,
     availableMethods: [],
   })),
+  registrationOptions: vi.fn(async () => ({
+    challenge: 'c',
+    rpId: 'localhost',
+    rpName: 'Notebook Platform',
+    userId: 'dXNlcg',
+    userName: 'test@example.com',
+    userDisplayName: 'test@example.com',
+    excludeCredentials: [],
+    userVerification: 'preferred',
+  })),
+  registrationVerify: vi.fn(async () => ({})),
+  generateRecoveryCodes: vi.fn(async () => ({ codes: ['AAAA-BBBB-CCCC'] })),
 }))
 vi.mock('../shared/security/webauthn-support', () => ({
   isWebAuthnSupported: () => false,

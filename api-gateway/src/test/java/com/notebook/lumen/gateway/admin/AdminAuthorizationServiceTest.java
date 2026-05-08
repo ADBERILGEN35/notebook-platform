@@ -15,7 +15,8 @@ class AdminAuthorizationServiceTest {
   @Test
   void allowsPlatformAdminRole() {
     AdminAuthorizationService service =
-        new AdminAuthorizationService(new GatewayAdminProperties(true, "", "", new Audit(true)));
+        new AdminAuthorizationService(
+            new GatewayAdminProperties(true, false, "off", "webauthn,recovery_code", "", "", new Audit(true)));
     Jwt jwt = jwt("user-1", "member@example.com", List.of("PLATFORM_ADMIN"));
     assertThat(service.isAdmin(jwt)).isTrue();
   }
@@ -24,7 +25,8 @@ class AdminAuthorizationServiceTest {
   void allowsConfiguredEmail() {
     AdminAuthorizationService service =
         new AdminAuthorizationService(
-            new GatewayAdminProperties(true, "", "admin@example.com", new Audit(true)));
+            new GatewayAdminProperties(
+                true, false, "off", "webauthn,recovery_code", "", "admin@example.com", new Audit(true)));
     Jwt jwt = jwt("user-2", "admin@example.com", List.of("ROLE_USER"));
     assertThat(service.isAdmin(jwt)).isTrue();
   }
@@ -33,9 +35,49 @@ class AdminAuthorizationServiceTest {
   void rejectsNonAdminUser() {
     AdminAuthorizationService service =
         new AdminAuthorizationService(
-            new GatewayAdminProperties(true, "allowed-user", "admin@example.com", new Audit(true)));
+            new GatewayAdminProperties(
+                true,
+                false,
+                "off",
+                "webauthn,recovery_code",
+                "allowed-user",
+                "admin@example.com",
+                new Audit(true)));
     Jwt jwt = jwt("user-3", "member@example.com", List.of("ROLE_USER"));
     assertThat(service.isAdmin(jwt)).isFalse();
+  }
+
+  @Test
+  void requiresMfaInEnforceMode() {
+    AdminAuthorizationService service =
+        new AdminAuthorizationService(
+            new GatewayAdminProperties(
+                true, false, "enforce", "webauthn,recovery_code", "", "", new Audit(true)));
+    Jwt jwt = jwt("user-1", "member@example.com", List.of("PLATFORM_ADMIN"));
+    assertThat(service.isAdmin(jwt)).isFalse();
+  }
+
+  @Test
+  void allowsAdminWithAcceptedMfaMethod() {
+    AdminAuthorizationService service =
+        new AdminAuthorizationService(
+            new GatewayAdminProperties(
+                true, false, "enforce", "webauthn,recovery_code", "", "", new Audit(true)));
+    Instant now = Instant.now();
+    Jwt jwt =
+        new Jwt(
+            "token",
+            now.minusSeconds(10),
+            now.plusSeconds(300),
+            Map.of("alg", "RS256"),
+            Map.of(
+                "sub", "user-1",
+                "email", "member@example.com",
+                "roles", List.of("PLATFORM_ADMIN"),
+                "token_type", "access",
+                "mfa_verified", true,
+                "amr", List.of("pwd", "webauthn")));
+    assertThat(service.isAdmin(jwt)).isTrue();
   }
 
   private static Jwt jwt(String sub, String email, List<String> roles) {

@@ -7,7 +7,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties(prefix = "gateway.admin")
 public record GatewayAdminProperties(
-    boolean enabled, String allowedUserIds, String allowedEmails, Audit audit) {
+    boolean enabled, boolean requireMfa, String mfaMode, String mfaAcceptedMethods, String allowedUserIds, String allowedEmails, Audit audit) {
 
   public Set<String> allowedUserIdSet() {
     return splitCsv(allowedUserIds);
@@ -21,6 +21,15 @@ public record GatewayAdminProperties(
 
   public Audit effectiveAudit() {
     return audit == null ? new Audit(false) : audit;
+  }
+
+  public String effectiveMfaMode() {
+    return (mfaMode == null || mfaMode.isBlank()) ? "off" : mfaMode.trim().toLowerCase(java.util.Locale.ROOT);
+  }
+
+  public Set<String> acceptedMfaMethods() {
+    String raw = (mfaAcceptedMethods == null || mfaAcceptedMethods.isBlank()) ? "webauthn,recovery_code" : mfaAcceptedMethods;
+    return splitCsv(raw).stream().map(v -> v.toLowerCase(java.util.Locale.ROOT)).collect(Collectors.toUnmodifiableSet());
   }
 
   private static Set<String> splitCsv(String raw) {

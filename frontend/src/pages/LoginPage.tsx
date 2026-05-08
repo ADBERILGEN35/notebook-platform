@@ -2,6 +2,7 @@ import { useMutation } from '@tanstack/react-query'
 import { useNavigate, Link } from 'react-router-dom'
 import { useState } from 'react'
 import { login, loginSchema, me } from '../features/auth/auth-api'
+import { authenticationOptions, authenticationVerify, verifyRecoveryCode } from '../features/auth/mfa-api'
 import { useAuthStore } from '../features/auth/auth-store'
 import { Card } from '../shared/components/Card'
 import { Input } from '../shared/components/Input'
@@ -13,12 +14,18 @@ export function LoginPage() {
   const setSession = useAuthStore((state) => state.setSession)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [mfaSessionId, setMfaSessionId] = useState<string | null>(null)
+  const [recoveryCode, setRecoveryCode] = useState('')
 
   const setUser = useAuthStore((state) => state.setUser)
 
   const mutation = useMutation({
     mutationFn: login,
     onSuccess: async (data) => {
+      if (data.mfaRequired && data.mfaSessionId) {
+        setMfaSessionId(data.mfaSessionId)
+        return
+      }
       setSession({
         accessToken: data.accessToken ?? null,
         refreshToken: data.refreshToken ?? null,
@@ -48,11 +55,86 @@ export function LoginPage() {
     mutation.mutate(parsed.data)
   }
 
+  const mfaPasskeyMutation = useMutation({
+    mutationFn: async () => {
+      if (!mfaSessionId) throw new Error('MFA session missing')
+      const options = await authenticationOptions(mfaSessionId)
+      const credential = (await navigator.credentials.get({
+        publicKey: {
+          challenge: Uint8Array.from(atob(options.challenge.replace(/-/g, '+').replace(/_/g, '/')), (c) => c.charCodeAt(0)),
+          rpId: options.rpId,
+          allowCredentials: options.allowCredentialIds.map((id) => ({
+            id: Uint8Array.from(atob(id.replace(/-/g, '+').replace(/_/g, '/')), (c) => c.charCodeAt(0)),
+            type: 'public-key',
+          })),
+          userVerification: options.userVerification as UserVerificationRequirement,
+          timeout: 60000,
+        },
+      })) as PublicKeyCredential | null
+      if (!credential) throw new Error('Passkey cancelled')
+      return authenticationVerify({
+        mfaSessionId,
+        credentialId: credential.id,
+        challenge: options.challenge,
+        origin: window.location.origin,
+      })
+    },
+    onSuccess: async (data: any) => {
+      if (data?.user) {
+        setSession({
+          accessToken: data.accessToken ?? null,
+          refreshToken: data.refreshToken ?? null,
+          user: data.user,
+        })
+      }
+      const m = await me()
+      setUser({ id: m.userId, email: m.email, name: m.name, avatarUrl: m.avatarUrl ?? null, roles: m.roles ?? [] })
+      navigate('/app')
+    },
+  })
+
+  const mfaRecoveryMutation = useMutation({
+    mutationFn: async () => {
+      if (!mfaSessionId) throw new Error('MFA session missing')
+      return verifyRecoveryCode({ mfaSessionId, recoveryCode })
+    },
+    onSuccess: async (data: any) => {
+      if (data?.user) {
+        setSession({
+          accessToken: data.accessToken ?? null,
+          refreshToken: data.refreshToken ?? null,
+          user: data.user,
+        })
+      }
+      const m = await me()
+      setUser({ id: m.userId, email: m.email, name: m.name, avatarUrl: m.avatarUrl ?? null, roles: m.roles ?? [] })
+      navigate('/app')
+    },
+  })
+
   return (
     <div className="grid min-h-screen place-items-center p-4">
       <Card>
         <h1 className="mb-4 text-xl font-semibold">Login</h1>
-        <form className="space-y-3" onSubmit={onSubmit}>
+        {mfaSessionId ? (
+          <div className="space-y-3">
+            <p className="text-sm text-slate-600">MFA required. Use passkey or recovery code.</p>
+            <Button type="button" className="w-full bg-primary-600 text-white hover:bg-primary-700" onClick={() => mfaPasskeyMutation.mutate()}>
+              Use passkey
+            </Button>
+            <Input
+              placeholder="Recovery code (XXXX-XXXX-XXXX)"
+              value={recoveryCode}
+              onChange={(event) => setRecoveryCode(event.target.value)}
+            />
+            <Button type="button" className="w-full" onClick={() => mfaRecoveryMutation.mutate()}>
+              Use recovery code
+            </Button>
+            {mfaPasskeyMutation.isError ? <ErrorAlert error={mfaPasskeyMutation.error} /> : null}
+            {mfaRecoveryMutation.isError ? <ErrorAlert error={mfaRecoveryMutation.error} /> : null}
+          </div>
+        ) : (
+          <form className="space-y-3" onSubmit={onSubmit}>
           <Input placeholder="Email" value={email} onChange={(event) => setEmail(event.target.value)} />
           <Input
             placeholder="Password"
@@ -64,7 +146,8 @@ export function LoginPage() {
           <Button className="w-full bg-primary-600 text-white hover:bg-primary-700" type="submit">
             Sign in
           </Button>
-        </form>
+          </form>
+        )}
         <p className="mt-3 text-sm text-slate-600">
           No account? <Link to="/signup">Create one</Link>
         </p>

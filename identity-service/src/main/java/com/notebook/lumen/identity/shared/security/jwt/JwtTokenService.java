@@ -41,17 +41,24 @@ public class JwtTokenService {
   }
 
   public String generateAccessToken(UUID userId, String email) {
+    return generateAccessToken(userId, email, Map.of());
+  }
+
+  public String generateAccessToken(UUID userId, String email, Map<String, Object> extraClaims) {
     Instant now = Instant.now();
     long ttlSeconds = jwtProperties.getAccessTokenTtlSeconds();
 
-    JwtClaimsSet claims =
+    JwtClaimsSet.Builder builder =
         JwtClaimsSet.builder()
             .subject(userId.toString())
             .claim(EMAIL_CLAIM, email)
             .claim(TOKEN_TYPE_CLAIM, ACCESS_TOKEN_TYPE)
             .issuedAt(now)
-            .expiresAt(now.plusSeconds(ttlSeconds))
-            .build();
+            .expiresAt(now.plusSeconds(ttlSeconds));
+    for (Map.Entry<String, Object> entry : extraClaims.entrySet()) {
+      builder.claim(entry.getKey(), entry.getValue());
+    }
+    JwtClaimsSet claims = builder.build();
 
     return jwtEncoder.encode(JwtEncoderParameters.from(jwsHeader(), claims)).getTokenValue();
   }

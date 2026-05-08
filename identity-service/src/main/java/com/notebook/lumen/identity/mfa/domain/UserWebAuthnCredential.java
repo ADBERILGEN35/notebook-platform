@@ -45,4 +45,78 @@ public class UserWebAuthnCredential {
   private Instant revokedAt;
 
   protected UserWebAuthnCredential() {}
+
+  public UserWebAuthnCredential(
+      UUID id,
+      UUID userId,
+      String credentialId,
+      String publicKeyCose,
+      Long signCount,
+      String attestationType,
+      String aaguid,
+      String name,
+      Instant lastUsedAt,
+      Instant createdAt,
+      Instant revokedAt) {
+    this.id = id;
+    this.userId = userId;
+    this.credentialId = credentialId;
+    this.publicKeyCose = publicKeyCose;
+    this.signCount = signCount;
+    this.attestationType = attestationType;
+    this.aaguid = aaguid;
+    this.name = name;
+    this.lastUsedAt = lastUsedAt;
+    this.createdAt = createdAt;
+    this.revokedAt = revokedAt;
+  }
+
+  public UUID getId() {
+    return id;
+  }
+
+  public UUID getUserId() {
+    return userId;
+  }
+
+  public String getCredentialId() {
+    return credentialId;
+  }
+
+  public String getPublicKeyCose() {
+    return publicKeyCose;
+  }
+
+  public Long getSignCount() {
+    return signCount;
+  }
+
+  public String getName() {
+    return name;
+  }
+
+  public Instant getLastUsedAt() {
+    return lastUsedAt;
+  }
+
+  public Instant getCreatedAt() {
+    return createdAt;
+  }
+
+  public Instant getRevokedAt() {
+    return revokedAt;
+  }
+
+  public void setName(String name) {
+    this.name = name;
+  }
+
+  public void markUsed(Long signCount) {
+    this.signCount = signCount;
+    this.lastUsedAt = Instant.now();
+  }
+
+  public void revoke() {
+    this.revokedAt = Instant.now();
+  }
 }

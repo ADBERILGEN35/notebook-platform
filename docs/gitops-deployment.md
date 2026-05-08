@@ -303,3 +303,17 @@ Prod:
 
 - Keep `MFA_ENABLED=false` and `MFA_WEBAUTHN_ENABLED=false` by default in all environments.
 - Validate settings UI behavior for disabled state before enabling any server-side flow.
+
+### Admin MFA enforcement (Faz 52 cleanup)
+
+- `adminRequireMfa` + `gatewayAdminMfaMode` + `gatewayAdminMfaAcceptedMethods` are pinned per env.
+- Suggested matrix:
+  - dev: `off`
+  - staging: `warn`
+  - prod: `observe` before stricter modes
+
+### Scheduled export (Faz 53)
+
+- Keep `auditExport.scheduled.enabled=false` by default in all envs.
+- Enable only after machine identity/auth secret flow is approved.
+- Validate CronJob rendering with `bash scripts/helm-template-check.sh`.

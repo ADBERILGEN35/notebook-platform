@@ -20,16 +20,27 @@ public class AdminAuthorizationService {
     if (jwt == null) {
       return false;
     }
+    boolean requiresMfa = requiresMfa();
     if (hasPlatformAdminRole(jwt)) {
+      if (requiresMfa && !hasVerifiedMfa(jwt)) {
+        return false;
+      }
       return true;
     }
     String userId = jwt.getSubject();
     if (userId != null && properties.allowedUserIdSet().contains(userId)) {
-      return true;
+      return !requiresMfa || hasVerifiedMfa(jwt);
     }
     String email = jwt.getClaimAsString("email");
-    return email != null
+    boolean allowlisted =
+        email != null
         && properties.allowedEmailSet().contains(email.toLowerCase(Locale.ROOT).trim());
+    return allowlisted && (!requiresMfa || hasVerifiedMfa(jwt));
+  }
+
+  public boolean requiresMfa() {
+    String mode = properties.effectiveMfaMode();
+    return properties.requireMfa() || "enforce".equals(mode);
   }
 
   public boolean adminFeatureEnabled() {
@@ -61,5 +72,22 @@ public class AdminAuthorizationService {
         || "ROLE_PLATFORM_ADMIN".equals(normalized)
         || "ADMIN".equals(normalized)
         || "ROLE_ADMIN".equals(normalized);
+  }
+
+  @SuppressWarnings("unchecked")
+  private boolean hasVerifiedMfa(Jwt jwt) {
+    Object mfaVerified = jwt.getClaims().get("mfa_verified");
+    if (mfaVerified instanceof Boolean bool && bool) {
+      return true;
+    }
+    Object amr = jwt.getClaims().get("amr");
+    if (amr instanceof Collection<?> collection) {
+      java.util.Set<String> accepted = properties.acceptedMfaMethods();
+      return collection.stream()
+          .map(String::valueOf)
+          .map(value -> value.toLowerCase(Locale.ROOT))
+          .anyMatch(accepted::contains);
+    }
+    return false;
   }
 }

@@ -9,6 +9,7 @@ dependencies {
     implementation("org.springframework.security:spring-security-oauth2-jose")
 
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    implementation("org.springframework.boot:spring-boot-starter-data-redis")
     implementation("org.springframework.boot:spring-boot-starter-flyway")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("io.micrometer:micrometer-registry-prometheus")
@@ -22,6 +23,7 @@ dependencies {
     implementation("org.postgresql:postgresql")
     implementation("de.mkammerer:argon2-jvm:2.12")
     implementation("org.bouncycastle:bcprov-jdk18on:1.84")
+    implementation("com.yubico:webauthn-server-core:2.7.0")
 
     implementation("org.mapstruct:mapstruct:1.6.3")
     annotationProcessor("org.mapstruct:mapstruct-processor:1.6.3")

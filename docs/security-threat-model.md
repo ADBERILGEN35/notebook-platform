@@ -1,3 +1,10 @@
+## Faz 53 additions
+
+- Scheduled audit export automation runs outside gateway app process (CronJob/script model).
+- Service JWT is not exposed to frontend; scheduled auth must use secret-backed machine credentials.
+- Archive integrity requires manifest + SHA256 validation before SIEM/restore workflows.
+- WORM behavior is provider-managed (S3 Object Lock / GCS retention lock / Azure immutable blob),
+  not application-enforced.
 ## Faz 34 Permission Snapshot Risk Notes
 
 - Snapshot staleness is accepted as eventual consistency.
@@ -190,3 +197,9 @@
 - Recovery codes must be treated as high-sensitivity secrets; only hashed values are persisted.
 - Challenge replay risks are mitigated in design via short TTL challenge storage (Redis).
 - Admin/audit surface should enforce MFA in future rollout (`MFA_REQUIRED_FOR_PLATFORM_ADMIN`).
+
+## MFA / WebAuthn Threat Notes (Faz 51 implementation)
+
+- MFA step-up session and challenge artifacts are short-lived Redis keys and are consumed on verify.
+- Recovery codes are hash-only in DB and one-time-use (`usedAt`).
+- Allowed WebAuthn origins are explicitly configured via `MFA_WEBAUTHN_ALLOWED_ORIGINS`.

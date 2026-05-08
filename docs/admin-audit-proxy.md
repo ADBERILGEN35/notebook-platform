@@ -98,6 +98,21 @@ service JWT fan-out.
 - Export limits: range days + max records + internal page size
 - Dedicated export rate-limit bucket (`admin-audit-export`)
 
+## Faz 52 Admin MFA enforcement
+
+Admin audit endpoints also follow gateway MFA policy:
+
+- `gateway.admin.require-mfa`
+- `gateway.admin.mfa-mode`
+- `gateway.admin.mfa-accepted-methods`
+
+When enforcement conditions fail, gateway returns `403 ADMIN_MFA_REQUIRED`.
+
+## Faz 53 Scheduled export foundation
+
+Scheduled export uses the existing export endpoint from an ops-side script/CronJob.
+No service JWT is exposed to frontend, and gateway does not host an internal scheduler.
+
 ## Rollout
 
 1. Deploy gateway with `gateway.admin.audit.enabled=false`.

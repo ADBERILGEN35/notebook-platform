@@ -3,6 +3,11 @@ import { useMutation, useQuery } from '@tanstack/react-query'
 import { useNavigate, Link } from 'react-router-dom'
 import { logout, revokeAll } from '../features/auth/auth-api'
 import { getMfaSettings } from '../features/auth/mfa-api'
+import {
+  generateRecoveryCodes,
+  registrationOptions,
+  registrationVerify,
+} from '../features/auth/mfa-api'
 import { useAuthStore } from '../features/auth/auth-store'
 import {
   getNotificationPreferences,
@@ -14,6 +19,7 @@ import {
 import { Button } from '../shared/components/Button'
 import { Card } from '../shared/components/Card'
 import { ErrorAlert } from '../shared/components/ErrorAlert'
+import { Input } from '../shared/components/Input'
 import { PageHeader } from '../shared/components/PageHeader'
 import { canShowAdminNavigation } from '../features/admin/access/admin-access'
 import { isMfaUiEnabled, isNotificationPreferencesEnabled } from '../shared/config/notifications-feature-flags'
@@ -44,6 +50,52 @@ export function SettingsPage() {
     queryKey: ['mfa-settings'],
     queryFn: getMfaSettings,
     enabled: mfaUiEnabled,
+  })
+  const [passkeyName, setPasskeyName] = useState('')
+  const [recoveryCodes, setRecoveryCodes] = useState<string[] | null>(null)
+  const [ackSavedCodes, setAckSavedCodes] = useState(false)
+  const setupPasskeyMutation = useMutation({
+    mutationFn: async () => {
+      const options = await registrationOptions()
+      const credential = (await navigator.credentials.create({
+        publicKey: {
+          challenge: Uint8Array.from(atob(options.challenge.replace(/-/g, '+').replace(/_/g, '/')), (c) => c.charCodeAt(0)),
+          rp: { id: options.rpId, name: options.rpName },
+          user: {
+            id: Uint8Array.from(atob(options.userId.replace(/-/g, '+').replace(/_/g, '/')), (c) => c.charCodeAt(0)),
+            name: options.userName,
+            displayName: options.userDisplayName,
+          },
+          pubKeyCredParams: [{ type: 'public-key', alg: -7 }],
+          timeout: 60000,
+          authenticatorSelection: {
+            userVerification: options.userVerification as UserVerificationRequirement,
+          },
+          excludeCredentials: options.excludeCredentials.map((c) => ({
+            type: 'public-key',
+            id: Uint8Array.from(atob(c.id.replace(/-/g, '+').replace(/_/g, '/')), (ch) => ch.charCodeAt(0)),
+          })),
+        },
+      })) as PublicKeyCredential | null
+      if (!credential) throw new Error('Passkey cancelled')
+      const attestation = credential.response as AuthenticatorAttestationResponse
+      const publicKeyCose = btoa(String.fromCharCode(...new Uint8Array(attestation.attestationObject)))
+      return registrationVerify({
+        credentialId: credential.id,
+        publicKeyCose,
+        challenge: options.challenge,
+        origin: window.location.origin,
+        name: passkeyName || undefined,
+      })
+    },
+    onSuccess: () => mfaSettingsQuery.refetch(),
+  })
+  const generateRecoveryCodesMutation = useMutation({
+    mutationFn: (acknowledgeReplace: boolean) => generateRecoveryCodes(acknowledgeReplace),
+    onSuccess: (data) => {
+      setRecoveryCodes(data.codes)
+      setAckSavedCodes(false)
+    },
   })
   const clearSession = useAuthStore((state) => state.clearSession)
   const refreshToken = useAuthStore((state) => state.refreshToken)
@@ -170,21 +222,56 @@ export function SettingsPage() {
           {mfaSettingsQuery.isError ? <ErrorAlert error={mfaSettingsQuery.error} /> : null}
           <div className="mt-3 space-y-2 text-sm text-slate-700">
             <p>Status: {mfaSettingsQuery.data?.webauthnEnabled ? 'WebAuthn/passkey enabled' : 'Not enabled'}</p>
+            <p>Active credentials: {mfaSettingsQuery.data?.activeCredentialCount ?? 0}</p>
+            <p>Recovery codes remaining: {mfaSettingsQuery.data?.recoveryCodesRemaining ?? 0}</p>
             {!webAuthnSupported ? (
               <p className="text-amber-700">WebAuthn is not supported in this browser or secure context.</p>
+            ) : null}
+            {canShowAdminNavigation(user) && !(mfaSettingsQuery.data?.webauthnEnabled ?? false) ? (
+              <p className="rounded border border-amber-300 bg-amber-50 px-2 py-1 text-amber-800">
+                Required for admin access: set up a passkey and recovery codes.
+              </p>
             ) : null}
             {mfaSettingsQuery.data && !mfaSettingsQuery.data.mfaEnabled ? (
               <p className="text-slate-500">MFA setup is not enabled in this environment.</p>
             ) : null}
           </div>
           <div className="mt-3 flex flex-wrap gap-2">
-            <Button type="button" disabled>
-              Set up passkey (coming soon)
+            <Input
+              placeholder="Passkey name (optional)"
+              value={passkeyName}
+              onChange={(event: React.ChangeEvent<HTMLInputElement>) => setPasskeyName(event.target.value)}
+            />
+            <Button type="button" disabled={!webAuthnSupported || !mfaSettingsQuery.data?.mfaEnabled} onClick={() => setupPasskeyMutation.mutate()}>
+              Set up passkey
             </Button>
-            <Button type="button" disabled>
-              Generate recovery codes (coming soon)
+            <Button
+              type="button"
+              disabled={!mfaSettingsQuery.data?.mfaEnabled}
+              onClick={() => generateRecoveryCodesMutation.mutate((mfaSettingsQuery.data?.recoveryCodesRemaining ?? 0) > 0)}
+            >
+              {(mfaSettingsQuery.data?.recoveryCodesRemaining ?? 0) > 0 ? 'Regenerate recovery codes' : 'Generate recovery codes'}
             </Button>
           </div>
+          {setupPasskeyMutation.isError ? <ErrorAlert error={setupPasskeyMutation.error} /> : null}
+          {generateRecoveryCodesMutation.isError ? <ErrorAlert error={generateRecoveryCodesMutation.error} /> : null}
+          {recoveryCodes ? (
+            <div className="mt-3 rounded border border-amber-300 bg-amber-50 p-2 text-xs text-amber-800">
+              <p className="font-medium">Recovery codes (shown once):</p>
+              <pre className="mt-1 whitespace-pre-wrap">{recoveryCodes.join('\n')}</pre>
+              <label className="mt-2 flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={ackSavedCodes}
+                  onChange={(e) => setAckSavedCodes(e.target.checked)}
+                />
+                I have saved these recovery codes.
+              </label>
+              {!ackSavedCodes ? (
+                <p className="mt-1 text-[11px]">Save these codes now. You will not be able to view them again.</p>
+              ) : null}
+            </div>
+          ) : null}
         </Card>
       ) : null}
     </div>

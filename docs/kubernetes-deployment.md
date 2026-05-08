@@ -268,3 +268,13 @@ provider.
   - `MFA_CHALLENGE_TTL_SECONDS`
   - `MFA_REQUIRED_FOR_PLATFORM_ADMIN`
 - Frontend runtime toggle: `FRONTEND_MFA_UI_ENABLED`.
+
+## Faz 53 additions
+
+- Optional CronJob template: `templates/cronjob-audit-export.yaml` (default disabled).
+- Values path: `auditExport.scheduled.*`.
+- CronJob requires an ops image that contains `scripts/audit/scheduled-export-audit-events.sh`.
+- Secret placeholders:
+  - `audit-export-bearer-token`
+  - `audit-export-admin-cookie`
+  (do not commit real credentials).
