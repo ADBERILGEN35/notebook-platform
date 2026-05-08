@@ -23,3 +23,9 @@
 - Optional admin-first enforcement (`MFA_REQUIRED_FOR_PLATFORM_ADMIN=true`)
 - Progressive rollout by environment/allowlist and user cohort
 - Recovery and support runbooks for device loss scenarios
+
+## Phase 5: Enterprise SSO alignment (Faz 60)
+
+- Keep `SSO_TRUST_IDP_MFA=false` initially.
+- Validate IdP `amr/acr` claim quality before enabling trust.
+- Keep gateway admin MFA enforcement active during SSO rollout.

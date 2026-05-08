@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 public class AuditAdminAuthorizer {
   public static final String HEADER_NAME = "X-Service-Authorization";
   public static final String REQUIRED_SCOPE = "internal:audit:read";
+  public static final String ADMIN_STATUS_SCOPE = "internal:admin:status:read";
 
   private final AuditAdminProperties properties;
 
@@ -18,6 +19,10 @@ public class AuditAdminAuthorizer {
   }
 
   public void authorize(String serviceAuthorization) {
+    authorize(serviceAuthorization, REQUIRED_SCOPE);
+  }
+
+  public void authorize(String serviceAuthorization, String requiredScope) {
     if (serviceAuthorization == null || serviceAuthorization.isBlank()) {
       throw new AuditAccessException(
           HttpStatus.UNAUTHORIZED, "INTERNAL_AUTH_REQUIRED", "Internal audit auth is required");
@@ -36,7 +41,7 @@ public class AuditAdminAuthorizer {
                   properties.audience(),
                   properties.clockSkew(),
                   properties.allowedScopeSet()))
-          .verify(bearerToken(serviceAuthorization), REQUIRED_SCOPE);
+          .verify(bearerToken(serviceAuthorization), requiredScope);
     } catch (ServiceJwtValidationException e) {
       if (e.insufficientScope()) {
         throw new AuditAccessException(HttpStatus.FORBIDDEN, "AUDIT_ACCESS_DENIED", e.getMessage());

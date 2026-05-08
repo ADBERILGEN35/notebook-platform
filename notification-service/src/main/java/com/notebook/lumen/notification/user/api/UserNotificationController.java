@@ -1,9 +1,12 @@
 package com.notebook.lumen.notification.user.api;
 
 import com.notebook.lumen.notification.shared.config.NotificationProperties;
+import com.notebook.lumen.notification.shared.config.NotificationSseProperties;
 import com.notebook.lumen.notification.shared.exception.NotificationException;
 import com.notebook.lumen.notification.shared.web.UserContextResolver;
 import com.notebook.lumen.notification.user.application.UserNotificationService;
+import com.notebook.lumen.notification.user.realtime.NotificationSseBroker;
+import jakarta.servlet.http.HttpServletResponse;
 import com.notebook.lumen.notification.user.domain.UserNotificationType;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
@@ -15,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 @RestController
 @RequestMapping("/notifications")
@@ -22,14 +26,20 @@ public class UserNotificationController {
   private final UserContextResolver userContextResolver;
   private final UserNotificationService notificationService;
   private final NotificationProperties properties;
+  private final NotificationSseProperties sseProperties;
+  private final NotificationSseBroker sseBroker;
 
   public UserNotificationController(
       UserContextResolver userContextResolver,
       UserNotificationService notificationService,
-      NotificationProperties properties) {
+      NotificationProperties properties,
+      NotificationSseProperties sseProperties,
+      NotificationSseBroker sseBroker) {
     this.userContextResolver = userContextResolver;
     this.notificationService = notificationService;
     this.properties = properties;
+    this.sseProperties = sseProperties;
+    this.sseBroker = sseBroker;
   }
 
   @GetMapping
@@ -42,6 +52,7 @@ public class UserNotificationController {
       @RequestParam(defaultValue = "20") int size,
       @RequestParam(defaultValue = "createdAt,desc") String sort) {
     ensureEnabled();
+    ensureSseEnabled();
     UUID userId = userContextResolver.requireUserId(userIdHeader);
     var notifications =
         notificationService.list(userId, unreadOnly, type, workspaceId, page, size, sort);
@@ -61,6 +72,18 @@ public class UserNotificationController {
     ensureEnabled();
     UUID userId = userContextResolver.requireUserId(userIdHeader);
     return new UserUnreadCountResponse(notificationService.unreadCount(userId));
+  }
+
+  @GetMapping("/stream")
+  public SseEmitter stream(
+      @RequestHeader(UserContextResolver.USER_ID_HEADER) String userIdHeader,
+      HttpServletResponse response) {
+    ensureEnabled();
+    UUID userId = userContextResolver.requireUserId(userIdHeader);
+    response.setHeader("Cache-Control", "no-cache");
+    response.setHeader("Connection", "keep-alive");
+    response.setHeader("X-Accel-Buffering", "no");
+    return sseBroker.connect(userId);
   }
 
   @PostMapping("/{notificationId}/read")
@@ -95,6 +118,13 @@ public class UserNotificationController {
     if (properties.inApp() == null || !properties.inApp().enabled()) {
       throw new NotificationException(
           HttpStatus.NOT_FOUND, "IN_APP_NOTIFICATIONS_DISABLED", "In-app notifications are disabled");
+    }
+  }
+
+  private void ensureSseEnabled() {
+    if (!sseProperties.isEnabled()) {
+      throw new NotificationException(
+          HttpStatus.NOT_FOUND, "NOTIFICATION_SSE_DISABLED", "Notification SSE stream is disabled");
     }
   }
 }

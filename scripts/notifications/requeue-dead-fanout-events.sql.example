@@ -1,0 +1,24 @@
+-- Example: requeue DEAD fanout events for another worker pass (use with care).
+-- Prefer fixing root cause (Redis/network) before mass requeue.
+
+BEGIN;
+
+UPDATE notification_fanout_outbox
+SET status = 'PENDING',
+    next_attempt_at = NOW(),
+    locked_at = NULL,
+    locked_by = NULL,
+    lock_expires_at = NULL,
+    last_error = 'manually requeued'
+WHERE status = 'DEAD'
+  AND created_at > NOW() - INTERVAL '7 days'
+  AND id IN (
+    SELECT id
+    FROM notification_fanout_outbox
+    WHERE status = 'DEAD'
+    ORDER BY created_at DESC
+    LIMIT 50
+    FOR UPDATE SKIP LOCKED
+  );
+
+COMMIT;

@@ -33,14 +33,26 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(MethodArgumentNotValidException.class)
   ResponseEntity<ErrorResponse> handleValidation(
       MethodArgumentNotValidException ex, HttpServletRequest request) {
-    if (request.getRequestURI().startsWith("/notification-preferences")) {
+    if (isWorkspaceNotificationPreferencePath(request)) {
       return ResponseEntity.badRequest()
           .body(
               new ErrorResponse(
                   Instant.now(),
                   400,
-                  "INVALID_NOTIFICATION_PREFERENCE_REQUEST",
-                  "Invalid notification preference request",
+                  "INVALID_WORKSPACE_NOTIFICATION_PREFERENCE_REQUEST",
+                  "Invalid workspace notification preference request",
+                  request.getRequestURI(),
+                  requestId(request),
+                  List.of()));
+    }
+    if (isGlobalOrDeliveryPreferencePath(request)) {
+      return ResponseEntity.badRequest()
+          .body(
+              new ErrorResponse(
+                  Instant.now(),
+                  400,
+                  "INVALID_NOTIFICATION_DELIVERY_PREFERENCE_REQUEST",
+                  "Invalid notification delivery preference request",
                   request.getRequestURI(),
                   requestId(request),
                   List.of()));
@@ -75,14 +87,26 @@ public class GlobalExceptionHandler {
     HttpMessageNotReadableException.class
   })
   ResponseEntity<ErrorResponse> handleRequestParseErrors(Exception ex, HttpServletRequest request) {
-    if (request.getRequestURI().startsWith("/notification-preferences")) {
+    if (isWorkspaceNotificationPreferencePath(request)) {
       return ResponseEntity.badRequest()
           .body(
               new ErrorResponse(
                   Instant.now(),
                   400,
-                  "INVALID_NOTIFICATION_PREFERENCE_REQUEST",
-                  "Invalid notification preference request",
+                  "INVALID_WORKSPACE_NOTIFICATION_PREFERENCE_REQUEST",
+                  "Invalid workspace notification preference request",
+                  request.getRequestURI(),
+                  requestId(request),
+                  List.of()));
+    }
+    if (isGlobalOrDeliveryPreferencePath(request)) {
+      return ResponseEntity.badRequest()
+          .body(
+              new ErrorResponse(
+                  Instant.now(),
+                  400,
+                  "INVALID_NOTIFICATION_DELIVERY_PREFERENCE_REQUEST",
+                  "Invalid notification delivery preference request",
                   request.getRequestURI(),
                   requestId(request),
                   List.of()));
@@ -102,7 +126,19 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(MissingRequestHeaderException.class)
   ResponseEntity<ErrorResponse> handleMissingHeader(
       MissingRequestHeaderException ex, HttpServletRequest request) {
-    if (request.getRequestURI().startsWith("/notification-preferences")) {
+    if (isWorkspaceNotificationPreferencePath(request)) {
+      return ResponseEntity.status(403)
+          .body(
+              new ErrorResponse(
+                  Instant.now(),
+                  403,
+                  "WORKSPACE_NOTIFICATION_PREFERENCE_ACCESS_DENIED",
+                  "Workspace notification preference access denied",
+                  request.getRequestURI(),
+                  requestId(request),
+                  List.of()));
+    }
+    if (isGlobalOrDeliveryPreferencePath(request)) {
       return ResponseEntity.status(403)
           .body(
               new ErrorResponse(
@@ -143,5 +179,21 @@ public class GlobalExceptionHandler {
   private String requestId(HttpServletRequest request) {
     Object attribute = request.getAttribute("requestId");
     return attribute == null ? request.getHeader("X-Request-Id") : attribute.toString();
+  }
+
+  private boolean isWorkspaceNotificationPreferencePath(HttpServletRequest request) {
+    return request.getRequestURI().startsWith("/notification-preferences/workspaces");
+  }
+
+  /** Global user notification preferences or digest/quiet-hours delivery preferences. */
+  private boolean isGlobalOrDeliveryPreferencePath(HttpServletRequest request) {
+    String path = request.getRequestURI();
+    if (path.startsWith("/notification-delivery-preferences")) {
+      return true;
+    }
+    if (path.startsWith("/notification-preferences/workspaces")) {
+      return false;
+    }
+    return path.startsWith("/notification-preferences");
   }
 }

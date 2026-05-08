@@ -67,3 +67,10 @@ Errors:
 - Login MFA-required durumunda access/refresh cookie hemen yazilmaz.
 - Cookie issuance `POST /auth/mfa/webauthn/authentication/verify` veya
   `POST /auth/mfa/recovery-codes/verify` sonrasinda tamamlanir.
+
+## SSO note (Faz 60)
+
+- OIDC callback (`/auth/sso/{provider}/callback`) basarili oldugunda cookie mode aktifse
+  access/refresh/csrf cookie set edilir.
+- SSO authorize/callback adimlari GET redirect akisi oldugu icin CSRF unsafe-method kontrolu
+  kapsaminda degildir.

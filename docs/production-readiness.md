@@ -4,6 +4,46 @@
 - Scheduled export remains disabled by default until machine identity auth is approved.
 - Archive package verification (`manifest + sha256`) is part of compliance runbook.
 - Legal-hold and retention procedures are documented in `docs/audit-archive-retention.md`.
+
+## Faz 54 readiness checks
+
+- Machine identity config (`GATEWAY_AUDIT_EXPORT_MACHINE_AUTH_*`) is validated in staging.
+- Scheduled export script can generate short-lived JWT without leaking token in logs.
+- Non-export endpoints reject machine token usage.
+
+## Faz 55 readiness checks
+
+- S3-compatible upload dry-run succeeds in staging bucket/prefix.
+- Upload retry and fail-if-exists controls are validated.
+- Object lock values are tested in non-production bucket before compliance mode enablement.
+
+## Faz 56 readiness checks
+
+- `NOTIFICATIONS_SSE_ENABLED` and `FRONTEND_NOTIFICATIONS_SSE_ENABLED` are pinned per environment.
+- Cookie/dual auth environments confirm SSE connect success; bearer-only environments use polling
+  fallback.
+- Gateway `GET /notifications/stream` route and timeout behavior are validated in staging.
+- SSE connection rejection and send-failure metrics are observed under load.
+
+## Faz 57 readiness checks
+
+- Redis fanout is validated with at least two notification-service replicas in staging.
+- `notifications_sse_distributed_publish_failures_total` and subscriber error metrics remain stable.
+- Cross-pod delivery smoke is executed before production enablement.
+- Production rollout starts with `NOTIFICATIONS_SSE_DISTRIBUTED_ENABLED=false`, then canary enablement.
+
+## Faz 58 readiness checks
+
+- Digest worker and schedule values are explicitly pinned per environment.
+- Staging validates digest grouping and quiet-hours delay behavior.
+- Security-critical notifications are tested to ensure immediate delivery bypass.
+
+## Faz 62 readiness checks
+
+- `SIEM_PUSH_ENABLED` productionda kontrollu rollout ile acilmali.
+- `SIEM_PROVIDER=generic-http` ise endpoint/auth config startup validationdan gecmeli.
+- Outbox `PENDING/DEAD` count metricleri ve worker health gozlenmeli.
+- Rollback icin `SIEM_PUSH_ENABLED=false` ile worker/push hizla devre disi birakilabilir.
 ## Faz 34 Readiness Notes
 
 - Configure `SEARCH_PERMISSION_SNAPSHOT_ENABLED`, `SEARCH_PERMISSION_RUNTIME_CHECK_ENABLED` and
@@ -38,9 +78,11 @@
 | Note optimistic concurrency | PARTIAL | content-service emits note `ETag`, supports `If-Match` on update/restore with `400/412/428` contracts, audit events and metrics (`note_conflict_detected_total`, `note_update_without_if_match_total`, `note_precondition_required_total`). | Roll out frontend If-Match first, then enable `CONTENT_REQUIRE_IF_MATCH_FOR_NOTE_UPDATE=true` in production. |
 | Frontend deployment runtime model | PARTIAL | Frontend has Docker image, nginx hardening headers, runtime API base URL injection (`FRONTEND_API_BASE_URL`), Helm frontend deployment/service/ingress and GitOps environment values; admin/audit runtime flags ship in Faz 42 (default off in prod). | Validate in real cluster with TLS, ingress and smoke/e2e gates before production switch. |
 | Frontend CSP hardening | PARTIAL | Faz 44 adds runtime-configurable CSP (`disabled/report-only/enforce`), additional browser isolation headers and rollout-ready Helm/GitOps values. | Observe report-only violations in staging, then enforce in production with rollback toggles. |
-| In-app notification center | PARTIAL | Faz 45 adds polling-based in-app notifications on existing notification-service with user APIs, bell/dropdown/page UI, read/archive lifecycle and feature flags. Faz 49 adds user channel preferences and mandatory security preference enforcement. | Add realtime delivery, invitation/comment fan-out maturity and richer per-workspace controls in future phases. |
+| Frontend PWA/offline read mode | PARTIAL | Faz 59 adds manifest + service worker foundation, IndexedDB note cache and offline read-only UX. Faz 67 adds offline **draft** schema + policy utilities (flags default off; no production sync worker). | Validate device policy/privacy guidance, tune cache/draft caps per environment; keep `FRONTEND_OFFLINE_EDIT_ENABLED` false in prod until manual sync UX is validated. |
+| Enterprise SSO / admin identity hardening | PARTIAL | Faz 60 adds OIDC SSO foundation, external identity mapping and platform_roles claim mapping with allowlist coexistence. | Validate real IdP integration in staging, keep SSO disabled in prod until secrets + claims policy are approved. |
+| In-app notification center | PARTIAL | Faz 45 adds polling-based in-app notifications. Faz 49 adds user channel preferences. Faz 56 adds SSE realtime updates (`/notifications/stream`) with polling fallback. Faz 57 adds Redis pub/sub fanout. Faz 58 adds digest/quiet-hours delivery scheduling for non-critical emails. Faz 64 adds optional PostgreSQL durable fanout outbox + worker retries (`docs/notification-durable-fanout.md`). | Add richer analytics, per-workspace preferences and advanced scheduling in future phases. |
 | Cookie auth + CSRF | PARTIAL | Auth transport supports `bearer|cookie|dual`, gateway cookie token extraction and CSRF double-submit checks are implemented, frontend cookie mode supports `credentials: include` and CSRF header injection. | Run staged rollout (`dual` -> frontend cookie mode -> prod cookie-only) and monitor 401/403 spikes. |
-| Admin / audit UI/export | PARTIAL | Faz 43 adds gateway admin audit proxy (`/admin/audit-events`) with admin allowlist/role checks and server-side service JWT fan-out. Faz 48 adds bounded export endpoint (`/admin/audit-events/export`) with CSV/JSONL, redaction and separate rate limit bucket. | Replace allowlist with PLATFORM_ADMIN claims + IdP group mapping, add scheduled exports and direct SIEM streaming. |
+| Admin / audit UI/export | PARTIAL | Faz 43 adds gateway admin audit proxy (`/admin/audit-events`) with admin allowlist/role checks and server-side service JWT fan-out. Faz 48 adds bounded export endpoint (`/admin/audit-events/export`) with CSV/JSONL, redaction and separate rate limit bucket. Faz 63 adds read-only enterprise admin console status (`/admin/enterprise/status`, `docs/enterprise-admin-console.md`). | Replace allowlist with PLATFORM_ADMIN claims + IdP group mapping, add scheduled exports and direct SIEM streaming. |
 | MFA / WebAuthn | PARTIAL | Faz 51 adds active WebAuthn/recovery endpoints, MFA step-up session flow and token issuance after MFA verification. | Harden full cryptographic verification coverage, enforce admin policy by default and complete recovery/support UX. |
 | Pagination | DONE | Workspace/content list endpoints return `PageResponse<T>` with page/size/sort validation and sort allow-lists. | Evaluate cursor pagination for high-growth notes/comments/search after load testing. |
 | Refresh token revoke-all | DONE | `POST /auth/logout` and `POST /auth/revoke-all` revoke refresh tokens with audit events and token metadata. | Add future session listing and optional access token introspection/blacklist. |

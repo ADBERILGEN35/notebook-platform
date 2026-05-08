@@ -1,0 +1,44 @@
+package com.notebook.lumen.gateway.admin.enterprise;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.List;
+import org.junit.jupiter.api.Test;
+
+class EnterpriseStatusWarningEngineTest {
+
+  private final EnterpriseStatusWarningEngine engine = new EnterpriseStatusWarningEngine();
+
+  @Test
+  void addsMfaWarningWhenNotEnforce() {
+    var features =
+        new EnterpriseStatusFeatures(
+            new SsoStatus(false, 0, false, false, false),
+            new ScimStatus(false, false, false, false),
+            new MfaStatus("warn", List.of("webauthn"), true, true),
+            new SiemStatus(false, "noop", false, false, false),
+            new AuditExportStatus(false, false, false, false, "", false),
+            new NotificationsStatus(false, false, false, false),
+            new GatewaySecurityStatus(true, true, "warn", List.of(), true, false, "bearer", false));
+
+    var warnings = engine.build(features, false, false);
+    assertThat(warnings.stream().map(EnterpriseWarning::code))
+        .contains("ADMIN_MFA_MODE_NOT_ENFORCE");
+  }
+
+  @Test
+  void flagsSsoWithoutAdminMapping() {
+    var features =
+        new EnterpriseStatusFeatures(
+            new SsoStatus(true, 1, false, false, false),
+            new ScimStatus(false, false, false, false),
+            new MfaStatus("enforce", List.of("webauthn"), true, true),
+            new SiemStatus(false, "noop", false, false, false),
+            new AuditExportStatus(false, false, false, false, "", false),
+            new NotificationsStatus(true, false, true, true),
+            new GatewaySecurityStatus(true, true, "enforce", List.of(), true, false, "bearer", false));
+
+    var warnings = engine.build(features, false, false);
+    assertThat(warnings.stream().map(EnterpriseWarning::code)).contains("SSO_ADMIN_MAPPING_MISSING");
+  }
+}

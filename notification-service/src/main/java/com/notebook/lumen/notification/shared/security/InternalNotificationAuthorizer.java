@@ -15,6 +15,7 @@ public class InternalNotificationAuthorizer {
   public static final String IN_APP_CREATE_SCOPE = "internal:notification:in-app:create";
   public static final String SUPPRESSION_READ_SCOPE = "internal:notification:suppression:read";
   public static final String SUPPRESSION_MANAGE_SCOPE = "internal:notification:suppression:manage";
+  public static final String ADMIN_STATUS_SCOPE = "internal:admin:status:read";
 
   private final NotificationProperties properties;
 
@@ -34,7 +35,8 @@ public class InternalNotificationAuthorizer {
     var trustedServices =
         java.util.Arrays.asList(
             properties.internal().trustedNotificationClient(),
-            properties.internal().trustedIdentityClient());
+            properties.internal().trustedIdentityClient(),
+            properties.internal().trustedGatewayAdmin());
     if (trustedServices.stream().noneMatch(service -> service != null && service.configured())) {
       throw new NotificationException(
           HttpStatus.UNAUTHORIZED, "INVALID_SERVICE_JWT", "Trusted service is not configured");

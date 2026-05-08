@@ -14,5 +14,18 @@ export const isNotificationPreferencesEnabled = (): boolean =>
     false,
   )
 
+export const isWorkspaceNotificationPreferencesEnabled = (): boolean =>
+  parseBool(
+    window.__NOTEBOOK_CONFIG__?.WORKSPACE_NOTIFICATION_PREFERENCES_ENABLED ??
+      import.meta.env.VITE_WORKSPACE_NOTIFICATION_PREFERENCES_ENABLED,
+    false,
+  )
+
+export const isNotificationsSseEnabled = (): boolean =>
+  parseBool(
+    window.__NOTEBOOK_CONFIG__?.NOTIFICATIONS_SSE_ENABLED ?? import.meta.env.VITE_NOTIFICATIONS_SSE_ENABLED,
+    true,
+  )
+
 export const isMfaUiEnabled = (): boolean =>
   parseBool(window.__NOTEBOOK_CONFIG__?.MFA_UI_ENABLED ?? import.meta.env.VITE_MFA_UI_ENABLED, false)

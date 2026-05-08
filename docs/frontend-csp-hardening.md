@@ -42,6 +42,11 @@ Base directives:
 - `worker-src 'self' blob:`
 - `manifest-src 'self'`
 
+PWA/offline read mode in Faz 59 continues to require:
+
+- `worker-src 'self' blob:`
+- `manifest-src 'self'`
+
 Optional:
 
 - `report-uri <FRONTEND_CSP_REPORT_URI>`

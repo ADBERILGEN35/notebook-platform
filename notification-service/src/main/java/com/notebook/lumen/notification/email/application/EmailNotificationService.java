@@ -8,8 +8,11 @@ import com.notebook.lumen.notification.email.domain.EmailNotification;
 import com.notebook.lumen.notification.email.domain.EmailNotificationStatus;
 import com.notebook.lumen.notification.email.domain.EmailNotificationType;
 import com.notebook.lumen.notification.email.infrastructure.EmailNotificationRepository;
-import com.notebook.lumen.notification.preference.application.NotificationPreferenceService;
+import com.notebook.lumen.notification.preference.application.NotificationDeliveryPreferenceService;
+import com.notebook.lumen.notification.preference.application.NotificationPreferenceResolver;
+import com.notebook.lumen.notification.preference.domain.EmailDigestFrequency;
 import com.notebook.lumen.notification.preference.domain.NotificationChannel;
+import com.notebook.lumen.notification.preference.domain.UserNotificationDeliveryPreference;
 import com.notebook.lumen.notification.email.provider.EmailMessage;
 import com.notebook.lumen.notification.email.provider.EmailProvider;
 import com.notebook.lumen.notification.email.suppression.EmailSuppressionService;
@@ -33,7 +36,9 @@ public class EmailNotificationService {
   private final EmailSuppressionService suppressionService;
   private final NotificationProperties properties;
   private final AuditService auditService;
-  private final NotificationPreferenceService preferenceService;
+  private final NotificationPreferenceResolver preferenceResolver;
+  private final NotificationDeliveryPreferenceService deliveryPreferenceService;
+  private final NotificationDigestService digestService;
   private final MeterRegistry meterRegistry;
   private final String workerInstanceId;
 
@@ -44,7 +49,9 @@ public class EmailNotificationService {
       EmailSuppressionService suppressionService,
       NotificationProperties properties,
       AuditService auditService,
-      NotificationPreferenceService preferenceService,
+      NotificationPreferenceResolver preferenceResolver,
+      NotificationDeliveryPreferenceService deliveryPreferenceService,
+      NotificationDigestService digestService,
       MeterRegistry meterRegistry) {
     this.repository = repository;
     this.templateRenderer = templateRenderer;
@@ -52,7 +59,9 @@ public class EmailNotificationService {
     this.suppressionService = suppressionService;
     this.properties = properties;
     this.auditService = auditService;
-    this.preferenceService = preferenceService;
+    this.preferenceResolver = preferenceResolver;
+    this.deliveryPreferenceService = deliveryPreferenceService;
+    this.digestService = digestService;
     this.meterRegistry = meterRegistry;
     this.workerInstanceId =
         WorkerInstanceIds.resolve(properties.workerInstanceId(), "email-worker");
@@ -71,10 +80,37 @@ public class EmailNotificationService {
       Optional<com.notebook.lumen.notification.user.domain.UserNotificationType> mappedType =
           toUserNotificationType(request.type());
       if (mappedType.isPresent()
-          && !preferenceService.isEnabled(
-              request.recipientUserId(), mappedType.get(), NotificationChannel.EMAIL)) {
+          && !preferenceResolver.isChannelEnabled(
+              request.recipientUserId(),
+              request.workspaceId(),
+              mappedType.get(),
+              NotificationChannel.EMAIL)) {
         return new EmailNotificationResponse(
             null, EmailNotificationStatus.SKIPPED, "USER_PREFERENCE_DISABLED");
+      }
+      if (!isSecurityCritical(request.type())) {
+        UserNotificationDeliveryPreference deliveryPref =
+            deliveryPreferenceService.get(request.recipientUserId());
+        if (deliveryPref.isEmailDigestEnabled()
+            && deliveryPref.getEmailDigestFrequency() != EmailDigestFrequency.NEVER) {
+          if (!properties.digest().enabled()) {
+            throw new NotificationException(
+                HttpStatus.BAD_REQUEST, "NOTIFICATION_DIGEST_DISABLED", "Notification digest is disabled");
+          }
+          if (mappedType.isPresent()) {
+            digestService.queueDigestItem(
+                request.recipientUserId(),
+                normalizeEmail(request.recipientEmail()),
+                mappedType.get(),
+                request.subject(),
+                firstLine(request.templateVariables()),
+                null,
+                Map.of(),
+                null);
+            return new EmailNotificationResponse(
+                null, EmailNotificationStatus.SKIPPED, "QUEUED_FOR_DIGEST");
+          }
+        }
       }
     }
     var rendered =
@@ -101,7 +137,8 @@ public class EmailNotificationService {
             rendered.bodyText(),
             rendered.bodyHtml(),
             blankToNull(request.idempotencyKey()),
-            now);
+            now,
+            effectiveNextAttemptAt(request, now));
     repository.save(notification);
     auditService.record(
         "EMAIL_NOTIFICATION_QUEUED",
@@ -130,6 +167,31 @@ public class EmailNotificationService {
                   .WORKSPACE_INVITATION_RECEIVED);
       default -> Optional.empty();
     };
+  }
+
+  private Instant effectiveNextAttemptAt(EmailNotificationRequest request, Instant now) {
+    if (request.recipientUserId() == null || isSecurityCritical(request.type())) {
+      return now;
+    }
+    UserNotificationDeliveryPreference pref = deliveryPreferenceService.get(request.recipientUserId());
+    if (!deliveryPreferenceService.isQuietHoursNow(pref, now)) {
+      return now;
+    }
+    return deliveryPreferenceService.nextAllowedEmailTime(pref, now);
+  }
+
+  private boolean isSecurityCritical(EmailNotificationType type) {
+    return switch (type) {
+      case SECURITY_REFRESH_TOKENS_REVOKED, SECURITY_LOGIN_NEW_DEVICE, SECURITY_PASSWORD_CHANGED, GENERIC_SECURITY_NOTICE -> true;
+      default -> false;
+    };
+  }
+
+  private String firstLine(Map<String, String> vars) {
+    if (vars == null || vars.isEmpty()) {
+      return "You have updates.";
+    }
+    return vars.values().iterator().next();
   }
 
   @Transactional

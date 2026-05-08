@@ -42,6 +42,7 @@ Use JSONL export (`format=jsonl`) for SIEM ingestion:
 - Scheduled exports (Faz 53 foundation: ops-side script + CronJob template)
 - Direct SIEM streaming/push connectors
 - Object storage or WORM archival provisioning
+- Near-real-time SIEM streaming (implemented as Faz 62 foundation)
 
 ## Faz 53 archive package additions
 
@@ -51,3 +52,9 @@ For scheduled ingestion, pair JSONL export with:
 - SHA256 sidecar (`*.sha256`) for integrity verification
 
 Use `scripts/audit/verify-audit-archive.sh` before downstream SIEM import in high-assurance flows.
+
+## Faz 62 streaming push addition
+
+- Export/archive path forensic workflow olarak devam eder.
+- Streaming push path detection/alerting icin near-real-time ayrik kanaldir.
+- Faz 62 implementation `identity-service` outbox + worker pattern ile provider-agnostic olarak eklendi.

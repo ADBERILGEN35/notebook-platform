@@ -15,6 +15,17 @@ export interface NotificationPreferenceItem {
   channels: Record<NotificationChannel, { enabled: boolean; mandatory: boolean }>
 }
 
+export type EmailDigestFrequency = 'NEVER' | 'DAILY' | 'WEEKLY'
+
+export interface NotificationDeliveryPreference {
+  emailDigestEnabled: boolean
+  emailDigestFrequency: EmailDigestFrequency
+  quietHoursEnabled: boolean
+  quietHoursStart: string | null
+  quietHoursEnd: string | null
+  timezone: string
+}
+
 export async function getNotificationPreferences(): Promise<NotificationPreferenceItem[]> {
   return apiRequest<NotificationPreferenceItem[]>('/notification-preferences', { method: 'GET' })
 }
@@ -25,5 +36,18 @@ export async function patchNotificationPreferences(
   return apiRequest<NotificationPreferenceItem[]>('/notification-preferences', {
     method: 'PATCH',
     body: JSON.stringify({ updates }),
+  })
+}
+
+export async function getNotificationDeliveryPreferences(): Promise<NotificationDeliveryPreference> {
+  return apiRequest<NotificationDeliveryPreference>('/notification-delivery-preferences', { method: 'GET' })
+}
+
+export async function patchNotificationDeliveryPreferences(
+  payload: NotificationDeliveryPreference,
+): Promise<NotificationDeliveryPreference> {
+  return apiRequest<NotificationDeliveryPreference>('/notification-delivery-preferences', {
+    method: 'PATCH',
+    body: JSON.stringify(payload),
   })
 }

@@ -1,6 +1,7 @@
 package com.notebook.lumen.identity.audit;
 
 import com.notebook.lumen.common.security.sanitization.SensitiveDataSanitizer;
+import com.notebook.lumen.identity.siem.application.SiemOutboxService;
 import jakarta.servlet.http.HttpServletRequest;
 import java.time.Instant;
 import java.util.Map;
@@ -17,9 +18,11 @@ public class AuditService {
   private static final Logger log = LoggerFactory.getLogger(AuditService.class);
 
   private final AuditEventRepository repository;
+  private final SiemOutboxService siemOutboxService;
 
-  public AuditService(AuditEventRepository repository) {
+  public AuditService(AuditEventRepository repository, SiemOutboxService siemOutboxService) {
     this.repository = repository;
+    this.siemOutboxService = siemOutboxService;
   }
 
   @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -31,8 +34,9 @@ public class AuditService {
       HttpServletRequest request,
       Map<String, Object> metadata) {
     try {
-      repository.save(
-          new AuditEvent(
+      AuditEvent saved =
+          repository.save(
+              new AuditEvent(
               UUID.randomUUID(),
               eventType,
               actorUserId,
@@ -44,6 +48,7 @@ public class AuditService {
               request == null ? null : request.getHeader("User-Agent"),
               SensitiveDataSanitizer.sanitizeMetadata(metadata),
               Instant.now()));
+      siemOutboxService.enqueueFromAuditEvent(saved, request);
     } catch (RuntimeException e) {
       log.error(
           "Audit event write failed eventType={} aggregateType={}", eventType, aggregateType, e);

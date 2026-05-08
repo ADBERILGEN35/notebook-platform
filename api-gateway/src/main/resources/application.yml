@@ -33,6 +33,10 @@ spring:
               uri: ${IDENTITY_SERVICE_URL:http://identity-service:8081}
               predicates:
                 - Path=/auth/**
+            - id: identity-scim
+              uri: ${IDENTITY_SERVICE_URL:http://identity-service:8081}
+              predicates:
+                - Path=/scim/v2/**
             - id: workspace-workspaces
               uri: ${WORKSPACE_SERVICE_URL:http://workspace-service:8082}
               predicates:
@@ -66,6 +70,13 @@ spring:
               predicates:
                 - Method=POST
                 - Path=/webhooks/email/**
+            - id: notification-stream
+              uri: ${NOTIFICATION_SERVICE_URL:http://notification-service:8084}
+              predicates:
+                - Method=GET
+                - Path=/notifications/stream
+              metadata:
+                response-timeout: -1
             - id: notification-user
               uri: ${NOTIFICATION_SERVICE_URL:http://notification-service:8084}
               predicates:
@@ -74,6 +85,10 @@ spring:
               uri: ${NOTIFICATION_SERVICE_URL:http://notification-service:8084}
               predicates:
                 - Path=/notification-preferences/**
+            - id: notification-delivery-preferences-user
+              uri: ${NOTIFICATION_SERVICE_URL:http://notification-service:8084}
+              predicates:
+                - Path=/notification-delivery-preferences/**
 
 management:
   tracing:
@@ -123,6 +138,14 @@ gateway:
       replenish-rate: ${ADMIN_AUDIT_EXPORT_RATE_LIMIT_REPLENISH_RATE:2}
       burst-capacity: ${ADMIN_AUDIT_EXPORT_RATE_LIMIT_BURST_CAPACITY:3}
       requested-tokens: ${ADMIN_AUDIT_EXPORT_RATE_LIMIT_REQUESTED_TOKENS:1}
+    admin-audit-export-machine:
+      replenish-rate: ${ADMIN_AUDIT_EXPORT_MACHINE_RATE_LIMIT_REPLENISH_RATE:1}
+      burst-capacity: ${ADMIN_AUDIT_EXPORT_MACHINE_RATE_LIMIT_BURST_CAPACITY:1}
+      requested-tokens: ${ADMIN_AUDIT_EXPORT_MACHINE_RATE_LIMIT_REQUESTED_TOKENS:1}
+    scim:
+      replenish-rate: ${SCIM_RATE_LIMIT_REPLENISH_RATE:5}
+      burst-capacity: ${SCIM_RATE_LIMIT_BURST_CAPACITY:20}
+      requested-tokens: ${SCIM_RATE_LIMIT_REQUESTED_TOKENS:1}
   admin:
     enabled: ${GATEWAY_ADMIN_ENABLED:false}
     require-mfa: ${GATEWAY_ADMIN_REQUIRE_MFA:${ADMIN_REQUIRE_MFA:false}}
@@ -132,11 +155,27 @@ gateway:
     allowed-emails: ${GATEWAY_ADMIN_ALLOWED_EMAILS:}
     audit:
       enabled: ${GATEWAY_ADMIN_AUDIT_ENABLED:false}
+    enterprise:
+      enabled: ${GATEWAY_ADMIN_ENTERPRISE_ENABLED:false}
+      notification-service-url: ${NOTIFICATION_SERVICE_URL:http://notification-service:8084}
+      identity-status-path: ${GATEWAY_ADMIN_ENTERPRISE_IDENTITY_STATUS_PATH:/internal/admin/status/identity-security}
+      notification-status-path: ${GATEWAY_ADMIN_ENTERPRISE_NOTIFICATION_STATUS_PATH:/internal/admin/status/notification}
     audit-export:
       enabled: ${GATEWAY_ADMIN_AUDIT_EXPORT_ENABLED:false}
       max-range-days: ${GATEWAY_ADMIN_AUDIT_EXPORT_MAX_RANGE_DAYS:31}
       max-records: ${GATEWAY_ADMIN_AUDIT_EXPORT_MAX_RECORDS:10000}
       page-size: ${GATEWAY_ADMIN_AUDIT_EXPORT_PAGE_SIZE:200}
+      scheduled-export-configured: ${GATEWAY_ADMIN_AUDIT_SCHEDULED_EXPORT_CONFIGURED:false}
+      archive-upload-enabled: ${GATEWAY_ADMIN_AUDIT_ARCHIVE_UPLOAD_ENABLED:false}
+      archive-provider: ${GATEWAY_ADMIN_AUDIT_ARCHIVE_PROVIDER:}
+      machine-auth:
+        enabled: ${GATEWAY_AUDIT_EXPORT_MACHINE_AUTH_ENABLED:false}
+        allowed-issuers: ${GATEWAY_AUDIT_EXPORT_MACHINE_AUTH_ALLOWED_ISSUERS:https://audit-exporter.internal}
+        audience: ${GATEWAY_AUDIT_EXPORT_MACHINE_AUTH_AUDIENCE:api-gateway}
+        required-scope: ${GATEWAY_AUDIT_EXPORT_MACHINE_AUTH_REQUIRED_SCOPE:admin:audit:export}
+        public-key-path: ${GATEWAY_AUDIT_EXPORT_MACHINE_AUTH_PUBLIC_KEY_PATH:}
+        public-key: ${GATEWAY_AUDIT_EXPORT_MACHINE_AUTH_PUBLIC_KEY:}
+        max-ttl-seconds: ${GATEWAY_AUDIT_EXPORT_MACHINE_AUTH_MAX_TTL_SECONDS:900}
     audit-proxy:
       identity-service-url: ${IDENTITY_SERVICE_URL:http://identity-service:8081}
       workspace-service-url: ${WORKSPACE_SERVICE_URL:http://workspace-service:8082}

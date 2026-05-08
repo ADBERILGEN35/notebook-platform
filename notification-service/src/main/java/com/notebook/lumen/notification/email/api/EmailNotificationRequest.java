@@ -15,4 +15,5 @@ public record EmailNotificationRequest(
     @NotBlank String templateKey,
     Map<String, String> templateVariables,
     @Size(max = 255) String idempotencyKey,
-    UUID recipientUserId) {}
+    UUID recipientUserId,
+    UUID workspaceId) {}

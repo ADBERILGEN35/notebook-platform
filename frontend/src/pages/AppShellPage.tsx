@@ -13,6 +13,8 @@ import { Input } from '../shared/components/Input'
 import { Button } from '../shared/components/Button'
 import { useMediaQuery } from '../shared/hooks/useMediaQuery'
 import { MobileSidebar } from '../shared/layout/MobileSidebar'
+import { useNotificationEventStream } from '../features/notifications/notification-hooks'
+import { useOnlineStatus } from '../shared/hooks/useOnlineStatus'
 
 export function AppShellPage() {
   const navigate = useNavigate()
@@ -26,6 +28,8 @@ export function AppShellPage() {
   const user = useAuthStore((state) => state.user)
   const showAdminNav = canShowAdminNavigation(user)
   const isDesktop = useMediaQuery('(min-width: 1024px)')
+  const { isOnline } = useOnlineStatus()
+  useNotificationEventStream()
 
   const workspaceQuery = useQuery({
     queryKey: ['workspaces'],
@@ -89,6 +93,7 @@ export function AppShellPage() {
           onSearchChange={setSearch}
           onCreateNote={() => setOpenCreateNotebook(true)}
           onSidebarToggle={() => setIsSidebarOpen(true)}
+          isOnline={isOnline}
         />
         <main className="flex-1 p-3 sm:p-4">
           <Outlet />

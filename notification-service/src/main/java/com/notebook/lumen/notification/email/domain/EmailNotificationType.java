@@ -2,6 +2,7 @@ package com.notebook.lumen.notification.email.domain;
 
 public enum EmailNotificationType {
   WORKSPACE_INVITATION,
+  NOTIFICATION_DIGEST,
   SECURITY_REFRESH_TOKENS_REVOKED,
   SECURITY_LOGIN_NEW_DEVICE,
   SECURITY_PASSWORD_CHANGED,

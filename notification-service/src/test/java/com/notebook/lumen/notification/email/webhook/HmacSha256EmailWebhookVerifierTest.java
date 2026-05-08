@@ -2,6 +2,8 @@ package com.notebook.lumen.notification.email.webhook;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.notebook.lumen.notification.NotificationTestFanout;
+import com.notebook.lumen.notification.NotificationTestWorkspace;
 import com.notebook.lumen.notification.shared.config.NotificationProperties;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
@@ -104,9 +106,12 @@ class HmacSha256EmailWebhookVerifierTest {
                 300,
                 requireTimestamp,
                 false)),
-        new NotificationProperties.Internal(null, null),
+        new NotificationProperties.Internal(null, null, null),
         new NotificationProperties.InApp(true),
-        new NotificationProperties.Preferences(true));
+        new NotificationProperties.Preferences(true),
+        new NotificationProperties.Digest(true, true, 60, 100, 50, "09:00", java.time.DayOfWeek.MONDAY, "09:00"),
+        NotificationTestFanout.disabled(),
+        NotificationTestWorkspace.disabled());
   }
 
   private String hmac(String secret, String body) {

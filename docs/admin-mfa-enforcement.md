@@ -54,3 +54,11 @@ Gateway emits structured warning logs when blocking:
 - event key: `admin_mfa_required_blocked`
 - fields: `adminUserId`, `endpoint`, `requestId`, `amr`
 
+## SSO admin identities (Faz 60)
+
+- Admin identity may come from:
+  - `platform_roles` token claim (preferred)
+  - legacy `roles`
+  - allowlist fallback
+- SSO group-to-admin mapping happens in identity-service, not in gateway.
+

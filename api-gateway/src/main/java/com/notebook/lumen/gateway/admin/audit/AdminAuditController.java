@@ -30,16 +30,19 @@ public class AdminAuditController {
   private final AdminAuthorizationService adminAuthorizationService;
   private final AuditProxyService auditProxyService;
   private final AuditExportService auditExportService;
+  private final AuditExportMachineAuthService machineAuthService;
   private final GatewayAuditExportProperties auditExportProperties;
 
   public AdminAuditController(
       AdminAuthorizationService adminAuthorizationService,
       AuditProxyService auditProxyService,
       AuditExportService auditExportService,
+      AuditExportMachineAuthService machineAuthService,
       GatewayAuditExportProperties auditExportProperties) {
     this.adminAuthorizationService = adminAuthorizationService;
     this.auditProxyService = auditProxyService;
     this.auditExportService = auditExportService;
+    this.machineAuthService = machineAuthService;
     this.auditExportProperties = auditExportProperties;
   }
 
@@ -112,7 +115,13 @@ public class AdminAuditController {
       return Mono.just(
           error(HttpStatus.NOT_FOUND, ErrorCode.ADMIN_AUDIT_DISABLED, "Admin audit is disabled", requestId));
     }
-    if (!adminAuthorizationService.isAdmin(jwt)) {
+    boolean machinePrincipal = machineAuthService.isMachineToken(jwt);
+    if (machinePrincipal) {
+      AuditExportMachineAuthService.ValidationResult validation = machineAuthService.validate(jwt);
+      if (!validation.success()) {
+        return Mono.just(error(validation.status(), validation.errorCode(), validation.message(), requestId));
+      }
+    } else if (!adminAuthorizationService.isAdmin(jwt)) {
       if (adminAuthorizationService.requiresMfa()) {
         log.warn(
             "admin_mfa_required_blocked adminUserId={} endpoint={} requestId={} amr={}",
@@ -163,9 +172,12 @@ public class AdminAuditController {
             payload -> {
               long durationMs = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startedAt);
               log.info(
-                  "admin_audit_export_completed adminUserId={} adminEmail={} source={} format={} createdFrom={} createdTo={} exportedCount={} requestId={} durationMs={} filters={}",
-                  jwt.getSubject(),
-                  jwt.getClaimAsString("email"),
+                  "admin_audit_export_completed principalType={} principalId={} issuer={} scope={} jti={} source={} format={} createdFrom={} createdTo={} exportedCount={} requestId={} durationMs={} filters={}",
+                  machinePrincipal ? "machine" : "user",
+                  jwt == null ? null : jwt.getSubject(),
+                  machinePrincipal && jwt != null && jwt.getIssuer() != null ? jwt.getIssuer().toString() : null,
+                  machinePrincipal && jwt != null ? jwt.getClaimAsString("scope") : null,
+                  machinePrincipal && jwt != null ? jwt.getId() : null,
                   auditSource.value(),
                   payload.format(),
                   payload.createdFrom(),
@@ -186,9 +198,12 @@ public class AdminAuditController {
             e -> {
               long durationMs = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startedAt);
               log.warn(
-                  "admin_audit_export_failed adminUserId={} adminEmail={} source={} format={} requestId={} durationMs={} errorCode={} message={}",
-                  jwt.getSubject(),
-                  jwt.getClaimAsString("email"),
+                  "admin_audit_export_failed principalType={} principalId={} issuer={} scope={} jti={} source={} format={} requestId={} durationMs={} errorCode={} message={}",
+                  machinePrincipal ? "machine" : "user",
+                  jwt == null ? null : jwt.getSubject(),
+                  machinePrincipal && jwt != null && jwt.getIssuer() != null ? jwt.getIssuer().toString() : null,
+                  machinePrincipal && jwt != null ? jwt.getClaimAsString("scope") : null,
+                  machinePrincipal && jwt != null ? jwt.getId() : null,
                   auditSource.value(),
                   format,
                   requestId,

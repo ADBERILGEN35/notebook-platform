@@ -104,6 +104,7 @@ describe('useNoteAutoSave', () => {
     })
     expect(result.current.saveState).toBe('conflict')
     expect(result.current.conflictInfo?.localSnapshot.title).toBe('Conflict')
+    expect(result.current.conflictInfo?.baseSnapshot).toBeDefined()
     expect(result.current.conflictInfo?.errorCode).toBe('CONFLICT')
   })
 

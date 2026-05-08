@@ -47,9 +47,16 @@ public class AdminAuthorizationService {
     return properties.enabled() && properties.effectiveAudit().enabled();
   }
 
+  public boolean enterpriseFeatureEnabled() {
+    return properties.enabled() && properties.effectiveEnterprise().enabled();
+  }
+
   @SuppressWarnings("unchecked")
   private boolean hasPlatformAdminRole(Jwt jwt) {
-    Object roles = jwt.getClaims().get("roles");
+    return hasRoleClaim(jwt.getClaims().get("platform_roles")) || hasRoleClaim(jwt.getClaims().get("roles"));
+  }
+
+  private boolean hasRoleClaim(Object roles) {
     if (roles instanceof Collection<?> collection) {
       return collection.stream().map(String::valueOf).anyMatch(this::isPlatformAdminRole);
     }

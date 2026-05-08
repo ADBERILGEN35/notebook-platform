@@ -305,6 +305,10 @@ Dokumanlar:
 - [`docs/frontend-e2e.md`](docs/frontend-e2e.md)
 - [`docs/frontend-deployment.md`](docs/frontend-deployment.md)
 - [`docs/frontend-csp-hardening.md`](docs/frontend-csp-hardening.md)
+- [`docs/pwa-offline-read-mode.md`](docs/pwa-offline-read-mode.md)
+- [`docs/offline-edit-sync-design.md`](docs/offline-edit-sync-design.md)
+- [`docs/enterprise-sso.md`](docs/enterprise-sso.md)
+- [`docs/sso-admin-role-mapping.md`](docs/sso-admin-role-mapping.md)
 - [`docs/auth-cookie-csrf.md`](docs/auth-cookie-csrf.md)
 - [`docs/admin-audit-ui.md`](docs/admin-audit-ui.md)
 - [`docs/admin-audit-proxy.md`](docs/admin-audit-proxy.md)
@@ -336,3 +340,31 @@ Faz 52 enforces admin MFA on sensitive gateway admin endpoints and strengthens r
 Faz 53 adds scheduled audit export foundation via ops script/CronJob, archive manifest + checksum,
 and WORM/retention runbook preparation (`docs/audit-scheduled-export.md`,
 `docs/audit-archive-retention.md`).
+Faz 54 adds machine identity auth for scheduled audit export with scoped short-lived JWT policy
+(`docs/audit-export-machine-identity.md`).
+Faz 55 adds S3-compatible archive upload foundation, object-lock-aware settings, retry policy and
+remote verification script (`docs/audit-archive-object-storage.md`).
+Faz 56 upgrades Notification Center with SSE-based realtime in-app delivery while preserving polling
+fallback (`docs/realtime-notifications-sse.md`).
+Faz 57 adds Redis pub/sub fanout for multi-pod SSE notification delivery
+(`docs/realtime-notifications-redis-fanout.md`).
+Faz 58 adds email digest and quiet-hours delivery scheduling controls
+(`docs/notification-digest-quiet-hours.md`).
+Faz 59 adds PWA foundation and offline read-only note access with IndexedDB cache
+(`docs/pwa-offline-read-mode.md`).
+Faz 60 adds Enterprise SSO foundation and admin identity hardening
+(`docs/enterprise-sso.md`, `docs/sso-admin-role-mapping.md`).
+Faz 61 adds SCIM provisioning and enterprise user lifecycle foundation
+(`docs/scim-provisioning.md`, `docs/enterprise-user-lifecycle.md`).
+Faz 62 adds streaming SIEM push foundation with identity outbox/worker architecture
+(`docs/siem-streaming-push.md`, `docs/siem-event-schema.md`, `docs/siem-provider-generic-http.md`).
+Faz 63 adds a read-only **Enterprise Admin Console** (gateway `/admin/enterprise/status`, internal
+service JWT aggregation, secret-safe cards + warnings) — see `docs/enterprise-admin-console.md`.
+Faz 64 adds a **durable DB outbox** for notification SSE fanout with worker retries and dead-letter
+semantics while keeping Redis pub/sub as the realtime layer (`docs/notification-durable-fanout.md`).
+Faz 65 adds **per-workspace notification preference overrides** (channel gates only; digest/quiet
+hours stay global) — see `docs/workspace-notification-preferences.md`.
+Faz 66 adds **client-side conflict diff** and optional **Apply suggested merge** for BlockNote
+content (three-way model; no backend merge endpoint) — see `docs/note-conflict-diff-merge.md`.
+Faz 67 adds **offline edit/sync design** and IndexedDB **draft** foundation (flags default off; no
+production sync worker) — see `docs/offline-edit-sync-design.md`.

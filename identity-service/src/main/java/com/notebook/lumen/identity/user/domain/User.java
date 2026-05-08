@@ -53,6 +53,16 @@ public class User {
   @Column(name = "deleted_at", nullable = true)
   private Instant deletedAt;
 
+  @Enumerated(EnumType.STRING)
+  @Column(name = "source", nullable = false, length = 40)
+  private UserSource source;
+
+  @Column(name = "scim_external_id", nullable = true, length = 255)
+  private String scimExternalId;
+
+  @Column(name = "deprovisioned_at", nullable = true)
+  private Instant deprovisionedAt;
+
   protected User() {
     // JPA
   }
@@ -70,6 +80,40 @@ public class User {
       Instant createdAt,
       Instant updatedAt,
       Instant deletedAt) {
+    this(
+        id,
+        email,
+        name,
+        avatarUrl,
+        passwordHash,
+        status,
+        emailVerifiedAt,
+        lastLoginAt,
+        passwordChangedAt,
+        createdAt,
+        updatedAt,
+        deletedAt,
+        UserSource.LOCAL,
+        null,
+        null);
+  }
+
+  public User(
+      UUID id,
+      String email,
+      String name,
+      String avatarUrl,
+      String passwordHash,
+      UserStatus status,
+      Instant emailVerifiedAt,
+      Instant lastLoginAt,
+      Instant passwordChangedAt,
+      Instant createdAt,
+      Instant updatedAt,
+      Instant deletedAt,
+      UserSource source,
+      String scimExternalId,
+      Instant deprovisionedAt) {
     this.id = id;
     this.email = email;
     this.name = name;
@@ -82,6 +126,9 @@ public class User {
     this.createdAt = createdAt;
     this.updatedAt = updatedAt;
     this.deletedAt = deletedAt;
+    this.source = source == null ? UserSource.LOCAL : source;
+    this.scimExternalId = scimExternalId;
+    this.deprovisionedAt = deprovisionedAt;
   }
 
   @PrePersist
@@ -92,6 +139,9 @@ public class User {
     }
     if (updatedAt == null) {
       updatedAt = now;
+    }
+    if (source == null) {
+      source = UserSource.LOCAL;
     }
   }
 
@@ -148,7 +198,45 @@ public class User {
     return deletedAt;
   }
 
+  public UserSource getSource() {
+    return source;
+  }
+
+  public String getScimExternalId() {
+    return scimExternalId;
+  }
+
+  public Instant getDeprovisionedAt() {
+    return deprovisionedAt;
+  }
+
   public void setLastLoginAt(Instant lastLoginAt) {
     this.lastLoginAt = lastLoginAt;
+  }
+
+  public void setSource(UserSource source) {
+    this.source = source;
+  }
+
+  public void setScimExternalId(String scimExternalId) {
+    this.scimExternalId = scimExternalId;
+  }
+
+  public void deactivateByScim(Instant now) {
+    this.status = UserStatus.DISABLED;
+    this.deprovisionedAt = now;
+  }
+
+  public void reactivateByScim() {
+    this.status = UserStatus.ACTIVE;
+    this.deprovisionedAt = null;
+  }
+
+  public void setName(String name) {
+    this.name = name;
+  }
+
+  public void setEmail(String email) {
+    this.email = email;
   }
 }

@@ -49,7 +49,8 @@ Compose ile calistirirken tercih edilen yontem `JWT_JWKS_URI=http://identity-ser
 - `AUTH_CSRF_COOKIE_NAME`, `AUTH_CSRF_HEADER_NAME`: CSRF double-submit alanlari
 - `AUTH_RATE_LIMIT_REPLENISH_RATE`, `AUTH_RATE_LIMIT_BURST_CAPACITY`, `AUTH_RATE_LIMIT_REQUESTED_TOKENS`
 - `PROTECTED_RATE_LIMIT_REPLENISH_RATE`, `PROTECTED_RATE_LIMIT_BURST_CAPACITY`, `PROTECTED_RATE_LIMIT_REQUESTED_TOKENS`
-- `GATEWAY_ADMIN_ENABLED`, `GATEWAY_ADMIN_AUDIT_ENABLED`
+- `GATEWAY_ADMIN_ENABLED`, `GATEWAY_ADMIN_AUDIT_ENABLED`, `GATEWAY_ADMIN_ENTERPRISE_ENABLED` (Faz 63: `GET /admin/enterprise/status`)
+- `NOTIFICATION_SERVICE_URL` (enterprise status aggregation)
 - `GATEWAY_ADMIN_ALLOWED_USER_IDS`, `GATEWAY_ADMIN_ALLOWED_EMAILS`
 - `ADMIN_AUDIT_RATE_LIMIT_REPLENISH_RATE`, `ADMIN_AUDIT_RATE_LIMIT_BURST_CAPACITY`, `ADMIN_AUDIT_RATE_LIMIT_REQUESTED_TOKENS`
 - `GATEWAY_ADMIN_AUDIT_SERVICE_JWT_*` (gateway signer for `/admin/audit-events` proxy calls)
@@ -61,6 +62,7 @@ Public auth routes:
 - `POST /auth/signup` -> identity-service
 - `POST /auth/login` -> identity-service
 - `POST /auth/refresh` -> identity-service
+- `GET /auth/sso/**` -> identity-service (public redirect flow)
 
 Protected routes:
 
@@ -68,6 +70,7 @@ Protected routes:
 - `/workspaces/**`, `/notebooks/**`, `/tags/**`, `/invitations/**` -> workspace-service
 - `/notes/**`, `/comments/**` -> content-service
 - `/admin/audit-events` -> gateway controller (platform-admin auth + internal audit proxy fan-out)
+- `/admin/enterprise/status` -> gateway controller (platform-admin auth + service JWT fan-out to identity/notification internal status)
 
 Public actuator:
 
@@ -77,7 +80,7 @@ Public actuator:
 
 ## JWT ve Header Propagation
 
-Protected endpointlerde bearer mode `Authorization: Bearer <accessToken>` zorunludur. Cookie mode aktifse gateway access tokeni cookie'den okuyabilir. Gateway `JWT_JWKS_URI` varsa JWT header `kid` degerine gore JWKS'ten dogru public key'i secer. JWKS URI yoksa statik public key fallback ile validate eder. `token_type=access` disindaki tokenlari reddeder.
+Protected endpointlerde bearer mode `Authorization: Bearer <accessToken>` zorunludur. Cookie mode aktifse gateway access tokeni cookie'den okuyabilir. Gateway `JWT_JWKS_URI` varsa JWT header `kid` degerine gore JWKS'ten dogru public key'i secer. JWKS URI yoksa statik public key fallback ile validate eder.
 
 Production profilinde `JWT_JWKS_URI`, `JWT_PUBLIC_KEY` veya `JWT_PUBLIC_KEY_PATH` zorunludur; JWKS onerilen yontemdir. Unknown `kid`, invalid signature ve malformed token `401 INVALID_ACCESS_TOKEN`; expired token `401 EXPIRED_ACCESS_TOKEN`; refresh token `401 INVALID_TOKEN_TYPE` doner.
 
@@ -94,7 +97,7 @@ Redis backed token bucket kullanilir.
 
 - Public auth endpointleri: key client IP
 - Protected endpointler: key JWT `sub`
-- `/admin/audit-events`: key JWT `sub` with dedicated admin-audit bucket
+- `/admin/audit-events` and `/admin/enterprise/status`: key JWT `sub` with dedicated admin-audit bucket
 
 Limitler `application.yml` ve env degiskenleri ile ayarlanabilir. Limit asilinca body formatli `429 RATE_LIMIT_EXCEEDED` doner.
 
@@ -200,3 +203,33 @@ done
 - `GATEWAY_ADMIN_REQUIRE_MFA` (backward-compatible boolean)
 - `GATEWAY_ADMIN_MFA_ACCEPTED_METHODS=webauthn,recovery_code`
 - On admin endpoints, failing MFA policy returns `403 ADMIN_MFA_REQUIRED`.
+
+## Audit export machine identity (Faz 54)
+
+- `GET /admin/audit-events/export` supports machine JWT (`token_type=machine`) with strict policy:
+  issuer allowlist, audience, required scope and max TTL.
+- Machine tokens are blocked on non-export endpoints.
+- Config:
+  - `GATEWAY_AUDIT_EXPORT_MACHINE_AUTH_ENABLED`
+  - `GATEWAY_AUDIT_EXPORT_MACHINE_AUTH_ALLOWED_ISSUERS`
+  - `GATEWAY_AUDIT_EXPORT_MACHINE_AUTH_AUDIENCE`
+  - `GATEWAY_AUDIT_EXPORT_MACHINE_AUTH_REQUIRED_SCOPE`
+  - `GATEWAY_AUDIT_EXPORT_MACHINE_AUTH_MAX_TTL_SECONDS`
+
+## Enterprise SSO admin identity (Faz 60)
+
+- Gateway admin authorization now prefers `platform_roles` claim for `PLATFORM_ADMIN`.
+- Legacy `roles` claim and allowlist (`GATEWAY_ADMIN_ALLOWED_*`) remain supported.
+- SSO group mapping stays in identity-service; gateway is kept IdP-agnostic.
+
+## SCIM routing (Faz 61)
+
+- `/scim/v2/**` is routed to `identity-service`.
+- Gateway JWT auth is bypassed for SCIM path; SCIM bearer validation is enforced by identity-service.
+- SCIM path has dedicated rate limit bucket (`SCIM_RATE_LIMIT_*`).
+
+## SIEM integration scope (Faz 62)
+
+- Faz 62 persistent SIEM outbox implementation `identity-service` tarafinda yapildi.
+- `api-gateway` kritik security/admin olaylari mevcut structured logging ile korunur.
+- Gateway icin durable outbox veya central event bus bu faz kapsaminda degildir.

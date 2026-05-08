@@ -31,7 +31,14 @@ config:
   gatewayAdminMfaMode: "off"
   gatewayAdminMfaAcceptedMethods: "webauthn,recovery_code"
   gatewayAdminAuditEnabled: "false"
+  gatewayAdminEnterpriseEnabled: "false"
   gatewayAdminAuditExportEnabled: "false"
+  gatewayAuditExportMachineAuthEnabled: "false"
+  gatewayAuditExportMachineAuthAllowedIssuers: "https://audit-exporter.internal"
+  gatewayAuditExportMachineAuthAudience: "api-gateway"
+  gatewayAuditExportMachineAuthRequiredScope: "admin:audit:export"
+  gatewayAuditExportMachineAuthPublicKeyPath: ""
+  gatewayAuditExportMachineAuthMaxTtlSeconds: "900"
   gatewayAdminAllowedUserIds: ""
   gatewayAdminAllowedEmails: ""
   gatewayAdminAuditRateLimitReplenishRate: "5"
@@ -40,6 +47,12 @@ config:
   gatewayAdminAuditExportRateLimitReplenishRate: "2"
   gatewayAdminAuditExportRateLimitBurstCapacity: "3"
   gatewayAdminAuditExportRateLimitRequestedTokens: "1"
+  gatewayAdminAuditExportMachineRateLimitReplenishRate: "1"
+  gatewayAdminAuditExportMachineRateLimitBurstCapacity: "1"
+  gatewayAdminAuditExportMachineRateLimitRequestedTokens: "1"
+  scimRateLimitReplenishRate: "5"
+  scimRateLimitBurstCapacity: "20"
+  scimRateLimitRequestedTokens: "1"
   gatewayAdminAuditExportMaxRangeDays: "31"
   gatewayAdminAuditExportMaxRecords: "10000"
   gatewayAdminAuditExportPageSize: "200"
@@ -96,7 +109,33 @@ config:
   searchReindexClientJwtIssuer: "ops-admin"
   emailProvider: "smtp"
   notificationsInAppEnabled: "true"
+  notificationsSseEnabled: "true"
+  notificationsSseDistributedEnabled: "false"
+  notificationsSseDistributedProvider: "redis"
+  notificationsSseRedisChannel: "notification:sse:events"
+  notificationsSseDistributedPublishLocalFirst: "true"
+  notificationDigestEnabled: "true"
+  notificationDigestWorkerEnabled: "true"
+  notificationDigestPollIntervalSeconds: "60"
+  notificationDigestBatchSize: "100"
+  notificationDigestMaxItemsPerEmail: "50"
+  notificationDigestDailySendTime: "09:00"
+  notificationDigestWeeklyDay: "MONDAY"
+  notificationDigestWeeklySendTime: "09:00"
+  notificationFanoutOutboxEnabled: "false"
+  notificationFanoutWorkerEnabled: "true"
+  notificationFanoutImmediateLocalDelivery: "true"
+  notificationFanoutPollIntervalSeconds: "5"
+  notificationFanoutBatchSize: "100"
+  notificationFanoutMaxAttempts: "10"
+  notificationFanoutBackoffBaseSeconds: "5"
+  notificationFanoutBackoffMaxSeconds: "300"
+  notificationFanoutLockTtlSeconds: "60"
+  notificationFanoutSentRetentionHours: "24"
+  notificationFanoutDeadRetentionDays: "30"
   notificationPreferencesEnabled: "true"
+  workspaceNotificationPreferencesEnabled: "false"
+  notificationWorkspaceClientTimeoutMs: "3000"
   mfaEnabled: "false"
   mfaWebauthnEnabled: "false"
   mfaChallengeTtlSeconds: "300"
@@ -105,6 +144,37 @@ config:
   mfaWebauthnRpName: "Notebook Platform"
   mfaWebauthnAllowedOrigins: "http://localhost:5173"
   mfaWebauthnRequireUserVerification: "preferred"
+  ssoEnabled: "false"
+  ssoStateTtlSeconds: "300"
+  ssoTrustIdpMfa: "false"
+  ssoRequiredAcr: ""
+  ssoRequiredAmr: ""
+  ssoProviderRegistrationId: "generic-oidc"
+  ssoProviderIssuerUri: ""
+  ssoProviderClientId: ""
+  ssoProviderScopes: "openid,email,profile"
+  ssoProviderEmailClaim: "email"
+  ssoGroupsClaim: "groups"
+  ssoAdminGroups: "notebook-admins"
+  ssoAllowedDomains: ""
+  scimEnabled: "false"
+  scimBearerTokenHash: ""
+  scimGroupsEnabled: "true"
+  scimAdminGroups: "notebook-admins"
+  siemPushEnabled: "false"
+  siemProvider: "noop"
+  siemEndpointUrl: ""
+  siemAuthMode: "none"
+  siemCustomHeaderName: ""
+  siemTimeoutSeconds: "10"
+  siemWorkerEnabled: "false"
+  siemWorkerPollIntervalSeconds: "30"
+  siemBatchSize: "100"
+  siemMaxAttempts: "10"
+  siemBackoffBaseSeconds: "30"
+  siemBackoffMaxSeconds: "3600"
+  siemOutboxRetentionDays: "30"
+  siemDeadRetentionDays: "90"
   emailWorkerEnabled: "true"
   emailMaxAttempts: "5"
   emailRetryInitialDelaySeconds: "60"
@@ -137,7 +207,8 @@ config:
   trustedIdentityServiceKid: "identity-service-key-1"
   auditAdminServiceJwtKid: "content-service-key-1"
   auditAdminServiceJwtIssuer: "audit-admin"
-  auditAdminServiceJwtAllowedScopes: "internal:audit:read"
+  auditAdminServiceJwtAllowedScopes: "internal:audit:read,internal:admin:status:read"
+  internalAdminStatusEnabled: "false"
   searchServiceJwtActiveKid: "search-service-key-1"
   searchServiceJwtIssuer: "search-service"
   dbName: "notebook_platform"
@@ -149,18 +220,47 @@ auditExport:
     sourceList: "identity,workspace,content"
     lookbackHours: 24
     format: "jsonl"
-    authMode: "bearer"
+    auth:
+      mode: "machine"
+      machine:
+        issuer: "https://audit-exporter.internal"
+        subject: "audit-exporter"
+        audience: "api-gateway"
+        scope: "admin:audit:export"
+        ttlSeconds: 600
+        kid: ""
+        privateKeySecretName: ""
+        privateKeySecretKey: "private.pem"
+      bearerSecretKey: "audit-export-bearer-token"
+      cookieSecretKey: "audit-export-admin-cookie"
     archive:
       outputDir: "/exports"
       compress: "true"
       writeManifest: "true"
       uploadEnabled: "false"
       provider: "local"
+      bucket: ""
+      prefix: "audit-archive"
+      failIfExists: "true"
+      uploadMaxAttempts: 3
+      uploadRetrySeconds: 10
       retentionLocalDays: 7
       generatedBy: "scheduled-audit-export"
       redactionPolicyVersion: "v1"
+      s3:
+        endpointUrl: ""
+        region: ""
+        storageClass: ""
+        serverSideEncryption: ""
+        kmsKeyId: ""
+        objectLockMode: ""
+        objectLockRetainUntilDate: ""
+        objectLockLegalHold: ""
+        credentialsSecretName: ""
+        accessKeyIdSecretKey: "access-key-id"
+        secretAccessKeySecretKey: "secret-access-key"
     image:
-      repository: "curlimages/curl"
+      repository: "amazon/aws-cli"
       tag: "latest"
       pullPolicy: IfNotPresent
     resources: {}
@@ -242,6 +342,10 @@ secrets:
     emailWebhookSecret: ""
     opensearchUsername: ""
     opensearchPassword: ""
+    ssoProviderClientSecret: ""
+    scimBearerToken: ""
+    siemBearerToken: ""
+    siemCustomHeaderValue: ""
   externalSecrets:
     enabled: false
     refreshInterval: 1h
@@ -339,6 +443,18 @@ secrets:
       - secretKey: opensearch-password
         remoteRef:
           key: notebook-platform/prod/opensearch-password
+      - secretKey: sso-provider-client-secret
+        remoteRef:
+          key: notebook-platform/prod/sso-provider-client-secret
+      - secretKey: scim-bearer-token
+        remoteRef:
+          key: notebook-platform/prod/scim-bearer-token
+      - secretKey: siem-bearer-token
+        remoteRef:
+          key: notebook-platform/prod/siem-bearer-token
+      - secretKey: siem-custom-header-value
+        remoteRef:
+          key: notebook-platform/prod/siem-custom-header-value
 
 serviceAccount:
   create: true
@@ -485,8 +601,18 @@ frontend:
   env:
     FRONTEND_API_BASE_URL: "http://localhost:8080"
     FRONTEND_AUTH_TRANSPORT: "bearer"
+    FRONTEND_SSO_ENABLED: "false"
+    FRONTEND_PWA_ENABLED: "true"
+    FRONTEND_OFFLINE_NOTES_ENABLED: "true"
+    FRONTEND_OFFLINE_NOTES_MAX_ITEMS: "50"
+    FRONTEND_OFFLINE_EDIT_ENABLED: "false"
+    FRONTEND_OFFLINE_SYNC_ENABLED: "false"
+    FRONTEND_OFFLINE_EDIT_MAX_DRAFTS: "50"
+    FRONTEND_OFFLINE_EDIT_MAX_DRAFT_AGE_DAYS: "7"
     FRONTEND_NOTIFICATIONS_ENABLED: "false"
+    FRONTEND_NOTIFICATIONS_SSE_ENABLED: "false"
     FRONTEND_NOTIFICATION_PREFERENCES_ENABLED: "false"
+    FRONTEND_WORKSPACE_NOTIFICATION_PREFERENCES_ENABLED: "false"
     FRONTEND_MFA_UI_ENABLED: "false"
     FRONTEND_ADMIN_UI_ENABLED: "false"
     FRONTEND_ADMIN_UI_DEV_OPEN: "false"

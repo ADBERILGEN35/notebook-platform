@@ -45,6 +45,10 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.name
+            - name: NOTIFICATION_INSTANCE_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
             {{- include "notebook-platform.otelSecretEnv" . | nindent 12 }}
             - name: DB_URL
               valueFrom:
@@ -62,6 +66,12 @@ spec:
                   name: {{ include "notebook-platform.secretName" . }}
                   key: notification-db-password
                   optional: false
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "notebook-platform.secretName" . }}
+                  key: redis-password
+                  optional: true
             - name: SMTP_USERNAME
               valueFrom:
                 secretKeyRef:

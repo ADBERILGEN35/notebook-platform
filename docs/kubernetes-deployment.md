@@ -29,6 +29,8 @@ Included:
   service JWT path wiring).
 - Frontend CSP/runtime security settings through Helm values
   (`FRONTEND_CSP_*` from `frontend.security.csp.*`).
+- Enterprise SSO toggles and OIDC provider placeholders (`SSO_*`) with secret-backed client secret.
+- SIEM streaming push toggles (`SIEM_*`) with secret-backed auth headers/tokens.
 
 Not included:
 
@@ -243,6 +245,55 @@ provider.
 - Frontend runtime toggle via ConfigMap: `FRONTEND_NOTIFICATIONS_ENABLED=true`.
 - Gateway route forwards `/notifications/**` to `notification-service` (protected user route).
 
+## Faz 56 additions
+
+- Notification-service SSE toggles:
+  - `NOTIFICATIONS_SSE_ENABLED`
+  - `NOTIFICATIONS_SSE_HEARTBEAT_SECONDS`
+  - `NOTIFICATIONS_SSE_TIMEOUT_SECONDS`
+  - `NOTIFICATIONS_SSE_MAX_CONNECTIONS_PER_USER`
+- Frontend runtime toggle: `FRONTEND_NOTIFICATIONS_SSE_ENABLED`.
+- Gateway route includes dedicated `GET /notifications/stream` mapping with long response timeout for
+  SSE.
+- Multi-pod note: current SSE emitter registry is in-memory per pod; keep polling fallback enabled.
+
+## Faz 57 additions
+
+- Redis pub/sub fanout toggle for notification-service:
+  - `NOTIFICATIONS_SSE_DISTRIBUTED_ENABLED`
+  - `NOTIFICATIONS_SSE_DISTRIBUTED_PROVIDER`
+  - `NOTIFICATIONS_SSE_REDIS_CHANNEL`
+  - `NOTIFICATIONS_SSE_DISTRIBUTED_PUBLISH_LOCAL_FIRST`
+- `NOTIFICATION_INSTANCE_ID` is sourced from pod name (Downward API) for self-echo skip.
+- Notification deployment now consumes `REDIS_PASSWORD` and `REDIS_SSL_ENABLED` for secure Redis
+  connectivity.
+
+## Faz 58 additions
+
+- Notification delivery schedule toggles:
+  - `NOTIFICATION_DIGEST_ENABLED`
+  - `NOTIFICATION_DIGEST_WORKER_ENABLED`
+  - `NOTIFICATION_DIGEST_POLL_INTERVAL_SECONDS`
+  - `NOTIFICATION_DIGEST_BATCH_SIZE`
+  - `NOTIFICATION_DIGEST_MAX_ITEMS_PER_EMAIL`
+  - `NOTIFICATION_DIGEST_DAILY_SEND_TIME`
+  - `NOTIFICATION_DIGEST_WEEKLY_DAY`
+  - `NOTIFICATION_DIGEST_WEEKLY_SEND_TIME`
+- Gateway route forwards `/notification-delivery-preferences/**` to notification-service.
+
+## Faz 64 additions
+
+- Durable SSE fanout outbox (`NOTIFICATION_FANOUT_*` envs); see `docs/notification-durable-fanout.md`.
+- Helm values: `notificationFanoutOutboxEnabled`, `notificationFanoutWorkerEnabled`,
+  `notificationFanoutImmediateLocalDelivery`, batch/backoff/lock retention keys (see chart `values.yaml`).
+
+## Faz 65 additions
+
+- `WORKSPACE_NOTIFICATION_PREFERENCES_ENABLED`, `NOTIFICATION_WORKSPACE_CLIENT_*` JWT settings for
+  notification-service → workspace-service.
+- Workspace-service: `TRUSTED_SERVICE_NOTIFICATION_SERVICE_*` for validating those internal calls.
+- Frontend: `FRONTEND_WORKSPACE_NOTIFICATION_PREFERENCES_ENABLED` (Settings → workspace notification section).
+
 ## Faz 48 additions
 
 - Gateway audit export toggle: `GATEWAY_ADMIN_AUDIT_EXPORT_ENABLED`.
@@ -278,3 +329,16 @@ provider.
   - `audit-export-bearer-token`
   - `audit-export-admin-cookie`
   (do not commit real credentials).
+
+## Faz 54 additions
+
+- Scheduled export supports machine JWT mode (`AUTH_MODE=machine`).
+- CronJob can mount machine private key PEM for short-lived JWT signing.
+- Gateway machine auth flags (`GATEWAY_AUDIT_EXPORT_MACHINE_AUTH_*`) gate non-human export access.
+
+## Faz 55 additions
+
+- Scheduled export CronJob supports S3-compatible upload env contract (`AUDIT_ARCHIVE_*`, `AWS_*`).
+- Upload credentials are Secret-backed (`access-key-id`, `secret-access-key`) and optional when upload disabled.
+- Object lock headers are configurable for governance/compliance retention.
+- Cron image should include both `curl` and `aws` CLI capabilities (default chart value uses `amazon/aws-cli`).

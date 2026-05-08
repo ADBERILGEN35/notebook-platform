@@ -11,6 +11,13 @@ import { SettingsPage } from '../pages/SettingsPage'
 import { NotificationsPage } from '../pages/NotificationsPage'
 import { AdminHomePage } from '../pages/admin/AdminHomePage'
 import { AdminAuditPage } from '../pages/admin/AdminAuditPage'
+import { AdminLayout } from '../pages/admin/AdminLayout'
+import { AdminEnterpriseLayout } from '../pages/admin/AdminEnterpriseLayout'
+import {
+  AdminEnterpriseOverviewPage,
+  AdminEnterpriseSecurityPage,
+  AdminEnterpriseIntegrationsPage,
+} from '../pages/admin/AdminEnterprisePages'
 import { useAuthStore } from '../features/auth/auth-store'
 import { isCookieMode } from '../shared/config/auth-transport'
 import { isAdminUiEnabled } from '../shared/config/admin-feature-flags'
@@ -69,9 +76,23 @@ export const router = createBrowserRouter([
         path: 'admin',
         element: <AdminGate />,
         children: [
-          { index: true, element: <AdminHomePage /> },
-          { path: 'audit', element: <AdminAuditPage /> },
-          { path: 'audit/:eventId', element: <AdminAuditPage /> },
+          {
+            element: <AdminLayout />,
+            children: [
+              { index: true, element: <AdminHomePage /> },
+              { path: 'audit', element: <AdminAuditPage /> },
+              { path: 'audit/:eventId', element: <AdminAuditPage /> },
+              {
+                path: 'enterprise',
+                element: <AdminEnterpriseLayout />,
+                children: [
+                  { index: true, element: <AdminEnterpriseOverviewPage /> },
+                  { path: 'security', element: <AdminEnterpriseSecurityPage /> },
+                  { path: 'integrations', element: <AdminEnterpriseIntegrationsPage /> },
+                ],
+              },
+            ],
+          },
         ],
       },
     ],

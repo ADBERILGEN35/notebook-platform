@@ -1,16 +1,19 @@
-import { useMutation } from '@tanstack/react-query'
-import { useNavigate, Link } from 'react-router-dom'
+import { useMutation, useQuery } from '@tanstack/react-query'
+import { useNavigate, Link, useSearchParams } from 'react-router-dom'
 import { useState } from 'react'
-import { login, loginSchema, me } from '../features/auth/auth-api'
+import { listSsoProviders, login, loginSchema, me } from '../features/auth/auth-api'
 import { authenticationOptions, authenticationVerify, verifyRecoveryCode } from '../features/auth/mfa-api'
 import { useAuthStore } from '../features/auth/auth-store'
 import { Card } from '../shared/components/Card'
 import { Input } from '../shared/components/Input'
 import { Button } from '../shared/components/Button'
 import { ErrorAlert } from '../shared/components/ErrorAlert'
+import { isSsoEnabled } from '../shared/config/sso-feature-flags'
+import { API_BASE_URL } from '../shared/api/api-client'
 
 export function LoginPage() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const setSession = useAuthStore((state) => state.setSession)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -18,6 +21,13 @@ export function LoginPage() {
   const [recoveryCode, setRecoveryCode] = useState('')
 
   const setUser = useAuthStore((state) => state.setUser)
+  const ssoEnabled = isSsoEnabled()
+  const ssoErrorCode = searchParams.get('error')
+  const ssoQuery = useQuery({
+    queryKey: ['sso-providers'],
+    queryFn: listSsoProviders,
+    enabled: ssoEnabled,
+  })
 
   const mutation = useMutation({
     mutationFn: login,
@@ -148,6 +158,32 @@ export function LoginPage() {
           </Button>
           </form>
         )}
+        {ssoEnabled ? (
+          <div className="mt-4 border-t border-slate-200 pt-3">
+            <p className="mb-2 text-sm font-medium text-slate-800">Continue with SSO</p>
+            {ssoQuery.data?.providers?.map((provider) => (
+              <Button
+                key={provider.registrationId}
+                type="button"
+                className="mb-2 w-full"
+                onClick={() => {
+                  const returnUrl = encodeURIComponent('/app')
+                  window.location.assign(
+                    `${API_BASE_URL}/auth/sso/${provider.registrationId}/authorize?returnUrl=${returnUrl}`,
+                  )
+                }}
+              >
+                {provider.label}
+              </Button>
+            ))}
+            {ssoQuery.isError ? <ErrorAlert error={ssoQuery.error} /> : null}
+          </div>
+        ) : null}
+        {ssoErrorCode ? (
+          <p className="mt-3 rounded border border-rose-200 bg-rose-50 px-2 py-1 text-xs text-rose-700">
+            SSO login failed: {ssoErrorCode}
+          </p>
+        ) : null}
         <p className="mt-3 text-sm text-slate-600">
           No account? <Link to="/signup">Create one</Link>
         </p>

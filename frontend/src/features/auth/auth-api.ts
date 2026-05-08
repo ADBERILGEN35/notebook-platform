@@ -17,6 +17,10 @@ export const signupSchema = z.object({
 
 export type LoginInput = z.infer<typeof loginSchema>
 export type SignupInput = z.infer<typeof signupSchema>
+export type SsoProvider = {
+  registrationId: string
+  label: string
+}
 
 export const login = (payload: LoginInput) =>
   apiRequest<AuthResponse>('/auth/login', {
@@ -31,6 +35,9 @@ export const signup = (payload: SignupInput) =>
   })
 
 export const me = () => apiRequest<{ userId: string; email: string; roles: string[]; name: string; avatarUrl?: string | null }>('/auth/me')
+
+export const listSsoProviders = () =>
+  apiRequest<{ providers: SsoProvider[] }>('/auth/sso/providers')
 
 export const logout = (refreshToken?: string | null) =>
   apiRequest<void>('/auth/logout', {

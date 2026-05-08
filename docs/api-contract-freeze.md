@@ -126,6 +126,9 @@ Identity:
 - `POST /auth/logout`
 - `POST /auth/revoke-all`
 - `GET /auth/me`
+- `GET /auth/sso/providers`
+- `GET /auth/sso/{provider}/authorize`
+- `GET /auth/sso/{provider}/callback`
 
 Auth cookie + csrf contract (Faz 41):
 
@@ -201,6 +204,11 @@ Content optimistic concurrency (Faz 39):
 - missing `If-Match` when strict config enabled (`CONTENT_REQUIRE_IF_MATCH_FOR_NOTE_UPDATE=true`)
   -> `428 PRECONDITION_REQUIRED`
 - invalid `If-Match` format -> `400 INVALID_IF_MATCH_HEADER`
+
+Faz 66 (client-only merge suggestion): no new endpoints. The browser may `GET` the latest note to
+build a three-way diff, then `PATCH` merged `contentBlocks` with the **current** `ETag` after
+explicit **Apply suggested merge**. The server remains the authority; there is no backend semantic
+merge in this phase (see `docs/note-conflict-diff-merge.md`).
 
 ## Internal Endpoints
 
@@ -298,7 +306,16 @@ routes directly.
 
 - `GET /notification-preferences`
 - `PATCH /notification-preferences`
+- `GET /notification-delivery-preferences`
+- `PATCH /notification-delivery-preferences`
 - Internal create responses can include `status=SKIPPED` with `skippedReason=USER_PREFERENCE_DISABLED`.
+
+## Faz 65 Per-workspace notification preference contracts
+
+- `GET /notification-preferences/workspaces/{workspaceId}`
+- `PATCH /notification-preferences/workspaces/{workspaceId}`
+- `POST /notification-preferences/workspaces/{workspaceId}/reset`
+- Gateway: same `/notification-preferences/**` route as global preferences (user context + CSRF on mutating methods).
 
 ## Faz 51 MFA / WebAuthn contracts
 
@@ -314,3 +331,15 @@ routes directly.
   - `mfaRequired=true`
   - `mfaSessionId`
   - `availableMethods`
+
+## Faz 63 additive contract
+
+- `GET /admin/enterprise/status` — authenticated platform-admin response with aggregated secret-safe feature flags
+  (gateway + optional identity/notification internal status); errors: `ADMIN_ENTERPRISE_DISABLED`,
+  `ADMIN_MFA_REQUIRED`, `ADMIN_ACCESS_DENIED`. Documented in `docs/enterprise-admin-console.md`.
+
+## Faz 64 note
+
+- No new public REST contract for Notification Center. SSE event names and JSON payload shapes are
+  unchanged; delivery may duplicate events more often when immediate + worker both publish — clients
+  must remain idempotent (`docs/notification-durable-fanout.md`).

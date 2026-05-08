@@ -15,11 +15,15 @@ import com.notebook.lumen.notification.email.domain.EmailNotification;
 import com.notebook.lumen.notification.email.domain.EmailNotificationStatus;
 import com.notebook.lumen.notification.email.domain.EmailNotificationType;
 import com.notebook.lumen.notification.email.infrastructure.EmailNotificationRepository;
-import com.notebook.lumen.notification.preference.application.NotificationPreferenceService;
+import com.notebook.lumen.notification.preference.application.NotificationDeliveryPreferenceService;
+import com.notebook.lumen.notification.preference.application.NotificationPreferenceResolver;
+import com.notebook.lumen.notification.preference.domain.NotificationChannel;
 import com.notebook.lumen.notification.email.provider.EmailProvider;
 import com.notebook.lumen.notification.email.provider.EmailProviderException;
 import com.notebook.lumen.notification.email.provider.EmailSendResult;
 import com.notebook.lumen.notification.email.suppression.EmailSuppressionService;
+import com.notebook.lumen.notification.NotificationTestFanout;
+import com.notebook.lumen.notification.NotificationTestWorkspace;
 import com.notebook.lumen.notification.shared.config.NotificationProperties;
 import com.notebook.lumen.notification.shared.exception.NotificationException;
 import com.notebook.lumen.notification.template.application.EmailTemplateRenderer;
@@ -37,7 +41,16 @@ class EmailNotificationServiceTest {
   private final EmailProvider provider = mock(EmailProvider.class);
   private final EmailSuppressionService suppressionService = mock(EmailSuppressionService.class);
   private final AuditService auditService = mock(AuditService.class);
-  private final NotificationPreferenceService preferenceService = mock(NotificationPreferenceService.class);
+  private final NotificationPreferenceResolver preferenceResolver = mock(NotificationPreferenceResolver.class);
+  private final NotificationDeliveryPreferenceService deliveryPreferenceService =
+      mock(NotificationDeliveryPreferenceService.class);
+  private final NotificationDigestService digestService = mock(NotificationDigestService.class);
+
+  {
+    when(preferenceResolver.isChannelEnabled(any(), any(), any(), eq(NotificationChannel.EMAIL)))
+        .thenReturn(true);
+  }
+
   private final EmailNotificationService service =
       new EmailNotificationService(
           repository,
@@ -46,7 +59,9 @@ class EmailNotificationServiceTest {
           suppressionService,
           properties(),
           auditService,
-          preferenceService,
+          preferenceResolver,
+          deliveryPreferenceService,
+          digestService,
           new SimpleMeterRegistry());
 
   @Test
@@ -160,7 +175,9 @@ class EmailNotificationServiceTest {
             suppressionService,
             disabledProperties(),
             auditService,
-            preferenceService,
+            preferenceResolver,
+            deliveryPreferenceService,
+            digestService,
             new SimpleMeterRegistry());
 
     disabledService.processDueNotifications();
@@ -216,6 +233,7 @@ class EmailNotificationServiceTest {
             "acceptUrl",
             "https://example.test/accept"),
         idempotencyKey,
+        null,
         null);
   }
 
@@ -247,9 +265,13 @@ class EmailNotificationServiceTest {
         new NotificationProperties.Internal(
             new NotificationProperties.TrustedService(
                 "", "", "", "workspace-service", "notification-service", 5, ""),
+            null,
             null),
         new NotificationProperties.InApp(true),
-        new NotificationProperties.Preferences(true));
+        new NotificationProperties.Preferences(true),
+        new NotificationProperties.Digest(true, true, 60, 100, 50, "09:00", java.time.DayOfWeek.MONDAY, "09:00"),
+        NotificationTestFanout.disabled(),
+        NotificationTestWorkspace.disabled());
   }
 
   private NotificationProperties disabledProperties() {
@@ -280,8 +302,12 @@ class EmailNotificationServiceTest {
         new NotificationProperties.Internal(
             new NotificationProperties.TrustedService(
                 "", "", "", "workspace-service", "notification-service", 5, ""),
+            null,
             null),
         new NotificationProperties.InApp(true),
-        new NotificationProperties.Preferences(true));
+        new NotificationProperties.Preferences(true),
+        new NotificationProperties.Digest(true, true, 60, 100, 50, "09:00", java.time.DayOfWeek.MONDAY, "09:00"),
+        NotificationTestFanout.disabled(),
+        NotificationTestWorkspace.disabled());
   }
 }

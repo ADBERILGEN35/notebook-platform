@@ -152,18 +152,22 @@ suppression state. See:
 - No event-driven workspace outbox; if notification-service rejects an invitation email request,
   workspace-service rolls the invitation transaction back.
 
-## Faz 45 In-App Notifications
+## Faz 45/56 In-App Notifications
 
-Notification-service now also exposes in-app user notifications (polling-first MVP):
+Notification-service now also exposes in-app user notifications with SSE realtime support:
 
 - Internal create: `POST /internal/notifications/in-app` with scope
   `internal:notification:in-app:create`.
 - Public user API: `/notifications`, `/notifications/unread-count`, `/notifications/{id}/read`,
   `/notifications/read-all`, `/notifications/{id}/archive`.
+- Realtime stream API: `GET /notifications/stream` (`text/event-stream`, gateway user context required).
+- Faz 57 adds Redis pub/sub fanout for multi-pod SSE propagation.
 - Data model: `user_notifications` table (`V6__create_user_notifications.sql`) with ownership,
   read/archive lifecycle, and idempotent internal creation.
 
-See [`notification-center.md`](notification-center.md) for UI/API flow details.
+See [`notification-center.md`](notification-center.md) and
+[`realtime-notifications-sse.md`](realtime-notifications-sse.md) and
+[`realtime-notifications-redis-fanout.md`](realtime-notifications-redis-fanout.md) for flow details.
 
 ## Faz 49 Notification Preferences
 
@@ -174,3 +178,32 @@ See [`notification-center.md`](notification-center.md) for UI/API flow details.
   - `INVALID_NOTIFICATION_PREFERENCE_REQUEST`
   - `MANDATORY_NOTIFICATION_PREFERENCE`
   - `NOTIFICATION_PREFERENCE_NOT_FOUND`
+
+## Faz 58 Digest / Quiet Hours
+
+- New user delivery preference API:
+  - `GET /notification-delivery-preferences`
+  - `PATCH /notification-delivery-preferences`
+- New tables:
+  - `user_notification_delivery_preferences`
+  - `notification_digest_items`
+- Digest worker groups due items and creates `NOTIFICATION_DIGEST` email queue entries.
+- Security-critical email notifications bypass digest/quiet-hours and stay immediate.
+
+## Faz 65 Per-workspace notification preferences
+
+- Table: `user_workspace_notification_preferences` (see `V11__user_workspace_notification_preferences.sql`).
+- Public API: `GET/PATCH /notification-preferences/workspaces/{workspaceId}` and `POST .../reset`.
+- Resolution via `NotificationPreferenceResolver`; workspace-service membership check for API calls.
+- Digest/quiet hours remain global; see [`workspace-notification-preferences.md`](workspace-notification-preferences.md).
+
+## Admin status (Faz 63)
+
+`GET /internal/admin/status/notification` (service JWT, opt-in) returns SSE/digest/email **configuration class**
+flags only — see `docs/enterprise-admin-console.md`.
+
+## Durable SSE fanout outbox (Faz 64)
+
+- Table: `notification_fanout_outbox` (`V10__notification_fanout_outbox.sql`).
+- In-app mutations enqueue secret-safe SSE payloads; optional immediate publish + worker retries.
+- See [`notification-durable-fanout.md`](notification-durable-fanout.md).

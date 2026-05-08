@@ -6,6 +6,7 @@ Recommended environment values:
 - `SEARCH_PERMISSION_RUNTIME_CHECK_ENABLED=true`
 - `SEARCH_PERMISSION_REFRESH_ENABLED=true`
 - trusted service JWT configs for workspace/search refresh path
+- `SIEM_PUSH_ENABLED=false` by default; enable progressively with endpoint+secret placeholders
 
 # GitOps Deployment
 
@@ -72,6 +73,7 @@ later if production change control requires tighter permissions or a different a
   `gatewayAdminAuditEnabled`, `gatewayAdminAllowedEmails`)
 - frontend admin audit real mode enabled (`FRONTEND_ADMIN_UI_ENABLED=true`, `FRONTEND_AUDIT_API_MODE=real`)
 - frontend CSP in report-only (`frontend.security.csp.enabled=true`, `reportOnly=true`)
+- SSO should remain disabled unless staging IdP config and secret wiring are validated
 
 `prod` is conservative:
 
@@ -288,6 +290,21 @@ Prod:
 - `FRONTEND_NOTIFICATIONS_ENABLED` is aligned with backend toggle.
 - Gateway `/notifications/**` route is present before enabling frontend bell flag.
 
+### Realtime Notification SSE (Faz 56) rollout checks
+
+- `NOTIFICATIONS_SSE_ENABLED` and `FRONTEND_NOTIFICATIONS_SSE_ENABLED` are explicitly pinned per
+  environment.
+- Cookie/dual auth transport is enabled where SSE is expected; bearer-only envs keep polling-only.
+- Gateway includes dedicated `GET /notifications/stream` route with SSE-friendly timeout behavior.
+- Polling fallback remains enabled until distributed fanout is implemented.
+
+### Redis SSE fanout (Faz 57) rollout checks
+
+- Start with `notificationsSseDistributedEnabled: "false"` in production overlays.
+- Enable in staging first with at least 2 notification replicas and verify cross-pod event delivery.
+- Ensure Redis network path and credentials are healthy before rollout.
+- Keep polling fallback active during canary/gradual enablement.
+
 ### Audit Export (Faz 48) rollout checks
 
 - `gatewayAdminAuditExportEnabled` is set per environment (usually off in dev, gated in staging/prod).
@@ -298,6 +315,25 @@ Prod:
 
 - `notificationPreferencesEnabled` and `FRONTEND_NOTIFICATION_PREFERENCES_ENABLED` stay aligned.
 - Mandatory security preferences are validated in smoke tests before wider rollout.
+
+### Per-workspace notification preferences (Faz 65) rollout checks
+
+- `workspaceNotificationPreferencesEnabled`, `NOTIFICATION_WORKSPACE_CLIENT_*`, and workspace
+  `TRUSTED_SERVICE_NOTIFICATION_SERVICE_*` are configured together; prod enables only after staging
+  membership/JWT smoke tests.
+- `FRONTEND_WORKSPACE_NOTIFICATION_PREFERENCES_ENABLED` matches whether the API is enabled for users.
+
+### Digest / quiet hours (Faz 58) rollout checks
+
+- `notificationDigestEnabled` is pinned per environment.
+- Stage rollout with `notificationDigestWorkerEnabled=true` in staging and initially `false` in prod.
+- Verify security-critical notifications remain immediate when digest/quiet-hours are enabled.
+
+### Durable notification fanout (Faz 64) rollout checks
+
+- Pin `notificationFanoutOutboxEnabled` per environment; keep worker enabled only when outbox is on.
+- Staging: enable outbox before production; watch `notifications_fanout_outbox_pending` / `_dead` metrics.
+- Production: start with outbox off or canary; Redis distributed fanout remains independent.
 
 ### MFA Foundation (Faz 50) rollout checks
 
@@ -317,3 +353,18 @@ Prod:
 - Keep `auditExport.scheduled.enabled=false` by default in all envs.
 - Enable only after machine identity/auth secret flow is approved.
 - Validate CronJob rendering with `bash scripts/helm-template-check.sh`.
+
+### Machine identity export auth (Faz 54)
+
+- Enable `gatewayAuditExportMachineAuthEnabled=true` in staging/prod only after key distribution.
+- Keep scheduled CronJob disabled until manual machine-token export validation is complete.
+- Do not store private/public key material in Git values; use External Secrets / precreated Secrets.
+
+### Object storage upload (Faz 55)
+
+- Keep `auditExport.scheduled.archive.uploadEnabled=false` by default.
+- When enabled in staging/prod:
+  - set `provider=s3-compatible`
+  - configure bucket/prefix
+  - wire S3 credential secret refs
+- Validate upload with manual run before enabling cron schedule.

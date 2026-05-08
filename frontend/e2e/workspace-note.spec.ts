@@ -62,6 +62,7 @@ test('autosave conflict shows reload latest banner on 412', async ({ page }) => 
   await page.getByTestId('conflict-review-button').click()
   await expect(page.getByTestId('conflict-dialog')).toBeVisible()
   await expect(page.getByTestId('conflict-overwrite')).toBeVisible()
+  await expect(page.getByText('What changed?')).toBeVisible({ timeout: 15_000 })
 })
 
 test('conflict overwrite retries with latest etag', async ({ page }) => {

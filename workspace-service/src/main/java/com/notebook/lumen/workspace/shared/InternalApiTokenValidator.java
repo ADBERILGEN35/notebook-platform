@@ -67,11 +67,26 @@ public class InternalApiTokenValidator {
     if (!internal.serviceJwtTrustConfigured()) {
       throw Exceptions.unauthorized("INVALID_SERVICE_JWT", "Trusted service key is not configured");
     }
-    try {
-      verifyWithTrustedService(internal.trustedContentService(), token, requiredScope);
-    } catch (RuntimeException e) {
-      verifyWithTrustedService(internal.trustedSearchService(), token, requiredScope);
+    RuntimeException lastFailure = null;
+    for (WorkspaceProperties.TrustedService trusted :
+        java.util.List.of(
+            internal.trustedContentService(),
+            internal.trustedSearchService(),
+            internal.trustedNotificationService())) {
+      if (trusted == null || !trusted.configured()) {
+        continue;
+      }
+      try {
+        verifyWithTrustedService(trusted, token, requiredScope);
+        return;
+      } catch (RuntimeException e) {
+        lastFailure = e;
+      }
     }
+    if (lastFailure != null) {
+      throw lastFailure;
+    }
+    throw Exceptions.unauthorized("INVALID_SERVICE_JWT", "Trusted service key is not configured");
   }
 
   private void verifyWithTrustedService(

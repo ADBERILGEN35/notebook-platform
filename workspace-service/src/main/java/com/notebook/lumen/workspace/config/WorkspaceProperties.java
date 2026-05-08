@@ -28,7 +28,8 @@ public record WorkspaceProperties(
       String secondaryToken,
       String authMode,
       TrustedService trustedContentService,
-      TrustedService trustedSearchService) {
+      TrustedService trustedSearchService,
+      TrustedService trustedNotificationService) {
     public boolean tokenRequired() {
       return hasText(primaryToken) || hasText(apiToken);
     }
@@ -59,7 +60,8 @@ public record WorkspaceProperties(
 
     public boolean serviceJwtTrustConfigured() {
       return (trustedContentService != null && trustedContentService.configured())
-          || (trustedSearchService != null && trustedSearchService.configured());
+          || (trustedSearchService != null && trustedSearchService.configured())
+          || (trustedNotificationService != null && trustedNotificationService.configured());
     }
 
     private static boolean hasText(String value) {

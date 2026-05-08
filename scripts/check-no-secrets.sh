@@ -8,11 +8,21 @@ if git -C "$ROOT_DIR" ls-files --error-unmatch .env >/dev/null 2>&1; then
   exit 1
 fi
 
+PRIVATE_KEY_ALLOWLIST_REGEX='api-gateway/src/test/.*/ApiGatewayIntegrationTest\.java'
 if grep -RIn --exclude-dir=.git --exclude-dir=.gradle --exclude-dir=build --exclude-dir=node_modules --exclude-dir=dist \
   --exclude='*.md' --exclude='.env.example' --exclude='.env.production.example' \
   --exclude='check-no-secrets.sh' \
-  -- '-----BEGIN \(RSA \)\?PRIVATE KEY-----' "$ROOT_DIR"; then
+  -- '-----BEGIN \(RSA \)\?PRIVATE KEY-----' "$ROOT_DIR" \
+  | grep -Ev "$PRIVATE_KEY_ALLOWLIST_REGEX"; then
   echo "Private key material must not be committed." >&2
+  exit 1
+fi
+
+if grep -RIn --exclude-dir=.git --exclude-dir=.gradle --exclude-dir=build --exclude-dir=node_modules --exclude-dir=dist \
+  --exclude='*.md' --exclude='.env.example' --exclude='.env.production.example' \
+  -E -- 'AKIA[0-9A-Z]{16}|ASIA[0-9A-Z]{16}' \
+  "$ROOT_DIR"; then
+  echo "Possible AWS access key id detected." >&2
   exit 1
 fi
 

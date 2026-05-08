@@ -108,6 +108,12 @@ Admin audit endpoints also follow gateway MFA policy:
 
 When enforcement conditions fail, gateway returns `403 ADMIN_MFA_REQUIRED`.
 
+## Faz 63 Enterprise status extension
+
+`GET /admin/enterprise/status` reuses the same admin authorization + MFA semantics and the audit proxy
+**service JWT signer**, but calls internal **status-only** endpoints on identity and notification services
+(scope `internal:admin:status:read`). See [`docs/enterprise-admin-console.md`](enterprise-admin-console.md).
+
 ## Faz 53 Scheduled export foundation
 
 Scheduled export uses the existing export endpoint from an ops-side script/CronJob.

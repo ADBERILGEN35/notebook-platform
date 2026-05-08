@@ -23,10 +23,16 @@ Recommended controls:
 - Azure Immutable Blob Storage
 - On-prem immutable NAS/WORM-capable storage
 
+Faz 55 script support includes S3-compatible object lock headers for governance/compliance mode.
+
 ## Integrity & chain of custody
 
 - SHA256 sidecar for every archive file
 - manifest with schema version and generation metadata
+- upload metadata in manifest:
+  - provider, bucket, object keys
+  - upload status and upload timestamp
+  - worm mode and retention timestamp
 - verification script before ingest/restore
 - immutable write path in production archive target
 
@@ -34,6 +40,7 @@ Recommended controls:
 
 - encryption at rest in archive backend
 - least-privilege read/write identities
+- scheduled export writer should use machine identity (`token_type=machine`, scoped export claim)
 - no audit archive secrets in Git
 - access reviews and break-glass logging
 

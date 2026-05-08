@@ -27,6 +27,16 @@ const mockPrefs = vi.hoisted(() => ({
   ],
 }))
 const patchSpy = vi.hoisted(() => vi.fn(async () => mockPrefs.data))
+const patchDeliverySpy = vi.hoisted(() =>
+  vi.fn(async () => ({
+    emailDigestEnabled: true,
+    emailDigestFrequency: 'DAILY',
+    quietHoursEnabled: true,
+    quietHoursStart: '22:00',
+    quietHoursEnd: '08:00',
+    timezone: 'UTC',
+  })),
+)
 
 vi.mock('../features/auth/auth-store', () => ({
   useAuthStore: (selector: (state: any) => any) =>
@@ -41,11 +51,21 @@ vi.mock('../features/admin/access/admin-access', () => ({
 }))
 vi.mock('../shared/config/notifications-feature-flags', () => ({
   isNotificationPreferencesEnabled: () => true,
+  isWorkspaceNotificationPreferencesEnabled: () => false,
   isMfaUiEnabled: () => true,
 }))
 vi.mock('../features/notifications/notification-preferences-api', () => ({
   getNotificationPreferences: vi.fn(async () => mockPrefs.data),
   patchNotificationPreferences: patchSpy,
+  getNotificationDeliveryPreferences: vi.fn(async () => ({
+    emailDigestEnabled: false,
+    emailDigestFrequency: 'DAILY',
+    quietHoursEnabled: false,
+    quietHoursStart: '22:00',
+    quietHoursEnd: '08:00',
+    timezone: 'UTC',
+  })),
+  patchNotificationDeliveryPreferences: patchDeliverySpy,
 }))
 vi.mock('../features/auth/mfa-api', () => ({
   getMfaSettings: vi.fn(async () => ({
@@ -92,6 +112,7 @@ describe('SettingsPage notification preferences + mfa', () => {
     renderPage()
     await waitFor(() => expect(screen.getByText('Notification preferences')).toBeTruthy())
     expect(await screen.findByText('Comments')).toBeTruthy()
+    expect(screen.getByText('Delivery schedule')).toBeTruthy()
   })
 
   it('shows mandatory toggle as disabled', async () => {
@@ -106,6 +127,14 @@ describe('SettingsPage notification preferences + mfa', () => {
     fireEvent.click(commentsEmail)
     fireEvent.click(screen.getByRole('button', { name: 'Save changes' }))
     await waitFor(() => expect(patchSpy).toHaveBeenCalledTimes(1))
+  })
+
+  it('saves delivery preferences', async () => {
+    renderPage()
+    const digestToggle = await screen.findByLabelText('delivery-email-digest-enabled')
+    fireEvent.click(digestToggle)
+    fireEvent.click(screen.getByRole('button', { name: 'Save delivery schedule' }))
+    await waitFor(() => expect(patchDeliverySpy).toHaveBeenCalledTimes(1))
   })
 
   it('shows error state when save fails', async () => {

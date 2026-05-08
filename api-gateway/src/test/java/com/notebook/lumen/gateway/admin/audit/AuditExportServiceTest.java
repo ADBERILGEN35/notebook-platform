@@ -19,7 +19,18 @@ class AuditExportServiceTest {
   void rejectsMissingRange() {
     AuditProxyService proxy = mock(AuditProxyService.class);
     AuditExportService service =
-        new AuditExportService(proxy, new GatewayAuditExportProperties(true, 31, 10000, 200));
+        new AuditExportService(
+            proxy,
+            new GatewayAuditExportProperties(
+                true,
+                31,
+                10000,
+                200,
+                new GatewayAuditExportProperties.MachineAuth(
+                    false, "", "api-gateway", "admin:audit:export", "", "", 900),
+                false,
+                false,
+                ""));
 
     assertThatThrownBy(() -> service.export(AuditSource.IDENTITY, "csv", Map.of()).block())
         .isInstanceOf(AuditProxyException.class)
@@ -40,7 +51,18 @@ class AuditExportServiceTest {
                 """));
 
     AuditExportService service =
-        new AuditExportService(proxy, new GatewayAuditExportProperties(true, 31, 10000, 200));
+        new AuditExportService(
+            proxy,
+            new GatewayAuditExportProperties(
+                true,
+                31,
+                10000,
+                200,
+                new GatewayAuditExportProperties.MachineAuth(
+                    false, "", "api-gateway", "admin:audit:export", "", "", 900),
+                false,
+                false,
+                ""));
     Map<String, String> filters = new LinkedHashMap<>();
     filters.put("createdFrom", "2026-01-01T00:00:00Z");
     filters.put("createdTo", "2026-01-02T00:00:00Z");
@@ -66,7 +88,18 @@ class AuditExportServiceTest {
                 """));
 
     AuditExportService service =
-        new AuditExportService(proxy, new GatewayAuditExportProperties(true, 31, 10000, 200));
+        new AuditExportService(
+            proxy,
+            new GatewayAuditExportProperties(
+                true,
+                31,
+                10000,
+                200,
+                new GatewayAuditExportProperties.MachineAuth(
+                    false, "", "api-gateway", "admin:audit:export", "", "", 900),
+                false,
+                false,
+                ""));
     Map<String, String> filters = new LinkedHashMap<>();
     filters.put("createdFrom", "2026-01-01T00:00:00Z");
     filters.put("createdTo", "2026-01-02T00:00:00Z");

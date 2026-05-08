@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import type { AuthUser } from '../../shared/types/api'
 import { isCookieMode } from '../../shared/config/auth-transport'
+import { clearOfflineNotes } from '../offline/offline-note-cache'
 
 const ACCESS_TOKEN_KEY = 'np_access_token'
 const REFRESH_TOKEN_KEY = 'np_refresh_token'
@@ -60,6 +61,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     localStorage.removeItem(ACCESS_TOKEN_KEY)
     localStorage.removeItem(REFRESH_TOKEN_KEY)
     localStorage.removeItem(USER_KEY)
+    void clearOfflineNotes()
     set({ accessToken: null, refreshToken: null, user: null })
   },
 }))

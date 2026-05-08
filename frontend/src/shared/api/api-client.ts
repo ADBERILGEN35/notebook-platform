@@ -4,7 +4,7 @@ import type { AuthResponse, ErrorResponse } from '../types/api'
 import { getAuthTransport, isCookieMode } from '../config/auth-transport'
 
 const runtimeApiBaseUrl = window.__NOTEBOOK_CONFIG__?.API_BASE_URL?.trim()
-const API_BASE_URL = runtimeApiBaseUrl || import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
+export const API_BASE_URL = runtimeApiBaseUrl || import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
 
 export class ApiError extends Error {
   status: number

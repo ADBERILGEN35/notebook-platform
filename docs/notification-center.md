@@ -1,11 +1,15 @@
-# Notification Center (Faz 45 MVP)
+# Notification Center (Faz 45 + Faz 56/57 SSE + Faz 64 durable fanout)
 
 ## Scope
 
-Faz 45 adds an in-app Notification Center foundation without realtime delivery.
+Faz 45 adds polling-based in-app Notification Center foundation. Faz 56 upgrades it with SSE-based
+realtime delivery plus polling fallback. Faz 57 adds Redis fanout for multi-pod SSE propagation.
+Faz 64 adds an optional **PostgreSQL fanout outbox** so SSE events are retried after transient Redis /
+process failures (`notification-durable-fanout.md`).
 
-- Delivery model: **polling** (frontend refreshes unread count every 30s, list on dropdown open/page actions).
-- Out of scope: WebSocket/SSE, Kafka/RabbitMQ, preferences center, mention fan-out, mobile polish.
+- Delivery model: **SSE + polling fallback** (frontend keeps 30s polling for resilience).
+- SSE events may be **duplicated** (at-least-once-ish); UI logic must be idempotent.
+- Out of scope: WebSocket, external message brokers (Kafka/RabbitMQ), mobile push.
 
 ## Backend Model
 
@@ -33,6 +37,7 @@ Faz 45 adds an in-app Notification Center foundation without realtime delivery.
 
 - `GET /notifications`
 - `GET /notifications/unread-count`
+- `GET /notifications/stream`
 - `POST /notifications/{notificationId}/read`
 - `POST /notifications/read-all`
 - `POST /notifications/{notificationId}/archive`
@@ -42,6 +47,7 @@ Rules:
 - `recipientUserId` is derived from gateway context header (`X-User-Id`), never from client payload.
 - Ownership enforced for read/archive/list.
 - Archived notifications are excluded from list/unread.
+- SSE stream requires same auth context and returns only current user's events.
 
 ## Integration (MVP)
 
@@ -54,12 +60,15 @@ Identity revoke-all now triggers in-app notification request:
 
 Invitation/comment fan-out stays as future work for this phase.
 
-## Frontend UX
+## Frontend UX (Faz 56)
 
 - Topbar bell with unread badge.
 - Dropdown: latest 5 notifications, empty state, mark-read/archive, `View all`.
 - Page: `/app/notifications` with unread filter, type filter, optional workspace filter, pagination, mark-all-read.
 - Feature flag: `NOTIFICATIONS_ENABLED` (`FRONTEND_NOTIFICATIONS_ENABLED` runtime env).
+- SSE flag: `NOTIFICATIONS_SSE_ENABLED` (`FRONTEND_NOTIFICATIONS_SSE_ENABLED` runtime env).
+- Cookie/dual auth mode uses `EventSource(..., { withCredentials: true })`.
+- Bearer mode keeps polling-only behavior.
 
 ## Security Notes
 
@@ -71,5 +80,12 @@ Invitation/comment fan-out stays as future work for this phase.
 ## Faz 49 Preferences update
 
 - `GET/PATCH /notification-preferences` provides user-level channel controls (`IN_APP`, `EMAIL`).
+- Faz 65: `GET/PATCH/POST reset` under `/notification-preferences/workspaces/{workspaceId}` for per-workspace overrides (see `docs/workspace-notification-preferences.md`).
 - Security-critical `SECURITY_SESSIONS_REVOKED` is mandatory and cannot be disabled.
 - Disabled preference paths may return `SKIPPED` for internal create flows.
+
+## Faz 58 Delivery Schedule
+
+- `GET/PATCH /notification-delivery-preferences` adds email digest + quiet-hours + timezone controls.
+- In-app realtime flow stays unchanged.
+- Security-critical notifications remain immediate.

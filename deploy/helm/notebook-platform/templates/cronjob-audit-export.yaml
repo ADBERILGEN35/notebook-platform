@@ -43,7 +43,7 @@ spec:
                 - name: OUTPUT_DIR
                   value: {{ .Values.auditExport.scheduled.archive.outputDir | quote }}
                 - name: AUTH_MODE
-                  value: {{ .Values.auditExport.scheduled.authMode | quote }}
+                  value: {{ .Values.auditExport.scheduled.auth.mode | quote }}
                 - name: COMPRESS
                   value: {{ .Values.auditExport.scheduled.archive.compress | quote }}
                 - name: WRITE_MANIFEST
@@ -52,25 +52,80 @@ spec:
                   value: {{ .Values.auditExport.scheduled.archive.uploadEnabled | quote }}
                 - name: AUDIT_ARCHIVE_PROVIDER
                   value: {{ .Values.auditExport.scheduled.archive.provider | quote }}
+                - name: AUDIT_ARCHIVE_BUCKET
+                  value: {{ .Values.auditExport.scheduled.archive.bucket | quote }}
+                - name: AUDIT_ARCHIVE_PREFIX
+                  value: {{ .Values.auditExport.scheduled.archive.prefix | quote }}
+                - name: AUDIT_ARCHIVE_FAIL_IF_EXISTS
+                  value: {{ .Values.auditExport.scheduled.archive.failIfExists | quote }}
+                - name: AUDIT_ARCHIVE_UPLOAD_MAX_ATTEMPTS
+                  value: {{ .Values.auditExport.scheduled.archive.uploadMaxAttempts | quote }}
+                - name: AUDIT_ARCHIVE_UPLOAD_RETRY_SECONDS
+                  value: {{ .Values.auditExport.scheduled.archive.uploadRetrySeconds | quote }}
                 - name: GENERATED_BY
                   value: {{ .Values.auditExport.scheduled.archive.generatedBy | quote }}
                 - name: REDACTION_POLICY_VERSION
                   value: {{ .Values.auditExport.scheduled.archive.redactionPolicyVersion | quote }}
+                - name: AWS_REGION
+                  value: {{ .Values.auditExport.scheduled.archive.s3.region | quote }}
+                - name: AWS_ENDPOINT_URL
+                  value: {{ .Values.auditExport.scheduled.archive.s3.endpointUrl | quote }}
+                - name: AUDIT_ARCHIVE_S3_STORAGE_CLASS
+                  value: {{ .Values.auditExport.scheduled.archive.s3.storageClass | quote }}
+                - name: AUDIT_ARCHIVE_S3_SERVER_SIDE_ENCRYPTION
+                  value: {{ .Values.auditExport.scheduled.archive.s3.serverSideEncryption | quote }}
+                - name: AUDIT_ARCHIVE_S3_SSE_KMS_KEY_ID
+                  value: {{ .Values.auditExport.scheduled.archive.s3.kmsKeyId | quote }}
+                - name: AUDIT_ARCHIVE_S3_OBJECT_LOCK_MODE
+                  value: {{ .Values.auditExport.scheduled.archive.s3.objectLockMode | quote }}
+                - name: AUDIT_ARCHIVE_S3_OBJECT_LOCK_RETAIN_UNTIL_DATE
+                  value: {{ .Values.auditExport.scheduled.archive.s3.objectLockRetainUntilDate | quote }}
+                - name: AUDIT_ARCHIVE_S3_OBJECT_LOCK_LEGAL_HOLD
+                  value: {{ .Values.auditExport.scheduled.archive.s3.objectLockLegalHold | quote }}
                 - name: BEARER_TOKEN
                   valueFrom:
                     secretKeyRef:
                       name: {{ default (include "notebook-platform.secretName" .) .Values.secrets.existingSecret }}
-                      key: audit-export-bearer-token
+                      key: {{ .Values.auditExport.scheduled.auth.bearerSecretKey | quote }}
                       optional: true
                 - name: ADMIN_COOKIE
                   valueFrom:
                     secretKeyRef:
                       name: {{ default (include "notebook-platform.secretName" .) .Values.secrets.existingSecret }}
-                      key: audit-export-admin-cookie
+                      key: {{ .Values.auditExport.scheduled.auth.cookieSecretKey | quote }}
                       optional: true
+                - name: AWS_ACCESS_KEY_ID
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ default (default (include "notebook-platform.secretName" .) .Values.secrets.existingSecret) .Values.auditExport.scheduled.archive.s3.credentialsSecretName }}
+                      key: {{ .Values.auditExport.scheduled.archive.s3.accessKeyIdSecretKey | quote }}
+                      optional: true
+                - name: AWS_SECRET_ACCESS_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ default (default (include "notebook-platform.secretName" .) .Values.secrets.existingSecret) .Values.auditExport.scheduled.archive.s3.credentialsSecretName }}
+                      key: {{ .Values.auditExport.scheduled.archive.s3.secretAccessKeySecretKey | quote }}
+                      optional: true
+                - name: MACHINE_JWT_ISSUER
+                  value: {{ .Values.auditExport.scheduled.auth.machine.issuer | quote }}
+                - name: MACHINE_JWT_SUBJECT
+                  value: {{ .Values.auditExport.scheduled.auth.machine.subject | quote }}
+                - name: MACHINE_JWT_AUDIENCE
+                  value: {{ .Values.auditExport.scheduled.auth.machine.audience | quote }}
+                - name: MACHINE_JWT_SCOPE
+                  value: {{ .Values.auditExport.scheduled.auth.machine.scope | quote }}
+                - name: MACHINE_JWT_TTL_SECONDS
+                  value: {{ .Values.auditExport.scheduled.auth.machine.ttlSeconds | quote }}
+                - name: MACHINE_JWT_KID
+                  value: {{ .Values.auditExport.scheduled.auth.machine.kid | quote }}
+                - name: MACHINE_JWT_PRIVATE_KEY_PATH
+                  value: "/etc/notebook/audit-export-machine/private.pem"
               volumeMounts:
                 - name: exports
                   mountPath: {{ .Values.auditExport.scheduled.archive.outputDir | quote }}
+                - name: machine-jwt-key
+                  mountPath: /etc/notebook/audit-export-machine
+                  readOnly: true
               securityContext:
                 {{- toYaml .Values.auditExport.scheduled.securityContext | nindent 16 }}
               resources:
@@ -78,4 +133,11 @@ spec:
           volumes:
             - name: exports
               emptyDir: {}
+            - name: machine-jwt-key
+              secret:
+                secretName: {{ default (default (include "notebook-platform.secretName" .) .Values.secrets.existingSecret) .Values.auditExport.scheduled.auth.machine.privateKeySecretName }}
+                items:
+                  - key: {{ .Values.auditExport.scheduled.auth.machine.privateKeySecretKey | quote }}
+                    path: private.pem
+                optional: true
 {{- end }}

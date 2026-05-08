@@ -3,7 +3,7 @@ package com.notebook.lumen.notification.user.api;
 import com.notebook.lumen.notification.shared.config.NotificationProperties;
 import com.notebook.lumen.notification.shared.exception.NotificationException;
 import com.notebook.lumen.notification.shared.security.InternalNotificationAuthorizer;
-import com.notebook.lumen.notification.preference.application.NotificationPreferenceService;
+import com.notebook.lumen.notification.preference.application.NotificationPreferenceResolver;
 import com.notebook.lumen.notification.preference.domain.NotificationChannel;
 import com.notebook.lumen.notification.user.application.UserNotificationService;
 import jakarta.validation.Valid;
@@ -21,17 +21,17 @@ import org.springframework.web.bind.annotation.RestController;
 public class InternalInAppNotificationController {
   private final InternalNotificationAuthorizer authorizer;
   private final UserNotificationService notificationService;
-  private final NotificationPreferenceService preferenceService;
+  private final NotificationPreferenceResolver preferenceResolver;
   private final NotificationProperties properties;
 
   public InternalInAppNotificationController(
       InternalNotificationAuthorizer authorizer,
       UserNotificationService notificationService,
-      NotificationPreferenceService preferenceService,
+      NotificationPreferenceResolver preferenceResolver,
       NotificationProperties properties) {
     this.authorizer = authorizer;
     this.notificationService = notificationService;
-    this.preferenceService = preferenceService;
+    this.preferenceResolver = preferenceResolver;
     this.properties = properties;
   }
 
@@ -47,7 +47,8 @@ public class InternalInAppNotificationController {
     authorizer.authorize(serviceAuthorization, InternalNotificationAuthorizer.IN_APP_CREATE_SCOPE);
     UUID userId = request.recipientUserId();
     boolean enabled =
-        preferenceService.isEnabled(userId, request.type(), NotificationChannel.IN_APP);
+        preferenceResolver.isChannelEnabled(
+            userId, request.workspaceId(), request.type(), NotificationChannel.IN_APP);
     if (!enabled) {
       return new InternalInAppNotificationResponse(null, "SKIPPED", "USER_PREFERENCE_DISABLED");
     }

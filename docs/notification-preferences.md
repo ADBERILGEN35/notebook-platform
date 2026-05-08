@@ -1,8 +1,9 @@
-# Notification Preferences (Faz 49)
+# Notification Preferences (Faz 49/58/65)
 
 ## Scope
 
-Faz 49 adds user-level notification preference management for `IN_APP` and `EMAIL` channels without introducing real-time delivery, digest scheduling, quiet hours, or new services.
+Faz 49 adds user-level notification preference management for `IN_APP` and `EMAIL` channels.
+Faz 58 adds delivery schedule controls (digest + quiet hours) for email.
 
 ## Model
 
@@ -23,6 +24,14 @@ Default matrix:
 
 - `GET /notification-preferences`: returns grouped preference list per notification type with labels/descriptions and per-channel state.
 - `PATCH /notification-preferences`: updates selected rows for current authenticated user (`X-User-Id` context only).
+- `GET /notification-delivery-preferences`: returns digest/quiet-hours/timezone preferences.
+- `PATCH /notification-delivery-preferences`: updates delivery scheduling for current user.
+
+Faz 65 **per-workspace** overrides (see [`workspace-notification-preferences.md`](workspace-notification-preferences.md)):
+
+- `GET /notification-preferences/workspaces/{workspaceId}`
+- `PATCH /notification-preferences/workspaces/{workspaceId}`
+- `POST /notification-preferences/workspaces/{workspaceId}/reset`
 
 Validation rules:
 
@@ -32,8 +41,9 @@ Validation rules:
 
 ## Enforcement
 
-- Internal in-app creation checks `IN_APP` preference before creating rows.
-- Internal email enqueue checks `EMAIL` preference for mapped user-level events.
+- Internal in-app creation checks `IN_APP` preference before creating rows (global + workspace resolution when applicable).
+- Internal email enqueue checks `EMAIL` preference for mapped user-level events (global + workspace resolution when applicable).
+- Delivery schedule preferences can queue digest items or delay non-critical emails during quiet hours.
 - Skipped internal requests return `status=SKIPPED` and `skippedReason=USER_PREFERENCE_DISABLED`.
 
 ## Preference vs Suppression

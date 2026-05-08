@@ -7,8 +7,21 @@ export function AdminHomePage() {
     <div className="space-y-4">
       <PageHeader
         title="Admin"
-        subtitle="Operational visibility for platform teams. Audit data is mock-backed until the Faz 43 admin proxy lands."
+        subtitle="Operational visibility: audit events and read-only enterprise security status (gateway feature flags apply)."
       />
+
+      <Card>
+        <h2 className="text-sm font-semibold text-slate-800">Enterprise console</h2>
+        <p className="mt-1 text-sm text-slate-600">
+          Secret-safe SSO, SCIM, SIEM, MFA, audit export, and notification posture from the gateway status API.
+        </p>
+        <Link
+          className="mt-3 inline-block text-sm font-medium text-primary-600 hover:underline"
+          to="/app/admin/enterprise"
+        >
+          Open enterprise console
+        </Link>
+      </Card>
 
       <Card>
         <h2 className="text-sm font-semibold text-slate-800">Audit</h2>

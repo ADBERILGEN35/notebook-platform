@@ -47,6 +47,17 @@ public class ProductionSecurityValidator implements ApplicationRunner {
       throw new IllegalStateException(
           "TRUSTED_SERVICE_WORKSPACE_SERVICE_PUBLIC_KEY_PATH is required in prod");
     }
+    if (properties.workspace() != null && properties.workspace().preferencesEnabled()) {
+      if (isBlank(properties.workspace().serviceUrl())) {
+        throw new IllegalStateException(
+            "WORKSPACE_SERVICE_URL is required when WORKSPACE_NOTIFICATION_PREFERENCES_ENABLED=true in prod");
+      }
+      var outbound = properties.workspace().serviceJwt();
+      if (outbound == null || !outbound.signingConfigured()) {
+        throw new IllegalStateException(
+            "NOTIFICATION_WORKSPACE_CLIENT_JWT signing key is required when WORKSPACE_NOTIFICATION_PREFERENCES_ENABLED=true in prod");
+      }
+    }
   }
 
   private boolean isBlank(String value) {

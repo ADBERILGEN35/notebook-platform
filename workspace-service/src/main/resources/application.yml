@@ -78,6 +78,14 @@ workspace:
       audience: ${TRUSTED_SERVICE_SEARCH_SERVICE_AUDIENCE:workspace-service}
       clock-skew-seconds: ${TRUSTED_SERVICE_SEARCH_SERVICE_CLOCK_SKEW_SECONDS:5}
       allowed-scopes: ${TRUSTED_SERVICE_SEARCH_SERVICE_ALLOWED_SCOPES:internal:workspace:permission:read}
+    trusted-notification-service:
+      kid: ${TRUSTED_SERVICE_NOTIFICATION_SERVICE_KID:}
+      public-key: ${TRUSTED_SERVICE_NOTIFICATION_SERVICE_PUBLIC_KEY:}
+      public-key-path: ${TRUSTED_SERVICE_NOTIFICATION_SERVICE_PUBLIC_KEY_PATH:}
+      issuer: ${TRUSTED_SERVICE_NOTIFICATION_SERVICE_ISSUER:notification-service}
+      audience: ${TRUSTED_SERVICE_NOTIFICATION_SERVICE_AUDIENCE:workspace-service}
+      clock-skew-seconds: ${TRUSTED_SERVICE_NOTIFICATION_SERVICE_CLOCK_SKEW_SECONDS:5}
+      allowed-scopes: ${TRUSTED_SERVICE_NOTIFICATION_SERVICE_ALLOWED_SCOPES:internal:workspace:permission:read}
   notification:
     service-url: ${NOTIFICATION_SERVICE_URL:http://notification-service:8084}
     timeout-ms: ${NOTIFICATION_CLIENT_TIMEOUT_MS:1000}

@@ -83,3 +83,16 @@ Gateway emits structured logs:
   - data file (`.jsonl` or `.jsonl.gz`)
   - manifest (`.manifest.json`)
   - checksum sidecar (`.sha256`)
+
+## Machine identity (Faz 54)
+
+- Export endpoint supports machine principal with `token_type=machine`.
+- Required claims/policy: issuer allowlist, audience `api-gateway`, scope `admin:audit:export`,
+  max token TTL.
+- Machine auth is scoped to export endpoint and is intended for scheduled jobs only.
+
+## Object storage upload (Faz 55)
+
+- Scheduled export script supports `local` and `s3-compatible` archive providers.
+- Upload flow writes data/checksum first and manifest last.
+- Optional S3 object lock headers can be enabled for governance/compliance retention workflows.

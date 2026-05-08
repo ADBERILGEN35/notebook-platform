@@ -38,4 +38,20 @@ public class RateLimitConfig {
         adminAuditExport.burstCapacity(),
         adminAuditExport.requestedTokens());
   }
+
+  @Bean
+  RedisRateLimiter adminAuditExportMachineRedisRateLimiter(GatewayRateLimitProperties properties) {
+    GatewayRateLimitProperties.Bucket adminAuditExportMachine =
+        properties.effectiveAdminAuditExportMachine();
+    return new RedisRateLimiter(
+        adminAuditExportMachine.replenishRate(),
+        adminAuditExportMachine.burstCapacity(),
+        adminAuditExportMachine.requestedTokens());
+  }
+
+  @Bean
+  RedisRateLimiter scimRedisRateLimiter(GatewayRateLimitProperties properties) {
+    GatewayRateLimitProperties.Bucket scim = properties.effectiveScim();
+    return new RedisRateLimiter(scim.replenishRate(), scim.burstCapacity(), scim.requestedTokens());
+  }
 }

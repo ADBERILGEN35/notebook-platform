@@ -5,6 +5,74 @@
 - Archive integrity requires manifest + SHA256 validation before SIEM/restore workflows.
 - WORM behavior is provider-managed (S3 Object Lock / GCS retention lock / Azure immutable blob),
   not application-enforced.
+
+## Faz 54 additions
+
+- Scheduled export machine identity uses short-lived JWT with strict scope/audience/issuer checks.
+- Machine token is intentionally restricted to export endpoint to avoid privilege bleed.
+- Private key material remains CronJob-secret-only; frontend never receives machine credential.
+
+## Faz 55 additions
+
+- S3-compatible upload credentials remain CronJob-only secrets.
+- Archive writer should not have delete permission on bucket prefix.
+- Object lock governance/compliance should be tested in staging before production retention hardening.
+
+## Faz 56 additions
+
+- Notification realtime transport is SSE over authenticated GET (`/notifications/stream`), not
+  WebSocket.
+- Event payloads stay minimal and avoid arbitrary metadata leakage.
+- Bearer token is not passed through query string for SSE; bearer-mode clients remain polling-only.
+- Multi-pod in-memory emitter limitation is accepted with polling fallback until distributed fanout is
+  implemented.
+
+## Faz 57 additions
+
+- Redis pub/sub payload includes only routing/event fields; no token/session/cookie data.
+- `recipientUserId` is used only for in-memory emitter routing.
+- Redis should remain internal-network only with auth and optional TLS.
+- Self-echo skip avoids duplicate local delivery when local-first publish is enabled.
+
+## Faz 64 additions
+
+- Durable fanout outbox stores the same minimal SSE payload classes as live events; no secrets or
+  full notification bodies.
+- At-least-once-ish delivery may duplicate events; clients must treat handlers as idempotent
+  (`docs/notification-durable-fanout.md`).
+
+## Faz 58 additions
+
+- Security-critical notifications bypass digest and quiet hours to avoid delayed account protection.
+- Digest items should contain minimal content and avoid sensitive metadata leakage.
+
+## Faz 62 additions
+
+- SIEM streaming payloadlari minimal alanlarla sinirlidir; token/secret/cookie verisi tasinmaz.
+- SIEM auth sirlari sadece backend secret kaynaklarinda tutulur, frontend'e verilmez.
+- Outbox retry/dead-letter modeli, transient SIEM kesintilerinde veri kaybini azaltir.
+- Delivery preference APIs are user-scoped through `X-User-Id`; cross-user updates are not allowed.
+- Faz 65 workspace notification preference APIs additionally require workspace-service **membership**
+  verification via service JWT; non-members receive `403` without reading or mutating overrides.
+
+## Faz 59 additions
+
+- Offline note cache stores recently opened note content in browser IndexedDB; this is a local-device
+  privacy risk on shared machines.
+- Logout/session clear now removes offline cache to reduce residual data exposure.
+- Offline cache is limited to user-opened note documents; admin/audit/export data is excluded.
+- Sensitive deployments can disable offline cache entirely via `FRONTEND_OFFLINE_NOTES_ENABLED=false`.
+
+## Faz 67 additions (offline drafts)
+
+- When `FRONTEND_OFFLINE_EDIT_ENABLED` is on (non-default), **unsynced** note snapshots may exist in
+  IndexedDB (`offline_note_drafts`), increasing residual-data risk vs read-only cache alone.
+- Draft content must not be sent to analytics or remote logs; product copy should warn on shared devices.
+- Disable offline editing in strict enterprises via the flag; logout / DB delete still clears drafts
+  together with cached notes.
+- **Session failure policy (recommended)**: align with logout — wiping the offline DB on `clearSession`
+  avoids orphaned sensitive drafts; tradeoff is losing unsynced work (documented in
+  [`offline-edit-sync-design.md`](offline-edit-sync-design.md)).
 ## Faz 34 Permission Snapshot Risk Notes
 
 - Snapshot staleness is accepted as eventual consistency.
@@ -29,6 +97,14 @@
 - Remaining gap: legacy bearer mode remains for backward compatibility and CSP is not fully locked
   down.
 - Recommended next action: move staging/prod to cookie mode and harden CSP in a dedicated phase.
+
+## Enterprise SSO Identity Risks (Faz 60)
+
+- Risk: IdP claim confusion (issuer/audience/group mismatch) could grant excess access.
+- Current mitigation: issuer + audience checks, state/nonce replay protection, verified email and
+  allowed domain checks.
+- Remaining gap: no SCIM lifecycle sync and no manual secure account linking workflow.
+- Recommended next action: add SCIM + explicit admin account-link approvals in enterprise rollout.
 
 ## Frontend CSP Hardening (Faz 44)
 
@@ -177,6 +253,14 @@
 - Recommended next action: Keep generic webhook secrets in External Secrets and validate provider
   replay semantics before enabling public ingress.
 
+## Note conflict merge (Faz 66)
+
+- Diff and suggested merge run **only in the browser** on data the user already received via
+  authorized `GET /notes/{id}`; no raw note content is sent to analytics or third parties by this
+  feature.
+- Merged payloads are still persisted only through normal authenticated `PATCH` + `If-Match`; the
+  server does not trust client merge logic beyond standard validation.
+
 ## In-App Notification Threat Notes (Faz 45)
 
 - Ownership: user endpoints derive `recipientUserId` from gateway context (`X-User-Id`), not from client payload.
@@ -203,3 +287,8 @@
 - MFA step-up session and challenge artifacts are short-lived Redis keys and are consumed on verify.
 - Recovery codes are hash-only in DB and one-time-use (`usedAt`).
 - Allowed WebAuthn origins are explicitly configured via `MFA_WEBAUTHN_ALLOWED_ORIGINS`.
+
+## Enterprise admin console (Faz 63)
+
+Browser calls only `GET /admin/enterprise/status`; gateway holds service JWTs for internal status endpoints.
+No SCIM/SIEM/OIDC secrets are returned — see `docs/enterprise-admin-console.md`.

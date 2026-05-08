@@ -35,6 +35,13 @@ Claims:
 - `service_name`
 - `token_type=service`
 
+Faz 54 adds a separate non-human machine token usage for gateway scheduled audit export:
+
+- `token_type=machine`
+- endpoint scope: `admin:audit:export`
+- audience: `api-gateway`
+- applied only on `GET /admin/audit-events/export`
+
 Default TTL `INTERNAL_SERVICE_JWT_TTL_SECONDS=60` saniyedir. Kisa TTL nedeniyle content-service her
 internal request icin yeni token uretir; cache bilincli olarak eklenmedi.
 
@@ -135,6 +142,10 @@ The Helm chart mounts service JWT keys from Kubernetes Secret:
   `/etc/notebook/secrets/service-jwt/workspace-private.pem`
 - notification-service trusted workspace public key:
   `/etc/notebook/secrets/service-jwt/workspace-public.pem`
+- Faz 65: notification-service **workspace preference** calls to workspace-service use an outbound
+  service JWT (`NOTIFICATION_WORKSPACE_CLIENT_JWT_*`, `aud=workspace-service`,
+  scope `internal:workspace:permission:read`). workspace-service validates the caller via
+  `trusted-notification-service` (public key for notification-issued tokens).
 - content-service search indexing calls use `internal:search:index:write` and
   `aud=search-service`.
 - content-service search outbox ops calls use `internal:content:search-outbox:read` or

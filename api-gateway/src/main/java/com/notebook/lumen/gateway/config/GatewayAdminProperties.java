@@ -7,7 +7,14 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties(prefix = "gateway.admin")
 public record GatewayAdminProperties(
-    boolean enabled, boolean requireMfa, String mfaMode, String mfaAcceptedMethods, String allowedUserIds, String allowedEmails, Audit audit) {
+    boolean enabled,
+    boolean requireMfa,
+    String mfaMode,
+    String mfaAcceptedMethods,
+    String allowedUserIds,
+    String allowedEmails,
+    Audit audit,
+    Enterprise enterprise) {
 
   public Set<String> allowedUserIdSet() {
     return splitCsv(allowedUserIds);
@@ -21,6 +28,10 @@ public record GatewayAdminProperties(
 
   public Audit effectiveAudit() {
     return audit == null ? new Audit(false) : audit;
+  }
+
+  public Enterprise effectiveEnterprise() {
+    return enterprise == null ? new Enterprise(false) : enterprise;
   }
 
   public String effectiveMfaMode() {
@@ -43,4 +54,6 @@ public record GatewayAdminProperties(
   }
 
   public record Audit(boolean enabled) {}
+
+  public record Enterprise(boolean enabled) {}
 }

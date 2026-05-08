@@ -141,13 +141,47 @@ E2E scope moved to [`docs/frontend-e2e.md`](frontend-e2e.md).
 - Overwrite flow re-fetches latest ETag and replays PATCH with explicit user confirmation.
 - No automatic merge algorithm, CRDT/OT, or real-time collaboration in this phase.
 
+## Faz 66 Conflict diff / suggested merge (client-side)
+
+- Three-way model: **base** (last successful sync), **local** (editor), **remote** (fresh `GET` when dialog opens).
+- Block-level summaries and **Apply suggested merge** for conservative, non-overlapping cases only; still uses normal `PATCH` + `If-Match` (no new API).
+- See [`note-conflict-diff-merge.md`](note-conflict-diff-merge.md).
+
 ## Faz 49 Notification Preferences
 
 - Settings now exposes notification channel toggles.
 - Mandatory security preferences are displayed disabled with explanatory text.
 
+## Faz 65 Workspace notification preferences
+
+- Settings adds an optional per-workspace override section when
+  `WORKSPACE_NOTIFICATION_PREFERENCES_ENABLED` / `FRONTEND_WORKSPACE_NOTIFICATION_PREFERENCES_ENABLED`
+  are on; digest/quiet hours remain in the global delivery block.
+
 ## Faz 50 MFA Foundation
 
 - Settings/Security page includes MFA section with passkey/recovery placeholder actions.
 - Browser capability detection is exposed via `isWebAuthnSupported()`.
+
+## Faz 59 PWA / Offline Read Mode
+
+- Added web app manifest and service worker registration with runtime flag control.
+- Static assets and app shell use Workbox runtime caching.
+- Recently opened notes are stored in IndexedDB and can be opened offline in read-only mode.
+- Offline mode explicitly disables write actions (edit/save/comment/restore).
+- This phase does not include offline edit queue/sync/merge.
+
+## Faz 67 Offline edit/sync design + draft foundation
+
+- Design doc: [`offline-edit-sync-design.md`](offline-edit-sync-design.md).
+- IndexedDB v2 adds `offline_note_drafts` (snapshot-based model, one row per note).
+- Runtime flags default **off**: `FRONTEND_OFFLINE_EDIT_ENABLED`, `FRONTEND_OFFLINE_SYNC_ENABLED`, plus draft caps.
+- Utilities: `offline-note-drafts.ts`, `offline-sync-policy.ts` (HTTP → draft status); **no** production background sync or NotePage offline editing unless flags and future wiring ship.
+- Settings/Security shows offline read vs experimental edit/sync state and clears the whole offline DB (notes + drafts).
+
+## Faz 60 Enterprise SSO UX
+
+- Login page can show OIDC provider buttons from backend provider list.
+- Runtime-gated with `FRONTEND_SSO_ENABLED`.
+- Existing email/password and MFA step-up flows remain unchanged.
 

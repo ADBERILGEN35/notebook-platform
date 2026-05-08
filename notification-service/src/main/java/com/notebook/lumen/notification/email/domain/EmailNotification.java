@@ -57,7 +57,8 @@ public class EmailNotification {
       String bodyText,
       String bodyHtml,
       String idempotencyKey,
-      Instant now) {
+      Instant now,
+      Instant nextAttemptAt) {
     this.id = id;
     this.type = type;
     this.recipientEmail = recipientEmail;
@@ -68,7 +69,32 @@ public class EmailNotification {
     this.deliveryStatus = EmailDeliveryStatus.UNKNOWN;
     this.idempotencyKey = idempotencyKey;
     this.attemptCount = 0;
-    this.nextAttemptAt = now;
+    this.nextAttemptAt = nextAttemptAt == null ? now : nextAttemptAt;
+    this.createdAt = now;
+    this.updatedAt = now;
+  }
+
+  public EmailNotification(
+      UUID id,
+      EmailNotificationType type,
+      String recipientEmail,
+      String subject,
+      String bodyText,
+      String bodyHtml,
+      String idempotencyKey,
+      Instant nextAttemptAt) {
+    Instant now = Instant.now();
+    this.id = id;
+    this.type = type;
+    this.recipientEmail = recipientEmail;
+    this.subject = subject;
+    this.bodyText = bodyText;
+    this.bodyHtml = bodyHtml;
+    this.status = EmailNotificationStatus.PENDING;
+    this.deliveryStatus = EmailDeliveryStatus.UNKNOWN;
+    this.idempotencyKey = idempotencyKey;
+    this.attemptCount = 0;
+    this.nextAttemptAt = nextAttemptAt == null ? now : nextAttemptAt;
     this.createdAt = now;
     this.updatedAt = now;
   }

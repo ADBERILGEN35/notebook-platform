@@ -19,7 +19,8 @@ public interface NotificationClient {
       String templateKey,
       Map<String, String> templateVariables,
       String idempotencyKey,
-      UUID recipientUserId) {}
+      UUID recipientUserId,
+      UUID workspaceId) {}
 
   record NotificationResponse(UUID notificationId, String status) {}
 
@@ -48,6 +49,7 @@ public interface NotificationClient {
             "acceptUrl",
             acceptUrl),
         "workspace-invitation:" + invitation.getId(),
-        null);
+        null,
+        invitation.getWorkspaceId());
   }
 }

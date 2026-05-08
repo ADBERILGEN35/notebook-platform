@@ -21,7 +21,7 @@ import reactor.core.publisher.Mono;
 @Service
 public class AuditProxyService {
   static final String REQUIRED_SCOPE = "internal:audit:read";
-  static final String INTERNAL_AUTH_HEADER = "X-Service-Authorization";
+  public static final String INTERNAL_AUTH_HEADER = "X-Service-Authorization";
 
   private final GatewayAuditProxyProperties properties;
   private final ServiceJwtSigner signer;

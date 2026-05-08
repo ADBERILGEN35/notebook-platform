@@ -57,7 +57,7 @@ export function NotificationsPage() {
 
   return (
     <div className="space-y-4">
-      <PageHeader title="Notifications" subtitle="Polling-based notification center MVP." />
+      <PageHeader title="Notifications" subtitle="Realtime SSE updates with polling fallback." />
       <Link to="/app/settings/notifications" className="inline-block text-sm text-primary-700 hover:underline">
         Notification settings
       </Link>

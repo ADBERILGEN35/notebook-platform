@@ -12,7 +12,7 @@ class ProductionSecurityValidatorTest {
         new WorkspaceProperties(
             null,
             null,
-            new WorkspaceProperties.Internal("", "", "", "static-token", null, null),
+            new WorkspaceProperties.Internal("", "", "", "static-token", null, null, null),
             null,
             null);
     MockEnvironment environment = new MockEnvironment();
@@ -33,7 +33,7 @@ class ProductionSecurityValidatorTest {
         new WorkspaceProperties(
             null,
             null,
-            new WorkspaceProperties.Internal("legacy", "primary", "", "static-token", null, null),
+            new WorkspaceProperties.Internal("legacy", "primary", "", "static-token", null, null, null),
             null,
             null);
     MockEnvironment environment = new MockEnvironment();

@@ -34,6 +34,7 @@ class InternalApiTokenValidatorTest {
                         "workspace-service",
                         5,
                         "internal:workspace:permission:read"),
+                    null,
                     null),
                 null,
                 null));

@@ -57,6 +57,30 @@ spec:
                   name: {{ include "notebook-platform.secretName" . }}
                   key: identity-db-password
                   optional: false
+            - name: SSO_PROVIDER_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "notebook-platform.secretName" . }}
+                  key: sso-provider-client-secret
+                  optional: true
+            - name: SCIM_BEARER_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "notebook-platform.secretName" . }}
+                  key: scim-bearer-token
+                  optional: true
+            - name: SIEM_BEARER_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "notebook-platform.secretName" . }}
+                  key: siem-bearer-token
+                  optional: true
+            - name: SIEM_CUSTOM_HEADER_VALUE
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "notebook-platform.secretName" . }}
+                  key: siem-custom-header-value
+                  optional: true
           readinessProbe:
             httpGet:
               path: {{ .Values.probes.readiness.path }}

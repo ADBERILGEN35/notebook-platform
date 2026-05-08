@@ -18,6 +18,13 @@ spring:
     enabled: true
     locations: classpath:db/migration
     table: notification_flyway_schema_history
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      ssl:
+        enabled: ${REDIS_SSL_ENABLED:false}
 
 management:
   tracing:
@@ -38,6 +45,7 @@ management:
       show-details: never
 
 notification:
+  instance-id: ${NOTIFICATION_INSTANCE_ID:}
   worker-instance-id: ${WORKER_INSTANCE_ID:}
   email:
     provider: ${EMAIL_PROVIDER:log}
@@ -72,6 +80,16 @@ notification:
       password: ${SMTP_PASSWORD:}
       tls-enabled: ${SMTP_TLS_ENABLED:true}
   internal:
+    admin-status:
+      enabled: ${NOTIFICATION_INTERNAL_ADMIN_STATUS_ENABLED:false}
+    trusted-gateway-admin-client:
+      kid: ${AUDIT_ADMIN_SERVICE_JWT_KID:}
+      public-key: ${AUDIT_ADMIN_SERVICE_JWT_PUBLIC_KEY:}
+      public-key-path: ${AUDIT_ADMIN_SERVICE_JWT_PUBLIC_KEY_PATH:}
+      issuer: ${AUDIT_ADMIN_SERVICE_JWT_ISSUER:audit-admin}
+      audience: ${AUDIT_ADMIN_SERVICE_JWT_NOTIFICATION_AUDIENCE:notification-service}
+      clock-skew-seconds: ${AUDIT_ADMIN_SERVICE_JWT_CLOCK_SKEW_SECONDS:5}
+      allowed-scopes: ${AUDIT_ADMIN_SERVICE_JWT_NOTIFICATION_ALLOWED_SCOPES:internal:admin:status:read}
     trusted-notification-client:
       kid: ${TRUSTED_SERVICE_WORKSPACE_SERVICE_KID:}
       public-key: ${TRUSTED_SERVICE_WORKSPACE_SERVICE_PUBLIC_KEY:}
@@ -90,5 +108,49 @@ notification:
       allowed-scopes: ${TRUSTED_SERVICE_IDENTITY_SERVICE_ALLOWED_SCOPES:internal:notification:email:send,internal:notification:in-app:create}
   in-app:
     enabled: ${NOTIFICATIONS_IN_APP_ENABLED:true}
+  sse:
+    enabled: ${NOTIFICATIONS_SSE_ENABLED:true}
+    heartbeat-seconds: ${NOTIFICATIONS_SSE_HEARTBEAT_SECONDS:25}
+    timeout-seconds: ${NOTIFICATIONS_SSE_TIMEOUT_SECONDS:0}
+    max-connections-per-user: ${NOTIFICATIONS_SSE_MAX_CONNECTIONS_PER_USER:5}
+    distributed:
+      enabled: ${NOTIFICATIONS_SSE_DISTRIBUTED_ENABLED:false}
+      provider: ${NOTIFICATIONS_SSE_DISTRIBUTED_PROVIDER:redis}
+      channel: ${NOTIFICATIONS_SSE_REDIS_CHANNEL:notification:sse:events}
+      publish-local-first: ${NOTIFICATIONS_SSE_DISTRIBUTED_PUBLISH_LOCAL_FIRST:true}
   preferences:
     enabled: ${NOTIFICATION_PREFERENCES_ENABLED:true}
+  digest:
+    enabled: ${NOTIFICATION_DIGEST_ENABLED:true}
+    worker-enabled: ${NOTIFICATION_DIGEST_WORKER_ENABLED:true}
+    poll-interval-seconds: ${NOTIFICATION_DIGEST_POLL_INTERVAL_SECONDS:60}
+    batch-size: ${NOTIFICATION_DIGEST_BATCH_SIZE:100}
+    max-items-per-email: ${NOTIFICATION_DIGEST_MAX_ITEMS_PER_EMAIL:50}
+    daily-send-time: ${NOTIFICATION_DIGEST_DAILY_SEND_TIME:09:00}
+    weekly-day: ${NOTIFICATION_DIGEST_WEEKLY_DAY:MONDAY}
+    weekly-send-time: ${NOTIFICATION_DIGEST_WEEKLY_SEND_TIME:09:00}
+  workspace:
+    preferences-enabled: ${WORKSPACE_NOTIFICATION_PREFERENCES_ENABLED:false}
+    service-url: ${WORKSPACE_SERVICE_URL:http://localhost:8082}
+    timeout-ms: ${NOTIFICATION_WORKSPACE_CLIENT_TIMEOUT_MS:3000}
+    service-jwt:
+      active-kid: ${NOTIFICATION_WORKSPACE_CLIENT_JWT_ACTIVE_KID:}
+      private-key: ${NOTIFICATION_WORKSPACE_CLIENT_JWT_PRIVATE_KEY:}
+      private-key-path: ${NOTIFICATION_WORKSPACE_CLIENT_JWT_PRIVATE_KEY_PATH:}
+      issuer: ${NOTIFICATION_WORKSPACE_CLIENT_JWT_ISSUER:notification-service}
+      subject: ${NOTIFICATION_WORKSPACE_CLIENT_JWT_SUBJECT:service:notification-service}
+      service-name: ${NOTIFICATION_WORKSPACE_CLIENT_JWT_SERVICE_NAME:notification-service}
+      ttl-seconds: ${NOTIFICATION_WORKSPACE_CLIENT_JWT_TTL_SECONDS:60}
+      audience: ${NOTIFICATION_WORKSPACE_CLIENT_JWT_AUDIENCE:workspace-service}
+  fanout:
+    outbox-enabled: ${NOTIFICATION_FANOUT_OUTBOX_ENABLED:false}
+    worker-enabled: ${NOTIFICATION_FANOUT_WORKER_ENABLED:true}
+    immediate-local-delivery: ${NOTIFICATION_FANOUT_IMMEDIATE_LOCAL_DELIVERY:true}
+    poll-interval-seconds: ${NOTIFICATION_FANOUT_POLL_INTERVAL_SECONDS:5}
+    batch-size: ${NOTIFICATION_FANOUT_BATCH_SIZE:100}
+    max-attempts: ${NOTIFICATION_FANOUT_MAX_ATTEMPTS:10}
+    backoff-base-seconds: ${NOTIFICATION_FANOUT_BACKOFF_BASE_SECONDS:5}
+    backoff-max-seconds: ${NOTIFICATION_FANOUT_BACKOFF_MAX_SECONDS:300}
+    lock-ttl-seconds: ${NOTIFICATION_FANOUT_LOCK_TTL_SECONDS:60}
+    sent-retention-hours: ${NOTIFICATION_FANOUT_SENT_RETENTION_HOURS:24}
+    dead-retention-days: ${NOTIFICATION_FANOUT_DEAD_RETENTION_DAYS:30}

@@ -16,6 +16,10 @@ Frontend tek image ile farkli ortamlarda calisir:
 - runtime endpoint: `/runtime-config.js`
 - env: `FRONTEND_API_BASE_URL`
 - env: `FRONTEND_AUTH_TRANSPORT`
+- env: `FRONTEND_SSO_ENABLED`
+- env: `FRONTEND_PWA_ENABLED`
+- env: `FRONTEND_OFFLINE_NOTES_ENABLED`
+- env: `FRONTEND_OFFLINE_NOTES_MAX_ITEMS`
 - optional admin/audit flags via the same script: `FRONTEND_ADMIN_UI_ENABLED`, `FRONTEND_ADMIN_UI_DEV_OPEN`, `FRONTEND_AUDIT_API_MODE`
 - CSP/runtime security flags: `FRONTEND_CSP_ENABLED`, `FRONTEND_CSP_REPORT_ONLY`, `FRONTEND_CSP_REPORT_URI`,
   `FRONTEND_CSP_CONNECT_SRC`, `FRONTEND_CSP_IMG_SRC`, `FRONTEND_CSP_FONT_SRC`
@@ -47,6 +51,8 @@ CSP runtime behavior:
 
 - SPA fallback: `try_files $uri $uri/ /index.html`
 - `/assets/*`: immutable cache (`max-age=31536000`)
+- `/manifest.webmanifest`: short cache, revalidated frequently
+- `/sw.js`: no-store/no-cache to avoid stale worker rollout
 - `index.html` + `runtime-config.js`: no-cache
 - health endpoint: `/healthz`
 

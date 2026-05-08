@@ -90,9 +90,12 @@ audit:
     issuer: ${AUDIT_ADMIN_SERVICE_JWT_ISSUER:audit-admin}
     audience: ${AUDIT_ADMIN_SERVICE_JWT_AUDIENCE:identity-service}
     clock-skew-seconds: ${AUDIT_ADMIN_SERVICE_JWT_CLOCK_SKEW_SECONDS:5}
-    allowed-scopes: ${AUDIT_ADMIN_SERVICE_JWT_ALLOWED_SCOPES:internal:audit:read}
+    allowed-scopes: ${AUDIT_ADMIN_SERVICE_JWT_ALLOWED_SCOPES:internal:audit:read,internal:admin:status:read}
 
 identity:
+  internal:
+    admin-status:
+      enabled: ${IDENTITY_INTERNAL_ADMIN_STATUS_ENABLED:false}
   mfa:
     enabled: ${MFA_ENABLED:false}
     webauthn:
@@ -103,6 +106,46 @@ identity:
       require-user-verification: ${MFA_WEBAUTHN_REQUIRE_USER_VERIFICATION:preferred}
     challenge-ttl-seconds: ${MFA_CHALLENGE_TTL_SECONDS:300}
     required-for-platform-admin: ${MFA_REQUIRED_FOR_PLATFORM_ADMIN:false}
+  sso:
+    enabled: ${SSO_ENABLED:false}
+    state-ttl-seconds: ${SSO_STATE_TTL_SECONDS:300}
+    trust-idp-mfa: ${SSO_TRUST_IDP_MFA:false}
+    required-acr: ${SSO_REQUIRED_ACR:}
+    required-amr: ${SSO_REQUIRED_AMR:}
+    providers:
+      - registration-id: ${SSO_PROVIDER_REGISTRATION_ID:generic-oidc}
+        issuer-uri: ${SSO_PROVIDER_ISSUER_URI:}
+        client-id: ${SSO_PROVIDER_CLIENT_ID:}
+        client-secret: ${SSO_PROVIDER_CLIENT_SECRET:}
+        scopes: ${SSO_PROVIDER_SCOPES:openid,email,profile}
+        email-claim: ${SSO_PROVIDER_EMAIL_CLAIM:email}
+        groups-claim: ${SSO_GROUPS_CLAIM:groups}
+        admin-groups: ${SSO_ADMIN_GROUPS:notebook-admins}
+        allowed-domains: ${SSO_ALLOWED_DOMAINS:}
+  scim:
+    enabled: ${SCIM_ENABLED:false}
+    bearer-token: ${SCIM_BEARER_TOKEN:}
+    bearer-token-hash: ${SCIM_BEARER_TOKEN_HASH:}
+    groups-enabled: ${SCIM_GROUPS_ENABLED:true}
+    admin-groups: ${SCIM_ADMIN_GROUPS:notebook-admins}
+  siem:
+    push-enabled: ${SIEM_PUSH_ENABLED:false}
+    provider: ${SIEM_PROVIDER:noop}
+    endpoint-url: ${SIEM_ENDPOINT_URL:}
+    auth-mode: ${SIEM_AUTH_MODE:none}
+    bearer-token: ${SIEM_BEARER_TOKEN:}
+    custom-header-name: ${SIEM_CUSTOM_HEADER_NAME:}
+    custom-header-value: ${SIEM_CUSTOM_HEADER_VALUE:}
+    timeout-seconds: ${SIEM_TIMEOUT_SECONDS:10}
+    batch-size: ${SIEM_BATCH_SIZE:100}
+    max-attempts: ${SIEM_MAX_ATTEMPTS:10}
+    backoff-base-seconds: ${SIEM_BACKOFF_BASE_SECONDS:30}
+    backoff-max-seconds: ${SIEM_BACKOFF_MAX_SECONDS:3600}
+    worker-enabled: ${SIEM_WORKER_ENABLED:false}
+    worker-poll-interval-seconds: ${SIEM_WORKER_POLL_INTERVAL_SECONDS:30}
+    outbox-retention-days: ${SIEM_OUTBOX_RETENTION_DAYS:30}
+    dead-retention-days: ${SIEM_DEAD_RETENTION_DAYS:90}
+    include-login-success: ${SIEM_INCLUDE_LOGIN_SUCCESS:false}
   notification:
     enabled: ${IDENTITY_SECURITY_NOTIFICATIONS_ENABLED:false}
     service-url: ${NOTIFICATION_SERVICE_URL:http://notification-service:8084}

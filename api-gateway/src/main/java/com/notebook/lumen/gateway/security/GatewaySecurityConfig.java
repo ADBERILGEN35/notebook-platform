@@ -50,7 +50,7 @@ public class GatewaySecurityConfig {
     OAuth2TokenValidator<Jwt> tokenTypeValidator =
         jwt -> {
           String tokenType = jwt.getClaimAsString("token_type");
-          if ("access".equals(tokenType)) {
+          if ("access".equals(tokenType) || "machine".equals(tokenType)) {
             return OAuth2TokenValidatorResult.success();
           }
           return OAuth2TokenValidatorResult.failure(INVALID_TOKEN_TYPE);
@@ -71,6 +71,10 @@ public class GatewaySecurityConfig {
                 exchanges
                     .pathMatchers(HttpMethod.POST, "/auth/signup", "/auth/login", "/auth/refresh")
                     .permitAll()
+                    .pathMatchers(HttpMethod.GET, "/auth/sso/**")
+                    .permitAll()
+                    .pathMatchers("/scim/v2/**")
+                    .permitAll()
                     .pathMatchers(HttpMethod.POST, "/webhooks/email/**")
                     .permitAll()
                     .pathMatchers(HttpMethod.GET, "/actuator/health", "/actuator/health/**")
@@ -81,6 +85,8 @@ public class GatewaySecurityConfig {
                         "/swagger-ui.html",
                         "/webjars/swagger-ui/**")
                     .permitAll()
+                    .pathMatchers(HttpMethod.GET, "/admin/audit-events/export")
+                    .authenticated()
                     .anyExchange()
                     .authenticated())
         .oauth2ResourceServer(
@@ -140,4 +146,5 @@ public class GatewaySecurityConfig {
         new JwtAuthenticationToken(
             jwt, java.util.List.of(new SimpleGrantedAuthority("ROLE_USER")), jwt.getSubject()));
   }
+
 }

@@ -54,7 +54,8 @@ import org.testcontainers.utility.DockerImageName;
       "gateway.admin.enabled=true",
       "gateway.admin.audit.enabled=true",
       "gateway.admin.audit-export.enabled=true",
-      "gateway.admin.allowed-emails=ada@example.com"
+      "gateway.admin.allowed-emails=ada@example.com",
+      "gateway.admin.enterprise.enabled=false"
     })
 class ApiGatewayIntegrationTest {
 
@@ -135,6 +136,20 @@ class ApiGatewayIntegrationTest {
         .isEqualTo("MISSING_ACCESS_TOKEN")
         .jsonPath("$.requestId")
         .exists();
+  }
+
+  @Test
+  void adminEnterpriseStatus_whenDisabled_returns404() {
+    webTestClient
+        .get()
+        .uri("/admin/enterprise/status")
+        .headers(headers -> headers.setBearerAuth(jwt(USER_ID, USER_EMAIL, "access", 0, 300)))
+        .exchange()
+        .expectStatus()
+        .isNotFound()
+        .expectBody()
+        .jsonPath("$.errorCode")
+        .isEqualTo("ADMIN_ENTERPRISE_DISABLED");
   }
 
   @Test

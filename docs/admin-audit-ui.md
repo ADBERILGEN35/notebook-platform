@@ -14,7 +14,8 @@ reference](audit-query-api.md)).
 
 ## Frontend Capabilities
 
-- Routes inside the authenticated shell: `/app/admin`, `/app/admin/audit`, `/app/admin/audit/:eventId`.
+- Routes inside the authenticated shell: `/app/admin`, `/app/admin/audit`, `/app/admin/audit/:eventId`,
+  `/app/admin/enterprise` (+ `/security`, `/integrations`).
 - Sidebar + Settings shortcuts when gated access passes.
 - Source selector modeled as synthetic `AuditEvent.source`:
   `identity`, `workspace`, `content`.
@@ -71,6 +72,11 @@ consistent with those substring rules (`password`, `token`, `secret`, …). Neve
 - No direct SIEM push/streaming connector in this phase (manual ops/export workflow).
 - No platform-wide RBAC or admin SSO roles yet.
 - `PLATFORM_ADMIN` claim model is transitional; allowlist remains rollout fallback.
+
+## Enterprise console (Faz 63)
+
+Read-only enterprise security posture uses `GET /admin/enterprise/status` on the gateway (same admin MFA
+behaviour as audit). See [`docs/enterprise-admin-console.md`](enterprise-admin-console.md).
 
 ## Next (Phase 44+)
 

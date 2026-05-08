@@ -52,3 +52,11 @@ When disabled, endpoints return `MFA_NOT_ENABLED` (501). WebAuthn origin is vali
 - Passkeys reduce phishing risk compared to password-only auth.
 - Recovery codes are high-risk secrets; only hashed values are persisted.
 - Admin MFA enforcement is designed as future configurable policy (`MFA_REQUIRED_FOR_PLATFORM_ADMIN`).
+
+## SSO interaction (Faz 60)
+
+- OIDC login can be configured to trust IdP MFA claims via `SSO_TRUST_IDP_MFA`.
+- Optional constraints:
+  - `SSO_REQUIRED_ACR`
+  - `SSO_REQUIRED_AMR`
+- Default posture keeps trust disabled and requires platform MFA policy where enforced.

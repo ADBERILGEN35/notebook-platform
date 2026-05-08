@@ -194,3 +194,42 @@ revocation.
   - `MFA_RECOVERY_CODES_REGENERATED`
   - `MFA_RECOVERY_CODE_USED`
   - `MFA_CREDENTIAL_REVOKED`
+
+## Enterprise SSO (Faz 60)
+
+- OIDC endpoints:
+  - `GET /auth/sso/providers`
+  - `GET /auth/sso/{provider}/authorize`
+  - `GET /auth/sso/{provider}/callback`
+- External identity mapping table: `external_identities`
+- Key envs:
+  - `SSO_ENABLED`
+  - `SSO_PROVIDER_ISSUER_URI`
+  - `SSO_PROVIDER_CLIENT_ID`
+  - `SSO_PROVIDER_CLIENT_SECRET`
+  - `SSO_ALLOWED_DOMAINS`
+  - `SSO_GROUPS_CLAIM`
+  - `SSO_ADMIN_GROUPS`
+- `SSO_PROVIDER_CLIENT_SECRET` must come from secrets, never from repo values.
+
+## SCIM provisioning (Faz 61)
+
+- SCIM endpoints are available under `/scim/v2/**`.
+- SCIM auth uses static bearer token (`SCIM_BEARER_TOKEN` or `SCIM_BEARER_TOKEN_HASH`).
+- User lifecycle integration:
+  - `source=SCIM`
+  - `scim_external_id`
+  - `deprovisioned_at`
+- Deprovision (`active=false` or `DELETE`) revokes active refresh tokens.
+
+## Streaming SIEM push (Faz 62)
+
+- Outbox table: `siem_event_outbox`
+- Provider abstraction: `noop`, `log`, `generic-http`
+- Worker retries with exponential backoff and dead-letter status.
+- SIEM secrets remain backend-only (`SIEM_BEARER_TOKEN`, `SIEM_CUSTOM_HEADER_VALUE`).
+
+## Internal admin status (Faz 63)
+
+- `GET /internal/admin/status/identity-security` — service JWT with scope `internal:admin:status:read`, opt-in via `IDENTITY_INTERNAL_ADMIN_STATUS_ENABLED`.
+- Returns secret-safe booleans only (no SCIM token, SIEM secret, OIDC client secret). See `docs/enterprise-admin-console.md`.

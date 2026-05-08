@@ -33,6 +33,8 @@ type Params = {
 }
 
 export type NoteConflictInfo = {
+  /** Last successfully synced client snapshot (common ancestor for three-way merge). */
+  baseSnapshot: NoteSaveSnapshot
   localSnapshot: NoteSaveSnapshot
   failedPayload: { title: string; contentBlocks: NoteBlock[]; ifMatch: string | null }
   failedAt: string
@@ -111,7 +113,11 @@ export function useNoteAutoSave({
     } catch (err) {
       if (err instanceof ApiError && (err.status === 409 || err.status === 412 || err.status === 428)) {
         setSaveState('conflict')
+        const baseSnapshot =
+          lastSavedRef.current ??
+          createNoteSaveSnapshot(currentSnapshot.title, currentSnapshot.contentBlocks)
         setConflictInfo({
+          baseSnapshot,
           localSnapshot: currentSnapshot,
           failedPayload: {
             title: currentSnapshot.title,
@@ -145,7 +151,10 @@ export function useNoteAutoSave({
     setError(null)
     if (saveState === 'conflict') {
       if (conflictInfo) {
-        setConflictInfo({ ...conflictInfo, localSnapshot: currentSnapshot })
+        setConflictInfo({
+          ...conflictInfo,
+          localSnapshot: currentSnapshot,
+        })
       }
       return
     }
@@ -208,6 +217,56 @@ export function useNoteAutoSave({
     }
   }, [isDirty])
 
+  /**
+   * Applies a client-built merge and PATCHes with the latest server ETag (post-conflict fetch).
+   */
+  const saveMergedAfterConflict = useCallback(
+    async (merged: NoteSaveSnapshot, remoteBaseline: NoteSaveSnapshot, latestEtag: string | null) => {
+      clearTimer()
+      setError(null)
+      inFlightRef.current = true
+      setSaveState('saving')
+      try {
+        const saved = await saveNote({
+          title: merged.title,
+          contentBlocks: merged.contentBlocks,
+          ifMatch: latestEtag,
+        })
+        lastSavedRef.current = createNoteSaveSnapshot(saved.note.title, saved.note.contentBlocks)
+        lastAttemptedRef.current = lastSavedRef.current
+        setUpdatedAtBase(saved.note.updatedAt)
+        setEtag(saved.etag)
+        setSaveState('saved')
+        setIsDirty(false)
+        setConflictInfo(null)
+      } catch (err) {
+        setError(err)
+        setIsDirty(true)
+        if (err instanceof ApiError && (err.status === 409 || err.status === 412 || err.status === 428)) {
+          setSaveState('conflict')
+          setConflictInfo({
+            baseSnapshot: remoteBaseline,
+            localSnapshot: merged,
+            failedPayload: {
+              title: merged.title,
+              contentBlocks: merged.contentBlocks,
+              ifMatch: latestEtag,
+            },
+            failedAt: new Date().toISOString(),
+            serverEtagAtFailure: latestEtag,
+            errorCode: err.errorCode || null,
+            errorMessage: err.message,
+          })
+        } else {
+          setSaveState('error')
+        }
+      } finally {
+        inFlightRef.current = false
+      }
+    },
+    [clearTimer, saveNote],
+  )
+
   useEffect(() => () => clearTimer(), [clearTimer])
 
   useEffect(() => {
@@ -230,6 +289,7 @@ export function useNoteAutoSave({
     clearConflict,
     resetWithServerNote,
     resetWithServerVersion,
+    saveMergedAfterConflict,
   }
 }
 

@@ -83,7 +83,7 @@ Runtime Docker/Kubernetes config:
 
 ## Admin / Audit Explorer (Faz 42)
 
-- Routes: `/app/admin`, `/app/admin/audit`, `/app/admin/audit/:eventId` (nested under authenticated shell).
+- Routes: `/app/admin`, `/app/admin/audit`, `/app/admin/audit/:eventId`, `/app/admin/enterprise` (+ security/integrations) (nested under authenticated shell).
 - Gated behind `VITE_ADMIN_UI_ENABLED` / `ADMIN_UI_ENABLED` with optional trusted `ADMIN_UI_DEV_OPEN` for localhost-style sessions.
 - `VITE_AUDIT_API_MODE` / `AUDIT_API_MODE` selects `mock` (default dev) vs `real` placeholder (`GET /admin/audit-events` once the gateway exposes it).
 - See `docs/admin-audit-ui.md` for rollout guidance (service JWT never ships to browsers).
@@ -166,6 +166,21 @@ Faz 45 Notification Center UI is controlled by runtime flag:
 
 When disabled, topbar bell and `/app/notifications` experience are hidden/blocked in UI.
 
+## Workspace notification preferences (Faz 65)
+
+- Runtime / Vite: `FRONTEND_WORKSPACE_NOTIFICATION_PREFERENCES_ENABLED` /
+  `VITE_WORKSPACE_NOTIFICATION_PREFERENCES_ENABLED` (Settings → per-workspace channel overrides).
+- Backend feature `WORKSPACE_NOTIFICATION_PREFERENCES_ENABLED` must be on for API calls to succeed.
+
+## Realtime notification SSE (Faz 56)
+
+- Runtime flag: `FRONTEND_NOTIFICATIONS_SSE_ENABLED=true|false`.
+- SSE is enabled only in cookie/dual auth transport because browser EventSource does not support
+  custom Authorization header.
+- Bearer-only mode stays on polling fallback.
+- Polling (`30s` unread count) is intentionally preserved for resilience and multi-pod consistency
+  fallback.
+
 ## Responsive shell notes (Faz 46)
 
 - App shell uses drawer navigation for mobile/tablet and persistent sidebar on desktop.
@@ -182,6 +197,13 @@ When disabled, topbar bell and `/app/notifications` experience are hidden/blocke
 - Overwrite path always re-fetches latest ETag before PATCH retry.
 - No automatic merge/CRDT/OT is implemented in this phase.
 
+## Conflict diff / suggested merge (Faz 66)
+
+- Utilities: `src/features/notes/utils/blocknote-diff.ts`, `blocknote-merge.ts`.
+- Three-way **base / local / remote** summaries in the conflict dialog; **Apply suggested merge** runs
+  a conservative client merge then a normal `PATCH` with the latest ETag (`saveMergedAfterConflict`).
+- See `docs/note-conflict-diff-merge.md`.
+
 ## Admin audit export (Faz 48)
 
 - Admin audit page supports export format selection (`CSV`, `JSONL`) and download.
@@ -193,6 +215,41 @@ When disabled, topbar bell and `/app/notifications` experience are hidden/blocke
 - `/app/settings/notifications` route is available through Settings.
 - Mandatory security preferences are disabled in UI and cannot be toggled off.
 
+## Digest / quiet hours (Faz 58)
+
+- Settings page includes delivery schedule controls:
+  - email digest enable/frequency
+  - quiet hours start/end
+  - timezone
+- Security notifications remain immediate and are not delayed by digest/quiet hours.
+
+## PWA / offline read-only (Faz 59)
+
+- Feature flags:
+  - `FRONTEND_PWA_ENABLED`
+  - `FRONTEND_OFFLINE_NOTES_ENABLED`
+  - `FRONTEND_OFFLINE_NOTES_MAX_ITEMS`
+- Recently opened notes are cached in IndexedDB for read-only offline access.
+- Logout/session clear removes cached notes.
+- Offline mode disables note editing/save/comment/restore actions.
+
+## Offline edit/sync foundation (Faz 67)
+
+- Design: `docs/offline-edit-sync-design.md` (snapshot-based drafts; ETag/`If-Match`; Faz 66 merge on conflict).
+- Additional flags (default **off** in production samples): `FRONTEND_OFFLINE_EDIT_ENABLED`,
+  `FRONTEND_OFFLINE_SYNC_ENABLED`, `FRONTEND_OFFLINE_EDIT_MAX_DRAFTS`,
+  `FRONTEND_OFFLINE_EDIT_MAX_DRAFT_AGE_DAYS`.
+- Code: `src/features/offline/offline-db.ts` (IndexedDB v2 + `offline_note_drafts`),
+  `offline-note-drafts.ts`, `offline-sync-policy.ts`, `offline-sync-types.ts`.
+- No production background sync worker in this phase; NotePage offline editing remains gated on future work.
+
+## Enterprise SSO login (Faz 60)
+
+- Runtime flag: `FRONTEND_SSO_ENABLED`.
+- Login page can render provider buttons from `GET /auth/sso/providers`.
+- Provider action redirects browser to `/auth/sso/{provider}/authorize`.
+- Password login flow is preserved.
+
 ## MFA UI + step-up (Faz 51)
 
 - Feature flag: `FRONTEND_MFA_UI_ENABLED`.
@@ -202,7 +259,7 @@ When disabled, topbar bell and `/app/notifications` experience are hidden/blocke
 
 ## Admin MFA UX (Faz 52)
 
-- Admin audit view handles `ADMIN_MFA_REQUIRED` with a dedicated message state.
+- Admin audit and **enterprise console** views handle `ADMIN_MFA_REQUIRED` with the same Security Settings CTA.
 - CTA routes users to Settings/Security for passkey/recovery setup.
 - Settings MFA panel shows remaining recovery-code count and admin-required banner.
 
