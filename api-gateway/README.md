@@ -176,3 +176,14 @@ done
   kullanilmalidir.
 - Actuator exposure env ile daraltilmalidir; public internet'e acik birakilmamalidir.
 - Redis password ileride `REDIS_PASSWORD` ile verilebilir; local dev default'u bos kalir.
+
+## Admin Audit Export (Faz 48)
+
+- Endpoint: `GET /admin/audit-events/export`
+- Required query: `source`, `format`, `createdFrom`, `createdTo`
+- Formats: `csv`, `jsonl`
+- Export guardrails:
+  - range-day limit
+  - max-record limit
+  - dedicated export rate-limit bucket
+- Service JWT remains server-side (gateway -> internal audit endpoints).

@@ -105,7 +105,8 @@ class HmacSha256EmailWebhookVerifierTest {
                 requireTimestamp,
                 false)),
         new NotificationProperties.Internal(null, null),
-        new NotificationProperties.InApp(true));
+        new NotificationProperties.InApp(true),
+        new NotificationProperties.Preferences(true));
   }
 
   private String hmac(String secret, String body) {

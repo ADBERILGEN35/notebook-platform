@@ -110,3 +110,6 @@ curl -sS 'http://localhost:8082/internal/audit-events?eventType=WORKSPACE_CREATE
 SPA clients must not attach service JWT headers. Admin UI calls `GET /admin/audit-events`; gateway
 validates admin access and fans out to internal audit endpoints with `internal:audit:read` service
 JWTs (see [`docs/admin-audit-proxy.md`](admin-audit-proxy.md)).
+
+Faz 48 adds gateway export endpoint `GET /admin/audit-events/export` (CSV/JSONL), still using the
+same server-side service JWT model.

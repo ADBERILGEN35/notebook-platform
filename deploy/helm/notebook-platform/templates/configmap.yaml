@@ -26,11 +26,18 @@ data:
   AUTH_CSRF_HEADER_NAME: {{ .Values.config.authCsrfHeaderName | quote }}
   GATEWAY_ADMIN_ENABLED: {{ .Values.config.gatewayAdminEnabled | quote }}
   GATEWAY_ADMIN_AUDIT_ENABLED: {{ .Values.config.gatewayAdminAuditEnabled | quote }}
+  GATEWAY_ADMIN_AUDIT_EXPORT_ENABLED: {{ .Values.config.gatewayAdminAuditExportEnabled | quote }}
   GATEWAY_ADMIN_ALLOWED_USER_IDS: {{ .Values.config.gatewayAdminAllowedUserIds | quote }}
   GATEWAY_ADMIN_ALLOWED_EMAILS: {{ .Values.config.gatewayAdminAllowedEmails | quote }}
   ADMIN_AUDIT_RATE_LIMIT_REPLENISH_RATE: {{ .Values.config.gatewayAdminAuditRateLimitReplenishRate | quote }}
   ADMIN_AUDIT_RATE_LIMIT_BURST_CAPACITY: {{ .Values.config.gatewayAdminAuditRateLimitBurstCapacity | quote }}
   ADMIN_AUDIT_RATE_LIMIT_REQUESTED_TOKENS: {{ .Values.config.gatewayAdminAuditRateLimitRequestedTokens | quote }}
+  ADMIN_AUDIT_EXPORT_RATE_LIMIT_REPLENISH_RATE: {{ .Values.config.gatewayAdminAuditExportRateLimitReplenishRate | quote }}
+  ADMIN_AUDIT_EXPORT_RATE_LIMIT_BURST_CAPACITY: {{ .Values.config.gatewayAdminAuditExportRateLimitBurstCapacity | quote }}
+  ADMIN_AUDIT_EXPORT_RATE_LIMIT_REQUESTED_TOKENS: {{ .Values.config.gatewayAdminAuditExportRateLimitRequestedTokens | quote }}
+  GATEWAY_ADMIN_AUDIT_EXPORT_MAX_RANGE_DAYS: {{ .Values.config.gatewayAdminAuditExportMaxRangeDays | quote }}
+  GATEWAY_ADMIN_AUDIT_EXPORT_MAX_RECORDS: {{ .Values.config.gatewayAdminAuditExportMaxRecords | quote }}
+  GATEWAY_ADMIN_AUDIT_EXPORT_PAGE_SIZE: {{ .Values.config.gatewayAdminAuditExportPageSize | quote }}
   APP_RLS_ENABLED: {{ .Values.config.appRlsEnabled | quote }}
   APP_RLS_STRICT_WORKSPACE_HEADER: {{ .Values.config.appRlsStrictWorkspaceHeader | quote }}
   INTERNAL_AUTH_MODE: {{ .Values.config.internalAuthMode | quote }}
@@ -154,6 +161,11 @@ data:
   TRUSTED_SERVICE_IDENTITY_SERVICE_AUDIENCE: {{ .Values.config.trustedIdentityServiceAudience | quote }}
   EMAIL_PROVIDER: {{ .Values.config.emailProvider | quote }}
   NOTIFICATIONS_IN_APP_ENABLED: {{ .Values.config.notificationsInAppEnabled | quote }}
+  NOTIFICATION_PREFERENCES_ENABLED: {{ .Values.config.notificationPreferencesEnabled | quote }}
+  MFA_ENABLED: {{ .Values.config.mfaEnabled | quote }}
+  MFA_WEBAUTHN_ENABLED: {{ .Values.config.mfaWebauthnEnabled | quote }}
+  MFA_CHALLENGE_TTL_SECONDS: {{ .Values.config.mfaChallengeTtlSeconds | quote }}
+  MFA_REQUIRED_FOR_PLATFORM_ADMIN: {{ .Values.config.mfaRequiredForPlatformAdmin | quote }}
   EMAIL_WORKER_ENABLED: {{ .Values.config.emailWorkerEnabled | quote }}
   EMAIL_MAX_ATTEMPTS: {{ .Values.config.emailMaxAttempts | quote }}
   EMAIL_RETRY_INITIAL_DELAY_SECONDS: {{ .Values.config.emailRetryInitialDelaySeconds | quote }}

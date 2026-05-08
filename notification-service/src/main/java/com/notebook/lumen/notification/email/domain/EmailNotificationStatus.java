@@ -5,5 +5,6 @@ public enum EmailNotificationStatus {
   SENDING,
   SENT,
   FAILED,
-  CANCELLED
+  CANCELLED,
+  SKIPPED
 }

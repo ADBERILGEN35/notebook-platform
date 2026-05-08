@@ -15,6 +15,7 @@ import com.notebook.lumen.notification.email.domain.EmailNotification;
 import com.notebook.lumen.notification.email.domain.EmailNotificationStatus;
 import com.notebook.lumen.notification.email.domain.EmailNotificationType;
 import com.notebook.lumen.notification.email.infrastructure.EmailNotificationRepository;
+import com.notebook.lumen.notification.preference.application.NotificationPreferenceService;
 import com.notebook.lumen.notification.email.provider.EmailProvider;
 import com.notebook.lumen.notification.email.provider.EmailProviderException;
 import com.notebook.lumen.notification.email.provider.EmailSendResult;
@@ -36,6 +37,7 @@ class EmailNotificationServiceTest {
   private final EmailProvider provider = mock(EmailProvider.class);
   private final EmailSuppressionService suppressionService = mock(EmailSuppressionService.class);
   private final AuditService auditService = mock(AuditService.class);
+  private final NotificationPreferenceService preferenceService = mock(NotificationPreferenceService.class);
   private final EmailNotificationService service =
       new EmailNotificationService(
           repository,
@@ -44,6 +46,7 @@ class EmailNotificationServiceTest {
           suppressionService,
           properties(),
           auditService,
+          preferenceService,
           new SimpleMeterRegistry());
 
   @Test
@@ -157,6 +160,7 @@ class EmailNotificationServiceTest {
             suppressionService,
             disabledProperties(),
             auditService,
+            preferenceService,
             new SimpleMeterRegistry());
 
     disabledService.processDueNotifications();
@@ -211,7 +215,8 @@ class EmailNotificationServiceTest {
             "ADMIN",
             "acceptUrl",
             "https://example.test/accept"),
-        idempotencyKey);
+        idempotencyKey,
+        null);
   }
 
   private NotificationProperties properties() {
@@ -243,7 +248,8 @@ class EmailNotificationServiceTest {
             new NotificationProperties.TrustedService(
                 "", "", "", "workspace-service", "notification-service", 5, ""),
             null),
-        new NotificationProperties.InApp(true));
+        new NotificationProperties.InApp(true),
+        new NotificationProperties.Preferences(true));
   }
 
   private NotificationProperties disabledProperties() {
@@ -275,6 +281,7 @@ class EmailNotificationServiceTest {
             new NotificationProperties.TrustedService(
                 "", "", "", "workspace-service", "notification-service", 5, ""),
             null),
-        new NotificationProperties.InApp(true));
+        new NotificationProperties.InApp(true),
+        new NotificationProperties.Preferences(true));
   }
 }

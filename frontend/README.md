@@ -165,3 +165,36 @@ Faz 45 Notification Center UI is controlled by runtime flag:
 - `FRONTEND_NOTIFICATIONS_ENABLED=true|false`
 
 When disabled, topbar bell and `/app/notifications` experience are hidden/blocked in UI.
+
+## Responsive shell notes (Faz 46)
+
+- App shell uses drawer navigation for mobile/tablet and persistent sidebar on desktop.
+- Note page details panel (comments/versions/info) becomes a drawer on non-desktop.
+- Responsive smoke spec: `e2e/responsive.spec.ts`.
+
+## Conflict resolution UX (Faz 47)
+
+- On `412/428` note save conflicts, editor shows `Review conflict` action.
+- Conflict dialog offers:
+  - reload latest (discard local)
+  - save local changes as conflict copy
+  - overwrite latest with explicit confirmation
+- Overwrite path always re-fetches latest ETag before PATCH retry.
+- No automatic merge/CRDT/OT is implemented in this phase.
+
+## Admin audit export (Faz 48)
+
+- Admin audit page supports export format selection (`CSV`, `JSONL`) and download.
+- Export requires `createdFrom` and `createdTo` filters.
+- Backend gateway enforces export limits and redaction; frontend does not handle raw secret data.
+
+## Notification preferences (Faz 49)
+
+- `/app/settings/notifications` route is available through Settings.
+- Mandatory security preferences are disabled in UI and cannot be toggled off.
+
+## MFA foundation UI (Faz 50)
+
+- Feature flag: `FRONTEND_MFA_UI_ENABLED`.
+- Settings/security shows passkey and recovery-code foundation state.
+- Current phase is design/skeleton only; setup actions are intentionally disabled.

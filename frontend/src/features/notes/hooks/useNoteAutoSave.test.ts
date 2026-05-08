@@ -103,6 +103,8 @@ describe('useNoteAutoSave', () => {
       await result.current.saveNow()
     })
     expect(result.current.saveState).toBe('conflict')
+    expect(result.current.conflictInfo?.localSnapshot.title).toBe('Conflict')
+    expect(result.current.conflictInfo?.errorCode).toBe('CONFLICT')
   })
 
   it('supports retry after error', async () => {
@@ -166,6 +168,43 @@ describe('useNoteAutoSave', () => {
       await result.current.saveNow()
     })
     expect(result.current.saveState).toBe('conflict')
+  })
+
+  it('pauses autosave while conflict is unresolved', async () => {
+    const saveNote = vi
+      .fn()
+      .mockRejectedValueOnce(
+        new ApiError({
+          timestamp: new Date().toISOString(),
+          status: 412,
+          errorCode: 'NOTE_CONFLICT',
+          message: 'Conflict',
+          path: '/notes/n1',
+        })
+      )
+      .mockResolvedValue({
+        note: { ...baseNote, updatedAt: new Date().toISOString() },
+        etag: '"note-rev-2"',
+      })
+
+    const { result } = renderHook(() =>
+      useNoteAutoSave({
+        noteId: 'n1',
+        title: 'Conflict paused',
+        contentBlocks: createEmptyDocument(),
+        enabled: true,
+        debounceMs: 10,
+        minChangeIntervalMs: 0,
+        baseUpdatedAt: baseNote.updatedAt,
+        initialEtag: '"note-rev-1"',
+        saveNote,
+      })
+    )
+
+    await act(async () => result.current.saveNow())
+    expect(result.current.saveState).toBe('conflict')
+    act(() => result.current.scheduleSave())
+    expect(saveNote).toHaveBeenCalledTimes(1)
   })
 })
 

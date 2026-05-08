@@ -60,9 +60,15 @@ consistent with those substring rules (`password`, `token`, `secret`, …). Neve
 - Vitest suites for masking, filter schema/date validation, mock pagination, URL round-trip.
 - Playwright `e2e/admin-audit.spec.ts` swaps `runtime-config.js` plus minimal `auth/signup`, `auth/me`, and workspace list routes so admin gates open **without** a live gateway while still exercising bearer-style session bootstrap.
 
-## Limitations (Phase 43)
+## Export UX (Faz 48)
 
-- No CSV export, SIEM fan-out, or central audit aggregation service.
+- Admin audit screen includes export controls (CSV/JSONL).
+- Export requires `createdFrom` + `createdTo`.
+- Gateway returns downloadable attachment; browser never gets internal service JWT.
+
+## Limitations (Phase 48)
+
+- No direct SIEM push/streaming connector in this phase (manual ops/export workflow).
 - No platform-wide RBAC or admin SSO roles yet.
 - `PLATFORM_ADMIN` claim model is transitional; allowlist remains rollout fallback.
 

@@ -287,3 +287,19 @@ Prod:
 - `NOTIFICATIONS_IN_APP_ENABLED` value is explicitly set per environment.
 - `FRONTEND_NOTIFICATIONS_ENABLED` is aligned with backend toggle.
 - Gateway `/notifications/**` route is present before enabling frontend bell flag.
+
+### Audit Export (Faz 48) rollout checks
+
+- `gatewayAdminAuditExportEnabled` is set per environment (usually off in dev, gated in staging/prod).
+- Export limit values are explicitly pinned (`maxRangeDays`, `maxRecords`, `pageSize`).
+- Export-specific rate-limit values are configured and validated under load test smoke.
+
+### Notification Preferences (Faz 49) rollout checks
+
+- `notificationPreferencesEnabled` and `FRONTEND_NOTIFICATION_PREFERENCES_ENABLED` stay aligned.
+- Mandatory security preferences are validated in smoke tests before wider rollout.
+
+### MFA Foundation (Faz 50) rollout checks
+
+- Keep `MFA_ENABLED=false` and `MFA_WEBAUTHN_ENABLED=false` by default in all environments.
+- Validate settings UI behavior for disabled state before enabling any server-side flow.

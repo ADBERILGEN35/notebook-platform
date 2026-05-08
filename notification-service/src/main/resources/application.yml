@@ -90,3 +90,5 @@ notification:
       allowed-scopes: ${TRUSTED_SERVICE_IDENTITY_SERVICE_ALLOWED_SCOPES:internal:notification:email:send,internal:notification:in-app:create}
   in-app:
     enabled: ${NOTIFICATIONS_IN_APP_ENABLED:true}
+  preferences:
+    enabled: ${NOTIFICATION_PREFERENCES_ENABLED:true}

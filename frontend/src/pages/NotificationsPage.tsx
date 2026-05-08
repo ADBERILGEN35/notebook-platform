@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { PageHeader } from '../shared/components/PageHeader'
 import { Card } from '../shared/components/Card'
 import { Button } from '../shared/components/Button'
@@ -18,6 +19,7 @@ import { NotificationList } from '../features/notifications/components/Notificat
 import type { UserNotificationType } from '../features/notifications/notifications-types'
 import { isNotificationsEnabled } from '../shared/config/notifications-feature-flags'
 import { PermissionDenied } from '../shared/components/PermissionDenied'
+import { useMediaQuery } from '../shared/hooks/useMediaQuery'
 
 const TYPES: UserNotificationType[] = [
   'WORKSPACE_INVITATION_RECEIVED',
@@ -34,6 +36,8 @@ export function NotificationsPage() {
   const [workspaceId, setWorkspaceId] = useState('')
   const [page, setPage] = useState(0)
   const [size, setSize] = useState(20)
+  const [showFilters, setShowFilters] = useState(false)
+  const isMobile = useMediaQuery('(max-width: 639px)')
 
   const filters = { unreadOnly, type, workspaceId: workspaceId || undefined, page, size, sort: 'createdAt,desc' }
   const notifications = useNotifications(filters, enabled)
@@ -54,8 +58,16 @@ export function NotificationsPage() {
   return (
     <div className="space-y-4">
       <PageHeader title="Notifications" subtitle="Polling-based notification center MVP." />
+      <Link to="/app/settings/notifications" className="inline-block text-sm text-primary-700 hover:underline">
+        Notification settings
+      </Link>
       <Card className="space-y-3">
-        <div className="flex flex-wrap items-center gap-3">
+        {isMobile ? (
+          <Button type="button" className="text-xs" onClick={() => setShowFilters((v) => !v)}>
+            {showFilters ? 'Hide filters' : 'Show filters'}
+          </Button>
+        ) : null}
+        <div className={`flex flex-wrap items-center gap-3 ${isMobile && !showFilters ? 'hidden' : ''}`}>
           <label className="flex items-center gap-2 text-sm text-slate-600">
             <input type="checkbox" checked={unreadOnly} onChange={(e) => setUnreadOnly(e.target.checked)} />
             Unread only

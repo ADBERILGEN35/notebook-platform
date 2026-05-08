@@ -26,6 +26,11 @@ config:
   searchReindexHeartbeatIntervalSeconds: "30"
   emailWorkerBatchSize: "10"
   emailWorkerLockTimeoutSeconds: "300"
+  notificationPreferencesEnabled: "true"
+  mfaEnabled: "false"
+  mfaWebauthnEnabled: "false"
+  mfaChallengeTtlSeconds: "300"
+  mfaRequiredForPlatformAdmin: "false"
 
 secrets:
   mode: native-kubernetes-secret
@@ -76,6 +81,8 @@ frontend:
     FRONTEND_API_BASE_URL: "http://localhost:8080"
     FRONTEND_AUTH_TRANSPORT: "bearer"
     FRONTEND_NOTIFICATIONS_ENABLED: "true"
+    FRONTEND_NOTIFICATION_PREFERENCES_ENABLED: "true"
+    FRONTEND_MFA_UI_ENABLED: "true"
     FRONTEND_ADMIN_UI_ENABLED: "true"
     FRONTEND_ADMIN_UI_DEV_OPEN: "true"
     FRONTEND_AUDIT_API_MODE: "mock"

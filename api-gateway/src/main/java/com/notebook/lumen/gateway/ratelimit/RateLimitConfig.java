@@ -29,4 +29,13 @@ public class RateLimitConfig {
     return new RedisRateLimiter(
         adminAudit.replenishRate(), adminAudit.burstCapacity(), adminAudit.requestedTokens());
   }
+
+  @Bean
+  RedisRateLimiter adminAuditExportRedisRateLimiter(GatewayRateLimitProperties properties) {
+    GatewayRateLimitProperties.Bucket adminAuditExport = properties.effectiveAdminAuditExport();
+    return new RedisRateLimiter(
+        adminAuditExport.replenishRate(),
+        adminAuditExport.burstCapacity(),
+        adminAuditExport.requestedTokens());
+  }
 }

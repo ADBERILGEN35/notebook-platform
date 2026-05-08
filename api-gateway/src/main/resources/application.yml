@@ -70,6 +70,10 @@ spring:
               uri: ${NOTIFICATION_SERVICE_URL:http://notification-service:8084}
               predicates:
                 - Path=/notifications/**
+            - id: notification-preferences-user
+              uri: ${NOTIFICATION_SERVICE_URL:http://notification-service:8084}
+              predicates:
+                - Path=/notification-preferences/**
 
 management:
   tracing:
@@ -115,12 +119,21 @@ gateway:
       replenish-rate: ${ADMIN_AUDIT_RATE_LIMIT_REPLENISH_RATE:5}
       burst-capacity: ${ADMIN_AUDIT_RATE_LIMIT_BURST_CAPACITY:20}
       requested-tokens: ${ADMIN_AUDIT_RATE_LIMIT_REQUESTED_TOKENS:1}
+    admin-audit-export:
+      replenish-rate: ${ADMIN_AUDIT_EXPORT_RATE_LIMIT_REPLENISH_RATE:2}
+      burst-capacity: ${ADMIN_AUDIT_EXPORT_RATE_LIMIT_BURST_CAPACITY:3}
+      requested-tokens: ${ADMIN_AUDIT_EXPORT_RATE_LIMIT_REQUESTED_TOKENS:1}
   admin:
     enabled: ${GATEWAY_ADMIN_ENABLED:false}
     allowed-user-ids: ${GATEWAY_ADMIN_ALLOWED_USER_IDS:}
     allowed-emails: ${GATEWAY_ADMIN_ALLOWED_EMAILS:}
     audit:
       enabled: ${GATEWAY_ADMIN_AUDIT_ENABLED:false}
+    audit-export:
+      enabled: ${GATEWAY_ADMIN_AUDIT_EXPORT_ENABLED:false}
+      max-range-days: ${GATEWAY_ADMIN_AUDIT_EXPORT_MAX_RANGE_DAYS:31}
+      max-records: ${GATEWAY_ADMIN_AUDIT_EXPORT_MAX_RECORDS:10000}
+      page-size: ${GATEWAY_ADMIN_AUDIT_EXPORT_PAGE_SIZE:200}
     audit-proxy:
       identity-service-url: ${IDENTITY_SERVICE_URL:http://identity-service:8081}
       workspace-service-url: ${WORKSPACE_SERVICE_URL:http://workspace-service:8082}

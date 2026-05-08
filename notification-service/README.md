@@ -41,3 +41,4 @@ Docs:
 - [`../docs/email-deliverability.md`](../docs/email-deliverability.md)
 - [`../docs/email-dns-records.md`](../docs/email-dns-records.md)
 - [`../docs/notification-center.md`](../docs/notification-center.md)
+- [`../docs/notification-preferences.md`](../docs/notification-preferences.md)

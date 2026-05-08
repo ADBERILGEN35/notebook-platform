@@ -38,7 +38,8 @@ public class SecurityNotificationService {
               "Security notice: sessions revoked",
               "security-refresh-tokens-revoked",
               Map.of("revokedAt", Instant.now().toString()),
-              "security-revoke-all:" + user.getId() + ":" + Instant.now().getEpochSecond() / 60));
+              "security-revoke-all:" + user.getId() + ":" + Instant.now().getEpochSecond() / 60,
+              user.getId()));
       notificationClient.sendInApp(
           new NotificationClient.InAppNotificationRequest(
               user.getId(),

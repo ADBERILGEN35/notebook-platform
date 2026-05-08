@@ -1,6 +1,8 @@
 import { apiRequest } from '../../../shared/api/api-client'
 import type { PageResponse } from '../../../shared/types/api'
 import { getAuditApiMode } from '../../../shared/config/admin-feature-flags'
+import { useAuthStore } from '../../auth/auth-store'
+import { getAuthTransport, isCookieMode } from '../../../shared/config/auth-transport'
 import type { AuditEvent, AuditQueryFilters } from './types'
 import { fetchAuditEventsMock } from './audit-mock-api'
 
@@ -33,4 +35,40 @@ export async function fetchAuditEventsReal(filters: AuditQueryFilters): Promise<
 export async function queryAuditEvents(filters: AuditQueryFilters): Promise<PageResponse<AuditEvent>> {
   if (getAuditApiMode() === 'mock') return fetchAuditEventsMock(filters)
   return fetchAuditEventsReal(filters)
+}
+
+export async function exportAuditEvents(
+  filters: AuditQueryFilters,
+  format: 'csv' | 'jsonl',
+): Promise<{ blob: Blob; fileName: string; contentType: string }> {
+  const qs = auditFiltersToQueryString(filters)
+  const url = `/admin/audit-events/export?${qs}&format=${format}`
+  const runtimeApiBaseUrl = window.__NOTEBOOK_CONFIG__?.API_BASE_URL?.trim()
+  const apiBaseUrl = runtimeApiBaseUrl || import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
+  const headers = new Headers()
+  const token = useAuthStore.getState().accessToken
+  if ((getAuthTransport() === 'bearer' || getAuthTransport() === 'dual') && token) {
+    headers.set('Authorization', `Bearer ${token}`)
+  }
+  const response = await fetch(`${apiBaseUrl}${url}`, {
+    method: 'GET',
+    headers,
+    credentials: isCookieMode() ? 'include' : 'same-origin',
+  })
+  if (!response.ok) {
+    const err = await response.json().catch(() => null)
+    const message = err?.message || 'Audit export failed'
+    const error = new Error(message) as Error & { status?: number; errorCode?: string }
+    error.status = err?.status || response.status
+    error.errorCode = err?.errorCode || `HTTP_${response.status}`
+    throw error
+  }
+  const disposition = response.headers.get('Content-Disposition') || ''
+  const fileNameMatch = disposition.match(/filename="([^"]+)"/i)
+  const fileName = fileNameMatch?.[1] || `audit-export.${format === 'csv' ? 'csv' : 'jsonl'}`
+  return {
+    blob: await response.blob(),
+    fileName: fileName.replace(/[^\w.\-]/g, '_'),
+    contentType: response.headers.get('Content-Type') || '',
+  }
 }

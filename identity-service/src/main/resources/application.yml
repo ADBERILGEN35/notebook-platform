@@ -93,6 +93,11 @@ audit:
     allowed-scopes: ${AUDIT_ADMIN_SERVICE_JWT_ALLOWED_SCOPES:internal:audit:read}
 
 identity:
+  mfa:
+    enabled: ${MFA_ENABLED:false}
+    webauthn-enabled: ${MFA_WEBAUTHN_ENABLED:false}
+    challenge-ttl-seconds: ${MFA_CHALLENGE_TTL_SECONDS:300}
+    required-for-platform-admin: ${MFA_REQUIRED_FOR_PLATFORM_ADMIN:false}
   notification:
     enabled: ${IDENTITY_SECURITY_NOTIFICATIONS_ENABLED:false}
     service-url: ${NOTIFICATION_SERVICE_URL:http://notification-service:8084}

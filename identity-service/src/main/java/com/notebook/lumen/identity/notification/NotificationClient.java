@@ -20,7 +20,8 @@ public interface NotificationClient {
       String subject,
       String templateKey,
       Map<String, String> templateVariables,
-      String idempotencyKey) {}
+      String idempotencyKey,
+      UUID recipientUserId) {}
 
   record InAppNotificationRequest(
       UUID recipientUserId,

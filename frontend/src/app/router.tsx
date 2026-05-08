@@ -64,6 +64,7 @@ export const router = createBrowserRouter([
       { path: 'notifications', element: <NotificationsPage /> },
       { path: 'settings', element: <SettingsPage /> },
       { path: 'settings/security', element: <SettingsPage /> },
+      { path: 'settings/notifications', element: <SettingsPage /> },
       {
         path: 'admin',
         element: <AdminGate />,

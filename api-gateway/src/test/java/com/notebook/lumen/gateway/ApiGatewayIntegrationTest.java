@@ -48,8 +48,12 @@ import org.testcontainers.utility.DockerImageName;
       "gateway.rate-limit.admin-audit.replenish-rate=100",
       "gateway.rate-limit.admin-audit.burst-capacity=100",
       "gateway.rate-limit.admin-audit.requested-tokens=1",
+      "gateway.rate-limit.admin-audit-export.replenish-rate=100",
+      "gateway.rate-limit.admin-audit-export.burst-capacity=100",
+      "gateway.rate-limit.admin-audit-export.requested-tokens=1",
       "gateway.admin.enabled=true",
       "gateway.admin.audit.enabled=true",
+      "gateway.admin.audit-export.enabled=true",
       "gateway.admin.allowed-emails=ada@example.com"
     })
 class ApiGatewayIntegrationTest {
@@ -186,6 +190,36 @@ class ApiGatewayIntegrationTest {
         .expectBody()
         .jsonPath("$.errorCode")
         .isEqualTo("INVALID_AUDIT_FILTER");
+  }
+
+  @Test
+  void adminAuditExport_requiresRange() {
+    webTestClient
+        .get()
+        .uri("/admin/audit-events/export?source=identity&format=csv")
+        .headers(headers -> headers.setBearerAuth(jwt(USER_ID, USER_EMAIL, "access", 0, 300)))
+        .exchange()
+        .expectStatus()
+        .isBadRequest()
+        .expectBody()
+        .jsonPath("$.errorCode")
+        .isEqualTo("AUDIT_EXPORT_RANGE_REQUIRED");
+  }
+
+  @Test
+  void adminAuditExport_csv_success() {
+    webTestClient
+        .get()
+        .uri(
+            "/admin/audit-events/export?source=identity&format=csv&createdFrom=2026-01-01T00:00:00Z&createdTo=2026-01-02T00:00:00Z")
+        .headers(headers -> headers.setBearerAuth(jwt(USER_ID, USER_EMAIL, "access", 0, 300)))
+        .exchange()
+        .expectStatus()
+        .isOk()
+        .expectHeader()
+        .contentTypeCompatibleWith("text/csv")
+        .expectHeader()
+        .valueMatches("Content-Disposition", ".*attachment.*audit-identity-.*\\.csv.*");
   }
 
   @Test

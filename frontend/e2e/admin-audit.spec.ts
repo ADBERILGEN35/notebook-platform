@@ -22,6 +22,9 @@ test.describe('admin audit UI', () => {
 
     await page.goto('/app/admin/audit?source=identity&size=25&page=0&sort=createdAt,desc')
     await expect(page.getByRole('heading', { name: 'Audit Events' })).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Export' })).toBeVisible()
+    await page.getByRole('button', { name: 'Export' }).click()
+    await expect(page.getByText('Export requires createdFrom and createdTo filters.')).toBeVisible()
 
     await page.getByRole('button', { name: 'workspace', exact: true }).click()
     await expect(page.getByRole('cell', { name: 'WORKSPACE_CREATED' })).toBeVisible()

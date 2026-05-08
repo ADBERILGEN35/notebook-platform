@@ -267,3 +267,39 @@ Added contracts on existing gateway + notification-service:
 - `POST /notifications/read-all`
 - `POST /notifications/{notificationId}/archive`
 - `POST /internal/notifications/in-app` (service JWT scope: `internal:notification:in-app:create`)
+
+## Faz 47 Conflict UX compatibility
+
+Faz 47 conflict resolution uses existing content-service contracts only:
+
+- `GET /notes/{noteId}` (ETag baseline refresh)
+- `PATCH /notes/{noteId}` with `If-Match` (overwrite/retry path)
+- `POST /notebooks/{notebookId}/notes` (save local conflict copy)
+
+No new backend endpoint is introduced for this phase.
+
+## Faz 48 Audit export contracts
+
+Gateway admin export contract:
+
+- `GET /admin/audit-events/export?source=<identity|workspace|content>&format=<csv|jsonl>&createdFrom=<iso>&createdTo=<iso>[&filters...]`
+
+This contract remains gateway-only; browser clients do not call internal `/internal/audit-events`
+routes directly.
+
+## Faz 49 Notification preferences contracts
+
+- `GET /notification-preferences`
+- `PATCH /notification-preferences`
+- Internal create responses can include `status=SKIPPED` with `skippedReason=USER_PREFERENCE_DISABLED`.
+
+## Faz 50 MFA / WebAuthn contracts (skeleton)
+
+- `GET /auth/mfa/settings`
+- `POST /auth/mfa/webauthn/registration/options`
+- `POST /auth/mfa/webauthn/registration/verify`
+- `POST /auth/mfa/webauthn/authentication/options`
+- `POST /auth/mfa/webauthn/authentication/verify`
+- `POST /auth/mfa/recovery-codes/generate`
+- `POST /auth/mfa/recovery-codes/verify`
+- `GET/PATCH/DELETE /auth/mfa/webauthn/credentials/{credentialId}`

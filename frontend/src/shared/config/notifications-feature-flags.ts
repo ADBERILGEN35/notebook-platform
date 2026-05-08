@@ -6,3 +6,13 @@ const parseBool = (raw: string | boolean | undefined, defaultValue = false): boo
 
 export const isNotificationsEnabled = (): boolean =>
   parseBool(window.__NOTEBOOK_CONFIG__?.NOTIFICATIONS_ENABLED ?? import.meta.env.VITE_NOTIFICATIONS_ENABLED, false)
+
+export const isNotificationPreferencesEnabled = (): boolean =>
+  parseBool(
+    window.__NOTEBOOK_CONFIG__?.NOTIFICATION_PREFERENCES_ENABLED ??
+      import.meta.env.VITE_NOTIFICATION_PREFERENCES_ENABLED,
+    false,
+  )
+
+export const isMfaUiEnabled = (): boolean =>
+  parseBool(window.__NOTEBOOK_CONFIG__?.MFA_UI_ENABLED ?? import.meta.env.VITE_MFA_UI_ENABLED, false)

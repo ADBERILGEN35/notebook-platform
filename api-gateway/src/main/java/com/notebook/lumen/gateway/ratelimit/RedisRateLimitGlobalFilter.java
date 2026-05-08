@@ -22,16 +22,19 @@ public class RedisRateLimitGlobalFilter implements GlobalFilter, Ordered {
   private final RedisRateLimiter authRedisRateLimiter;
   private final RedisRateLimiter protectedRedisRateLimiter;
   private final RedisRateLimiter adminAuditRedisRateLimiter;
+  private final RedisRateLimiter adminAuditExportRedisRateLimiter;
   private final GatewayErrorResponseWriter errorResponseWriter;
 
   public RedisRateLimitGlobalFilter(
       @Qualifier("authRedisRateLimiter") RedisRateLimiter authRedisRateLimiter,
       @Qualifier("protectedRedisRateLimiter") RedisRateLimiter protectedRedisRateLimiter,
       @Qualifier("adminAuditRedisRateLimiter") RedisRateLimiter adminAuditRedisRateLimiter,
+      @Qualifier("adminAuditExportRedisRateLimiter") RedisRateLimiter adminAuditExportRedisRateLimiter,
       GatewayErrorResponseWriter errorResponseWriter) {
     this.authRedisRateLimiter = authRedisRateLimiter;
     this.protectedRedisRateLimiter = protectedRedisRateLimiter;
     this.adminAuditRedisRateLimiter = adminAuditRedisRateLimiter;
+    this.adminAuditExportRedisRateLimiter = adminAuditExportRedisRateLimiter;
     this.errorResponseWriter = errorResponseWriter;
   }
 
@@ -43,6 +46,8 @@ public class RedisRateLimitGlobalFilter implements GlobalFilter, Ordered {
     RedisRateLimiter limiter;
     if (authEndpoint) {
       limiter = authRedisRateLimiter;
+    } else if (isAdminAuditExportEndpoint(exchange)) {
+      limiter = adminAuditExportRedisRateLimiter;
     } else if (isAdminAuditEndpoint(exchange)) {
       limiter = adminAuditRedisRateLimiter;
     } else {
@@ -81,6 +86,10 @@ public class RedisRateLimitGlobalFilter implements GlobalFilter, Ordered {
 
   private boolean isAdminAuditEndpoint(ServerWebExchange exchange) {
     return "/admin/audit-events".equals(exchange.getRequest().getPath().value());
+  }
+
+  private boolean isAdminAuditExportEndpoint(ServerWebExchange exchange) {
+    return "/admin/audit-events/export".equals(exchange.getRequest().getPath().value());
   }
 
   private Mono<String> userId(ServerWebExchange exchange) {

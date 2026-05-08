@@ -8,7 +8,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties(prefix = "notification")
 public record NotificationProperties(
-    String workerInstanceId, Email email, Internal internal, InApp inApp) {
+    String workerInstanceId, Email email, Internal internal, InApp inApp, Preferences preferences) {
   public record Email(
       String provider,
       String from,
@@ -47,6 +47,8 @@ public record NotificationProperties(
       TrustedService trustedNotificationClient, TrustedService trustedIdentityClient) {}
 
   public record InApp(boolean enabled) {}
+
+  public record Preferences(boolean enabled) {}
 
   public record TrustedService(
       String kid,

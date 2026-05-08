@@ -88,6 +88,16 @@ Gateway structured logs include:
 Until dedicated persisted audit-of-audit events are added, these logs must be shipped to centralized
 log/SIEM pipelines.
 
+## Faz 48 Export Extension
+
+Gateway also exposes `GET /admin/audit-events/export` with admin authorization and server-side
+service JWT fan-out.
+
+- Formats: `csv`, `jsonl`
+- Required range: `createdFrom`, `createdTo`
+- Export limits: range days + max records + internal page size
+- Dedicated export rate-limit bucket (`admin-audit-export`)
+
 ## Rollout
 
 1. Deploy gateway with `gateway.admin.audit.enabled=false`.

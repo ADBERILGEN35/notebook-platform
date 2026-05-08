@@ -1,6 +1,7 @@
 package com.notebook.lumen.identity;
 
 import com.notebook.lumen.identity.audit.AuditAdminProperties;
+import com.notebook.lumen.identity.mfa.MfaProperties;
 import com.notebook.lumen.identity.notification.IdentityNotificationProperties;
 import com.notebook.lumen.identity.shared.config.AuthTransportProperties;
 import com.notebook.lumen.identity.shared.config.Argon2Properties;
@@ -15,7 +16,8 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
   JwtProperties.class,
   AuthTransportProperties.class,
   AuditAdminProperties.class,
-  IdentityNotificationProperties.class
+  IdentityNotificationProperties.class,
+  MfaProperties.class
 })
 public class IdentityServiceApplication {
 

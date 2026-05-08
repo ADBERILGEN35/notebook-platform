@@ -16,11 +16,12 @@ type Props = {
   onResolveComment: (commentId: string) => void
   onReopenComment: (commentId: string) => void
   onRestoreVersion: (versionNumber: number) => void
+  compact?: boolean
 }
 
 export function RightPanel(props: Props) {
   return (
-    <aside className="w-80 border-l border-slate-200 bg-white p-3">
+    <aside className={props.compact ? 'w-full bg-white p-0' : 'w-80 border-l border-slate-200 bg-white p-3'}>
       <Tabs value={props.activeTab} onChange={props.onTabChange} />
       {props.activeTab === 'comments' && (
         <div className="space-y-2">
@@ -32,7 +33,7 @@ export function RightPanel(props: Props) {
           <Button onClick={props.onAddComment}>Add comment</Button>
           {props.comments.map((comment) => (
             <div key={comment.id} className="rounded border border-slate-200 p-2 text-sm">
-              <p>{comment.content}</p>
+              <p className="break-words">{comment.content}</p>
               <div className="mt-2 flex gap-2">
                 {!comment.resolvedAt ? (
                   <Button onClick={() => props.onResolveComment(comment.id)}>Resolve</Button>
@@ -49,7 +50,7 @@ export function RightPanel(props: Props) {
           {props.versions.map((version) => (
             <div key={version.id} className="rounded border border-slate-200 p-2 text-sm">
               <p className="font-semibold">v{version.versionNumber}</p>
-              <p className="text-xs text-slate-500">{new Date(version.createdAt).toLocaleString()}</p>
+              <p className="break-words text-xs text-slate-500">{new Date(version.createdAt).toLocaleString()}</p>
               <Button className="mt-2" onClick={() => props.onRestoreVersion(version.versionNumber)}>
                 Restore
               </Button>

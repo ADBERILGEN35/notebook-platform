@@ -22,7 +22,13 @@ export function SearchPage() {
   return (
     <div className="space-y-3">
       <PageHeader title="Search" subtitle="Workspace-scoped note search" />
-      <Input placeholder="Type at least 2 chars..." value={query} onChange={(event) => setQuery(event.target.value)} />
+      <div className="sticky top-0 z-10 rounded bg-slate-50/80 p-2 backdrop-blur sm:static sm:bg-transparent sm:p-0">
+        <Input
+          placeholder="Type at least 2 chars..."
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+        />
+      </div>
       {result.isError ? <ErrorAlert error={result.error} /> : null}
       {!query ? <EmptyState title="Start searching" message="Enter keywords to find notes." /> : null}
       {result.data && result.data.items.length === 0 ? (
@@ -32,7 +38,7 @@ export function SearchPage() {
         {result.data?.items.map((item) => (
           <div key={item.noteId} className="rounded border border-slate-200 bg-white p-3">
             <h3 className="text-sm font-semibold">{item.title}</h3>
-            <p className="text-sm text-slate-600">{item.snippet}</p>
+            <p className="break-words text-sm text-slate-600">{item.snippet}</p>
           </div>
         ))}
       </div>

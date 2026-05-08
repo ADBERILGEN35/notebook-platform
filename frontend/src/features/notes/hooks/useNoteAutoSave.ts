@@ -32,6 +32,15 @@ type Params = {
   }) => Promise<{ note: Note; etag: string | null }>
 }
 
+export type NoteConflictInfo = {
+  localSnapshot: NoteSaveSnapshot
+  failedPayload: { title: string; contentBlocks: NoteBlock[]; ifMatch: string | null }
+  failedAt: string
+  serverEtagAtFailure: string | null
+  errorCode: string | null
+  errorMessage: string
+}
+
 export function useNoteAutoSave({
   noteId,
   title,
@@ -48,6 +57,7 @@ export function useNoteAutoSave({
   const [updatedAtBase, setUpdatedAtBase] = useState<string | null>(baseUpdatedAt)
   const [etag, setEtag] = useState<string | null>(initialEtag)
   const [isDirty, setIsDirty] = useState(false)
+  const [conflictInfo, setConflictInfo] = useState<NoteConflictInfo | null>(null)
 
   const timerRef = useRef<number | null>(null)
   const inFlightRef = useRef(false)
@@ -97,9 +107,22 @@ export function useNoteAutoSave({
       setEtag(saved.etag)
       setSaveState('saved')
       setIsDirty(false)
+      setConflictInfo(null)
     } catch (err) {
       if (err instanceof ApiError && (err.status === 409 || err.status === 412 || err.status === 428)) {
         setSaveState('conflict')
+        setConflictInfo({
+          localSnapshot: currentSnapshot,
+          failedPayload: {
+            title: currentSnapshot.title,
+            contentBlocks: currentSnapshot.contentBlocks,
+            ifMatch: etag,
+          },
+          failedAt: new Date().toISOString(),
+          serverEtagAtFailure: etag,
+          errorCode: err.errorCode || null,
+          errorMessage: err.message,
+        })
       } else {
         setSaveState('error')
       }
@@ -120,6 +143,12 @@ export function useNoteAutoSave({
   const scheduleSave = useCallback(() => {
     setIsDirty(true)
     setError(null)
+    if (saveState === 'conflict') {
+      if (conflictInfo) {
+        setConflictInfo({ ...conflictInfo, localSnapshot: currentSnapshot })
+      }
+      return
+    }
     setSaveState('dirty')
     if (!enabled) return
     if (areSnapshotsEqual(lastSavedRef.current, currentSnapshot)) return
@@ -128,7 +157,7 @@ export function useNoteAutoSave({
     lastChangeTsRef.current = Date.now()
     timerRef.current = window.setTimeout(() => void executeSave(), debounceMs)
     setSaveState('scheduled')
-  }, [clearTimer, currentSnapshot, debounceMs, enabled, executeSave])
+  }, [clearTimer, conflictInfo, currentSnapshot, debounceMs, enabled, executeSave, saveState])
 
   const saveNow = useCallback(async () => {
     clearTimer()
@@ -161,12 +190,23 @@ export function useNoteAutoSave({
     setSaveState('saved')
     setError(null)
     setIsDirty(false)
+    setConflictInfo(null)
   }, [clearTimer])
 
   const markConflict = useCallback(() => {
     setSaveState('conflict')
     setIsDirty(true)
   }, [])
+
+  const clearConflict = useCallback(() => {
+    setConflictInfo(null)
+    setError(null)
+    if (isDirty) {
+      setSaveState('dirty')
+    } else {
+      setSaveState('saved')
+    }
+  }, [isDirty])
 
   useEffect(() => () => clearTimer(), [clearTimer])
 
@@ -183,9 +223,11 @@ export function useNoteAutoSave({
     error,
     updatedAtBase,
     etag,
+    conflictInfo,
     scheduleSave,
     saveNow,
     retry,
+    clearConflict,
     resetWithServerNote,
     resetWithServerVersion,
   }

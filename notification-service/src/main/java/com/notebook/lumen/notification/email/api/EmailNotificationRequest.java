@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.util.Map;
+import java.util.UUID;
 
 public record EmailNotificationRequest(
     @NotNull EmailNotificationType type,
@@ -13,4 +14,5 @@ public record EmailNotificationRequest(
     @NotBlank @Size(max = 255) String subject,
     @NotBlank String templateKey,
     Map<String, String> templateVariables,
-    @Size(max = 255) String idempotencyKey) {}
+    @Size(max = 255) String idempotencyKey,
+    UUID recipientUserId) {}

@@ -176,3 +176,17 @@
 - `actionUrl` is restricted to internal relative `/app/*` paths; protocol URLs and `javascript:` are rejected.
 - Notification metadata is sanitized server-side and not rendered directly in UI.
 - Message/title are rendered as plain React text nodes (no HTML injection path).
+
+## Audit Export Threat Notes (Faz 48)
+
+- Export endpoint is admin-authorized at gateway; non-admin users receive access denied.
+- Internal service JWT remains gateway-only and is never exposed to browser.
+- Export metadata is redacted again at gateway export layer (defense in depth).
+- CSV output applies formula injection mitigation by prefixing risky leading characters.
+
+## MFA / WebAuthn Threat Notes (Faz 50 design)
+
+- Passkeys provide phishing resistance compared to password-only login.
+- Recovery codes must be treated as high-sensitivity secrets; only hashed values are persisted.
+- Challenge replay risks are mitigated in design via short TTL challenge storage (Redis).
+- Admin/audit surface should enforce MFA in future rollout (`MFA_REQUIRED_FOR_PLATFORM_ADMIN`).

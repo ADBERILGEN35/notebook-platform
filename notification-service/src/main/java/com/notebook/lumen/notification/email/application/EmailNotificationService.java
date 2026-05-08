@@ -6,7 +6,10 @@ import com.notebook.lumen.notification.email.api.EmailNotificationRequest;
 import com.notebook.lumen.notification.email.api.EmailNotificationResponse;
 import com.notebook.lumen.notification.email.domain.EmailNotification;
 import com.notebook.lumen.notification.email.domain.EmailNotificationStatus;
+import com.notebook.lumen.notification.email.domain.EmailNotificationType;
 import com.notebook.lumen.notification.email.infrastructure.EmailNotificationRepository;
+import com.notebook.lumen.notification.preference.application.NotificationPreferenceService;
+import com.notebook.lumen.notification.preference.domain.NotificationChannel;
 import com.notebook.lumen.notification.email.provider.EmailMessage;
 import com.notebook.lumen.notification.email.provider.EmailProvider;
 import com.notebook.lumen.notification.email.suppression.EmailSuppressionService;
@@ -16,6 +19,7 @@ import com.notebook.lumen.notification.template.application.EmailTemplateRendere
 import io.micrometer.core.instrument.MeterRegistry;
 import java.time.Instant;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -29,6 +33,7 @@ public class EmailNotificationService {
   private final EmailSuppressionService suppressionService;
   private final NotificationProperties properties;
   private final AuditService auditService;
+  private final NotificationPreferenceService preferenceService;
   private final MeterRegistry meterRegistry;
   private final String workerInstanceId;
 
@@ -39,6 +44,7 @@ public class EmailNotificationService {
       EmailSuppressionService suppressionService,
       NotificationProperties properties,
       AuditService auditService,
+      NotificationPreferenceService preferenceService,
       MeterRegistry meterRegistry) {
     this.repository = repository;
     this.templateRenderer = templateRenderer;
@@ -46,6 +52,7 @@ public class EmailNotificationService {
     this.suppressionService = suppressionService;
     this.properties = properties;
     this.auditService = auditService;
+    this.preferenceService = preferenceService;
     this.meterRegistry = meterRegistry;
     this.workerInstanceId =
         WorkerInstanceIds.resolve(properties.workerInstanceId(), "email-worker");
@@ -57,7 +64,17 @@ public class EmailNotificationService {
       var existing = repository.findByIdempotencyKey(request.idempotencyKey());
       if (existing.isPresent()) {
         EmailNotification notification = existing.get();
-        return new EmailNotificationResponse(notification.getId(), notification.getStatus());
+        return new EmailNotificationResponse(notification.getId(), notification.getStatus(), null);
+      }
+    }
+    if (request.recipientUserId() != null) {
+      Optional<com.notebook.lumen.notification.user.domain.UserNotificationType> mappedType =
+          toUserNotificationType(request.type());
+      if (mappedType.isPresent()
+          && !preferenceService.isEnabled(
+              request.recipientUserId(), mappedType.get(), NotificationChannel.EMAIL)) {
+        return new EmailNotificationResponse(
+            null, EmailNotificationStatus.SKIPPED, "USER_PREFERENCE_DISABLED");
       }
     }
     var rendered =
@@ -97,7 +114,22 @@ public class EmailNotificationService {
             notification.getType().name(),
             "recipientEmailMasked",
             maskEmail(notification.getRecipientEmail())));
-    return new EmailNotificationResponse(notification.getId(), notification.getStatus());
+    return new EmailNotificationResponse(notification.getId(), notification.getStatus(), null);
+  }
+
+  private Optional<com.notebook.lumen.notification.user.domain.UserNotificationType> toUserNotificationType(
+      EmailNotificationType type) {
+    return switch (type) {
+      case SECURITY_REFRESH_TOKENS_REVOKED ->
+          Optional.of(
+              com.notebook.lumen.notification.user.domain.UserNotificationType
+                  .SECURITY_SESSIONS_REVOKED);
+      case WORKSPACE_INVITATION ->
+          Optional.of(
+              com.notebook.lumen.notification.user.domain.UserNotificationType
+                  .WORKSPACE_INVITATION_RECEIVED);
+      default -> Optional.empty();
+    };
   }
 
   @Transactional

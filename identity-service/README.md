@@ -164,3 +164,20 @@ revocation.
 - Duplicate `kid` veya `activeKid` config'te yoksa servis fail-fast eder.
 - Kritik auth aksiyonlari `identity_audit_events` tablosuna yazilir; token/password gibi hassas metadata alanlari maskelenir.
 - Refresh token plaintext DB, response veya audit metadata icine yazilmaz. DB yalnizca hash ve session metadata saklar.
+
+## MFA / WebAuthn foundation (Faz 50)
+
+- Data model tables:
+  - `user_webauthn_credentials`
+  - `user_mfa_settings`
+  - `user_mfa_recovery_codes`
+- Feature flags:
+  - `MFA_ENABLED`
+  - `MFA_WEBAUTHN_ENABLED`
+  - `MFA_CHALLENGE_TTL_SECONDS`
+  - `MFA_REQUIRED_FOR_PLATFORM_ADMIN`
+- API skeleton:
+  - `GET /auth/mfa/settings`
+  - `POST /auth/mfa/webauthn/*`
+  - `POST /auth/mfa/recovery-codes/*`
+  - `GET/PATCH/DELETE /auth/mfa/webauthn/credentials/*`

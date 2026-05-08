@@ -322,3 +322,12 @@ Faz 44 adds runtime-configurable CSP hardening and frontend runtime security rol
 (`docs/frontend-csp-hardening.md`).
 Faz 45 adds in-app Notification Center UX + user notification APIs on existing
 `notification-service` (`docs/notification-center.md`).
+Faz 46 adds responsive/mobile shell polish without backend contract changes
+(`docs/frontend-responsive.md`).
+Faz 47 adds conflict resolution UX for note saves (reload/copy/overwrite) on top of existing
+ETag/If-Match contracts, without auto-merge or new backend endpoints.
+Faz 48 adds admin audit export foundation (CSV/JSONL), gateway-side redaction and SIEM ingestion
+guidance (`docs/audit-export.md`, `docs/audit-siem-integration.md`).
+Faz 49 adds notification preferences + channel control (`docs/notification-preferences.md`).
+Faz 50 adds MFA/WebAuthn design foundation (`docs/mfa-webauthn-design.md`,
+`docs/mfa-rollout-plan.md`).

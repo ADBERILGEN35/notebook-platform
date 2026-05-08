@@ -145,7 +145,7 @@ suppression state. See:
 
 ## Limitations
 
-- No user notification preference or unsubscribe model.
+- No unsubscribe center/marketing preference model.
 - No central audit service.
 - No provider-specific SDK.
 - No real DNS/SPF/DKIM/DMARC setup.
@@ -164,3 +164,13 @@ Notification-service now also exposes in-app user notifications (polling-first M
   read/archive lifecycle, and idempotent internal creation.
 
 See [`notification-center.md`](notification-center.md) for UI/API flow details.
+
+## Faz 49 Notification Preferences
+
+- New table: `user_notification_preferences` (`V7__create_user_notification_preferences.sql`).
+- New public API: `GET/PATCH /notification-preferences`.
+- Preference validation now uses explicit errors:
+  - `NOTIFICATION_PREFERENCE_ACCESS_DENIED`
+  - `INVALID_NOTIFICATION_PREFERENCE_REQUEST`
+  - `MANDATORY_NOTIFICATION_PREFERENCE`
+  - `NOTIFICATION_PREFERENCE_NOT_FOUND`

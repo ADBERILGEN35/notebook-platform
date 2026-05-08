@@ -61,3 +61,8 @@ Errors:
 - backend transport `dual` veya `bearer`
 - frontend `AUTH_TRANSPORT=bearer`
 - cookie clean-up logout ile devam eder
+
+## MFA note (Faz 50)
+
+- MFA step-up tasariminda tam auth cookie issuance MFA verify sonrasina alinacaktir.
+- Bu fazda login step-up enforcement uygulanmamis, sadece foundation contract tanimlanmistir.

@@ -124,3 +124,30 @@ E2E scope moved to [`docs/frontend-e2e.md`](frontend-e2e.md).
 - Filters: unread-only, type, optional workspace, pagination.
 - No realtime socket transport in this phase; polling-based refresh is used.
 
+## Faz 46 Mobile / Responsive Polish
+
+- App shell now has mobile/tablet drawer navigation and compact topbar behavior.
+- Note page right panel shifts to drawer on non-desktop viewports.
+- Search, notifications and admin/audit pages include small-screen usability updates.
+- See [`frontend-responsive.md`](frontend-responsive.md).
+
+## Faz 47 Conflict Resolution UX (No Auto-Merge)
+
+- Conflict state now includes local snapshot and failure context from autosave.
+- `Review conflict` opens a resolution dialog with:
+  - latest server preview
+  - local unsaved preview
+  - actions: reload latest, save as copy, overwrite latest
+- Overwrite flow re-fetches latest ETag and replays PATCH with explicit user confirmation.
+- No automatic merge algorithm, CRDT/OT, or real-time collaboration in this phase.
+
+## Faz 49 Notification Preferences
+
+- Settings now exposes notification channel toggles.
+- Mandatory security preferences are displayed disabled with explanatory text.
+
+## Faz 50 MFA Foundation
+
+- Settings/Security page includes MFA section with passkey/recovery placeholder actions.
+- Browser capability detection is exposed via `isWebAuthnSupported()`.
+

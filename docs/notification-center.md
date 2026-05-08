@@ -67,3 +67,9 @@ Invitation/comment fan-out stays as future work for this phase.
 - `actionUrl` must be internal `/app/*` path.
 - Metadata is stored for backend/internal use; UI does not display arbitrary metadata.
 - Cookie mode CSRF protections continue for POST read/archive/read-all via gateway.
+
+## Faz 49 Preferences update
+
+- `GET/PATCH /notification-preferences` provides user-level channel controls (`IN_APP`, `EMAIL`).
+- Security-critical `SECURITY_SESSIONS_REVOKED` is mandatory and cannot be disabled.
+- Disabled preference paths may return `SKIPPED` for internal create flows.

@@ -1,4 +1,4 @@
-import { Outlet, useNavigate } from 'react-router-dom'
+import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
 import { listWorkspaces } from '../features/workspaces/workspace-api'
@@ -11,16 +11,21 @@ import { Topbar } from '../shared/layout/Topbar'
 import { Modal } from '../shared/components/Modal'
 import { Input } from '../shared/components/Input'
 import { Button } from '../shared/components/Button'
+import { useMediaQuery } from '../shared/hooks/useMediaQuery'
+import { MobileSidebar } from '../shared/layout/MobileSidebar'
 
 export function AppShellPage() {
   const navigate = useNavigate()
+  const location = useLocation()
   const [search, setSearch] = useState('')
   const [openCreateNotebook, setOpenCreateNotebook] = useState(false)
   const [newNotebookName, setNewNotebookName] = useState('')
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const activeWorkspaceId = useWorkspaceStore((state) => state.activeWorkspaceId)
   const setActiveWorkspaceId = useWorkspaceStore((state) => state.setActiveWorkspaceId)
   const user = useAuthStore((state) => state.user)
   const showAdminNav = canShowAdminNavigation(user)
+  const isDesktop = useMediaQuery('(min-width: 1024px)')
 
   const workspaceQuery = useQuery({
     queryKey: ['workspaces'],
@@ -39,6 +44,10 @@ export function AppShellPage() {
     }
   }, [activeWorkspaceId, setActiveWorkspaceId, workspaceQuery.data?.items])
 
+  useEffect(() => {
+    setIsSidebarOpen(false)
+  }, [location.pathname])
+
   const createNotebookMutation = useMutation({
     mutationFn: () => createNotebook(activeWorkspaceId!, { name: newNotebookName }),
     onSuccess: (notebook) => {
@@ -49,8 +58,22 @@ export function AppShellPage() {
   })
 
   return (
-    <div className="flex min-h-screen">
-      <Sidebar
+    <div className="flex min-h-screen overflow-x-hidden">
+      {isDesktop ? (
+        <Sidebar
+          workspaces={workspaceQuery.data?.items || []}
+          notebooks={notebooksQuery.data?.items || []}
+          activeWorkspaceId={activeWorkspaceId}
+          showAdminNav={showAdminNav}
+          onWorkspaceSelect={(id) => {
+            setActiveWorkspaceId(id)
+            navigate(`/app/workspaces/${id}`)
+          }}
+        />
+      ) : null}
+      <MobileSidebar
+        open={!isDesktop && isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
         workspaces={workspaceQuery.data?.items || []}
         notebooks={notebooksQuery.data?.items || []}
         activeWorkspaceId={activeWorkspaceId}
@@ -65,8 +88,9 @@ export function AppShellPage() {
           search={search}
           onSearchChange={setSearch}
           onCreateNote={() => setOpenCreateNotebook(true)}
+          onSidebarToggle={() => setIsSidebarOpen(true)}
         />
-        <main className="flex-1 p-4">
+        <main className="flex-1 p-3 sm:p-4">
           <Outlet />
         </main>
       </div>

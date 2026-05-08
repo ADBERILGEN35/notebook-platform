@@ -22,6 +22,8 @@ No new backend feature is introduced in this phase.
 - Settings/security: security note + revoke-all + error-state interceptions
 - Admin/audit mock: pagination + metadata masking (`e2e/admin-audit.spec.ts`)
 - Admin/audit real-mode UI mappings (intercepted gateway responses): `403 ADMIN_ACCESS_DENIED`, `503 AUDIT_SOURCE_UNAVAILABLE`, success table render (`e2e/admin-audit-real-mode.spec.ts`)
+- Responsive shell smoke for mobile/tablet drawer controls (`e2e/responsive.spec.ts`)
+- Conflict UX flow: review dialog + overwrite with latest ETag retry (`e2e/workspace-note.spec.ts`)
 
 ## Error-State Validation
 
@@ -32,7 +34,7 @@ Using Playwright route interception:
 - `404` -> not found messaging
 - `429` -> rate-limit messaging
 - `503` -> service unavailable messaging
-- `412` / `428` -> optimistic concurrency conflict banner + reload latest flow
+- `412` / `428` -> optimistic concurrency conflict banner + conflict resolution dialog flow
 
 ## CI Strategy
 

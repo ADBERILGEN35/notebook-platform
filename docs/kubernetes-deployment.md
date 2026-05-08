@@ -242,3 +242,29 @@ provider.
 - Notification-service in-app API toggle: `NOTIFICATIONS_IN_APP_ENABLED=true`.
 - Frontend runtime toggle via ConfigMap: `FRONTEND_NOTIFICATIONS_ENABLED=true`.
 - Gateway route forwards `/notifications/**` to `notification-service` (protected user route).
+
+## Faz 48 additions
+
+- Gateway audit export toggle: `GATEWAY_ADMIN_AUDIT_EXPORT_ENABLED`.
+- Gateway audit export limits:
+  - `GATEWAY_ADMIN_AUDIT_EXPORT_MAX_RANGE_DAYS`
+  - `GATEWAY_ADMIN_AUDIT_EXPORT_MAX_RECORDS`
+  - `GATEWAY_ADMIN_AUDIT_EXPORT_PAGE_SIZE`
+- Dedicated export rate limit:
+  - `ADMIN_AUDIT_EXPORT_RATE_LIMIT_REPLENISH_RATE`
+  - `ADMIN_AUDIT_EXPORT_RATE_LIMIT_BURST_CAPACITY`
+  - `ADMIN_AUDIT_EXPORT_RATE_LIMIT_REQUESTED_TOKENS`
+
+## Faz 49 additions
+
+- Notification preference feature flag: `NOTIFICATION_PREFERENCES_ENABLED`.
+- Frontend runtime toggle: `FRONTEND_NOTIFICATION_PREFERENCES_ENABLED`.
+
+## Faz 50 additions
+
+- Identity MFA flags:
+  - `MFA_ENABLED`
+  - `MFA_WEBAUTHN_ENABLED`
+  - `MFA_CHALLENGE_TTL_SECONDS`
+  - `MFA_REQUIRED_FOR_PLATFORM_ADMIN`
+- Frontend runtime toggle: `FRONTEND_MFA_UI_ENABLED`.
