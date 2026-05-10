@@ -11,6 +11,7 @@ export type ChangeRequestItem = {
   targetKey: string
   currentValue: string | null
   requestedValue: string
+  targetEnvironment?: string | null
   severity: string | null
   impactSummary: Record<string, unknown> | null
   validationResult: Record<string, unknown> | null
@@ -31,6 +32,7 @@ export type ValidateChangeRequestBody = {
   operationType: string
   requestedValue: string
   currentValue?: string | null
+  targetEnvironment?: string | null
 }
 
 export type ValidateChangeRequestResponse = {
@@ -45,6 +47,36 @@ export type CreateChangeRequestBody = {
   requestedValue: string
   currentValue?: string | null
   confirmation?: string | null
+  targetEnvironment: string
+}
+
+export type GitOpsPathChange = {
+  yamlPath: string
+  oldValue: string
+  newValue: string
+}
+
+export type GitOpsFileChangePreview = {
+  path: string
+  changes: GitOpsPathChange[]
+}
+
+export type GitOpsDryRunResponse = {
+  changeRequestId: string
+  targetEnvironment: string
+  provider: string
+  changedFiles: GitOpsFileChangePreview[]
+  diffPreview: string
+  warnings: string[]
+}
+
+export type GitOpsCreatePrResponse = {
+  proposalId: string
+  status: string
+  provider: string
+  providerPrUrl: string | null
+  branchName: string | null
+  nextStep: string
 }
 
 export type CreateChangeRequestResponse = {
@@ -80,6 +112,8 @@ export type RejectChangeRequestResponse = {
   decisionReason: string | null
   decidedAt: string
 }
+
+export const GITOPS_TARGET_ENVIRONMENTS = ['dev', 'staging', 'prod'] as const
 
 export const ADMIN_CHANGE_REQUEST_OPERATIONS: {
   type: string
@@ -159,6 +193,32 @@ export async function rejectChangeRequest(
     {
       method: 'POST',
       body: JSON.stringify(body.reason != null ? { reason: body.reason } : {}),
+    },
+  )
+}
+
+export async function gitopsDryRun(
+  id: string,
+  body: { targetEnvironment?: string | null },
+): Promise<GitOpsDryRunResponse> {
+  return apiRequest<GitOpsDryRunResponse>(
+    `/admin/enterprise/change-requests/${encodeURIComponent(id)}/gitops/dry-run`,
+    {
+      method: 'POST',
+      body: JSON.stringify(body),
+    },
+  )
+}
+
+export async function gitopsCreatePr(
+  id: string,
+  body: { targetEnvironment: string; idempotencyKey?: string | null; confirmation?: string | null },
+): Promise<GitOpsCreatePrResponse> {
+  return apiRequest<GitOpsCreatePrResponse>(
+    `/admin/enterprise/change-requests/${encodeURIComponent(id)}/gitops/create-pr`,
+    {
+      method: 'POST',
+      body: JSON.stringify(body),
     },
   )
 }

@@ -1,7 +1,9 @@
 package com.notebook.lumen.identity;
 
+import com.notebook.lumen.identity.admin.AdminRbacProperties;
 import com.notebook.lumen.identity.admin.InternalAdminStatusProperties;
 import com.notebook.lumen.identity.admin.changerequest.AdminChangeRequestProperties;
+import com.notebook.lumen.identity.admin.gitops.AdminGitOpsPrProperties;
 import com.notebook.lumen.identity.audit.AuditAdminProperties;
 import com.notebook.lumen.identity.mfa.MfaProperties;
 import com.notebook.lumen.identity.notification.IdentityNotificationProperties;
@@ -24,7 +26,9 @@ import org.springframework.scheduling.annotation.EnableScheduling;
   AuthTransportProperties.class,
   AuditAdminProperties.class,
   InternalAdminStatusProperties.class,
+  AdminRbacProperties.class,
   AdminChangeRequestProperties.class,
+  AdminGitOpsPrProperties.class,
   IdentityNotificationProperties.class,
   MfaProperties.class,
   SsoProperties.class,

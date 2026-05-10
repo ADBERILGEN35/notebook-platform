@@ -36,6 +36,12 @@ declare global {
       ADMIN_UI_DEV_OPEN?: boolean | string
       ENTERPRISE_ADMIN_WRITE_ENABLED?: boolean | string
       ENTERPRISE_ADMIN_APPROVALS_ENABLED?: boolean | string
+      ENTERPRISE_GITOPS_PR_ENABLED?: boolean | string
+      NOTIFICATION_ANALYTICS_UI_ENABLED?: boolean | string
+      NOTIFICATION_DEAD_LETTER_UI_ENABLED?: boolean | string
+      NOTIFICATION_RETENTION_UI_ENABLED?: boolean | string
+      NOTIFICATION_RETENTION_PURGE_UI_ENABLED?: boolean | string
+      NOTIFICATION_LEGAL_HOLD_UI_ENABLED?: boolean | string
       AUDIT_API_MODE?: 'mock' | 'real' | string
     }
   }

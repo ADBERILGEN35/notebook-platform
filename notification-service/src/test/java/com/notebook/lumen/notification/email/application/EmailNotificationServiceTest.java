@@ -9,6 +9,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.notebook.lumen.notification.analytics.NotificationAnalyticsRecorder;
 import com.notebook.lumen.notification.audit.AuditService;
 import com.notebook.lumen.notification.email.api.EmailNotificationRequest;
 import com.notebook.lumen.notification.email.domain.EmailNotification;
@@ -45,6 +46,7 @@ class EmailNotificationServiceTest {
   private final NotificationDeliveryPreferenceService deliveryPreferenceService =
       mock(NotificationDeliveryPreferenceService.class);
   private final NotificationDigestService digestService = mock(NotificationDigestService.class);
+  private final NotificationAnalyticsRecorder analyticsRecorder = mock(NotificationAnalyticsRecorder.class);
 
   {
     when(preferenceResolver.isChannelEnabled(any(), any(), any(), eq(NotificationChannel.EMAIL)))
@@ -62,7 +64,8 @@ class EmailNotificationServiceTest {
           preferenceResolver,
           deliveryPreferenceService,
           digestService,
-          new SimpleMeterRegistry());
+          new SimpleMeterRegistry(),
+          analyticsRecorder);
 
   @Test
   void duplicateIdempotencyKeyReturnsExistingNotification() {
@@ -178,7 +181,8 @@ class EmailNotificationServiceTest {
             preferenceResolver,
             deliveryPreferenceService,
             digestService,
-            new SimpleMeterRegistry());
+            new SimpleMeterRegistry(),
+            analyticsRecorder);
 
     disabledService.processDueNotifications();
 

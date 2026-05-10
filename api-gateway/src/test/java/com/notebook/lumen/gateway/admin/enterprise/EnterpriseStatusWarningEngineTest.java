@@ -3,6 +3,7 @@ package com.notebook.lumen.gateway.admin.enterprise;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 
 class EnterpriseStatusWarningEngineTest {
@@ -17,6 +18,7 @@ class EnterpriseStatusWarningEngineTest {
             new ScimStatus(false, false, false, false),
             new MfaStatus("warn", List.of("webauthn"), true, true),
             new SiemStatus(false, "noop", false, false, false),
+            new AdminRbacStatus(false, true, Map.of()),
             new AuditExportStatus(false, false, false, false, "", false),
             new NotificationsStatus(false, false, false, false),
             new GatewaySecurityStatus(true, true, "warn", List.of(), true, false, "bearer", false),
@@ -35,6 +37,7 @@ class EnterpriseStatusWarningEngineTest {
             new ScimStatus(false, false, false, false),
             new MfaStatus("enforce", List.of("webauthn"), true, true),
             new SiemStatus(false, "noop", false, false, false),
+            new AdminRbacStatus(false, true, Map.of()),
             new AuditExportStatus(false, false, false, false, "", false),
             new NotificationsStatus(true, false, true, true),
             new GatewaySecurityStatus(true, true, "enforce", List.of(), true, false, "bearer", false),

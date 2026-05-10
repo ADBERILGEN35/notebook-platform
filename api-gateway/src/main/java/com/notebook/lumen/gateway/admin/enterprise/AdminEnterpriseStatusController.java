@@ -1,10 +1,13 @@
 package com.notebook.lumen.gateway.admin.enterprise;
 
+import com.notebook.lumen.common.security.admin.PlatformAdminRbacConstants;
 import com.notebook.lumen.gateway.admin.AdminAuthorizationService;
 import com.notebook.lumen.gateway.error.ErrorCode;
 import com.notebook.lumen.gateway.error.ErrorResponse;
 import com.notebook.lumen.gateway.filter.GatewayHeaders;
 import java.time.Instant;
+import java.util.Map;
+import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -41,25 +44,33 @@ public class AdminEnterpriseStatusController {
               HttpStatus.NOT_FOUND,
               ErrorCode.ADMIN_ENTERPRISE_DISABLED,
               "Enterprise admin console is disabled on this gateway.",
-              requestId));
+              requestId,
+              null));
     }
-    if (!adminAuthorizationService.isAdmin(jwt)) {
-      if (adminAuthorizationService.requiresMfa()) {
+    Optional<ErrorCode> denial =
+        adminAuthorizationService.ensureAdminPermission(
+            jwt, PlatformAdminRbacConstants.PERM_ENTERPRISE_STATUS_READ);
+    if (denial.isPresent()) {
+      ErrorCode code = denial.get();
+      if (code == ErrorCode.ADMIN_MFA_REQUIRED) {
         log.warn(
             "admin_mfa_required_blocked adminUserId={} endpoint={} requestId={} amr={}",
             jwt == null ? null : jwt.getSubject(),
             "/admin/enterprise/status",
             requestId,
             jwt == null ? null : jwt.getClaims().get("amr"));
-        return Mono.just(
-            error(
-                HttpStatus.FORBIDDEN,
-                ErrorCode.ADMIN_MFA_REQUIRED,
-                "Admin access requires multi-factor authentication.",
-                requestId));
       }
-      return Mono.just(
-          error(HttpStatus.FORBIDDEN, ErrorCode.ADMIN_ACCESS_DENIED, "Admin access denied", requestId));
+      String message =
+          code == ErrorCode.ADMIN_MFA_REQUIRED
+              ? "Admin access requires multi-factor authentication."
+              : code == ErrorCode.ADMIN_PERMISSION_REQUIRED
+                  ? "Required admin permission is missing."
+                  : "Admin access denied.";
+      Map<String, Object> details =
+          code == ErrorCode.ADMIN_PERMISSION_REQUIRED
+              ? Map.of("permission", PlatformAdminRbacConstants.PERM_ENTERPRISE_STATUS_READ)
+              : null;
+      return Mono.just(error(HttpStatus.FORBIDDEN, code, message, requestId, details));
     }
 
     return aggregationService
@@ -68,11 +79,21 @@ public class AdminEnterpriseStatusController {
   }
 
   private ResponseEntity<Object> error(
-      HttpStatus status, ErrorCode code, String message, String requestId) {
+      HttpStatus status,
+      ErrorCode code,
+      String message,
+      String requestId,
+      Map<String, Object> details) {
     return ResponseEntity.status(status)
         .contentType(MediaType.APPLICATION_JSON)
         .body(
             new ErrorResponse(
-                Instant.now(), status.value(), code.name(), message, "/admin/enterprise/status", requestId));
+                Instant.now(),
+                status.value(),
+                code.name(),
+                message,
+                "/admin/enterprise/status",
+                requestId,
+                details));
   }
 }

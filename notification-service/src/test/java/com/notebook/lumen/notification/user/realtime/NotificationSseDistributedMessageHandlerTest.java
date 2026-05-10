@@ -6,6 +6,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.notebook.lumen.notification.analytics.NotificationAnalyticsRecorder;
 import com.notebook.lumen.notification.shared.config.NotificationSseProperties;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import java.time.Instant;
@@ -25,9 +26,15 @@ class NotificationSseDistributedMessageHandlerTest {
     NotificationSseProperties properties = new NotificationSseProperties();
     properties.getDistributed().setPublishLocalFirst(true);
 
+    NotificationAnalyticsRecorder analyticsRecorder = mock(NotificationAnalyticsRecorder.class);
     NotificationSseDistributedMessageHandler handler =
         new NotificationSseDistributedMessageHandler(
-            objectMapper, dispatcher, instanceIdProvider, properties, new SimpleMeterRegistry());
+            objectMapper,
+            dispatcher,
+            instanceIdProvider,
+            properties,
+            new SimpleMeterRegistry(),
+            analyticsRecorder);
 
     String payload =
         objectMapper.writeValueAsString(
@@ -51,9 +58,15 @@ class NotificationSseDistributedMessageHandlerTest {
     NotificationSseProperties properties = new NotificationSseProperties();
     properties.getDistributed().setPublishLocalFirst(true);
 
+    NotificationAnalyticsRecorder analyticsRecorder = mock(NotificationAnalyticsRecorder.class);
     NotificationSseDistributedMessageHandler handler =
         new NotificationSseDistributedMessageHandler(
-            objectMapper, dispatcher, instanceIdProvider, properties, new SimpleMeterRegistry());
+            objectMapper,
+            dispatcher,
+            instanceIdProvider,
+            properties,
+            new SimpleMeterRegistry(),
+            analyticsRecorder);
 
     String payload =
         objectMapper.writeValueAsString(

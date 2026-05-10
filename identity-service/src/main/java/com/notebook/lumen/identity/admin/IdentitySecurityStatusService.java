@@ -1,9 +1,12 @@
 package com.notebook.lumen.identity.admin;
 
+import com.notebook.lumen.common.security.admin.PlatformAdminRbacConstants;
 import com.notebook.lumen.identity.mfa.MfaProperties;
 import com.notebook.lumen.identity.scim.ScimProperties;
 import com.notebook.lumen.identity.siem.SiemProperties;
 import com.notebook.lumen.identity.sso.SsoProperties;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -12,16 +15,19 @@ public class IdentitySecurityStatusService {
   private final ScimProperties scimProperties;
   private final MfaProperties mfaProperties;
   private final SiemProperties siemProperties;
+  private final AdminRbacService adminRbacService;
 
   public IdentitySecurityStatusService(
       SsoProperties ssoProperties,
       ScimProperties scimProperties,
       MfaProperties mfaProperties,
-      SiemProperties siemProperties) {
+      SiemProperties siemProperties,
+      AdminRbacService adminRbacService) {
     this.ssoProperties = ssoProperties;
     this.scimProperties = scimProperties;
     this.mfaProperties = mfaProperties;
     this.siemProperties = siemProperties;
+    this.adminRbacService = adminRbacService;
   }
 
   public IdentitySecurityStatusResponse build() {
@@ -49,7 +55,23 @@ public class IdentitySecurityStatusService {
             siemProperties.workerEnabled(),
             siemEndpointConfigured(siemProperties),
             siemSecretConfigured(siemProperties));
-    return new IdentitySecurityStatusResponse(sso, scim, mfa, siem, false, null);
+    var adminRbac = mapAdminRbac(adminRbacService.statusSnapshot());
+    return new IdentitySecurityStatusResponse(sso, scim, mfa, siem, adminRbac, false, null);
+  }
+
+  private static IdentitySecurityStatusResponse.AdminRbac mapAdminRbac(
+      AdminRbacService.AdminRbacStatusSnapshot s) {
+    Map<String, Boolean> roles = new LinkedHashMap<>();
+    roles.put(PlatformAdminRbacConstants.ROLE_PLATFORM_ADMIN, s.platformAdmin());
+    roles.put(PlatformAdminRbacConstants.ROLE_PLATFORM_AUDIT_VIEWER, s.auditViewer());
+    roles.put(PlatformAdminRbacConstants.ROLE_PLATFORM_AUDIT_EXPORTER, s.auditExporter());
+    roles.put(PlatformAdminRbacConstants.ROLE_PLATFORM_SECURITY_ADMIN, s.securityAdmin());
+    roles.put(PlatformAdminRbacConstants.ROLE_PLATFORM_IDENTITY_ADMIN, s.identityAdmin());
+    roles.put(PlatformAdminRbacConstants.ROLE_PLATFORM_CHANGE_REQUEST_AUTHOR, s.changeRequestAuthor());
+    roles.put(PlatformAdminRbacConstants.ROLE_PLATFORM_CHANGE_REQUEST_APPROVER, s.changeRequestApprover());
+    roles.put(PlatformAdminRbacConstants.ROLE_PLATFORM_OBSERVABILITY_VIEWER, s.observabilityViewer());
+    return new IdentitySecurityStatusResponse.AdminRbac(
+        s.enabled(), s.legacyPlatformAdminImpliesAll(), roles);
   }
 
   private static boolean siemEndpointConfigured(SiemProperties p) {

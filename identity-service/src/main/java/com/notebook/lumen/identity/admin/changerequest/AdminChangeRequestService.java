@@ -1,12 +1,14 @@
 package com.notebook.lumen.identity.admin.changerequest;
 
 import com.notebook.lumen.identity.admin.changerequest.api.AdminChangeRequestDtos;
+import com.notebook.lumen.identity.admin.gitops.AdminGitOpsPrProperties;
 import com.notebook.lumen.identity.audit.AuditService;
 import com.notebook.lumen.identity.user.infrastructure.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
@@ -21,6 +23,7 @@ public class AdminChangeRequestService {
       "Apply is not automatic. Update configuration via GitOps or follow the platform runbook.";
 
   private final AdminChangeRequestProperties properties;
+  private final AdminGitOpsPrProperties gitOpsPrProperties;
   private final AdminOperationRegistry registry;
   private final PlatformAdminChangeRequestRepository repository;
   private final UserRepository userRepository;
@@ -28,11 +31,13 @@ public class AdminChangeRequestService {
 
   public AdminChangeRequestService(
       AdminChangeRequestProperties properties,
+      AdminGitOpsPrProperties gitOpsPrProperties,
       AdminOperationRegistry registry,
       PlatformAdminChangeRequestRepository repository,
       UserRepository userRepository,
       AuditService auditService) {
     this.properties = properties;
+    this.gitOpsPrProperties = gitOpsPrProperties;
     this.registry = registry;
     this.repository = repository;
     this.userRepository = userRepository;
@@ -42,6 +47,11 @@ public class AdminChangeRequestService {
   public AdminChangeRequestDtos.ValidateResponse validate(AdminChangeRequestDtos.ValidateBody body) {
     ensureEnabled();
     AdminOperationDefinition def = resolveOperation(body.operationType());
+    String targetEnv =
+        body.targetEnvironment() == null || body.targetEnvironment().isBlank()
+            ? gitOpsPrProperties.defaultEnvironment()
+            : body.targetEnvironment().trim();
+    gitOpsPrProperties.validateEnvironment(targetEnv);
     String normalized = registry.normalizeValue(def, body.requestedValue());
     if (!def.isValueAllowed(normalized)) {
       throw new AdminChangeRequestException(
@@ -58,6 +68,7 @@ public class AdminChangeRequestService {
     }
     Map<String, Object> validation = new HashMap<>(registry.validationResult(true, def));
     validation.put("normalizedRequestedValue", normalized);
+    validation.put("targetEnvironment", targetEnv.toLowerCase(Locale.ROOT));
     return new AdminChangeRequestDtos.ValidateResponse(true, def.requiresApproval(), impact, validation);
   }
 
@@ -74,6 +85,12 @@ public class AdminChangeRequestService {
           "ADMIN_CHANGE_REQUEST_INVALID", HttpStatus.BAD_REQUEST, "Unknown requesting user");
     }
     AdminOperationDefinition def = resolveOperation(body.operationType());
+    if (body.targetEnvironment() == null || body.targetEnvironment().isBlank()) {
+      throw new AdminChangeRequestException(
+          "ADMIN_CHANGE_REQUEST_INVALID", HttpStatus.BAD_REQUEST, "targetEnvironment is required");
+    }
+    gitOpsPrProperties.validateEnvironment(body.targetEnvironment());
+    String storedEnv = body.targetEnvironment().trim().toLowerCase(Locale.ROOT);
     String normalized = registry.normalizeValue(def, body.requestedValue());
     if (!def.isValueAllowed(normalized)) {
       throw new AdminChangeRequestException(
@@ -107,6 +124,7 @@ public class AdminChangeRequestService {
             def.targetKey(),
             blankToNull(body.currentValue()),
             normalized,
+            storedEnv,
             ChangeRequestStatus.PENDING,
             impact,
             validation,
@@ -151,6 +169,8 @@ public class AdminChangeRequestService {
             def.targetKey(),
             "requestedValue",
             normalized,
+            "targetEnvironment",
+            storedEnv,
             "severity",
             def.severity(),
             "externalRequestId",
@@ -179,11 +199,13 @@ public class AdminChangeRequestService {
   }
 
   @Transactional
-  public void cancel(UUID requestId, UUID actorUserId, HttpServletRequest request) {
+  public void cancel(
+      UUID requestId, UUID actorUserId, boolean mayCancelAnyPending, HttpServletRequest request) {
     ensureEnabled();
     PlatformAdminChangeRequest entity =
-        repository
-            .findByIdAndRequestedByUserId(requestId, actorUserId)
+        (mayCancelAnyPending
+                ? repository.findById(requestId)
+                : repository.findByIdAndRequestedByUserId(requestId, actorUserId))
             .orElseThrow(
                 () ->
                     new AdminChangeRequestException(
@@ -373,6 +395,7 @@ public class AdminChangeRequestService {
     m.put("targetService", entity.getTargetService());
     m.put("targetKey", entity.getTargetKey());
     m.put("requestedValue", entity.getRequestedValue());
+    m.put("targetEnvironment", entity.getTargetEnvironment() == null ? "" : entity.getTargetEnvironment());
     m.put("severity", entity.getSeverity() == null ? "" : entity.getSeverity());
     m.put("requestedByUserId", entity.getRequestedByUserId().toString());
     m.put("decidedByUserId", decidedByUserId.toString());
@@ -392,6 +415,7 @@ public class AdminChangeRequestService {
         e.getTargetKey(),
         e.getCurrentValue(),
         e.getRequestedValue(),
+        e.getTargetEnvironment(),
         e.getSeverity(),
         e.getImpactSummary(),
         e.getValidationResult(),

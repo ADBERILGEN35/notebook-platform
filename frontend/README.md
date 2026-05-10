@@ -101,10 +101,11 @@ Runtime Docker/Kubernetes config:
 
 ## Admin / Audit Explorer (Faz 42)
 
-- Routes: `/app/admin`, `/app/admin/audit`, `/app/admin/audit/:eventId`, `/app/admin/enterprise` (+ security/integrations/change-requests when `FRONTEND_ENTERPRISE_ADMIN_WRITE_ENABLED`; approve/reject UI gated by `FRONTEND_ENTERPRISE_ADMIN_APPROVALS_ENABLED`, default on) (nested under authenticated shell).
+- Routes: `/app/admin`, `/app/admin/audit`, `/app/admin/audit/:eventId`, `/app/admin/notifications/analytics` (Faz 81: `FRONTEND_NOTIFICATION_ANALYTICS_ENABLED`, permission `admin:notifications:analytics:read`), `/app/admin/notifications/dead-letter` (Faz 82: `FRONTEND_NOTIFICATION_DEAD_LETTER_ENABLED`, dead-letter read/requeue permissions), `/app/admin/notifications/retention` (Faz 83: `FRONTEND_NOTIFICATION_RETENTION_ENABLED`, optional `FRONTEND_NOTIFICATION_RETENTION_PURGE_ENABLED`, retention read/run permissions), `/app/admin/notifications/legal-holds` (Faz 84: `FRONTEND_NOTIFICATION_LEGAL_HOLD_ENABLED`, legal-hold read/write permissions), `/app/admin/enterprise` (+ security/integrations/change-requests when `FRONTEND_ENTERPRISE_ADMIN_WRITE_ENABLED`; approve/reject UI gated by `FRONTEND_ENTERPRISE_ADMIN_APPROVALS_ENABLED`, default on) (nested under authenticated shell).
 - Gated behind `VITE_ADMIN_UI_ENABLED` / `ADMIN_UI_ENABLED` with optional trusted `ADMIN_UI_DEV_OPEN` for localhost-style sessions.
 - `VITE_AUDIT_API_MODE` / `AUDIT_API_MODE` selects `mock` (default dev) vs `real` placeholder (`GET /admin/audit-events` once the gateway exposes it).
 - See `docs/admin-audit-ui.md` for rollout guidance (service JWT never ships to browsers).
+- **Faz 79:** `/auth/me` may include `platformRoles` / `platformPermissions`; `src/features/admin/access/admin-permissions.ts` gates nav and actions (backend still authoritative). See `docs/admin-rbac.md`.
 
 ## Platform Admin Proxy (Faz 43)
 

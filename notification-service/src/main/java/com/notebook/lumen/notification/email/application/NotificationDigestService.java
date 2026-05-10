@@ -8,6 +8,8 @@ import com.notebook.lumen.notification.email.infrastructure.EmailNotificationRep
 import com.notebook.lumen.notification.email.infrastructure.NotificationDigestItemRepository;
 import com.notebook.lumen.notification.preference.application.NotificationDeliveryPreferenceService;
 import com.notebook.lumen.notification.preference.domain.UserNotificationDeliveryPreference;
+import com.notebook.lumen.notification.analytics.NotificationAnalyticsEventKind;
+import com.notebook.lumen.notification.analytics.NotificationAnalyticsRecorder;
 import com.notebook.lumen.notification.shared.config.NotificationProperties;
 import com.notebook.lumen.notification.user.domain.UserNotificationType;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -28,18 +30,21 @@ public class NotificationDigestService {
   private final NotificationDeliveryPreferenceService deliveryPreferenceService;
   private final NotificationProperties properties;
   private final MeterRegistry meterRegistry;
+  private final NotificationAnalyticsRecorder analyticsRecorder;
 
   public NotificationDigestService(
       NotificationDigestItemRepository digestItemRepository,
       EmailNotificationRepository emailNotificationRepository,
       NotificationDeliveryPreferenceService deliveryPreferenceService,
       NotificationProperties properties,
-      MeterRegistry meterRegistry) {
+      MeterRegistry meterRegistry,
+      NotificationAnalyticsRecorder analyticsRecorder) {
     this.digestItemRepository = digestItemRepository;
     this.emailNotificationRepository = emailNotificationRepository;
     this.deliveryPreferenceService = deliveryPreferenceService;
     this.properties = properties;
     this.meterRegistry = meterRegistry;
+    this.analyticsRecorder = analyticsRecorder;
   }
 
   @Transactional
@@ -74,6 +79,8 @@ public class NotificationDigestService {
             metadata,
             scheduledFor,
             now));
+    analyticsRecorder.record(
+        NotificationAnalyticsEventKind.DIGEST_QUEUED, type.name(), "EMAIL", "", 1);
   }
 
   @Transactional
@@ -93,6 +100,8 @@ public class NotificationDigestService {
       UUID emailId = createDigestEmail(items, now);
       for (NotificationDigestItem item : items) {
         item.markSent(emailId, now);
+        analyticsRecorder.record(
+            NotificationAnalyticsEventKind.DIGEST_SENT, item.getNotificationType().name(), "EMAIL", "", 1);
       }
     }
     if (!due.isEmpty()) {

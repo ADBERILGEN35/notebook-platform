@@ -1,7 +1,7 @@
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { useNavigate, Link, useSearchParams } from 'react-router-dom'
 import { useState } from 'react'
-import { listSsoProviders, login, loginSchema, me } from '../features/auth/auth-api'
+import { authUserFromMeResponse, listSsoProviders, login, loginSchema, me } from '../features/auth/auth-api'
 import { authenticationOptions, authenticationVerify, verifyRecoveryCode } from '../features/auth/mfa-api'
 import { useAuthStore } from '../features/auth/auth-store'
 import { Card } from '../shared/components/Card'
@@ -43,14 +43,7 @@ export function LoginPage() {
       })
       try {
         const m = await me()
-        setUser({
-          id: m.userId,
-          email: m.email,
-          name: m.name,
-          avatarUrl: m.avatarUrl ?? null,
-          status: data.user.status,
-          roles: m.roles ?? [],
-        })
+        setUser(authUserFromMeResponse(m, data.user.status))
       } catch {
         // session may still be valid; admin role gating falls back to feature flags
       }
@@ -98,7 +91,7 @@ export function LoginPage() {
         })
       }
       const m = await me()
-      setUser({ id: m.userId, email: m.email, name: m.name, avatarUrl: m.avatarUrl ?? null, roles: m.roles ?? [] })
+      setUser(authUserFromMeResponse(m))
       navigate('/app')
     },
   })
@@ -117,7 +110,7 @@ export function LoginPage() {
         })
       }
       const m = await me()
-      setUser({ id: m.userId, email: m.email, name: m.name, avatarUrl: m.avatarUrl ?? null, roles: m.roles ?? [] })
+      setUser(authUserFromMeResponse(m))
       navigate('/app')
     },
   })

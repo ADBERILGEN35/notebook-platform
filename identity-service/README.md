@@ -239,5 +239,11 @@ revocation.
 
 ## Platform admin change requests (Faz 77)
 
-- `GET|POST /internal/admin/change-requests` (+ `/validate`, `/{id}/cancel`, `/{id}/approve`, `/{id}/reject`) — service JWT scope `internal:admin:change-requests:manage`, gated by `ADMIN_CHANGE_REQUESTS_ENABLED` and `ADMIN_CHANGE_REQUEST_APPROVALS_ENABLED` for approve/reject.
-- Persists allow-listed **desired state** only (`platform_admin_change_requests`); no automatic env/GitOps apply. See `docs/enterprise-admin-write-operations.md`.
+- `GET|POST /internal/admin/change-requests` (+ `/validate`, `/{id}/cancel`, `/{id}/approve`, `/{id}/reject`, `/{id}/gitops/dry-run`, `/{id}/gitops/create-pr`) — service JWT scope `internal:admin:change-requests:manage`, gated by `ADMIN_CHANGE_REQUESTS_ENABLED` and `ADMIN_CHANGE_REQUEST_APPROVALS_ENABLED` for approve/reject; GitOps endpoints additionally require `ADMIN_GITOPS_PR_ENABLED`.
+- Persists allow-listed **desired state** only (`platform_admin_change_requests`); GitOps PR automation (Faz 80) uses `admin_gitops_pr_proposals` and does not apply runtime config. See `docs/enterprise-admin-write-operations.md` and `docs/admin-gitops-pr-automation.md`.
+
+## Fine-grained admin RBAC (Faz 79)
+
+- `ADMIN_RBAC_ENABLED` (default `false`) adds `platform_permissions` to access tokens from resolved `platform_roles`.
+- Configure `ADMIN_RBAC_GROUP_*` to map SSO/SCIM group keys to `PLATFORM_*` roles. Internal security status includes an `adminRbac` summary.
+- See `docs/admin-rbac.md` and `docs/admin-permission-matrix.md`.

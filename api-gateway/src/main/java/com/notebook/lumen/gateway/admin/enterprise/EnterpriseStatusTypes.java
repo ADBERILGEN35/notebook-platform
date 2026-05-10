@@ -3,6 +3,7 @@ package com.notebook.lumen.gateway.admin.enterprise;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 record EnterpriseStatusResponse(
@@ -20,10 +21,17 @@ record EnterpriseStatusFeatures(
     ScimStatus scim,
     MfaStatus mfa,
     SiemStatus siem,
+    AdminRbacStatus adminRbac,
     AuditExportStatus auditExport,
     NotificationsStatus notifications,
     GatewaySecurityStatus gatewaySecurity,
     MergeResolutionStatus mergeResolution) {}
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
+record AdminRbacStatus(
+    boolean enabled,
+    boolean legacyPlatformAdminImpliesAll,
+    Map<String, Boolean> rolesConfigured) {}
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 record MergeResolutionStatus(

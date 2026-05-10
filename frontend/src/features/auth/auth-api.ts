@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { apiRequest } from '../../shared/api/api-client'
-import type { AuthResponse } from '../../shared/types/api'
+import type { AuthResponse, AuthUser } from '../../shared/types/api'
 import { isCookieMode } from '../../shared/config/auth-transport'
 
 export const loginSchema = z.object({
@@ -34,7 +34,30 @@ export const signup = (payload: SignupInput) =>
     body: JSON.stringify({ ...payload, avatarUrl: payload.avatarUrl || null }),
   })
 
-export const me = () => apiRequest<{ userId: string; email: string; roles: string[]; name: string; avatarUrl?: string | null }>('/auth/me')
+export type MeResponse = {
+  userId: string
+  email: string
+  roles: string[]
+  name: string
+  avatarUrl?: string | null
+  platformRoles?: string[]
+  platformPermissions?: string[]
+}
+
+export const me = () => apiRequest<MeResponse>('/auth/me')
+
+export function authUserFromMeResponse(m: MeResponse, status?: string): AuthUser {
+  return {
+    id: m.userId,
+    email: m.email,
+    name: m.name,
+    avatarUrl: m.avatarUrl ?? null,
+    status,
+    roles: m.roles ?? [],
+    platformRoles: m.platformRoles,
+    platformPermissions: m.platformPermissions,
+  }
+}
 
 export const listSsoProviders = () =>
   apiRequest<{ providers: SsoProvider[] }>('/auth/sso/providers')

@@ -374,8 +374,13 @@ Faz 77 adds **enterprise admin change requests** (validate + `PENDING` records i
 gateway `/admin/enterprise/change-requests`; no live config mutation). Faz 78 adds **approve/reject**
 with four-eyes policy (still no automatic apply) — see `docs/enterprise-admin-write-operations.md`,
 `docs/admin-change-request-workflow.md`, and `docs/admin-change-request-approval-workflow.md`.
+Faz 79 adds **fine-grained admin RBAC** (`platform_permissions` on JWTs, optional gateway enforce,
+SSO/SCIM group mapping) — see `docs/admin-rbac.md` and `docs/admin-permission-matrix.md`.
 Faz 64 adds a **durable DB outbox** for notification SSE fanout with worker retries and dead-letter
 semantics while keeping Redis pub/sub as the realtime layer (`docs/notification-durable-fanout.md`).
+Faz 81 adds **admin notification delivery analytics** (aggregate-only; `docs/notification-analytics-dashboard.md`).
+Faz 82 adds **admin dead-letter list, dry-run, and requeue** for fanout `DEAD` rows with RBAC, MFA on requeue, and idempotency (`docs/notification-dead-letter-requeue.md`).
+Faz 83 adds **notification retention planner, optional scheduled worker, and admin purge API/UI** for analytics aggregates, fanout terminal rows, digest/email terminal rows, and dead-letter requeue audit rows — default dry-run / disabled destructive (`docs/notification-retention-worker.md`, `docs/notification-retention-policy.md`). Faz 84 adds **notification legal holds** so destructive retention respects governance (`docs/notification-legal-hold.md`, `docs/retention-governance.md`).
 Faz 65 adds **per-workspace notification preference overrides** (channel gates only; digest/quiet
 hours stay global) — see `docs/workspace-notification-preferences.md`.
 Faz 66 adds **client-side conflict diff** and optional **Apply suggested merge** for BlockNote

@@ -119,8 +119,33 @@ public class EnterpriseChangeRequestProxyService {
     return postJson("/" + id + "/reject", body, adminUserId, adminEmail, clientRequestId, gatewayPath);
   }
 
+  public Mono<ResponseEntity<Object>> gitopsDryRun(
+      UUID id,
+      Map<String, Object> body,
+      String adminUserId,
+      String adminEmail,
+      String clientRequestId,
+      String gatewayPath) {
+    return postJson("/" + id + "/gitops/dry-run", body, adminUserId, adminEmail, clientRequestId, gatewayPath);
+  }
+
+  public Mono<ResponseEntity<Object>> gitopsCreatePr(
+      UUID id,
+      Map<String, Object> body,
+      String adminUserId,
+      String adminEmail,
+      String clientRequestId,
+      String gatewayPath) {
+    return postJson("/" + id + "/gitops/create-pr", body, adminUserId, adminEmail, clientRequestId, gatewayPath);
+  }
+
   public Mono<ResponseEntity<Object>> cancel(
-      UUID id, String adminUserId, String adminEmail, String clientRequestId, String gatewayPath) {
+      UUID id,
+      String adminUserId,
+      String adminEmail,
+      String clientRequestId,
+      String gatewayPath,
+      boolean globalCancel) {
     return Mono.defer(
         () -> {
           final String jwt;
@@ -129,7 +154,11 @@ public class EnterpriseChangeRequestProxyService {
           } catch (RuntimeException e) {
             return Mono.just(jwtFailureResponse(gatewayPath, clientRequestId));
           }
-          String url = changeRequestsBaseUrl() + "/" + id + "/cancel";
+          String url =
+              UriComponentsBuilder.fromUriString(changeRequestsBaseUrl() + "/" + id + "/cancel")
+                  .queryParam("globalCancel", globalCancel)
+                  .build(true)
+                  .toUriString();
           WebClient.RequestBodySpec spec =
               webClient
                   .post()

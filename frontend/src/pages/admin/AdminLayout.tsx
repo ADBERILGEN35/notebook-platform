@@ -1,10 +1,48 @@
 import { NavLink, Outlet } from 'react-router-dom'
-import { isEnterpriseAdminWriteEnabled } from '../../shared/config/admin-feature-flags'
+import { useAuthStore } from '../../features/auth/auth-store'
+import {
+  PERM_AUDIT_READ,
+  PERM_CHANGE_REQUEST_LIST,
+  PERM_ENTERPRISE_STATUS_READ,
+  PERM_NOTIFICATIONS_ANALYTICS_READ,
+  PERM_NOTIFICATIONS_DEAD_LETTER_READ,
+  PERM_NOTIFICATIONS_LEGAL_HOLD_READ,
+  hasPlatformPermission,
+} from '../../features/admin/access/admin-permissions'
+import {
+  getAuditApiMode,
+  isAdminUiDevOpen,
+  isEnterpriseAdminWriteEnabled,
+  isNotificationAnalyticsUiEnabled,
+  isNotificationDeadLetterUiEnabled,
+  isNotificationRetentionUiEnabled,
+  isNotificationLegalHoldUiEnabled,
+} from '../../shared/config/admin-feature-flags'
 
 const linkClass = ({ isActive }: { isActive: boolean }) =>
   `block rounded px-2 py-1.5 text-sm ${isActive ? 'bg-primary-100 font-medium text-primary-800' : 'text-slate-600 hover:bg-slate-100'}`
 
 export function AdminLayout() {
+  const user = useAuthStore((s) => s.user)
+  const devNavOpen = isAdminUiDevOpen() && getAuditApiMode() === 'mock'
+  const showAudit = devNavOpen || hasPlatformPermission(user, PERM_AUDIT_READ)
+  const showEnterprise = devNavOpen || hasPlatformPermission(user, PERM_ENTERPRISE_STATUS_READ)
+  const showChangeRequests =
+    isEnterpriseAdminWriteEnabled() &&
+    (devNavOpen || hasPlatformPermission(user, PERM_CHANGE_REQUEST_LIST))
+  const showNotificationAnalytics =
+    isNotificationAnalyticsUiEnabled() &&
+    (devNavOpen || hasPlatformPermission(user, PERM_NOTIFICATIONS_ANALYTICS_READ))
+  const showNotificationDeadLetter =
+    isNotificationDeadLetterUiEnabled() &&
+    (devNavOpen || hasPlatformPermission(user, PERM_NOTIFICATIONS_DEAD_LETTER_READ))
+  const showNotificationRetention =
+    isNotificationRetentionUiEnabled() &&
+    (devNavOpen || hasPlatformPermission(user, PERM_NOTIFICATIONS_RETENTION_READ))
+  const showNotificationLegalHolds =
+    isNotificationLegalHoldUiEnabled() &&
+    (devNavOpen || hasPlatformPermission(user, PERM_NOTIFICATIONS_LEGAL_HOLD_READ))
+
   return (
     <div className="flex flex-col gap-4 lg:flex-row lg:gap-8">
       <nav className="shrink-0 lg:w-52">
@@ -15,30 +53,66 @@ export function AdminLayout() {
               Overview
             </NavLink>
           </li>
-          <li>
-            <NavLink to="/app/admin/audit" className={linkClass}>
-              Audit Events
-            </NavLink>
-          </li>
-          <li>
-            <NavLink to="/app/admin/enterprise" end className={linkClass}>
-              Enterprise Console
-            </NavLink>
-          </li>
-          <li className="pl-3">
-            <NavLink to="/app/admin/enterprise/security" className={linkClass}>
-              Security
-            </NavLink>
-          </li>
-          <li className="pl-3">
-            <NavLink to="/app/admin/enterprise/integrations" className={linkClass}>
-              Integrations
-            </NavLink>
-          </li>
-          {isEnterpriseAdminWriteEnabled() ? (
+          {showAudit ? (
+            <li>
+              <NavLink to="/app/admin/audit" className={linkClass}>
+                Audit Events
+              </NavLink>
+            </li>
+          ) : null}
+          {showEnterprise ? (
+            <li>
+              <NavLink to="/app/admin/enterprise" end className={linkClass}>
+                Enterprise Console
+              </NavLink>
+            </li>
+          ) : null}
+          {showEnterprise ? (
+            <li className="pl-3">
+              <NavLink to="/app/admin/enterprise/security" className={linkClass}>
+                Security
+              </NavLink>
+            </li>
+          ) : null}
+          {showEnterprise ? (
+            <li className="pl-3">
+              <NavLink to="/app/admin/enterprise/integrations" className={linkClass}>
+                Integrations
+              </NavLink>
+            </li>
+          ) : null}
+          {showChangeRequests ? (
             <li className="pl-3">
               <NavLink to="/app/admin/enterprise/change-requests" className={linkClass}>
                 Change requests
+              </NavLink>
+            </li>
+          ) : null}
+          {showNotificationAnalytics ? (
+            <li>
+              <NavLink to="/app/admin/notifications/analytics" className={linkClass}>
+                Notification analytics
+              </NavLink>
+            </li>
+          ) : null}
+          {showNotificationDeadLetter ? (
+            <li>
+              <NavLink to="/app/admin/notifications/dead-letter" className={linkClass}>
+                Notification dead-letter
+              </NavLink>
+            </li>
+          ) : null}
+          {showNotificationRetention ? (
+            <li>
+              <NavLink to="/app/admin/notifications/retention" className={linkClass}>
+                Notification retention
+              </NavLink>
+            </li>
+          ) : null}
+          {showNotificationLegalHolds ? (
+            <li>
+              <NavLink to="/app/admin/notifications/legal-holds" className={linkClass}>
+                Legal holds
               </NavLink>
             </li>
           ) : null}

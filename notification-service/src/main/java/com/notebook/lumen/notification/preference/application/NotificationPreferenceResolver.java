@@ -46,4 +46,36 @@ public class NotificationPreferenceResolver {
         .map(UserWorkspaceNotificationPreference::isEnabled)
         .orElseGet(() -> globalPreferences.isEnabled(userId, type, channel));
   }
+
+  public boolean isEmailGloballyEnabled(UUID userId, UserNotificationType type) {
+    if (NotificationWorkspacePreferenceRules.isMandatorySecurityType(type)) {
+      return true;
+    }
+    if (userId == null) {
+      return true;
+    }
+    return globalPreferences.isEnabled(userId, type, NotificationChannel.EMAIL);
+  }
+
+  /**
+   * True when email is enabled in global preferences but disabled by an explicit workspace override
+   * row.
+   */
+  public boolean isEmailDisabledOnlyByWorkspace(
+      UUID userId, UUID workspaceId, UserNotificationType type) {
+    if (!isEmailGloballyEnabled(userId, type)) {
+      return false;
+    }
+    if (workspaceId == null
+        || properties.workspace() == null
+        || !properties.workspace().preferencesEnabled()
+        || !NotificationWorkspacePreferenceRules.supportsWorkspaceOverride(type)) {
+      return false;
+    }
+    return workspaceRepository
+        .findByUserIdAndWorkspaceIdAndNotificationTypeAndChannel(
+            userId, workspaceId, type, NotificationChannel.EMAIL)
+        .map(row -> !row.isEnabled())
+        .orElse(false);
+  }
 }

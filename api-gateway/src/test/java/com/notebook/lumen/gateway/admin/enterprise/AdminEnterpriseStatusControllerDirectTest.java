@@ -10,6 +10,8 @@ import com.notebook.lumen.gateway.error.ErrorCode;
 import com.notebook.lumen.gateway.error.ErrorResponse;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -39,7 +41,7 @@ class AdminEnterpriseStatusControllerDirectTest {
   void whenAdmin_loadsAggregation() {
     AdminAuthorizationService auth = mock(AdminAuthorizationService.class);
     when(auth.enterpriseFeatureEnabled()).thenReturn(true);
-    when(auth.isAdmin(any())).thenReturn(true);
+    when(auth.ensureAdminPermission(any(), any())).thenReturn(Optional.empty());
     EnterpriseStatusAggregationService agg = mock(EnterpriseStatusAggregationService.class);
     var payload =
         new EnterpriseStatusResponse(
@@ -50,6 +52,7 @@ class AdminEnterpriseStatusControllerDirectTest {
                 new ScimStatus(false, false, false, false),
                 new MfaStatus("off", List.of(), false, false),
                 new SiemStatus(false, "noop", false, false, false),
+                new AdminRbacStatus(false, true, Map.of()),
                 new AuditExportStatus(false, false, false, false, "", false),
                 new NotificationsStatus(false, false, false, false),
                 new GatewaySecurityStatus(

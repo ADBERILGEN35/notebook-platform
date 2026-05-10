@@ -1,6 +1,8 @@
 package com.notebook.lumen.notification.email.application;
 
 import com.notebook.lumen.common.security.worker.WorkerInstanceIds;
+import com.notebook.lumen.notification.analytics.NotificationAnalyticsEventKind;
+import com.notebook.lumen.notification.analytics.NotificationAnalyticsRecorder;
 import com.notebook.lumen.notification.audit.AuditService;
 import com.notebook.lumen.notification.email.api.EmailNotificationRequest;
 import com.notebook.lumen.notification.email.api.EmailNotificationResponse;
@@ -40,6 +42,7 @@ public class EmailNotificationService {
   private final NotificationDeliveryPreferenceService deliveryPreferenceService;
   private final NotificationDigestService digestService;
   private final MeterRegistry meterRegistry;
+  private final NotificationAnalyticsRecorder analyticsRecorder;
   private final String workerInstanceId;
 
   public EmailNotificationService(
@@ -52,7 +55,8 @@ public class EmailNotificationService {
       NotificationPreferenceResolver preferenceResolver,
       NotificationDeliveryPreferenceService deliveryPreferenceService,
       NotificationDigestService digestService,
-      MeterRegistry meterRegistry) {
+      MeterRegistry meterRegistry,
+      NotificationAnalyticsRecorder analyticsRecorder) {
     this.repository = repository;
     this.templateRenderer = templateRenderer;
     this.provider = provider;
@@ -63,6 +67,7 @@ public class EmailNotificationService {
     this.deliveryPreferenceService = deliveryPreferenceService;
     this.digestService = digestService;
     this.meterRegistry = meterRegistry;
+    this.analyticsRecorder = analyticsRecorder;
     this.workerInstanceId =
         WorkerInstanceIds.resolve(properties.workerInstanceId(), "email-worker");
   }
@@ -85,6 +90,22 @@ public class EmailNotificationService {
               request.workspaceId(),
               mappedType.get(),
               NotificationChannel.EMAIL)) {
+        if (preferenceResolver.isEmailDisabledOnlyByWorkspace(
+            request.recipientUserId(), request.workspaceId(), mappedType.get())) {
+          analyticsRecorder.record(
+              NotificationAnalyticsEventKind.SKIPPED_WORKSPACE_PREFERENCE,
+              mappedType.get().name(),
+              "EMAIL",
+              "",
+              1);
+        } else {
+          analyticsRecorder.record(
+              NotificationAnalyticsEventKind.SKIPPED_PREFERENCE,
+              mappedType.get().name(),
+              "EMAIL",
+              "",
+              1);
+        }
         return new EmailNotificationResponse(
             null, EmailNotificationStatus.SKIPPED, "USER_PREFERENCE_DISABLED");
       }
@@ -140,6 +161,16 @@ public class EmailNotificationService {
             now,
             effectiveNextAttemptAt(request, now));
     repository.save(notification);
+    analyticsRecorder.record(
+        NotificationAnalyticsEventKind.QUEUED, notification.getType().name(), "EMAIL", "", 1);
+    if (notification.getNextAttemptAt().isAfter(now.plusSeconds(5))) {
+      analyticsRecorder.record(
+          NotificationAnalyticsEventKind.QUIET_HOURS_DELAYED,
+          notification.getType().name(),
+          "EMAIL",
+          "",
+          1);
+    }
     auditService.record(
         "EMAIL_NOTIFICATION_QUEUED",
         "EMAIL_NOTIFICATION",
@@ -255,6 +286,8 @@ public class EmailNotificationService {
                       "type",
                       notification.getType().name())));
       notification.markSent(result.provider(), result.providerMessageId(), result.acceptedAt());
+      analyticsRecorder.record(
+          NotificationAnalyticsEventKind.SENT, notification.getType().name(), "EMAIL", "", 1);
       meterRegistry
           .counter(
               "email_provider_send_total",
@@ -302,6 +335,8 @@ public class EmailNotificationService {
     int nextAttempt = notification.getAttemptCount() + 1;
     if (nextAttempt >= properties.email().maxAttempts()) {
       notification.markFailed(safeError(e), now);
+      analyticsRecorder.record(
+          NotificationAnalyticsEventKind.DEAD, notification.getType().name(), "EMAIL", "", 1);
       auditService.record(
           "EMAIL_NOTIFICATION_FAILED",
           "EMAIL_NOTIFICATION",
@@ -318,6 +353,8 @@ public class EmailNotificationService {
       return;
     }
     notification.markRetry(safeError(e), nextAttemptAt(nextAttempt, now), now);
+    analyticsRecorder.record(
+        NotificationAnalyticsEventKind.FAILED, notification.getType().name(), "EMAIL", "", 1);
   }
 
   private void recoverExpiredSending(Instant now) {

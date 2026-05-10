@@ -1,5 +1,6 @@
 package com.notebook.lumen.gateway.admin.audit;
 
+import com.notebook.lumen.common.security.admin.PlatformAdminRbacConstants;
 import com.notebook.lumen.gateway.admin.AdminAuthorizationService;
 import com.notebook.lumen.gateway.config.GatewayAuditExportProperties;
 import com.notebook.lumen.gateway.error.ErrorCode;
@@ -8,6 +9,7 @@ import com.notebook.lumen.gateway.filter.GatewayHeaders;
 import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,22 +57,10 @@ public class AdminAuditController {
     if (!adminAuthorizationService.adminFeatureEnabled()) {
       return Mono.just(error(HttpStatus.NOT_FOUND, ErrorCode.ADMIN_AUDIT_DISABLED, "Admin audit is disabled", requestId));
     }
-    if (!adminAuthorizationService.isAdmin(jwt)) {
-      if (adminAuthorizationService.requiresMfa()) {
-        log.warn(
-            "admin_mfa_required_blocked adminUserId={} endpoint={} requestId={} amr={}",
-            jwt == null ? null : jwt.getSubject(),
-            "/admin/audit-events",
-            requestId,
-            jwt == null ? null : jwt.getClaims().get("amr"));
-        return Mono.just(
-            error(
-                HttpStatus.FORBIDDEN,
-                ErrorCode.ADMIN_MFA_REQUIRED,
-                "Admin access requires multi-factor authentication.",
-                requestId));
-      }
-      return Mono.just(error(HttpStatus.FORBIDDEN, ErrorCode.ADMIN_ACCESS_DENIED, "Admin access denied", requestId));
+    Optional<ErrorCode> denial =
+        adminAuthorizationService.ensureAdminPermission(jwt, PlatformAdminRbacConstants.PERM_AUDIT_READ);
+    if (denial.isPresent()) {
+      return Mono.just(auditAuthError(denial.get(), requestId, PlatformAdminRbacConstants.PERM_AUDIT_READ));
     }
 
     AuditSource auditSource = AuditSource.fromValue(source);
@@ -121,27 +111,22 @@ public class AdminAuditController {
       if (!validation.success()) {
         return Mono.just(error(validation.status(), validation.errorCode(), validation.message(), requestId));
       }
-    } else if (!adminAuthorizationService.isAdmin(jwt)) {
-      if (adminAuthorizationService.requiresMfa()) {
-        log.warn(
-            "admin_mfa_required_blocked adminUserId={} endpoint={} requestId={} amr={}",
-            jwt == null ? null : jwt.getSubject(),
-            "/admin/audit-events/export",
-            requestId,
-            jwt == null ? null : jwt.getClaims().get("amr"));
-        return Mono.just(
-            error(
-                HttpStatus.FORBIDDEN,
-                ErrorCode.ADMIN_MFA_REQUIRED,
-                "Admin access requires multi-factor authentication.",
-                requestId));
+    } else {
+      Optional<ErrorCode> denial =
+          adminAuthorizationService.ensureAdminPermission(jwt, PlatformAdminRbacConstants.PERM_AUDIT_EXPORT);
+      if (denial.isPresent()) {
+        ErrorCode c = denial.get();
+        if (c == ErrorCode.ADMIN_PERMISSION_REQUIRED) {
+          return Mono.just(
+              error(
+                  HttpStatus.FORBIDDEN,
+                  ErrorCode.ADMIN_PERMISSION_REQUIRED,
+                  "Required admin permission is missing.",
+                  requestId,
+                  Map.of("permission", PlatformAdminRbacConstants.PERM_AUDIT_EXPORT)));
+        }
+        return Mono.just(auditAuthError(c, requestId, PlatformAdminRbacConstants.PERM_AUDIT_EXPORT));
       }
-      return Mono.just(
-          error(
-              HttpStatus.FORBIDDEN,
-              ErrorCode.AUDIT_EXPORT_ACCESS_DENIED,
-              "Admin access denied",
-              requestId));
     }
     if (!auditExportProperties.enabled()) {
       return Mono.just(
@@ -215,11 +200,45 @@ public class AdminAuditController {
   }
 
   private ResponseEntity<Object> error(
-      HttpStatus status, ErrorCode code, String message, String requestId) {
+      HttpStatus status,
+      ErrorCode code,
+      String message,
+      String requestId,
+      Map<String, Object> details) {
     return ResponseEntity.status(status)
         .contentType(MediaType.APPLICATION_JSON)
         .<Object>body(
             new ErrorResponse(
-                Instant.now(), status.value(), code.name(), message, "/admin/audit-events", requestId));
+                Instant.now(), status.value(), code.name(), message, "/admin/audit-events", requestId, details));
+  }
+
+  private ResponseEntity<Object> error(
+      HttpStatus status, ErrorCode code, String message, String requestId) {
+    return error(status, code, message, requestId, null);
+  }
+
+  private ResponseEntity<Object> auditAuthError(ErrorCode code, String requestId, String permission) {
+    if (code == ErrorCode.ADMIN_MFA_REQUIRED) {
+      log.warn(
+          "admin_mfa_required_blocked adminUserId={} endpoint={} requestId={}",
+          "audit",
+          "/admin/audit-events",
+          requestId);
+      return error(
+          HttpStatus.FORBIDDEN,
+          ErrorCode.ADMIN_MFA_REQUIRED,
+          "Admin access requires multi-factor authentication.",
+          requestId,
+          null);
+    }
+    if (code == ErrorCode.ADMIN_PERMISSION_REQUIRED) {
+      return error(
+          HttpStatus.FORBIDDEN,
+          ErrorCode.ADMIN_PERMISSION_REQUIRED,
+          "Required admin permission is missing.",
+          requestId,
+          Map.of("permission", permission));
+    }
+    return error(HttpStatus.FORBIDDEN, ErrorCode.ADMIN_ACCESS_DENIED, "Admin access denied", requestId, null);
   }
 }

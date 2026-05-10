@@ -19,6 +19,10 @@ import {
   AdminEnterpriseIntegrationsPage,
 } from '../pages/admin/AdminEnterprisePages'
 import { AdminEnterpriseChangeRequestsPage } from '../pages/admin/AdminEnterpriseChangeRequestsPage'
+import { AdminNotificationAnalyticsPage } from '../pages/admin/AdminNotificationAnalyticsPage'
+import { AdminNotificationDeadLetterPage } from '../pages/admin/AdminNotificationDeadLetterPage'
+import { AdminNotificationRetentionPage } from '../pages/admin/AdminNotificationRetentionPage'
+import { AdminNotificationLegalHoldsPage } from '../pages/admin/AdminNotificationLegalHoldsPage'
 import { useAuthStore } from '../features/auth/auth-store'
 import { isCookieMode } from '../shared/config/auth-transport'
 import { isAdminUiEnabled } from '../shared/config/admin-feature-flags'
@@ -83,6 +87,10 @@ export const router = createBrowserRouter([
               { index: true, element: <AdminHomePage /> },
               { path: 'audit', element: <AdminAuditPage /> },
               { path: 'audit/:eventId', element: <AdminAuditPage /> },
+              { path: 'notifications/analytics', element: <AdminNotificationAnalyticsPage /> },
+              { path: 'notifications/dead-letter', element: <AdminNotificationDeadLetterPage /> },
+              { path: 'notifications/retention', element: <AdminNotificationRetentionPage /> },
+              { path: 'notifications/legal-holds', element: <AdminNotificationLegalHoldsPage /> },
               {
                 path: 'enterprise',
                 element: <AdminEnterpriseLayout />,

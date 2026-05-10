@@ -1,7 +1,7 @@
 import { useMutation } from '@tanstack/react-query'
 import { useNavigate, Link } from 'react-router-dom'
 import { useState } from 'react'
-import { signup, signupSchema, me } from '../features/auth/auth-api'
+import { authUserFromMeResponse, signup, signupSchema, me } from '../features/auth/auth-api'
 import { useAuthStore } from '../features/auth/auth-store'
 import { Card } from '../shared/components/Card'
 import { Input } from '../shared/components/Input'
@@ -27,14 +27,7 @@ export function SignupPage() {
       })
       try {
         const m = await me()
-        setUser({
-          id: m.userId,
-          email: m.email,
-          name: m.name,
-          avatarUrl: m.avatarUrl ?? null,
-          status: data.user.status,
-          roles: m.roles ?? [],
-        })
+        setUser(authUserFromMeResponse(m, data.user.status))
       } catch {
         // ignore enrichment failure
       }

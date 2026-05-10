@@ -4,7 +4,10 @@ import type { Page } from '@playwright/test'
  * Satisfies signup → /app shell data fetches without a live gateway (bearer-mode E2E).
  * Routes match the browser-origin API host from `VITE_API_BASE_URL` (default localhost:8080).
  */
-export async function stubMinimalAuthenticatedSession(page: Page) {
+export async function stubMinimalAuthenticatedSession(
+  page: Page,
+  opts?: { signupRoles?: string[] },
+) {
   await page.route('**/runtime-config.js', async (route) => {
     await route.fulfill({
       status: 200,
@@ -25,7 +28,7 @@ export async function stubMinimalAuthenticatedSession(page: Page) {
     id: userId,
     email: 'admin-audit-e2e@example.com',
     name: 'Admin Audit E2E',
-    roles: [] as string[],
+    roles: (opts?.signupRoles ?? []) as string[],
   }
 
   await page.route('**/auth/signup', async (route) => {
@@ -56,6 +59,7 @@ export async function stubMinimalAuthenticatedSession(page: Page) {
         name: user.name,
         roles: user.roles,
         avatarUrl: null,
+        ...(user.roles.length > 0 ? { platformRoles: user.roles } : {}),
       }),
     })
   })

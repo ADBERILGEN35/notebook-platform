@@ -1,5 +1,6 @@
 package com.notebook.lumen.identity.admin.changerequest;
 
+import com.notebook.lumen.common.security.admin.PlatformAdminRbacConstants;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -25,6 +26,7 @@ public class AdminOperationRegistry {
                   "GATEWAY_ADMIN_MFA_MODE",
                   Set.of("off", "observe", "warn", "enforce"),
                   "HIGH",
+                  PlatformAdminRbacConstants.PERM_SECURITY_CHANGE_REQUEST_CREATE,
                   true,
                   false,
                   "Revert via GitOps to prior GATEWAY_ADMIN_MFA_MODE or submit a change request with a lower mode.",
@@ -38,6 +40,7 @@ public class AdminOperationRegistry {
                   "NOTE_MERGE_ANALYSIS_ENABLED",
                   Set.of("true", "false"),
                   "MEDIUM",
+                  PlatformAdminRbacConstants.PERM_MERGE_CHANGE_REQUEST_CREATE,
                   true,
                   false,
                   "Set NOTE_MERGE_ANALYSIS_ENABLED to the previous boolean in GitOps.",
@@ -51,6 +54,7 @@ public class AdminOperationRegistry {
                   "NOTE_MERGE_APPLY_ENABLED",
                   Set.of("true", "false"),
                   "HIGH",
+                  PlatformAdminRbacConstants.PERM_MERGE_CHANGE_REQUEST_CREATE,
                   true,
                   false,
                   "Set NOTE_MERGE_APPLY_ENABLED to false in GitOps if rollback needed.",
@@ -64,6 +68,7 @@ public class AdminOperationRegistry {
                   "SCIM_BULK_ENABLED",
                   Set.of("true", "false"),
                   "HIGH",
+                  PlatformAdminRbacConstants.PERM_SCIM_CHANGE_REQUEST_CREATE,
                   true,
                   false,
                   "Disable SCIM_BULK_ENABLED in GitOps; bulk is non-transactional.",

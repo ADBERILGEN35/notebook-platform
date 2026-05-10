@@ -31,6 +31,7 @@ data:
   GATEWAY_ADMIN_AUDIT_ENABLED: {{ .Values.config.gatewayAdminAuditEnabled | quote }}
   GATEWAY_ADMIN_ENTERPRISE_ENABLED: {{ .Values.config.gatewayAdminEnterpriseEnabled | quote }}
   GATEWAY_ADMIN_WRITE_ENABLED: {{ .Values.config.gatewayAdminWriteEnabled | quote }}
+  GATEWAY_ADMIN_RBAC_ENFORCE: {{ .Values.config.gatewayAdminRbacEnforce | quote }}
   GATEWAY_ADMIN_CHANGE_REQUESTS_INTERNAL_PATH: {{ .Values.config.gatewayAdminChangeRequestsInternalPath | quote }}
   GATEWAY_ADMIN_WRITE_RATE_LIMIT_REPLENISH_RATE: {{ .Values.config.gatewayAdminWriteRateLimitReplenishRate | quote }}
   GATEWAY_ADMIN_WRITE_RATE_LIMIT_BURST_CAPACITY: {{ .Values.config.gatewayAdminWriteRateLimitBurstCapacity | quote }}
@@ -128,8 +129,43 @@ data:
   ADMIN_CHANGE_REQUEST_HIGH_SEVERITY_REQUIRES_APPROVAL: {{ .Values.config.adminChangeRequestHighSeverityRequiresApproval | quote }}
   ADMIN_CHANGE_REQUEST_LOW_SEVERITY_AUTO_APPROVE: {{ .Values.config.adminChangeRequestLowSeverityAutoApprove | quote }}
   ADMIN_CHANGE_REQUEST_REJECT_REASON_REQUIRED_FOR_HIGH: {{ .Values.config.adminChangeRequestRejectReasonRequiredForHigh | quote }}
+  ADMIN_GITOPS_PR_ENABLED: {{ .Values.config.adminGitopsPrEnabled | quote }}
+  ADMIN_GITOPS_PROVIDER: {{ .Values.config.adminGitopsProvider | quote }}
+  ADMIN_GITOPS_ALLOWED_ENVIRONMENTS: {{ .Values.config.adminGitopsAllowedEnvironments | quote }}
+  ADMIN_GITOPS_DEFAULT_ENVIRONMENT: {{ .Values.config.adminGitopsDefaultEnvironment | quote }}
+  ADMIN_GITOPS_BASE_BRANCH: {{ .Values.config.adminGitopsBaseBranch | quote }}
+  ADMIN_GITOPS_BRANCH_PREFIX: {{ .Values.config.adminGitopsBranchPrefix | quote }}
+  ADMIN_GITOPS_REPOSITORY_OWNER: {{ .Values.config.adminGitopsRepositoryOwner | quote }}
+  ADMIN_GITOPS_REPOSITORY_NAME: {{ .Values.config.adminGitopsRepositoryName | quote }}
+  ADMIN_GITOPS_REQUIRE_APPROVED_CHANGE: {{ .Values.config.adminGitopsRequireApprovedChange | quote }}
   IDENTITY_INTERNAL_ADMIN_STATUS_ENABLED: {{ .Values.config.internalAdminStatusEnabled | quote }}
   NOTIFICATION_INTERNAL_ADMIN_STATUS_ENABLED: {{ .Values.config.internalAdminStatusEnabled | quote }}
+  NOTIFICATION_INTERNAL_ADMIN_ANALYTICS_ENABLED: {{ .Values.config.notificationInternalAdminAnalyticsEnabled | quote }}
+  NOTIFICATION_ANALYTICS_ENABLED: {{ .Values.config.notificationAnalyticsEnabled | quote }}
+  NOTIFICATION_ANALYTICS_RETENTION_DAYS: {{ .Values.config.notificationAnalyticsRetentionDays | quote }}
+  NOTIFICATION_ANALYTICS_MAX_RANGE_DAYS: {{ .Values.config.notificationAnalyticsMaxRangeDays | quote }}
+  NOTIFICATION_ANALYTICS_BUCKET: {{ .Values.config.notificationAnalyticsBucket | quote }}
+  NOTIFICATION_DEAD_LETTER_ADMIN_ENABLED: {{ .Values.config.notificationDeadLetterAdminEnabled | quote }}
+  NOTIFICATION_DEAD_LETTER_MAX_REQUEUE_COUNT: {{ .Values.config.notificationDeadLetterMaxRequeueCount | quote }}
+  NOTIFICATION_DEAD_LETTER_PAGE_MAX_SIZE: {{ .Values.config.notificationDeadLetterPageMaxSize | quote }}
+  NOTIFICATION_DEAD_LETTER_RECIPIENT_HASH_PEPPER: {{ .Values.config.notificationDeadLetterRecipientHashPepper | quote }}
+  GATEWAY_ADMIN_ENTERPRISE_NOTIFICATION_ANALYTICS_PATH: {{ .Values.config.gatewayAdminEnterpriseNotificationAnalyticsPath | quote }}
+  GATEWAY_ADMIN_ENTERPRISE_NOTIFICATION_DEAD_LETTER_PATH: {{ .Values.config.gatewayAdminEnterpriseNotificationDeadLetterPath | quote }}
+  GATEWAY_ADMIN_ENTERPRISE_NOTIFICATION_RETENTION_PATH: {{ .Values.config.gatewayAdminEnterpriseNotificationRetentionPath | quote }}
+  GATEWAY_ADMIN_ENTERPRISE_NOTIFICATION_LEGAL_HOLD_PATH: {{ .Values.config.gatewayAdminEnterpriseNotificationLegalHoldPath | quote }}
+  NOTIFICATION_LEGAL_HOLD_ENABLED: {{ .Values.config.notificationLegalHoldEnabled | quote }}
+  NOTIFICATION_LEGAL_HOLD_ADMIN_API_ENABLED: {{ .Values.config.notificationLegalHoldAdminApiEnabled | quote }}
+  NOTIFICATION_LEGAL_HOLD_MAX_ACTIVE: {{ .Values.config.notificationLegalHoldMaxActive | quote }}
+  NOTIFICATION_RETENTION_ADMIN_API_ENABLED: {{ .Values.config.notificationRetentionAdminApiEnabled | quote }}
+  NOTIFICATION_RETENTION_WORKER_ENABLED: {{ .Values.config.notificationRetentionWorkerEnabled | quote }}
+  NOTIFICATION_RETENTION_DRY_RUN_ONLY: {{ .Values.config.notificationRetentionDryRunOnly | quote }}
+  NOTIFICATION_RETENTION_MANUAL_RUN_ENABLED: {{ .Values.config.notificationRetentionManualRunEnabled | quote }}
+  NOTIFICATION_RETENTION_POLL_INTERVAL_MS: {{ .Values.config.notificationRetentionPollIntervalMs | quote }}
+  NOTIFICATION_RETENTION_BATCH_SIZE: {{ .Values.config.notificationRetentionBatchSize | quote }}
+  NOTIFICATION_RETENTION_MAX_DELETE_PER_RUN: {{ .Values.config.notificationRetentionMaxDeletePerRun | quote }}
+  NOTIFICATION_DEAD_LETTER_REQUEUE_REQUEST_RETENTION_DAYS: {{ .Values.config.notificationDeadLetterRequeueRequestRetentionDays | quote }}
+  NOTIFICATION_DIGEST_SENT_RETENTION_DAYS: {{ .Values.config.notificationDigestSentRetentionDays | quote }}
+  NOTIFICATION_EMAIL_TERMINAL_RETENTION_DAYS: {{ .Values.config.notificationEmailTerminalRetentionDays | quote }}
   CONTENT_INTERNAL_ADMIN_STATUS_ENABLED: {{ .Values.config.internalAdminStatusEnabled | quote }}
   TRUSTED_SERVICE_CONTENT_SERVICE_KID: {{ .Values.config.trustedContentServiceKid | quote }}
   TRUSTED_SERVICE_CONTENT_SERVICE_PUBLIC_KEY_PATH: "/etc/notebook/secrets/service-jwt/content-public.pem"
@@ -267,6 +303,16 @@ data:
   SCIM_BEARER_TOKEN_HASH: {{ .Values.config.scimBearerTokenHash | quote }}
   SCIM_GROUPS_ENABLED: {{ .Values.config.scimGroupsEnabled | quote }}
   SCIM_ADMIN_GROUPS: {{ .Values.config.scimAdminGroups | quote }}
+  ADMIN_RBAC_ENABLED: {{ .Values.config.adminRbacEnabled | quote }}
+  ADMIN_RBAC_LEGACY_PLATFORM_ADMIN_IMPLIES_ALL: {{ .Values.config.adminRbacLegacyPlatformAdminImpliesAll | quote }}
+  ADMIN_RBAC_GROUP_PLATFORM_ADMIN: {{ .Values.config.adminRbacGroupPlatformAdmin | quote }}
+  ADMIN_RBAC_GROUP_AUDIT_VIEWER: {{ .Values.config.adminRbacGroupAuditViewer | quote }}
+  ADMIN_RBAC_GROUP_AUDIT_EXPORTER: {{ .Values.config.adminRbacGroupAuditExporter | quote }}
+  ADMIN_RBAC_GROUP_SECURITY_ADMIN: {{ .Values.config.adminRbacGroupSecurityAdmin | quote }}
+  ADMIN_RBAC_GROUP_IDENTITY_ADMIN: {{ .Values.config.adminRbacGroupIdentityAdmin | quote }}
+  ADMIN_RBAC_GROUP_CHANGE_REQUEST_AUTHOR: {{ .Values.config.adminRbacGroupChangeRequestAuthor | quote }}
+  ADMIN_RBAC_GROUP_CHANGE_REQUEST_APPROVER: {{ .Values.config.adminRbacGroupChangeRequestApprover | quote }}
+  ADMIN_RBAC_GROUP_OBSERVABILITY_VIEWER: {{ .Values.config.adminRbacGroupObservabilityViewer | quote }}
   SCIM_GROUP_NESTING_ENABLED: {{ .Values.config.scimGroupNestingEnabled | quote }}
   SCIM_GROUP_NESTING_MAX_DEPTH: {{ .Values.config.scimGroupNestingMaxDepth | quote }}
   SCIM_BULK_ENABLED: {{ .Values.config.scimBulkEnabled | quote }}

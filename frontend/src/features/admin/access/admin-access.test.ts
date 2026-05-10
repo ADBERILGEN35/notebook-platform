@@ -30,6 +30,15 @@ describe('admin access helpers', () => {
     expect(hasPlatformAdminLikeRole({ ...base, roles: undefined })).toBe(false)
   })
 
+  it('canShowAdminNavigation allows fine-grained platform roles', () => {
+    expect(
+      canShowAdminNavigation({
+        ...base,
+        roles: ['ROLE_USER', 'PLATFORM_AUDIT_VIEWER'],
+      }),
+    ).toBe(true)
+  })
+
   it('allows admin navigation for privileged role', () => {
     expect(canShowAdminNavigation({ ...base, roles: ['PLATFORM_ADMIN'] })).toBe(true)
   })

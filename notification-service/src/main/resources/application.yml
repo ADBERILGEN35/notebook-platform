@@ -82,6 +82,14 @@ notification:
   internal:
     admin-status:
       enabled: ${NOTIFICATION_INTERNAL_ADMIN_STATUS_ENABLED:false}
+    admin-analytics:
+      enabled: ${NOTIFICATION_INTERNAL_ADMIN_ANALYTICS_ENABLED:false}
+    admin-dead-letter:
+      enabled: ${NOTIFICATION_DEAD_LETTER_ADMIN_ENABLED:false}
+    admin-retention:
+      enabled: ${NOTIFICATION_RETENTION_ADMIN_API_ENABLED:false}
+    admin-legal-hold:
+      enabled: ${NOTIFICATION_LEGAL_HOLD_ADMIN_API_ENABLED:false}
     trusted-gateway-admin-client:
       kid: ${AUDIT_ADMIN_SERVICE_JWT_KID:}
       public-key: ${AUDIT_ADMIN_SERVICE_JWT_PUBLIC_KEY:}
@@ -89,7 +97,7 @@ notification:
       issuer: ${AUDIT_ADMIN_SERVICE_JWT_ISSUER:audit-admin}
       audience: ${AUDIT_ADMIN_SERVICE_JWT_NOTIFICATION_AUDIENCE:notification-service}
       clock-skew-seconds: ${AUDIT_ADMIN_SERVICE_JWT_CLOCK_SKEW_SECONDS:5}
-      allowed-scopes: ${AUDIT_ADMIN_SERVICE_JWT_NOTIFICATION_ALLOWED_SCOPES:internal:admin:status:read}
+      allowed-scopes: ${AUDIT_ADMIN_SERVICE_JWT_NOTIFICATION_ALLOWED_SCOPES:internal:admin:status:read,internal:admin:notifications:analytics:read,internal:admin:notifications:dead-letter:read,internal:admin:notifications:dead-letter:requeue,internal:admin:notifications:retention:read,internal:admin:notifications:retention:run,internal:admin:notifications:legal-hold:read,internal:admin:notifications:legal-hold:write}
     trusted-notification-client:
       kid: ${TRUSTED_SERVICE_WORKSPACE_SERVICE_KID:}
       public-key: ${TRUSTED_SERVICE_WORKSPACE_SERVICE_PUBLIC_KEY:}
@@ -106,6 +114,29 @@ notification:
       audience: ${TRUSTED_SERVICE_IDENTITY_SERVICE_AUDIENCE:notification-service}
       clock-skew-seconds: ${TRUSTED_SERVICE_IDENTITY_SERVICE_CLOCK_SKEW_SECONDS:5}
       allowed-scopes: ${TRUSTED_SERVICE_IDENTITY_SERVICE_ALLOWED_SCOPES:internal:notification:email:send,internal:notification:in-app:create}
+  analytics:
+    enabled: ${NOTIFICATION_ANALYTICS_ENABLED:true}
+    retention-days: ${NOTIFICATION_ANALYTICS_RETENTION_DAYS:90}
+    max-range-days: ${NOTIFICATION_ANALYTICS_MAX_RANGE_DAYS:30}
+    default-bucket: ${NOTIFICATION_ANALYTICS_BUCKET:hour}
+  dead-letter:
+    max-requeue-count: ${NOTIFICATION_DEAD_LETTER_MAX_REQUEUE_COUNT:3}
+    page-max-size: ${NOTIFICATION_DEAD_LETTER_PAGE_MAX_SIZE:200}
+    recipient-hash-pepper: ${NOTIFICATION_DEAD_LETTER_RECIPIENT_HASH_PEPPER:}
+  legal-hold:
+    enabled: ${NOTIFICATION_LEGAL_HOLD_ENABLED:false}
+    admin-api-enabled: ${NOTIFICATION_LEGAL_HOLD_ADMIN_API_ENABLED:false}
+    max-active: ${NOTIFICATION_LEGAL_HOLD_MAX_ACTIVE:50}
+  retention:
+    worker-enabled: ${NOTIFICATION_RETENTION_WORKER_ENABLED:false}
+    dry-run-only: ${NOTIFICATION_RETENTION_DRY_RUN_ONLY:true}
+    manual-run-enabled: ${NOTIFICATION_RETENTION_MANUAL_RUN_ENABLED:false}
+    poll-interval-ms: ${NOTIFICATION_RETENTION_POLL_INTERVAL_MS:86400000}
+    batch-size: ${NOTIFICATION_RETENTION_BATCH_SIZE:1000}
+    max-delete-per-run: ${NOTIFICATION_RETENTION_MAX_DELETE_PER_RUN:10000}
+    dead-letter-requeue-request-retention-days: ${NOTIFICATION_DEAD_LETTER_REQUEUE_REQUEST_RETENTION_DAYS:90}
+    digest-sent-retention-days: ${NOTIFICATION_DIGEST_SENT_RETENTION_DAYS:90}
+    email-terminal-retention-days: ${NOTIFICATION_EMAIL_TERMINAL_RETENTION_DAYS:90}
   in-app:
     enabled: ${NOTIFICATIONS_IN_APP_ENABLED:true}
   sse:

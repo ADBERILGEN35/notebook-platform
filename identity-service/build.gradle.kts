@@ -20,6 +20,8 @@ dependencies {
 
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.3")
 
+    implementation("org.yaml:snakeyaml:2.2")
+
     implementation("org.postgresql:postgresql")
     implementation("de.mkammerer:argon2-jvm:2.12")
     implementation("org.bouncycastle:bcprov-jdk18on:1.84")

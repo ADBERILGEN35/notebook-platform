@@ -61,6 +61,18 @@ public class NotificationFanoutOutbox {
   @Column(name = "sent_at")
   private Instant sentAt;
 
+  @Column(name = "requeue_count", nullable = false)
+  private int requeueCount;
+
+  @Column(name = "last_requeued_at")
+  private Instant lastRequeuedAt;
+
+  @Column(name = "last_requeued_by")
+  private String lastRequeuedBy;
+
+  @Column(name = "dead_at")
+  private Instant deadAt;
+
   protected NotificationFanoutOutbox() {}
 
   public NotificationFanoutOutbox(
@@ -79,6 +91,7 @@ public class NotificationFanoutOutbox {
     this.attemptCount = 0;
     this.nextAttemptAt = now;
     this.createdAt = now;
+    this.requeueCount = 0;
   }
 
   public void markSending(String workerId, Instant now, Instant lockExpiresAt) {
@@ -109,6 +122,25 @@ public class NotificationFanoutOutbox {
   public void markDead(String error, Instant now) {
     this.status = NotificationFanoutOutboxStatus.DEAD;
     this.lastError = error;
+    this.lockedAt = null;
+    this.lockedBy = null;
+    this.lockExpiresAt = null;
+    this.deadAt = now;
+  }
+
+  /**
+   * Admin requeue: move DEAD row back to PENDING for worker pickup. Does not clear {@link #lastError}
+   * (operational history).
+   */
+  public void requeueFromDead(Instant now, String actorUserId) {
+    if (this.status != NotificationFanoutOutboxStatus.DEAD) {
+      throw new IllegalStateException("requeue requires DEAD status");
+    }
+    this.status = NotificationFanoutOutboxStatus.PENDING;
+    this.nextAttemptAt = now;
+    this.requeueCount++;
+    this.lastRequeuedAt = now;
+    this.lastRequeuedBy = actorUserId;
     this.lockedAt = null;
     this.lockedBy = null;
     this.lockExpiresAt = null;
@@ -178,5 +210,21 @@ public class NotificationFanoutOutbox {
 
   public Instant getSentAt() {
     return sentAt;
+  }
+
+  public int getRequeueCount() {
+    return requeueCount;
+  }
+
+  public Instant getLastRequeuedAt() {
+    return lastRequeuedAt;
+  }
+
+  public String getLastRequeuedBy() {
+    return lastRequeuedBy;
+  }
+
+  public Instant getDeadAt() {
+    return deadAt;
   }
 }

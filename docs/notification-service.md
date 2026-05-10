@@ -207,3 +207,10 @@ flags only — see `docs/enterprise-admin-console.md`.
 - Table: `notification_fanout_outbox` (`V10__notification_fanout_outbox.sql`).
 - In-app mutations enqueue secret-safe SSE payloads; optional immediate publish + worker retries.
 - See [`notification-durable-fanout.md`](notification-durable-fanout.md).
+
+## Delivery analytics aggregates (Faz 81)
+
+- Table: `notification_delivery_analytics_hourly` — hourly counts by `eventKind` / channel / type / severity (no user/workspace dimensions in MVP).
+- Internal summary: `GET /internal/admin/notifications/analytics/summary` when `NOTIFICATION_INTERNAL_ADMIN_ANALYTICS_ENABLED=true` (service JWT scope `internal:admin:notifications:analytics:read`).
+- Recording is best-effort: failures are logged/metered and must not fail user-visible notification delivery.
+- See [`notification-analytics-dashboard.md`](notification-analytics-dashboard.md) and [`notification-analytics-privacy.md`](notification-analytics-privacy.md).

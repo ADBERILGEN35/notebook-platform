@@ -1,5 +1,7 @@
 package com.notebook.lumen.notification.user.realtime;
 
+import com.notebook.lumen.notification.analytics.NotificationAnalyticsEventKind;
+import com.notebook.lumen.notification.analytics.NotificationAnalyticsRecorder;
 import com.notebook.lumen.notification.shared.config.NotificationSseProperties;
 import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.annotation.PreDestroy;
@@ -24,12 +26,17 @@ public class NotificationSseBroker {
   private final Map<UUID, CopyOnWriteArrayList<SseEmitter>> emittersByUser = new ConcurrentHashMap<>();
   private final NotificationSseProperties sseProperties;
   private final MeterRegistry meterRegistry;
+  private final NotificationAnalyticsRecorder analyticsRecorder;
   private final ScheduledExecutorService scheduler =
       Executors.newSingleThreadScheduledExecutor(r -> new Thread(r, "notification-sse-heartbeat"));
 
-  public NotificationSseBroker(NotificationSseProperties sseProperties, MeterRegistry meterRegistry) {
+  public NotificationSseBroker(
+      NotificationSseProperties sseProperties,
+      MeterRegistry meterRegistry,
+      NotificationAnalyticsRecorder analyticsRecorder) {
     this.sseProperties = sseProperties;
     this.meterRegistry = meterRegistry;
+    this.analyticsRecorder = analyticsRecorder;
     long heartbeat = Math.max(1, sseProperties.getHeartbeatSeconds());
     scheduler.scheduleWithFixedDelay(this::publishHeartbeat, heartbeat, heartbeat, TimeUnit.SECONDS);
   }
@@ -103,6 +110,7 @@ public class NotificationSseBroker {
       return true;
     } catch (IOException ex) {
       meterRegistry.counter("notifications_sse_send_failures_total").increment();
+      analyticsRecorder.record(NotificationAnalyticsEventKind.SSE_SEND_FAILURE, "", "SSE", "", 1);
       disconnect(userId, emitter);
       log.debug("SSE send failed for user {} event {}", userId, eventType);
       return false;
@@ -123,5 +131,10 @@ public class NotificationSseBroker {
 
   private double activeConnections(Map<UUID, CopyOnWriteArrayList<SseEmitter>> current) {
     return current.values().stream().mapToInt(List::size).sum();
+  }
+
+  /** Live SSE connection count across all users (pod-local). */
+  public int activeConnectionCount() {
+    return (int) activeConnections(emittersByUser);
   }
 }

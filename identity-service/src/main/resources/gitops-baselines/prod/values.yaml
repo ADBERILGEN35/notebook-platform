@@ -1,0 +1,5 @@
+config:
+  gatewayAdminMfaMode: "observe"
+  noteMergeAnalysisEnabled: "false"
+  noteMergeApplyEnabled: "false"
+  scimBulkEnabled: "false"

@@ -22,6 +22,7 @@ No new backend feature is introduced in this phase.
 - Settings/security: security note + revoke-all + error-state interceptions
 - Admin/audit mock: pagination + metadata masking (`e2e/admin-audit.spec.ts`)
 - Admin/audit real-mode UI mappings (intercepted gateway responses): `403 ADMIN_ACCESS_DENIED`, `503 AUDIT_SOURCE_UNAVAILABLE`, success table render (`e2e/admin-audit-real-mode.spec.ts`)
+- Admin RBAC UI: mocked `platform_permissions` / dev-open off — audit export hidden, approver without create, admin gate (`e2e/admin-rbac-ui.spec.ts`)
 - Responsive shell smoke for mobile/tablet drawer controls (`e2e/responsive.spec.ts`)
 - Conflict UX flow: review dialog + overwrite with latest ETag retry (`e2e/workspace-note.spec.ts`)
 
@@ -43,6 +44,7 @@ Using Playwright route interception:
 
 ## Known Limits
 
+- When stubbing `GET /admin/enterprise/change-requests`, use a pathname predicate (see `e2e/helpers/gateway-stub-urls.ts`) — broad Playwright URL globs can match Vite source files such as `change-requests-api.ts` and break the dev server.
 - Full backend orchestration for E2E is not automatic yet.
 - Data cleanup is best-effort; test artifacts are prefixed with `E2E`.
 - BlockNote DOM can be selector-sensitive; helper-level wrappers are used to reduce flaky behavior.

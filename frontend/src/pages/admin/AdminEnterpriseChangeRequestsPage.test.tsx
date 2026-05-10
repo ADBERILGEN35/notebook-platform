@@ -8,12 +8,38 @@ import * as changeRequestsApi from '../../features/admin/enterprise/change-reque
 vi.mock('../../shared/config/admin-feature-flags', () => ({
   isEnterpriseAdminWriteEnabled: () => true,
   isEnterpriseAdminApprovalsUiEnabled: () => true,
+  isEnterpriseGitOpsPrUiEnabled: () => true,
 }))
 
 vi.mock('../../features/auth/auth-store', () => ({
-  useAuthStore: (selector: (s: { user: { id: string } | null }) => unknown) =>
-    selector({ user: { id: 'creator-1', email: 'a@b.com', name: 'A' } }),
+  useAuthStore: (selector: (s: { user: Record<string, unknown> | null }) => unknown) =>
+    selector({
+      user: {
+        id: 'creator-1',
+        email: 'a@b.com',
+        name: 'A',
+        roles: ['PLATFORM_ADMIN'],
+      },
+    }),
 }))
+
+const baseItem = {
+  targetService: 'content-service',
+  targetKey: 'NOTE_MERGE_ANALYSIS_ENABLED',
+  currentValue: null,
+  requestedValue: 'true',
+  severity: 'MEDIUM',
+  impactSummary: { severity: 'MEDIUM', description: 'd' },
+  validationResult: {},
+  createdAt: new Date().toISOString(),
+  externalRequestId: null,
+  decidedAt: null,
+  decidedByUserId: null,
+  decisionReason: null,
+  approvedAt: null,
+  rejectedAt: null,
+  targetEnvironment: 'staging',
+}
 
 describe('AdminEnterpriseChangeRequestsPage', () => {
   afterEach(() => {
@@ -35,20 +61,7 @@ describe('AdminEnterpriseChangeRequestsPage', () => {
           requestedByUserId: 'creator-1',
           status: 'PENDING',
           operationType: 'MERGE_ANALYSIS_ROLLOUT_REQUEST',
-          targetService: 'content-service',
-          targetKey: 'NOTE_MERGE_ANALYSIS_ENABLED',
-          currentValue: null,
-          requestedValue: 'true',
-          severity: 'MEDIUM',
-          impactSummary: { severity: 'MEDIUM', description: 'd' },
-          validationResult: {},
-          createdAt: new Date().toISOString(),
-          externalRequestId: null,
-          decidedAt: null,
-          decidedByUserId: null,
-          decisionReason: null,
-          approvedAt: null,
-          rejectedAt: null,
+          ...baseItem,
         },
       ],
     })
@@ -67,20 +80,8 @@ describe('AdminEnterpriseChangeRequestsPage', () => {
           requestedByUserId: 'other-admin',
           status: 'PENDING',
           operationType: 'MERGE_ANALYSIS_ROLLOUT_REQUEST',
-          targetService: 'content-service',
-          targetKey: 'NOTE_MERGE_ANALYSIS_ENABLED',
-          currentValue: null,
-          requestedValue: 'true',
-          severity: 'MEDIUM',
+          ...baseItem,
           impactSummary: { severity: 'MEDIUM', description: 'impact text', rollback: 'rb' },
-          validationResult: {},
-          createdAt: new Date().toISOString(),
-          externalRequestId: null,
-          decidedAt: null,
-          decidedByUserId: null,
-          decisionReason: null,
-          approvedAt: null,
-          rejectedAt: null,
         },
       ],
     })
@@ -115,4 +116,32 @@ describe('AdminEnterpriseChangeRequestsPage', () => {
     await waitFor(() => expect(listSpy).toHaveBeenCalledWith('APPROVED'))
   })
 
+  it('approved request shows GitOps dry-run and runs preview', async () => {
+    vi.spyOn(changeRequestsApi, 'listChangeRequests').mockResolvedValue({
+      items: [
+        {
+          id: 'r3',
+          requestedByUserId: 'other-admin',
+          status: 'APPROVED',
+          operationType: 'MERGE_ANALYSIS_ROLLOUT_REQUEST',
+          ...baseItem,
+        },
+      ],
+    })
+    const drySpy = vi.spyOn(changeRequestsApi, 'gitopsDryRun').mockResolvedValue({
+      changeRequestId: 'r3',
+      targetEnvironment: 'staging',
+      provider: 'mock',
+      changedFiles: [],
+      diffPreview: '--- preview',
+      warnings: [],
+    })
+    const user = userEvent.setup()
+    renderPage()
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Dry-run GitOps' })).toBeInTheDocument())
+    await user.click(screen.getByRole('button', { name: 'Dry-run GitOps' }))
+    await user.click(screen.getByRole('button', { name: 'Run dry-run' }))
+    await waitFor(() => expect(drySpy).toHaveBeenCalledWith('r3', { targetEnvironment: 'staging' }))
+    expect(await screen.findByText('--- preview')).toBeInTheDocument()
+  })
 })

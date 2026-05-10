@@ -24,6 +24,8 @@ Faz 57 removes the single-pod SSE fanout limitation by introducing Redis pub/sub
 - Self-echo is skipped by matching `originInstanceId`.
 - Redis pub/sub alone is best-effort and non-durable.
 
+**Faz 81:** Publish success/failure and subscriber-received events are counted into privacy-safe hourly aggregates for the admin dashboard ([`notification-analytics-dashboard.md`](notification-analytics-dashboard.md)).
+
 **Faz 64**: notification-service can persist fanout events to `notification_fanout_outbox` before
 publishing; a worker retries Redis (and local-first) publish until success or dead-letter. Redis remains
 the realtime transport; the outbox adds durability across process and transient Redis issues. See

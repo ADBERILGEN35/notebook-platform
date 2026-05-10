@@ -12,6 +12,8 @@ In-app notifications continue realtime delivery through SSE and polling fallback
 
 Faz 65 **per-workspace notification preferences** do not change digest or quiet hours: those controls remain **global** for the user. Workspace overrides only gate whether a given channel is allowed before digest/quiet-hours rules apply to email.
 
+**Faz 81:** Digest queued/sent and quiet-hours delayed counts are aggregated for operators ([`notification-analytics-dashboard.md`](notification-analytics-dashboard.md)).
+
 ## APIs
 
 - `GET /notification-delivery-preferences`

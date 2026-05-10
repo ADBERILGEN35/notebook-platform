@@ -83,11 +83,25 @@ public class RedisRateLimitGlobalFilter implements GlobalFilter, Ordered {
     if (isAdminEnterpriseChangeRequestsEndpoint(exchange)) {
       return checkAllowed(exchange, chain, adminWriteRedisRateLimiter, routeId, userId(exchange));
     }
+    if (isAdminNotificationDeadLetterRequeueEndpoint(exchange)) {
+      return checkAllowed(exchange, chain, adminWriteRedisRateLimiter, routeId, userId(exchange));
+    }
+    if (isAdminNotificationRetentionDestructiveEndpoint(exchange)) {
+      return checkAllowed(exchange, chain, adminWriteRedisRateLimiter, routeId, userId(exchange));
+    }
+    if (isAdminNotificationLegalHoldWriteEndpoint(exchange)) {
+      return checkAllowed(exchange, chain, adminWriteRedisRateLimiter, routeId, userId(exchange));
+    }
 
     RedisRateLimiter limiter;
     if (authEndpoint) {
       limiter = authRedisRateLimiter;
-    } else if (isAdminAuditEndpoint(exchange) || isAdminEnterpriseStatusEndpoint(exchange)) {
+    } else if (isAdminAuditEndpoint(exchange)
+        || isAdminEnterpriseStatusEndpoint(exchange)
+        || isAdminNotificationAnalyticsEndpoint(exchange)
+        || isAdminNotificationDeadLetterReadOrDryRunEndpoint(exchange)
+        || isAdminNotificationRetentionReadEndpoint(exchange)
+        || isAdminNotificationLegalHoldReadEndpoint(exchange)) {
       limiter = adminAuditRedisRateLimiter;
     } else {
       limiter = protectedRedisRateLimiter;
@@ -140,8 +154,62 @@ public class RedisRateLimitGlobalFilter implements GlobalFilter, Ordered {
     return "/admin/enterprise/status".equals(exchange.getRequest().getPath().value());
   }
 
+  private boolean isAdminNotificationAnalyticsEndpoint(ServerWebExchange exchange) {
+    return exchange.getRequest().getPath().value().startsWith("/admin/notifications/analytics");
+  }
+
+  private boolean isAdminNotificationDeadLetterReadOrDryRunEndpoint(ServerWebExchange exchange) {
+    String path = exchange.getRequest().getPath().value();
+    if (!path.startsWith("/admin/notifications/dead-letter")) {
+      return false;
+    }
+    var method = exchange.getRequest().getMethod();
+    if (org.springframework.http.HttpMethod.GET.equals(method)) {
+      return true;
+    }
+    return org.springframework.http.HttpMethod.POST.equals(method) && path.endsWith("/requeue/dry-run");
+  }
+
+  /** POST .../requeue only (not dry-run): stricter admin-write rate limit. */
+  private boolean isAdminNotificationDeadLetterRequeueEndpoint(ServerWebExchange exchange) {
+    if (!org.springframework.http.HttpMethod.POST.equals(exchange.getRequest().getMethod())) {
+      return false;
+    }
+    String path = exchange.getRequest().getPath().value();
+    return path.startsWith("/admin/notifications/dead-letter/")
+        && path.endsWith("/requeue")
+        && !path.endsWith("/dry-run");
+  }
+
   private boolean isAdminEnterpriseChangeRequestsEndpoint(ServerWebExchange exchange) {
     return exchange.getRequest().getPath().value().startsWith("/admin/enterprise/change-requests");
+  }
+
+  private boolean isAdminNotificationRetentionReadEndpoint(ServerWebExchange exchange) {
+    return exchange.getRequest().getPath().value().startsWith("/admin/notifications/retention/plan");
+  }
+
+  /** POST .../retention/run with dryRun false is still the same path — body parsed in controller; use write bucket for all POST /run. */
+  private boolean isAdminNotificationRetentionDestructiveEndpoint(ServerWebExchange exchange) {
+    if (!org.springframework.http.HttpMethod.POST.equals(exchange.getRequest().getMethod())) {
+      return false;
+    }
+    return "/admin/notifications/retention/run".equals(exchange.getRequest().getPath().value());
+  }
+
+  private boolean isAdminNotificationLegalHoldReadEndpoint(ServerWebExchange exchange) {
+    return org.springframework.http.HttpMethod.GET.equals(exchange.getRequest().getMethod())
+        && "/admin/notifications/legal-holds".equals(exchange.getRequest().getPath().value());
+  }
+
+  /** POST create or POST .../release — same bucket as other admin writes. */
+  private boolean isAdminNotificationLegalHoldWriteEndpoint(ServerWebExchange exchange) {
+    if (!org.springframework.http.HttpMethod.POST.equals(exchange.getRequest().getMethod())) {
+      return false;
+    }
+    String path = exchange.getRequest().getPath().value();
+    return "/admin/notifications/legal-holds".equals(path)
+        || (path.startsWith("/admin/notifications/legal-holds/") && path.endsWith("/release"));
   }
 
   private boolean isAdminAuditExportEndpoint(ServerWebExchange exchange) {

@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 
 import com.notebook.lumen.identity.audit.AuditAccessException;
 import com.notebook.lumen.identity.audit.AuditAdminAuthorizer;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
@@ -41,6 +42,7 @@ class InternalIdentitySecurityStatusControllerTest {
             new IdentitySecurityStatusResponse.Scim(false, false, false, false),
             new IdentitySecurityStatusResponse.Mfa(false, false),
             new IdentitySecurityStatusResponse.Siem(false, "noop", false, false, false),
+            new IdentitySecurityStatusResponse.AdminRbac(false, true, Map.of()),
             false,
             null);
     when(service.build()).thenReturn(body);

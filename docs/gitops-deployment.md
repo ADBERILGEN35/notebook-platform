@@ -71,7 +71,8 @@ later if production change control requires tighter permissions or a different a
 - frontend ingress host example: `app.staging.example.com`
 - cookie auth target mode (`AUTH_TOKEN_TRANSPORT=cookie`) with credentials-enabled explicit origins
 - gateway admin audit proxy enabled with staging allowlist (`gatewayAdminEnabled`,
-  `gatewayAdminAuditEnabled`, `gatewayAdminAllowedEmails`)
+  `gatewayAdminAuditEnabled`, `gatewayAdminAllowedEmails`); fine-grained admin RBAC flags default off
+  (`gatewayAdminRbacEnforce`, `adminRbacEnabled` — see `docs/admin-rbac.md`)
 - frontend admin audit real mode enabled (`FRONTEND_ADMIN_UI_ENABLED=true`, `FRONTEND_AUDIT_API_MODE=real`)
 - frontend CSP in report-only (`frontend.security.csp.enabled=true`, `reportOnly=true`)
 - SSO should remain disabled unless staging IdP config and secret wiring are validated

@@ -43,8 +43,7 @@ class AdminEnterpriseChangeRequestControllerDirectTest {
   void nonPlatformAdmin_returns403() {
     AdminAuthorizationService auth = mock(AdminAuthorizationService.class);
     when(auth.adminWriteFeatureEnabled()).thenReturn(true);
-    when(auth.enterpriseAdminWriteDenialReason(any()))
-        .thenReturn(Optional.of(ErrorCode.ADMIN_ACCESS_DENIED));
+    when(auth.ensureChangeRequestList(any())).thenReturn(Optional.of(ErrorCode.ADMIN_ACCESS_DENIED));
     var controller =
         new AdminEnterpriseChangeRequestController(auth, mock(EnterpriseChangeRequestProxyService.class));
 
@@ -62,7 +61,7 @@ class AdminEnterpriseChangeRequestControllerDirectTest {
   void whenAllowed_proxiesList() {
     AdminAuthorizationService auth = mock(AdminAuthorizationService.class);
     when(auth.adminWriteFeatureEnabled()).thenReturn(true);
-    when(auth.enterpriseAdminWriteDenialReason(any())).thenReturn(Optional.empty());
+    when(auth.ensureChangeRequestList(any())).thenReturn(Optional.empty());
     EnterpriseChangeRequestProxyService proxy = mock(EnterpriseChangeRequestProxyService.class);
     when(proxy.list(eq(null), eq("sub-1"), eq("a@b.com"), eq("rid"), eq(AdminEnterpriseChangeRequestController.PATH_PREFIX)))
         .thenReturn(
@@ -78,8 +77,7 @@ class AdminEnterpriseChangeRequestControllerDirectTest {
   void approve_whenMfaRequired_returns403() {
     AdminAuthorizationService auth = mock(AdminAuthorizationService.class);
     when(auth.adminWriteFeatureEnabled()).thenReturn(true);
-    when(auth.enterpriseAdminWriteDenialReason(any()))
-        .thenReturn(Optional.of(ErrorCode.ADMIN_WRITE_MFA_REQUIRED));
+    when(auth.ensureChangeRequestApprove(any())).thenReturn(Optional.of(ErrorCode.ADMIN_WRITE_MFA_REQUIRED));
     var controller =
         new AdminEnterpriseChangeRequestController(auth, mock(EnterpriseChangeRequestProxyService.class));
     UUID id = UUID.randomUUID();
@@ -98,7 +96,7 @@ class AdminEnterpriseChangeRequestControllerDirectTest {
   void whenAllowed_proxiesApprove() {
     AdminAuthorizationService auth = mock(AdminAuthorizationService.class);
     when(auth.adminWriteFeatureEnabled()).thenReturn(true);
-    when(auth.enterpriseAdminWriteDenialReason(any())).thenReturn(Optional.empty());
+    when(auth.ensureChangeRequestApprove(any())).thenReturn(Optional.empty());
     EnterpriseChangeRequestProxyService proxy = mock(EnterpriseChangeRequestProxyService.class);
     UUID id = UUID.randomUUID();
     when(proxy.approve(

@@ -15,6 +15,10 @@ Legacy `user_scim_group_memberships` was migrated into `scim_group_memberships` 
 - **Effective membership** for a user = direct USER memberships plus all **active** ancestor groups found by walking “who contains this group?” edges upward. Inactive groups are skipped (no role contribution, no upward traversal from an inactive direct parent).
 - **Platform admin**: `SCIM_ADMIN_GROUPS` lists case-insensitive `displayName` / `externalId` tokens. If any **effective** group matches, login access tokens can include `PLATFORM_ADMIN` (with existing MFA/admin gateway rules). Deprovisioned/inactive users do not receive the claim. Inactive groups never contribute.
 
+### Fine-grained admin RBAC (Faz 79)
+
+When `ADMIN_RBAC_ENABLED=true`, **effective** group keys are also matched against `ADMIN_RBAC_GROUP_*` values to assign fine-grained `PLATFORM_*` roles and `platform_permissions` on access tokens (see [`docs/admin-rbac.md`](admin-rbac.md)). This is additive to the legacy `SCIM_ADMIN_GROUPS` → `PLATFORM_ADMIN` behavior.
+
 ## Cycle and depth
 
 - **Cycle**: adding `parent -> child` is rejected if `child` is already an ancestor of `parent` in the GROUP graph. Error detail includes `SCIM_GROUP_CYCLE_DETECTED`.

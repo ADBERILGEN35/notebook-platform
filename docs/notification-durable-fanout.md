@@ -12,6 +12,12 @@ Faz 64 adds a **PostgreSQL-backed fanout outbox** so each logical SSE event is p
 `NotificationSseEventDispatcher` (Redis + local-first rules unchanged), and marks rows `SENT`
 or retries with exponential backoff, eventually `DEAD`.
 
+**Faz 81:** Pending / retrying / dead counts surface in the admin notification analytics summary (no payload content); see [`notification-analytics-dashboard.md`](notification-analytics-dashboard.md).
+
+**Faz 82:** `DEAD` rows can be listed and admin-requeued (back to `PENDING`) via gateway + internal APIs with RBAC, MFA on requeue, idempotency, and audit — see [`notification-dead-letter-requeue.md`](notification-dead-letter-requeue.md). Raw outbox payload is never returned to the browser.
+
+**Faz 83:** Optional retention worker / admin plan can delete **aged** `SENT` and `DEAD` rows only (never `PENDING` / `SENDING`) — see [`notification-retention-worker.md`](notification-retention-worker.md).
+
 ## Why DB outbox (not Kafka/RabbitMQ in this phase)
 
 - Reuses the notification service database and operational model.

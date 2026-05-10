@@ -9,13 +9,25 @@ import { ApiError, readableErrorMessage } from '../../shared/api/api-client'
 import {
   isEnterpriseAdminApprovalsUiEnabled,
   isEnterpriseAdminWriteEnabled,
+  isEnterpriseGitOpsPrUiEnabled,
 } from '../../shared/config/admin-feature-flags'
 import { useAuthStore } from '../../features/auth/auth-store'
+import {
+  PERM_CHANGE_REQUEST_APPROVE,
+  PERM_CHANGE_REQUEST_CANCEL,
+  PERM_CHANGE_REQUEST_CREATE,
+  PERM_CHANGE_REQUEST_GITOPS_CREATE,
+  PERM_CHANGE_REQUEST_GITOPS_DRY_RUN,
+  PERM_CHANGE_REQUEST_REJECT,
+  canCreateChangeRequestForOperation,
+  hasPlatformPermission,
+} from '../../features/admin/access/admin-permissions'
 import * as changeRequestsApi from '../../features/admin/enterprise/change-requests-api'
 import type {
   ApproveChangeRequestResponse,
   ChangeRequestItem,
   ChangeRequestStatusFilter,
+  GitOpsDryRunResponse,
   ValidateChangeRequestResponse,
 } from '../../features/admin/enterprise/change-requests-api'
 
@@ -74,6 +86,14 @@ export function AdminEnterpriseChangeRequestsPage() {
   const preVal = searchParams.get('val') ?? ''
   const currentUser = useAuthStore((s) => s.user)
   const approvalsUi = isEnterpriseAdminApprovalsUiEnabled()
+  const gitOpsUi = isEnterpriseGitOpsPrUiEnabled()
+  const canCreateFlow = hasPlatformPermission(currentUser, PERM_CHANGE_REQUEST_CREATE)
+  const canApprove = hasPlatformPermission(currentUser, PERM_CHANGE_REQUEST_APPROVE)
+  const canReject = hasPlatformPermission(currentUser, PERM_CHANGE_REQUEST_REJECT)
+  const canCancelScoped = hasPlatformPermission(currentUser, PERM_CHANGE_REQUEST_CANCEL)
+  const canCancelSelf = hasPlatformPermission(currentUser, PERM_CHANGE_REQUEST_CREATE)
+  const canGitOpsDryRun = hasPlatformPermission(currentUser, PERM_CHANGE_REQUEST_GITOPS_DRY_RUN)
+  const canGitOpsCreate = hasPlatformPermission(currentUser, PERM_CHANGE_REQUEST_GITOPS_CREATE)
 
   const [items, setItems] = useState<ChangeRequestItem[] | null>(null)
   const [listError, setListError] = useState<string | null>(null)
@@ -89,6 +109,10 @@ export function AdminEnterpriseChangeRequestsPage() {
     () => changeRequestsApi.ADMIN_CHANGE_REQUEST_OPERATIONS.find((o) => o.type === operationType)!,
     [operationType],
   )
+  const canOperateType = useMemo(
+    () => canCreateChangeRequestForOperation(currentUser, operationType),
+    [currentUser, operationType],
+  )
   const [requestedValue, setRequestedValue] = useState(() => {
     const meta = changeRequestsApi.ADMIN_CHANGE_REQUEST_OPERATIONS.find(
       (o) => o.type === (preOp || changeRequestsApi.ADMIN_CHANGE_REQUEST_OPERATIONS[0].type),
@@ -97,6 +121,7 @@ export function AdminEnterpriseChangeRequestsPage() {
     return meta.valueOptions[0]
   })
   const [confirmation, setConfirmation] = useState('')
+  const [createTargetEnv, setCreateTargetEnv] = useState('staging')
 
   const [validateResult, setValidateResult] = useState<ValidateChangeRequestResponse | null>(null)
   const [validateOk, setValidateOk] = useState(false)
@@ -111,6 +136,15 @@ export function AdminEnterpriseChangeRequestsPage() {
   const [detailRow, setDetailRow] = useState<ChangeRequestItem | null>(null)
   const [approveFlash, setApproveFlash] = useState<ApproveChangeRequestResponse | null>(null)
 
+  const [gitOpsDryRunRow, setGitOpsDryRunRow] = useState<ChangeRequestItem | null>(null)
+  const [gitOpsDryRunEnv, setGitOpsDryRunEnv] = useState('staging')
+  const [gitOpsDryRunResult, setGitOpsDryRunResult] = useState<GitOpsDryRunResponse | null>(null)
+  const [gitOpsCreateRow, setGitOpsCreateRow] = useState<ChangeRequestItem | null>(null)
+  const [gitOpsCreateConfirm, setGitOpsCreateConfirm] = useState('')
+  const [gitOpsBusy, setGitOpsBusy] = useState(false)
+  const [gitOpsError, setGitOpsError] = useState<string | null>(null)
+  const [gitOpsCreateFlash, setGitOpsCreateFlash] = useState<{ url: string; status: string } | null>(null)
+
   const refresh = useCallback(async () => {
     setLoadingList(true)
     setListError(null)
@@ -120,8 +154,8 @@ export function AdminEnterpriseChangeRequestsPage() {
     } catch (e: unknown) {
       const api = extractApiErrorFields(e)
       if (api) {
-        if (api.errorCode === 'ADMIN_ACCESS_DENIED') {
-          setListError('Permission denied — platform admin access required.')
+        if (api.errorCode === 'ADMIN_ACCESS_DENIED' || api.errorCode === 'ADMIN_PERMISSION_REQUIRED') {
+          setListError('Permission denied — required admin permission is missing.')
         } else {
           setListError(`${api.errorCode}: ${api.message}`)
         }
@@ -144,6 +178,22 @@ export function AdminEnterpriseChangeRequestsPage() {
     setConfirmation('')
   }, [operationType, opMeta])
 
+  useEffect(() => {
+    if (gitOpsDryRunRow) {
+      const e = gitOpsDryRunRow.targetEnvironment?.trim() || 'staging'
+      setGitOpsDryRunEnv(e)
+      setGitOpsDryRunResult(null)
+      setGitOpsError(null)
+    }
+  }, [gitOpsDryRunRow])
+
+  useEffect(() => {
+    if (gitOpsCreateRow) {
+      setGitOpsCreateConfirm('')
+      setGitOpsError(null)
+    }
+  }, [gitOpsCreateRow])
+
   if (!isEnterpriseAdminWriteEnabled()) {
     return <NavigateToEnterpriseOverview />
   }
@@ -157,7 +207,11 @@ export function AdminEnterpriseChangeRequestsPage() {
     setBusy(true)
     setValidateOk(false)
     try {
-      const r = await changeRequestsApi.validateChangeRequest({ operationType, requestedValue })
+      const r = await changeRequestsApi.validateChangeRequest({
+        operationType,
+        requestedValue,
+        targetEnvironment: createTargetEnv,
+      })
       setValidateResult(r)
       setValidateOk(!!r.valid)
     } catch (e) {
@@ -177,6 +231,7 @@ export function AdminEnterpriseChangeRequestsPage() {
         operationType,
         requestedValue,
         confirmation: needsConfirm ? confirmation.trim() : undefined,
+        targetEnvironment: createTargetEnv,
       })
       setValidateResult(null)
       setValidateOk(false)
@@ -255,6 +310,53 @@ export function AdminEnterpriseChangeRequestsPage() {
     setRejectTarget(row)
   }
 
+  const runGitOpsDryRun = async () => {
+    if (!gitOpsDryRunRow) return
+    setGitOpsBusy(true)
+    setGitOpsError(null)
+    try {
+      const r = await changeRequestsApi.gitopsDryRun(gitOpsDryRunRow.id, {
+        targetEnvironment: gitOpsDryRunEnv,
+      })
+      setGitOpsDryRunResult(r)
+    } catch (e: unknown) {
+      const api = extractApiErrorFields(e)
+      setGitOpsError(api ? `${api.errorCode}: ${api.message}` : readableErrorMessage(e))
+    } finally {
+      setGitOpsBusy(false)
+    }
+  }
+
+  const runGitOpsCreatePr = async () => {
+    if (!gitOpsCreateRow) return
+    const env = (gitOpsCreateRow.targetEnvironment || 'staging').trim()
+    const prodHigh = env.toLowerCase() === 'prod' && isHighSeverity(gitOpsCreateRow)
+    if (prodHigh && gitOpsCreateConfirm.trim() !== 'CONFIRM') return
+    setGitOpsBusy(true)
+    setGitOpsError(null)
+    try {
+      const idempotencyKey =
+        typeof crypto !== 'undefined' && 'randomUUID' in crypto
+          ? crypto.randomUUID()
+          : `idem-${Date.now()}`
+      const r = await changeRequestsApi.gitopsCreatePr(gitOpsCreateRow.id, {
+        targetEnvironment: env,
+        idempotencyKey,
+        confirmation: prodHigh ? 'CONFIRM' : undefined,
+      })
+      setGitOpsCreateRow(null)
+      setGitOpsCreateFlash({
+        url: r.providerPrUrl ?? '',
+        status: r.status,
+      })
+    } catch (e: unknown) {
+      const api = extractApiErrorFields(e)
+      setGitOpsError(api ? `${api.errorCode}: ${api.message}` : readableErrorMessage(e))
+    } finally {
+      setGitOpsBusy(false)
+    }
+  }
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -273,6 +375,19 @@ export function AdminEnterpriseChangeRequestsPage() {
       </p>
 
       {actionError ? <ErrorAlert message={actionError} /> : null}
+
+      {gitOpsCreateFlash ? (
+        <Card className="border-sky-200 bg-sky-50/80 text-sm text-sky-950">
+          <p className="font-semibold">GitOps PR created ({gitOpsCreateFlash.status})</p>
+          {gitOpsCreateFlash.url ? (
+            <p className="mt-1 text-xs break-all">
+              <a href={gitOpsCreateFlash.url} className="text-sky-900 underline" target="_blank" rel="noreferrer">
+                {gitOpsCreateFlash.url}
+              </a>
+            </p>
+          ) : null}
+        </Card>
+      ) : null}
 
       {approveFlash ? (
         <Card className="border-emerald-200 bg-emerald-50/80 text-sm text-emerald-950">
@@ -294,16 +409,36 @@ export function AdminEnterpriseChangeRequestsPage() {
         </p>
       ) : null}
 
+      {!gitOpsUi && isEnterpriseAdminWriteEnabled() ? (
+        <p className="text-xs text-slate-600">
+          GitOps PR actions are hidden. Enable{' '}
+          <code className="rounded bg-slate-100 px-1">FRONTEND_ENTERPRISE_GITOPS_PR_ENABLED</code> and matching backend{' '}
+          <code className="rounded bg-slate-100 px-1">ADMIN_GITOPS_PR_ENABLED</code> to dry-run patches and open PRs for
+          approved requests.
+        </p>
+      ) : null}
+
       <Card className="space-y-3">
         <p className="text-xs font-semibold uppercase text-slate-500">Create request</p>
-        <div className="grid gap-3 sm:grid-cols-2">
+        {!canCreateFlow ? (
+          <p className="text-xs text-slate-600">
+            Your account does not have <code className="rounded bg-slate-100 px-1">admin:change-request:create</code>.
+          </p>
+        ) : null}
+        {canCreateFlow && !canOperateType ? (
+          <p className="text-xs text-amber-800">
+            Selected operation requires an additional rollout permission (for example{' '}
+            <code className="rounded bg-amber-100 px-1">admin:merge:change-request:create</code>).
+          </p>
+        ) : null}
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <label className="block text-xs text-slate-600">
             Operation
             <select
               className="mt-1 w-full rounded border border-slate-200 px-2 py-1.5 text-sm"
               value={operationType}
               onChange={(e) => setOperationType(e.target.value)}
-              disabled={busy}
+              disabled={busy || !canCreateFlow}
             >
               {changeRequestsApi.ADMIN_CHANGE_REQUEST_OPERATIONS.map((o) => (
                 <option key={o.type} value={o.type}>
@@ -318,11 +453,26 @@ export function AdminEnterpriseChangeRequestsPage() {
               className="mt-1 w-full rounded border border-slate-200 px-2 py-1.5 text-sm"
               value={requestedValue}
               onChange={(e) => setRequestedValue(e.target.value)}
-              disabled={busy}
+              disabled={busy || !canCreateFlow}
             >
               {opMeta.valueOptions.map((v) => (
                 <option key={v} value={v}>
                   {v}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="block text-xs text-slate-600">
+            Target environment
+            <select
+              className="mt-1 w-full rounded border border-slate-200 px-2 py-1.5 text-sm"
+              value={createTargetEnv}
+              onChange={(e) => setCreateTargetEnv(e.target.value)}
+              disabled={busy || !canCreateFlow}
+            >
+              {changeRequestsApi.GITOPS_TARGET_ENVIRONMENTS.map((e) => (
+                <option key={e} value={e}>
+                  {e}
                 </option>
               ))}
             </select>
@@ -333,7 +483,7 @@ export function AdminEnterpriseChangeRequestsPage() {
             type="button"
             className="rounded bg-slate-800 px-3 py-1.5 text-sm font-medium text-white disabled:opacity-50"
             onClick={() => void onValidate()}
-            disabled={busy}
+            disabled={busy || !canCreateFlow || !canOperateType}
           >
             Validate
           </button>
@@ -341,7 +491,7 @@ export function AdminEnterpriseChangeRequestsPage() {
             type="button"
             className="rounded bg-primary-600 px-3 py-1.5 text-sm font-medium text-white disabled:opacity-50"
             onClick={() => void onCreate()}
-            disabled={busy || !canCreate}
+            disabled={busy || !canCreate || !canOperateType}
           >
             Create pending request
           </button>
@@ -406,6 +556,7 @@ export function AdminEnterpriseChangeRequestsPage() {
                   <th className="py-2 pr-2">Created</th>
                   <th className="py-2 pr-2">Status</th>
                   <th className="py-2 pr-2">Operation</th>
+                  <th className="py-2 pr-2">Env</th>
                   <th className="py-2 pr-2">Target</th>
                   <th className="py-2 pr-2">Value</th>
                   <th className="py-2 pr-2">Severity</th>
@@ -422,6 +573,7 @@ export function AdminEnterpriseChangeRequestsPage() {
                       <td className="py-2 pr-2 whitespace-nowrap">{new Date(row.createdAt).toLocaleString()}</td>
                       <td className="py-2 pr-2 font-medium">{row.status}</td>
                       <td className="py-2 pr-2 font-mono">{row.operationType}</td>
+                      <td className="py-2 pr-2 font-mono">{row.targetEnvironment ?? '—'}</td>
                       <td className="py-2 pr-2">
                         {row.targetService}:{row.targetKey}
                       </td>
@@ -436,32 +588,33 @@ export function AdminEnterpriseChangeRequestsPage() {
                         >
                           Details
                         </button>
-                        {canActPending ? (
-                          <>
-                            <button
-                              type="button"
-                              className="text-emerald-800 underline disabled:opacity-50"
-                              disabled={busy || !!selfApproveBlocked}
-                              title={
-                                selfApproveBlocked
-                                  ? 'Another platform admin must approve this request.'
-                                  : undefined
-                              }
-                              onClick={() => openApprove(row)}
-                            >
-                              Approve
-                            </button>
-                            <button
-                              type="button"
-                              className="text-amber-800 underline disabled:opacity-50"
-                              disabled={busy}
-                              onClick={() => openReject(row)}
-                            >
-                              Reject
-                            </button>
-                          </>
+                        {canActPending && canApprove ? (
+                          <button
+                            type="button"
+                            className="text-emerald-800 underline disabled:opacity-50"
+                            disabled={busy || !!selfApproveBlocked}
+                            title={
+                              selfApproveBlocked
+                                ? 'Another platform admin must approve this request.'
+                                : undefined
+                            }
+                            onClick={() => openApprove(row)}
+                          >
+                            Approve
+                          </button>
                         ) : null}
-                        {row.status === 'PENDING' && selfCreated ? (
+                        {canActPending && canReject ? (
+                          <button
+                            type="button"
+                            className="text-amber-800 underline disabled:opacity-50"
+                            disabled={busy}
+                            onClick={() => openReject(row)}
+                          >
+                            Reject
+                          </button>
+                        ) : null}
+                        {row.status === 'PENDING' &&
+                        (canCancelScoped || (selfCreated && canCancelSelf)) ? (
                           <button
                             type="button"
                             className="text-red-700 underline disabled:opacity-50"
@@ -471,7 +624,33 @@ export function AdminEnterpriseChangeRequestsPage() {
                             Cancel
                           </button>
                         ) : null}
-                        {row.status === 'APPROVED' ? (
+                        {row.status === 'APPROVED' && gitOpsUi ? (
+                          <span className="inline-flex flex-wrap gap-x-2 gap-y-1">
+                            {canGitOpsDryRun ? (
+                              <button
+                                type="button"
+                                className="text-primary-700 underline disabled:opacity-50"
+                                disabled={busy || gitOpsBusy}
+                                onClick={() => setGitOpsDryRunRow(row)}
+                              >
+                                Dry-run GitOps
+                              </button>
+                            ) : null}
+                            {canGitOpsCreate ? (
+                              <button
+                                type="button"
+                                className="text-primary-700 underline disabled:opacity-50"
+                                disabled={busy || gitOpsBusy}
+                                onClick={() => setGitOpsCreateRow(row)}
+                              >
+                                Create GitOps PR
+                              </button>
+                            ) : null}
+                            {!canGitOpsDryRun && !canGitOpsCreate ? (
+                              <span className="text-slate-500">GitOps (no permission)</span>
+                            ) : null}
+                          </span>
+                        ) : row.status === 'APPROVED' ? (
                           <span className="text-emerald-800">GitOps handoff</span>
                         ) : null}
                       </td>
@@ -603,6 +782,123 @@ export function AdminEnterpriseChangeRequestsPage() {
         ) : null}
       </Modal>
 
+      <Modal
+        open={!!gitOpsDryRunRow}
+        title="GitOps dry-run"
+        onClose={() => {
+          if (!gitOpsBusy) {
+            setGitOpsDryRunRow(null)
+            setGitOpsDryRunResult(null)
+            setGitOpsError(null)
+          }
+        }}
+      >
+        {gitOpsDryRunRow ? (
+          <div className="space-y-3 text-xs text-slate-800">
+            <p className="rounded border border-slate-200 bg-slate-50 p-2 text-slate-700">
+              Preview only — no pull request is created. Values come from packaged baselines; production paths are
+              allow-listed in identity-service.
+            </p>
+            {gitOpsError ? <ErrorAlert message={gitOpsError} /> : null}
+            <label className="block">
+              Target environment
+              <select
+                className="mt-1 w-full rounded border border-slate-300 px-2 py-1 text-sm"
+                value={gitOpsDryRunEnv}
+                onChange={(e) => setGitOpsDryRunEnv(e.target.value)}
+                disabled={gitOpsBusy}
+              >
+                {changeRequestsApi.GITOPS_TARGET_ENVIRONMENTS.map((e) => (
+                  <option key={e} value={e}>
+                    {e}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                className="rounded bg-slate-800 px-3 py-1.5 text-sm font-medium text-white disabled:opacity-50"
+                disabled={gitOpsBusy}
+                onClick={() => void runGitOpsDryRun()}
+              >
+                Run dry-run
+              </button>
+            </div>
+            {gitOpsDryRunResult ? (
+              <div className="space-y-2">
+                <p className="font-semibold text-slate-900">Diff preview</p>
+                <pre className="max-h-48 overflow-auto whitespace-pre-wrap rounded border border-slate-200 bg-slate-50 p-2 text-[11px]">
+                  {gitOpsDryRunResult.diffPreview}
+                </pre>
+              </div>
+            ) : null}
+          </div>
+        ) : null}
+      </Modal>
+
+      <Modal
+        open={!!gitOpsCreateRow}
+        title="Create GitOps PR"
+        onClose={() => {
+          if (!gitOpsBusy) {
+            setGitOpsCreateRow(null)
+            setGitOpsError(null)
+          }
+        }}
+      >
+        {gitOpsCreateRow ? (
+          <div className="space-y-3 text-xs text-slate-800">
+            <p className="rounded border border-amber-200 bg-amber-50 p-2 text-amber-950">
+              Opens a pull request via the configured provider (mock or GitHub). No secrets are shown in the UI; runtime
+              config is not applied automatically.
+            </p>
+            {gitOpsError ? <ErrorAlert message={gitOpsError} /> : null}
+            <p>
+              Change request <span className="font-mono">{gitOpsCreateRow.id}</span> — environment{' '}
+              <span className="font-mono">{gitOpsCreateRow.targetEnvironment ?? 'staging'}</span> (must match the
+              request).
+            </p>
+            {isHighSeverity(gitOpsCreateRow) &&
+            (gitOpsCreateRow.targetEnvironment ?? '').toLowerCase() === 'prod' ? (
+              <label className="block">
+                Type CONFIRM for prod + HIGH severity
+                <input
+                  className="mt-1 w-full rounded border border-slate-300 px-2 py-1 font-mono text-sm"
+                  value={gitOpsCreateConfirm}
+                  onChange={(e) => setGitOpsCreateConfirm(e.target.value)}
+                  autoComplete="off"
+                  disabled={gitOpsBusy}
+                />
+              </label>
+            ) : null}
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                type="button"
+                className="rounded border border-slate-300 px-3 py-1.5 text-sm"
+                disabled={gitOpsBusy}
+                onClick={() => setGitOpsCreateRow(null)}
+              >
+                Close
+              </button>
+              <button
+                type="button"
+                className="rounded bg-primary-600 px-3 py-1.5 text-sm font-medium text-white disabled:opacity-50"
+                disabled={
+                  gitOpsBusy ||
+                  (isHighSeverity(gitOpsCreateRow) &&
+                    (gitOpsCreateRow.targetEnvironment ?? '').toLowerCase() === 'prod' &&
+                    gitOpsCreateConfirm.trim() !== 'CONFIRM')
+                }
+                onClick={() => void runGitOpsCreatePr()}
+              >
+                Create PR
+              </button>
+            </div>
+          </div>
+        ) : null}
+      </Modal>
+
       {detailRow ? (
         <div className="fixed inset-0 z-30 grid place-items-center bg-slate-900/40 p-4">
           <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-lg border border-slate-200 bg-white p-4 text-xs text-slate-800 shadow-lg">
@@ -638,6 +934,10 @@ export function AdminEnterpriseChangeRequestsPage() {
               <div>
                 <dt className="text-slate-500">Requested value</dt>
                 <dd className="font-mono">{detailRow.requestedValue}</dd>
+              </div>
+              <div>
+                <dt className="text-slate-500">Target environment</dt>
+                <dd className="font-mono">{detailRow.targetEnvironment ?? '—'}</dd>
               </div>
               <div>
                 <dt className="text-slate-500">Severity</dt>

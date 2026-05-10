@@ -1,6 +1,8 @@
 package com.notebook.lumen.notification.user.application;
 
 import com.notebook.lumen.common.security.sanitization.SensitiveDataSanitizer;
+import com.notebook.lumen.notification.analytics.NotificationAnalyticsEventKind;
+import com.notebook.lumen.notification.analytics.NotificationAnalyticsRecorder;
 import com.notebook.lumen.notification.audit.AuditService;
 import com.notebook.lumen.notification.shared.exception.NotificationException;
 import com.notebook.lumen.notification.user.api.InAppNotificationCreateRequest;
@@ -37,6 +39,7 @@ public class UserNotificationService {
   private final NotificationSseEventDispatcher sseDispatcher;
   private final NotificationFanoutOutboxRepository fanoutOutboxRepository;
   private final NotificationProperties notificationProperties;
+  private final NotificationAnalyticsRecorder analyticsRecorder;
 
   public UserNotificationService(
       UserNotificationRepository repository,
@@ -44,13 +47,15 @@ public class UserNotificationService {
       MeterRegistry meterRegistry,
       NotificationSseEventDispatcher sseDispatcher,
       NotificationFanoutOutboxRepository fanoutOutboxRepository,
-      NotificationProperties notificationProperties) {
+      NotificationProperties notificationProperties,
+      NotificationAnalyticsRecorder analyticsRecorder) {
     this.repository = repository;
     this.auditService = auditService;
     this.meterRegistry = meterRegistry;
     this.sseDispatcher = sseDispatcher;
     this.fanoutOutboxRepository = fanoutOutboxRepository;
     this.notificationProperties = notificationProperties;
+    this.analyticsRecorder = analyticsRecorder;
   }
 
   @Transactional
@@ -87,6 +92,12 @@ public class UserNotificationService {
             "severity",
             notification.getSeverity().name())
         .increment();
+    analyticsRecorder.record(
+        NotificationAnalyticsEventKind.CREATED,
+        notification.getType().name(),
+        "IN_APP",
+        notification.getSeverity().name(),
+        1);
     meterRegistry.counter("user_notifications_unread_count_query_total", "trigger", "create").increment();
     auditService.record(
         "USER_NOTIFICATION_CREATED",
@@ -211,6 +222,7 @@ public class UserNotificationService {
               envelope.eventType(),
               new LinkedHashMap<>(envelope.payload()),
               envelope.createdAt()));
+      analyticsRecorder.record(NotificationAnalyticsEventKind.FANOUT_PENDING, "", "", "", 1);
     }
     boolean dispatchNow = !fanout.outboxEnabled() || fanout.immediateLocalDelivery();
     if (!dispatchNow) {

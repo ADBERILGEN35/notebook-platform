@@ -1,5 +1,10 @@
 package com.notebook.lumen.identity.auth.application;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.notebook.lumen.common.security.admin.PlatformAdminRbacConstants;
+import com.notebook.lumen.identity.admin.AdminRbacProperties;
+import com.notebook.lumen.identity.admin.AdminRbacService;
 import com.notebook.lumen.identity.audit.AuditService;
 import com.notebook.lumen.identity.auth.api.AuthResponse;
 import com.notebook.lumen.identity.auth.api.AuthMeResponse;
@@ -18,8 +23,8 @@ import com.notebook.lumen.identity.shared.exception.EmailAlreadyExistsException;
 import com.notebook.lumen.identity.shared.exception.InvalidCredentialsException;
 import com.notebook.lumen.identity.shared.exception.InvalidRefreshTokenException;
 import com.notebook.lumen.identity.shared.exception.InvalidTokenTypeException;
-import com.notebook.lumen.identity.shared.exception.RefreshTokenUserMismatchException;
 import com.notebook.lumen.identity.shared.exception.RefreshCookieRequiredException;
+import com.notebook.lumen.identity.shared.exception.RefreshTokenUserMismatchException;
 import com.notebook.lumen.identity.shared.exception.SessionNotFoundException;
 import com.notebook.lumen.identity.shared.exception.UserDisabledException;
 import com.notebook.lumen.identity.shared.exception.UserNotFoundException;
@@ -27,9 +32,13 @@ import com.notebook.lumen.identity.shared.exception.ValidationFailedException;
 import com.notebook.lumen.identity.shared.security.EmailNormalizer;
 import com.notebook.lumen.identity.shared.security.RefreshTokenHasher;
 import com.notebook.lumen.identity.shared.security.jwt.JwtTokenService;
+import com.notebook.lumen.identity.sso.SsoProperties;
+import com.notebook.lumen.identity.sso.domain.ExternalIdentity;
+import com.notebook.lumen.identity.sso.infrastructure.ExternalIdentityRepository;
 import com.notebook.lumen.identity.user.api.UserResponse;
 import com.notebook.lumen.identity.user.domain.RefreshToken;
 import com.notebook.lumen.identity.user.domain.User;
+import com.notebook.lumen.identity.user.domain.UserSource;
 import com.notebook.lumen.identity.user.domain.UserStatus;
 import com.notebook.lumen.identity.user.infrastructure.RefreshTokenRepository;
 import com.notebook.lumen.identity.user.infrastructure.UserRepository;
@@ -38,10 +47,13 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
@@ -64,6 +76,11 @@ public class AuthService {
   private final MfaService mfaService;
   private final ScimEffectiveMembershipService scimEffectiveMembershipService;
   private final ScimProperties scimProperties;
+  private final AdminRbacProperties adminRbacProperties;
+  private final AdminRbacService adminRbacService;
+  private final ExternalIdentityRepository externalIdentityRepository;
+  private final SsoProperties ssoProperties;
+  private final ObjectMapper objectMapper;
 
   public AuthService(
       UserRepository userRepository,
@@ -75,7 +92,12 @@ public class AuthService {
       SecurityNotificationService securityNotificationService,
       MfaService mfaService,
       ScimEffectiveMembershipService scimEffectiveMembershipService,
-      ScimProperties scimProperties) {
+      ScimProperties scimProperties,
+      AdminRbacProperties adminRbacProperties,
+      AdminRbacService adminRbacService,
+      ExternalIdentityRepository externalIdentityRepository,
+      SsoProperties ssoProperties,
+      ObjectMapper objectMapper) {
     this.userRepository = userRepository;
     this.refreshTokenRepository = refreshTokenRepository;
     this.passwordEncoder = passwordEncoder;
@@ -86,6 +108,11 @@ public class AuthService {
     this.mfaService = mfaService;
     this.scimEffectiveMembershipService = scimEffectiveMembershipService;
     this.scimProperties = scimProperties;
+    this.adminRbacProperties = adminRbacProperties;
+    this.adminRbacService = adminRbacService;
+    this.externalIdentityRepository = externalIdentityRepository;
+    this.ssoProperties = ssoProperties;
+    this.objectMapper = objectMapper;
   }
 
   @Transactional
@@ -125,8 +152,7 @@ public class AuthService {
         httpRequest,
         Map.of("status", "ACTIVE"));
 
-    AuthResponse tokens = issueTokens(user, httpRequest, Map.of());
-    return tokens;
+    return issueTokens(user, httpRequest, Map.of());
   }
 
   @Transactional
@@ -209,7 +235,6 @@ public class AuthService {
       throw new InvalidRefreshTokenException();
     }
     if (stored.getRevokedAt() != null) {
-      // Reuse of revoked tokens is treated as invalid refresh.
       auditService.record(
           "REFRESH_TOKEN_REUSE_REJECTED",
           user.getId(),
@@ -224,7 +249,6 @@ public class AuthService {
       throw new InvalidRefreshTokenException();
     }
 
-    // Rotate refresh token.
     UUID newRefreshTokenId = UUID.randomUUID();
     Instant now = Instant.now();
 
@@ -256,7 +280,9 @@ public class AuthService {
         httpRequest,
         Map.of("replacedTokenId", stored.getId().toString()));
 
-    String accessToken = jwtTokenService.generateAccessToken(user.getId(), user.getEmail());
+    Map<String, Object> accessClaims = buildInitialClaimsForRefresh(user);
+    String accessToken =
+        jwtTokenService.generateAccessToken(user.getId(), user.getEmail(), buildFinalAccessClaims(user, accessClaims));
     long expiresIn = jwtTokenService.accessTokenTtlSeconds();
 
     UserResponse userResponse = userMapper.toResponse(user);
@@ -340,10 +366,13 @@ public class AuthService {
     UUID authenticatedUserId = authenticatedAccessUserId(accessToken);
     User user =
         userRepository.findById(authenticatedUserId).orElseThrow(SessionNotFoundException::new);
+    List<String> platformRoles = extractAllPlatformRoles(accessToken);
+    List<String> platformPermissions = extractPlatformPermissions(accessToken);
     var roles = new ArrayList<String>();
     roles.add("ROLE_USER");
-    roles.addAll(extractPlatformRoles(accessToken));
-    return new AuthMeResponse(user.getId(), user.getEmail(), user.getName(), user.getAvatarUrl(), roles);
+    roles.addAll(platformRoles);
+    return new AuthMeResponse(
+        user.getId(), user.getEmail(), user.getName(), user.getAvatarUrl(), roles, platformRoles, platformPermissions);
   }
 
   @Transactional
@@ -377,18 +406,7 @@ public class AuthService {
             httpRequest.getHeader("User-Agent"));
     refreshTokenRepository.save(refreshToken);
 
-    Map<String, Object> claims = new java.util.LinkedHashMap<>(accessClaims);
-    var scimRoles = platformRolesFromScimGroups(user);
-    if (!scimRoles.isEmpty()) {
-      var merged = new java.util.ArrayList<String>();
-      Object existing = claims.get("platform_roles");
-      if (existing instanceof Collection<?> c) {
-        c.forEach(v -> merged.add(String.valueOf(v)));
-      }
-      merged.addAll(scimRoles);
-      claims.put("platform_roles", merged.stream().map(r -> r.toUpperCase(Locale.ROOT)).distinct().toList());
-    }
-
+    Map<String, Object> claims = buildFinalAccessClaims(user, accessClaims);
     String accessToken = jwtTokenService.generateAccessToken(user.getId(), user.getEmail(), claims);
     long expiresIn = jwtTokenService.accessTokenTtlSeconds();
 
@@ -413,6 +431,115 @@ public class AuthService {
             java.util.List.of("pwd", "webauthn"),
             "mfa_verified_at",
             Instant.now().toString()));
+  }
+
+  private Map<String, Object> buildFinalAccessClaims(User user, Map<String, Object> initial) {
+    Map<String, Object> claims = new java.util.LinkedHashMap<>(initial);
+    LinkedHashSet<String> merged = new LinkedHashSet<>();
+    Object existing = claims.get("platform_roles");
+    if (existing instanceof Collection<?> c) {
+      for (Object v : c) {
+        String r = String.valueOf(v).trim().toUpperCase(Locale.ROOT);
+        if (!r.isBlank()) {
+          merged.add(r);
+        }
+      }
+    }
+    merged.addAll(platformRolesFromScim(user));
+    List<String> roleList = merged.stream().sorted().toList();
+    claims.put("platform_roles", roleList);
+    if (adminRbacProperties.enabled()) {
+      claims.put("platform_permissions", adminRbacService.resolvePermissions(roleList));
+    } else {
+      claims.remove("platform_permissions");
+    }
+    return claims;
+  }
+
+  private Map<String, Object> buildInitialClaimsForRefresh(User user) {
+    if (user.getSource() != UserSource.SSO) {
+      return Map.of();
+    }
+    var links = externalIdentityRepository.findByUser_IdOrderByLastLoginAtDesc(user.getId(), PageRequest.of(0, 1));
+    if (links.isEmpty()) {
+      return Map.of();
+    }
+    ExternalIdentity ext = links.get(0);
+    Optional<SsoProperties.Provider> providerOpt =
+        ssoProperties.enabledProviders().stream()
+            .filter(p -> p.registrationId().equals(ext.getProvider()))
+            .findFirst();
+    if (providerOpt.isEmpty()) {
+      return Map.of();
+    }
+    SsoProperties.Provider provider = providerOpt.get();
+    List<String> groups = parseGroupsFromStoredClaims(ext.getClaims(), provider.groupsClaim());
+    Map<String, Object> m = new java.util.LinkedHashMap<>();
+    if (adminRbacProperties.enabled()) {
+      List<String> roles = adminRbacService.mapIdpGroupsToRoles(provider, groups);
+      if (!roles.isEmpty()) {
+        m.put("platform_roles", roles);
+      }
+    } else if (isSsoLegacyPlatformAdmin(provider, groups)) {
+      m.put("platform_roles", List.of(PlatformAdminRbacConstants.ROLE_PLATFORM_ADMIN));
+    }
+    return m;
+  }
+
+  private List<String> platformRolesFromScim(User user) {
+    if (user.getStatus() != UserStatus.ACTIVE || user.getDeprovisionedAt() != null) {
+      return List.of();
+    }
+    var keys = scimEffectiveMembershipService.effectiveGroupKeysForUser(user.getId(), scimProperties);
+    if (adminRbacProperties.enabled()) {
+      LinkedHashSet<String> merged = new LinkedHashSet<>(adminRbacService.mapScimGroupKeysToRoles(keys));
+      if (scimEffectiveMembershipService.userEffectiveMatchesAdminGroup(user, scimProperties)) {
+        merged.add(PlatformAdminRbacConstants.ROLE_PLATFORM_ADMIN);
+      }
+      return merged.stream().sorted().toList();
+    }
+    if (scimEffectiveMembershipService.userEffectiveMatchesAdminGroup(user, scimProperties)) {
+      return List.of(PlatformAdminRbacConstants.ROLE_PLATFORM_ADMIN);
+    }
+    return List.of();
+  }
+
+  private boolean isSsoLegacyPlatformAdmin(SsoProperties.Provider provider, List<String> groups) {
+    if (provider.adminGroupSet().isEmpty()) {
+      return false;
+    }
+    return groups.stream()
+        .map(value -> value.toLowerCase(Locale.ROOT))
+        .anyMatch(provider.adminGroupSet()::contains);
+  }
+
+  private List<String> parseGroupsFromStoredClaims(String claimsJson, String groupsClaim) {
+    if (claimsJson == null || claimsJson.isBlank() || groupsClaim == null || groupsClaim.isBlank()) {
+      return List.of();
+    }
+    try {
+      JsonNode root = objectMapper.readTree(claimsJson);
+      JsonNode node = root.path(groupsClaim);
+      if (node.isArray()) {
+        List<String> out = new ArrayList<>();
+        node.forEach(n -> out.add(n.asText("")));
+        return out;
+      }
+      if (node.isTextual()) {
+        String raw = node.asText("");
+        String[] parts = raw.split(",");
+        List<String> out = new ArrayList<>();
+        for (String part : parts) {
+          String t = part.trim();
+          if (!t.isBlank()) {
+            out.add(t);
+          }
+        }
+        return out;
+      }
+    } catch (Exception ignored) {
+    }
+    return List.of();
   }
 
   private UUID authenticatedAccessUserId(Jwt accessToken) {
@@ -482,23 +609,31 @@ public class AuthService {
     return request.getRemoteAddr();
   }
 
-  private java.util.List<String> extractPlatformRoles(Jwt accessToken) {
+  private List<String> extractAllPlatformRoles(Jwt accessToken) {
     Object platformRoles = accessToken.getClaims().get("platform_roles");
     if (!(platformRoles instanceof Collection<?> roles)) {
-      return java.util.List.of();
+      return List.of();
     }
     return roles.stream()
         .map(String::valueOf)
         .map(role -> role.trim().toUpperCase(Locale.ROOT))
-        .filter(role -> role.equals("PLATFORM_ADMIN"))
+        .filter(role -> !role.isBlank())
         .distinct()
+        .sorted()
         .toList();
   }
 
-  private java.util.List<String> platformRolesFromScimGroups(User user) {
-    if (scimEffectiveMembershipService.userEffectiveMatchesAdminGroup(user, scimProperties)) {
-      return java.util.List.of("PLATFORM_ADMIN");
+  private List<String> extractPlatformPermissions(Jwt accessToken) {
+    Object perms = accessToken.getClaims().get("platform_permissions");
+    if (!(perms instanceof Collection<?> c)) {
+      return List.of();
     }
-    return java.util.List.of();
+    return c.stream()
+        .map(String::valueOf)
+        .map(p -> p.trim())
+        .filter(p -> !p.isBlank())
+        .distinct()
+        .sorted()
+        .toList();
   }
 }

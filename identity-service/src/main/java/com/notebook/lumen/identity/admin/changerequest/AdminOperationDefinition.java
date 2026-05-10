@@ -9,6 +9,7 @@ public record AdminOperationDefinition(
     String targetKey,
     Set<String> allowedNormalizedValues,
     String severity,
+    String requiredCreatePermission,
     boolean requiresApproval,
     boolean runtimeApplySupported,
     String rollbackHint,

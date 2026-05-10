@@ -2,6 +2,9 @@ package com.notebook.lumen.identity.sso.application;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.notebook.lumen.common.security.admin.PlatformAdminRbacConstants;
+import com.notebook.lumen.identity.admin.AdminRbacProperties;
+import com.notebook.lumen.identity.admin.AdminRbacService;
 import com.notebook.lumen.identity.auth.api.AuthResponse;
 import com.notebook.lumen.identity.auth.application.AuthService;
 import com.notebook.lumen.identity.shared.exception.SsoException;
@@ -33,9 +36,10 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class SsoService {
   private static final String STATE_PREFIX = "sso:state:";
-  private static final String PLATFORM_ADMIN = "PLATFORM_ADMIN";
 
   private final SsoProperties properties;
+  private final AdminRbacProperties adminRbacProperties;
+  private final AdminRbacService adminRbacService;
   private final AuthService authService;
   private final UserRepository userRepository;
   private final ExternalIdentityRepository externalIdentityRepository;
@@ -46,6 +50,8 @@ public class SsoService {
 
   public SsoService(
       SsoProperties properties,
+      AdminRbacProperties adminRbacProperties,
+      AdminRbacService adminRbacService,
       AuthService authService,
       UserRepository userRepository,
       ExternalIdentityRepository externalIdentityRepository,
@@ -54,6 +60,8 @@ public class SsoService {
       ObjectMapper objectMapper,
       OidcClient oidcClient) {
     this.properties = properties;
+    this.adminRbacProperties = adminRbacProperties;
+    this.adminRbacService = adminRbacService;
     this.authService = authService;
     this.userRepository = userRepository;
     this.externalIdentityRepository = externalIdentityRepository;
@@ -118,8 +126,13 @@ public class SsoService {
     Map<String, Object> claims = new LinkedHashMap<>();
     claims.put("auth_provider", provider.registrationId());
     claims.put("sso_groups", profile.groups());
-    if (isPlatformAdmin(provider, profile.groups())) {
-      claims.put("platform_roles", List.of(PLATFORM_ADMIN));
+    if (adminRbacProperties.enabled()) {
+      List<String> mapped = adminRbacService.mapIdpGroupsToRoles(provider, profile.groups());
+      if (!mapped.isEmpty()) {
+        claims.put("platform_roles", mapped);
+      }
+    } else if (isPlatformAdmin(provider, profile.groups())) {
+      claims.put("platform_roles", List.of(PlatformAdminRbacConstants.ROLE_PLATFORM_ADMIN));
     }
     claims.putAll(mfaClaimsFromIdp(profile));
 

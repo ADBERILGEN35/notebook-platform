@@ -89,3 +89,7 @@ Invitation/comment fan-out stays as future work for this phase.
 - `GET/PATCH /notification-delivery-preferences` adds email digest + quiet-hours + timezone controls.
 - In-app realtime flow stays unchanged.
 - Security-critical notifications remain immediate.
+
+## Faz 81 Admin delivery analytics (operational)
+
+Aggregate-only metrics (no per-user or message-body analytics) are recorded in notification-service and exposed via the admin dashboard (`docs/notification-analytics-dashboard.md`). This does not change user-facing Notification Center behavior.

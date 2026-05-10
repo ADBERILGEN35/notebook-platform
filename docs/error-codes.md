@@ -24,6 +24,8 @@
 | EXPIRED_ACCESS_TOKEN | 401 | api-gateway | Access token expired | Expired JWT |
 | INVALID_WORKSPACE_ID | 400 | api-gateway | Workspace header is not UUID | Bad `X-Workspace-Id` |
 | ADMIN_ACCESS_DENIED | 403 | api-gateway | Authenticated user lacks platform admin allowlist/role | non-admin calling `/admin/audit-events` |
+| ADMIN_PERMISSION_REQUIRED | 403 | api-gateway | Fine-grained admin RBAC: JWT lacks required `platform_permissions` entry | enforce mode on; missing `admin:audit:read`, etc. |
+| ADMIN_OPERATION_PERMISSION_REQUIRED | 403 | api-gateway | Change request operation needs an additional create permission | e.g. merge rollout without `admin:merge:change-request:create` |
 | ADMIN_AUDIT_DISABLED | 404 | api-gateway | Admin audit proxy is disabled by config | gateway admin audit disabled in env |
 | INVALID_AUDIT_SOURCE | 400 | api-gateway | Audit source is not identity/workspace/content | `source=foo` |
 | AUDIT_SOURCE_UNAVAILABLE | 503 | api-gateway | Target audit service unavailable | target service down/503 |

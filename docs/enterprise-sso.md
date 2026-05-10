@@ -52,3 +52,7 @@ Not included:
 
 Secret-safe SSO configuration flags surface in the Enterprise Admin Console (`docs/enterprise-admin-console.md`)
 via gateway aggregated status (no client secrets or raw issuer URLs in this phase).
+
+## Fine-grained admin RBAC (Faz 79)
+
+When `ADMIN_RBAC_ENABLED=true`, IdP group values from `SSO_GROUPS_CLAIM` are matched against `ADMIN_RBAC_GROUP_*` env vars to assign `PLATFORM_*` roles (and thus `platform_permissions` on access tokens). Legacy `SSO_ADMIN_GROUPS` still maps members to `PLATFORM_ADMIN`. See [`docs/admin-rbac.md`](admin-rbac.md) and [`docs/admin-permission-matrix.md`](admin-permission-matrix.md).

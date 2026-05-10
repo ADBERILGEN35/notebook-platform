@@ -15,6 +15,8 @@ Out of scope in the original Faz 56 phase:
 [`notification-durable-fanout.md`](notification-durable-fanout.md)) while keeping the same SSE event
 types and wire format. Delivery remains at-least-once-ish; REST + DB stay authoritative.
 
+**Faz 81** adds aggregate admin metrics for SSE send failures and pod-local active connection counts (see [`notification-analytics-dashboard.md`](notification-analytics-dashboard.md)); no message bodies or per-user tracking.
+
 ## Endpoint
 
 `GET /notifications/stream`

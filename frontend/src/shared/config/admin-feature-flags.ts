@@ -36,6 +36,59 @@ export const isEnterpriseAdminApprovalsUiEnabled = (): boolean =>
     true,
   )
 
+/** Faz 80: GitOps PR dry-run / create for APPROVED change requests (no runtime apply). */
+export const isEnterpriseGitOpsPrUiEnabled = (): boolean =>
+  isEnterpriseAdminWriteEnabled() &&
+  parseBool(
+    window.__NOTEBOOK_CONFIG__?.ENTERPRISE_GITOPS_PR_ENABLED ??
+      import.meta.env.VITE_ENTERPRISE_GITOPS_PR_ENABLED,
+    false,
+  )
+
+/** Faz 81: notification delivery analytics admin dashboard (aggregate-only). */
+export const isNotificationAnalyticsUiEnabled = (): boolean =>
+  parseBool(
+    window.__NOTEBOOK_CONFIG__?.NOTIFICATION_ANALYTICS_UI_ENABLED ??
+      import.meta.env.VITE_NOTIFICATION_ANALYTICS_UI_ENABLED,
+    false,
+  )
+
+/** Faz 82: fanout dead-letter list / dry-run / requeue (no raw payloads). */
+export const isNotificationDeadLetterUiEnabled = (): boolean =>
+  parseBool(
+    window.__NOTEBOOK_CONFIG__?.NOTIFICATION_DEAD_LETTER_UI_ENABLED ??
+      import.meta.env.VITE_NOTIFICATION_DEAD_LETTER_UI_ENABLED,
+    false,
+  )
+
+/** Faz 83: retention plan / dry-run UI (no raw notification content). */
+export const isNotificationRetentionUiEnabled = (): boolean =>
+  parseBool(
+    window.__NOTEBOOK_CONFIG__?.NOTIFICATION_RETENTION_UI_ENABLED ??
+      import.meta.env.VITE_NOTIFICATION_RETENTION_UI_ENABLED,
+    false,
+  )
+
+/**
+ * Shows destructive manual purge controls; server still requires NOTIFICATION_RETENTION_MANUAL_RUN_ENABLED
+ * and MFA when applicable.
+ */
+export const isNotificationRetentionPurgeUiEnabled = (): boolean =>
+  isNotificationRetentionUiEnabled() &&
+  parseBool(
+    window.__NOTEBOOK_CONFIG__?.NOTIFICATION_RETENTION_PURGE_UI_ENABLED ??
+      import.meta.env.VITE_NOTIFICATION_RETENTION_PURGE_UI_ENABLED,
+    false,
+  )
+
+/** Faz 84: notification-scoped legal holds (retention governance). */
+export const isNotificationLegalHoldUiEnabled = (): boolean =>
+  parseBool(
+    window.__NOTEBOOK_CONFIG__?.NOTIFICATION_LEGAL_HOLD_UI_ENABLED ??
+      import.meta.env.VITE_NOTIFICATION_LEGAL_HOLD_UI_ENABLED,
+    false,
+  )
+
 export const getAuditApiMode = (): AuditApiMode => {
   const raw =
     window.__NOTEBOOK_CONFIG__?.AUDIT_API_MODE ?? import.meta.env.VITE_AUDIT_API_MODE ?? 'mock'

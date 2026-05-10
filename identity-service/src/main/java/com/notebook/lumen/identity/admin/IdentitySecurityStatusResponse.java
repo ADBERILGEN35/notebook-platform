@@ -1,10 +1,23 @@
 package com.notebook.lumen.identity.admin;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import java.util.Map;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record IdentitySecurityStatusResponse(
-    Sso sso, Scim scim, Mfa mfa, Siem siem, boolean unavailable, String unavailableReason) {
+    Sso sso,
+    Scim scim,
+    Mfa mfa,
+    Siem siem,
+    AdminRbac adminRbac,
+    boolean unavailable,
+    String unavailableReason) {
+
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  public record AdminRbac(
+      boolean enabled,
+      boolean legacyPlatformAdminImpliesAll,
+      Map<String, Boolean> rolesConfigured) {}
 
   public record Sso(
       boolean enabled,

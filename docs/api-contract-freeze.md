@@ -152,7 +152,7 @@ Identity:
 - `POST /auth/refresh`
 - `POST /auth/logout`
 - `POST /auth/revoke-all`
-- `GET /auth/me`
+- `GET /auth/me` (may include `platformRoles`, `platformPermissions` when fine-grained admin RBAC is enabled — see `docs/admin-rbac.md`)
 - `GET /auth/sso/providers`
 - `GET /auth/sso/{provider}/authorize`
 - `GET /auth/sso/{provider}/callback`

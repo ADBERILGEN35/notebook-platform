@@ -5,6 +5,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+import com.notebook.lumen.notification.analytics.NotificationAnalyticsRecorder;
 import com.notebook.lumen.notification.shared.config.NotificationSseProperties;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import java.util.Map;
@@ -24,9 +25,10 @@ class NotificationSseEventDispatcherTest {
     properties.getDistributed().setEnabled(true);
     properties.getDistributed().setPublishLocalFirst(true);
 
+    NotificationAnalyticsRecorder analyticsRecorder = mock(NotificationAnalyticsRecorder.class);
     NotificationSseEventDispatcher dispatcher =
         new NotificationSseEventDispatcher(
-            broker, publisher, properties, instanceIdProvider, new SimpleMeterRegistry());
+            broker, publisher, properties, instanceIdProvider, new SimpleMeterRegistry(), analyticsRecorder);
 
     dispatcher.publishUnreadCount(UUID.randomUUID(), 3);
 
@@ -44,9 +46,10 @@ class NotificationSseEventDispatcherTest {
     NotificationSseProperties properties = new NotificationSseProperties();
     properties.getDistributed().setEnabled(false);
 
+    NotificationAnalyticsRecorder analyticsRecorder = mock(NotificationAnalyticsRecorder.class);
     NotificationSseEventDispatcher dispatcher =
         new NotificationSseEventDispatcher(
-            broker, publisher, properties, instanceIdProvider, new SimpleMeterRegistry());
+            broker, publisher, properties, instanceIdProvider, new SimpleMeterRegistry(), analyticsRecorder);
 
     dispatcher.publishUnreadCount(UUID.randomUUID(), 2);
 

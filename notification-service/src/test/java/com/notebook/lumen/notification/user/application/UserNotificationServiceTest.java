@@ -10,6 +10,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.notebook.lumen.notification.NotificationTestFanout;
+import com.notebook.lumen.notification.analytics.NotificationAnalyticsRecorder;
 import com.notebook.lumen.notification.audit.AuditService;
 import com.notebook.lumen.notification.shared.config.NotificationProperties;
 import com.notebook.lumen.notification.shared.exception.NotificationException;
@@ -36,6 +37,7 @@ class UserNotificationServiceTest {
   private final NotificationFanoutOutboxRepository fanoutRepository =
       mock(NotificationFanoutOutboxRepository.class);
   private final NotificationProperties notificationProperties = mock(NotificationProperties.class);
+  private final NotificationAnalyticsRecorder analyticsRecorder = mock(NotificationAnalyticsRecorder.class);
 
   private final UserNotificationService service =
       new UserNotificationService(
@@ -44,7 +46,8 @@ class UserNotificationServiceTest {
           new SimpleMeterRegistry(),
           sseDispatcher,
           fanoutRepository,
-          notificationProperties);
+          notificationProperties,
+          analyticsRecorder);
 
   @BeforeEach
   void defaultFanoutOff() {

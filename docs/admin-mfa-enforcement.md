@@ -27,6 +27,8 @@ For admin-authorized users:
 Accepted methods are matched from access token `amr` claim against
 `gateway.admin.mfa-accepted-methods`.
 
+**Faz 79:** Fine-grained `platform_permissions` are independent of MFA: a user may hold audit or approver permissions but still be blocked by MFA policy on protected admin routes when step-up is required.
+
 ## Frontend Behavior
 
 Admin audit UI maps `ADMIN_MFA_REQUIRED` to a dedicated state:
@@ -56,11 +58,12 @@ Gateway emits structured warning logs when blocking:
 - event key: `admin_mfa_required_blocked`
 - fields: `adminUserId`, `endpoint`, `requestId`, `amr`
 
-## SSO admin identities (Faz 60)
+## SSO admin identities (Faz 60 + Faz 79)
 
 - Admin identity may come from:
   - `platform_roles` token claim (preferred)
+  - `platform_permissions` when `ADMIN_RBAC_ENABLED=true`
   - legacy `roles`
-  - allowlist fallback
-- SSO group-to-admin mapping happens in identity-service, not in gateway.
+  - allowlist fallback (gateway legacy mode; not a substitute for permissions when `GATEWAY_ADMIN_RBAC_ENFORCE=true`)
+- SSO / SCIM group-to-role mapping happens in identity-service, not in gateway. See [`docs/admin-rbac.md`](admin-rbac.md).
 

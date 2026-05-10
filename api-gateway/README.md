@@ -51,7 +51,8 @@ Compose ile calistirirken tercih edilen yontem `JWT_JWKS_URI=http://identity-ser
 - `PROTECTED_RATE_LIMIT_REPLENISH_RATE`, `PROTECTED_RATE_LIMIT_BURST_CAPACITY`, `PROTECTED_RATE_LIMIT_REQUESTED_TOKENS`
 - `GATEWAY_ADMIN_ENABLED`, `GATEWAY_ADMIN_AUDIT_ENABLED`, `GATEWAY_ADMIN_ENTERPRISE_ENABLED` (Faz 63: `GET /admin/enterprise/status`)
 - `GATEWAY_ADMIN_WRITE_ENABLED`, `GATEWAY_ADMIN_CHANGE_REQUESTS_INTERNAL_PATH`, `GATEWAY_ADMIN_WRITE_RATE_LIMIT_*` (Faz 77: `/admin/enterprise/change-requests`)
-- `NOTIFICATION_SERVICE_URL` (enterprise status aggregation)
+- `NOTIFICATION_SERVICE_URL` (enterprise status aggregation + notification analytics proxy)
+- `GATEWAY_ADMIN_ENTERPRISE_NOTIFICATION_ANALYTICS_PATH` (Faz 81: upstream path for `GET /admin/notifications/analytics/summary`)
 - `GATEWAY_ADMIN_ALLOWED_USER_IDS`, `GATEWAY_ADMIN_ALLOWED_EMAILS`
 - `ADMIN_AUDIT_RATE_LIMIT_REPLENISH_RATE`, `ADMIN_AUDIT_RATE_LIMIT_BURST_CAPACITY`, `ADMIN_AUDIT_RATE_LIMIT_REQUESTED_TOKENS`
 - `GATEWAY_ADMIN_AUDIT_SERVICE_JWT_*` (gateway signer for `/admin/audit-events` proxy calls)
@@ -73,6 +74,10 @@ Protected routes:
 - `/admin/audit-events` -> gateway controller (platform-admin auth + internal audit proxy fan-out)
 - `/admin/enterprise/status` -> gateway controller (platform-admin auth + service JWT fan-out to identity/notification internal status)
 - `/admin/enterprise/change-requests` (+ `/validate`, `/{id}/cancel`, `/{id}/approve`, `/{id}/reject`) -> gateway controller (platform-admin + MFA for writes, service JWT to identity internal change-requests API; Faz 77–78)
+- `/admin/notifications/analytics/summary` -> gateway controller (enterprise admin + `admin:notifications:analytics:read`; Faz 81 service JWT to notification-service)
+- `/admin/notifications/dead-letter` (+ `POST .../requeue/dry-run`, `POST .../requeue`) -> gateway controller (Faz 82; read vs requeue permissions + admin-write MFA for requeue)
+- `/admin/notifications/retention/plan`, `POST /admin/notifications/retention/run` -> gateway controller (Faz 83; read vs run permissions + admin-write MFA for destructive)
+- `/admin/notifications/legal-holds` (GET, POST, POST `.../{id}/release`) -> gateway controller (Faz 84; legal-hold read/write + admin-write MFA for mutations)
 
 Public actuator:
 
@@ -223,6 +228,11 @@ done
 - Gateway admin authorization now prefers `platform_roles` claim for `PLATFORM_ADMIN`.
 - Legacy `roles` claim and allowlist (`GATEWAY_ADMIN_ALLOWED_*`) remain supported.
 - SSO group mapping stays in identity-service; gateway is kept IdP-agnostic.
+
+## Fine-grained admin RBAC (Faz 79)
+
+- `GATEWAY_ADMIN_RBAC_ENFORCE` (default `false`): when `true`, admin routes require JWT `platform_permissions` (or `PLATFORM_ADMIN`), not email allowlist alone.
+- See `docs/admin-rbac.md` and `docs/admin-permission-matrix.md`.
 
 ## SCIM routing (Faz 61)
 

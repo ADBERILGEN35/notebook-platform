@@ -17,11 +17,13 @@ import {
   defaultAuditFilters,
 } from '../../features/admin/audit/audit-schema'
 import { exportAuditEvents, queryAuditEvents } from '../../features/admin/audit/audit-api'
-import { getAuditApiMode } from '../../shared/config/admin-feature-flags'
 import { findMockAuditEventById } from '../../features/admin/audit/audit-mock-api'
 import { maskSensitiveMetadata } from '../../features/admin/audit/metadata-mask'
 import { ApiError } from '../../shared/api/api-client'
 import { useMediaQuery } from '../../shared/hooks/useMediaQuery'
+import { useAuthStore } from '../../features/auth/auth-store'
+import { PERM_AUDIT_EXPORT, hasPlatformPermission } from '../../features/admin/access/admin-permissions'
+import { getAuditApiMode, isAdminUiDevOpen } from '../../shared/config/admin-feature-flags'
 
 type FilterDraftFields = {
   eventType: string
@@ -72,6 +74,9 @@ export function AdminAuditPage() {
   const navigate = useNavigate()
   const { eventId } = useParams<{ eventId: string }>()
   const [searchParams] = useSearchParams()
+  const user = useAuthStore((s) => s.user)
+  const devAuditOpen = isAdminUiDevOpen() && getAuditApiMode() === 'mock'
+  const canExportAudit = devAuditOpen || hasPlatformPermission(user, PERM_AUDIT_EXPORT)
 
   const { filters: parsedFromUrl, parseWarning } = useMemo(
     () => auditFiltersFromUrlParams(searchParams),
@@ -208,7 +213,9 @@ export function AdminAuditPage() {
 
   const data = auditQuery.data
   const queryError = auditQuery.error instanceof ApiError ? auditQuery.error : null
-  const showPermissionDenied = queryError?.errorCode === 'ADMIN_ACCESS_DENIED'
+  const showPermissionDenied =
+    queryError?.errorCode === 'ADMIN_ACCESS_DENIED' ||
+    queryError?.errorCode === 'ADMIN_PERMISSION_REQUIRED'
   const showMfaRequired = queryError?.errorCode === 'ADMIN_MFA_REQUIRED'
   const showAdminDisabled = queryError?.errorCode === 'ADMIN_AUDIT_DISABLED'
   const showSourceUnavailable = queryError?.errorCode === 'AUDIT_SOURCE_UNAVAILABLE'
@@ -353,26 +360,32 @@ export function AdminAuditPage() {
               Total: {data.totalElements} · Page {parsedFromUrl.page + 1}
             </span>
           ) : null}
-          <label className="flex items-center gap-2 text-sm text-slate-600">
-            Export format:
-            <select
-              value={exportFormat}
-              onChange={(e) => setExportFormat(e.target.value as 'csv' | 'jsonl')}
-              className="rounded border border-slate-200 px-2 py-1 text-sm"
-            >
-              <option value="csv">CSV</option>
-              <option value="jsonl">JSONL</option>
-            </select>
-          </label>
-          <Button
-            type="button"
-            className="text-xs"
-            onClick={handleExport}
-            disabled={exporting}
-            aria-label="Export audit events"
-          >
-            {exporting ? 'Exporting...' : 'Export'}
-          </Button>
+          {canExportAudit ? (
+            <>
+              <label className="flex items-center gap-2 text-sm text-slate-600">
+                Export format:
+                <select
+                  value={exportFormat}
+                  onChange={(e) => setExportFormat(e.target.value as 'csv' | 'jsonl')}
+                  className="rounded border border-slate-200 px-2 py-1 text-sm"
+                >
+                  <option value="csv">CSV</option>
+                  <option value="jsonl">JSONL</option>
+                </select>
+              </label>
+              <Button
+                type="button"
+                className="text-xs"
+                onClick={handleExport}
+                disabled={exporting}
+                aria-label="Export audit events"
+              >
+                {exporting ? 'Exporting...' : 'Export'}
+              </Button>
+            </>
+          ) : (
+            <span className="text-xs text-slate-500">Export requires admin:audit:export.</span>
+          )}
         </div>
         {exportError ? <ErrorAlert error={new Error(exportError)} /> : null}
       </Card>

@@ -8,7 +8,8 @@ import java.util.UUID;
 public final class AdminChangeRequestDtos {
   private AdminChangeRequestDtos() {}
 
-  public record ValidateBody(String operationType, String requestedValue, String currentValue) {}
+  public record ValidateBody(
+      String operationType, String requestedValue, String currentValue, String targetEnvironment) {}
 
   public record ValidateResponse(
       boolean valid,
@@ -17,7 +18,11 @@ public final class AdminChangeRequestDtos {
       Map<String, Object> validationResult) {}
 
   public record CreateBody(
-      String operationType, String requestedValue, String currentValue, String confirmation) {}
+      String operationType,
+      String requestedValue,
+      String currentValue,
+      String confirmation,
+      String targetEnvironment) {}
 
   public record DecisionBody(String reason) {}
 
@@ -30,6 +35,7 @@ public final class AdminChangeRequestDtos {
       String targetKey,
       String currentValue,
       String requestedValue,
+      String targetEnvironment,
       String severity,
       Map<String, Object> impactSummary,
       Map<String, Object> validationResult,

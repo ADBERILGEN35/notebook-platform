@@ -76,3 +76,22 @@ Docs:
 
 - `NOTIFICATION_FANOUT_OUTBOX_ENABLED`, `NOTIFICATION_FANOUT_WORKER_ENABLED`, `NOTIFICATION_FANOUT_IMMEDIATE_LOCAL_DELIVERY`, poll/batch/retry/backoff/lock envs — see `docs/notification-durable-fanout.md`.
 - Table `notification_fanout_outbox`; ops SQL examples under `scripts/notifications/`.
+
+## Delivery analytics (Faz 81)
+
+- `NOTIFICATION_ANALYTICS_ENABLED`, `NOTIFICATION_ANALYTICS_RETENTION_DAYS`, `NOTIFICATION_ANALYTICS_MAX_RANGE_DAYS`, `NOTIFICATION_ANALYTICS_BUCKET`
+- `NOTIFICATION_INTERNAL_ADMIN_ANALYTICS_ENABLED` — enables `GET /internal/admin/notifications/analytics/summary` (service JWT scope `internal:admin:notifications:analytics:read`)
+- Docs: `docs/notification-analytics-dashboard.md`, `docs/notification-analytics-privacy.md`
+
+## Dead-letter admin (Faz 82)
+
+- `NOTIFICATION_DEAD_LETTER_ADMIN_ENABLED`, `NOTIFICATION_DEAD_LETTER_MAX_REQUEUE_COUNT`, `NOTIFICATION_DEAD_LETTER_PAGE_MAX_SIZE`, `NOTIFICATION_DEAD_LETTER_RECIPIENT_HASH_PEPPER`
+- Internal: `GET/POST /internal/admin/notifications/dead-letter` (+ requeue paths); scopes `internal:admin:notifications:dead-letter:read|requeue`
+- Doc: `docs/notification-dead-letter-requeue.md`
+
+## Retention admin / worker (Faz 83)
+
+- `NOTIFICATION_RETENTION_ADMIN_API_ENABLED`, `NOTIFICATION_RETENTION_WORKER_ENABLED`, `NOTIFICATION_RETENTION_DRY_RUN_ONLY`, `NOTIFICATION_RETENTION_MANUAL_RUN_ENABLED`, batch/max-delete/poll envs, digest/email/requeue-request retention days
+- Internal: `GET /internal/admin/notifications/retention/plan`, `POST .../run`; scopes `internal:admin:notifications:retention:read|run`
+- Internal (Faz 84): `GET/POST /internal/admin/notifications/legal-holds`, `POST .../{id}/release`; scopes `internal:admin:notifications:legal-hold:read|write` (flags `NOTIFICATION_LEGAL_HOLD_*`)
+- Docs: `docs/notification-retention-worker.md`, `docs/notification-retention-policy.md`

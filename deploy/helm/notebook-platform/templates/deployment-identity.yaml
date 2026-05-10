@@ -81,6 +81,12 @@ spec:
                   name: {{ include "notebook-platform.secretName" . }}
                   key: siem-custom-header-value
                   optional: true
+            - name: ADMIN_GITOPS_GITHUB_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "notebook-platform.secretName" . }}
+                  key: admin-gitops-github-token
+                  optional: true
           readinessProbe:
             httpGet:
               path: {{ .Values.probes.readiness.path }}

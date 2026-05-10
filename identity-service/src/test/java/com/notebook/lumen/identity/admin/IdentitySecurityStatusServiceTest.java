@@ -9,6 +9,7 @@ import com.notebook.lumen.identity.siem.SiemProperties;
 import com.notebook.lumen.identity.sso.SsoProperties;
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 class IdentitySecurityStatusServiceTest {
 
@@ -58,7 +59,12 @@ class IdentitySecurityStatusServiceTest {
             90,
             false);
 
-    var service = new IdentitySecurityStatusService(sso, scim, mfa, siem);
+    AdminRbacService adminRbac = Mockito.mock(AdminRbacService.class);
+    Mockito.when(adminRbac.statusSnapshot())
+        .thenReturn(
+            new AdminRbacService.AdminRbacStatusSnapshot(
+                false, true, false, false, false, false, false, false, false, false));
+    var service = new IdentitySecurityStatusService(sso, scim, mfa, siem, adminRbac);
     IdentitySecurityStatusResponse body = service.build();
 
     assertThat(body.sso().enabled()).isTrue();
@@ -99,7 +105,12 @@ class IdentitySecurityStatusServiceTest {
             90,
             false);
 
-    var service = new IdentitySecurityStatusService(sso, scim, mfa, siem);
+    AdminRbacService adminRbac = Mockito.mock(AdminRbacService.class);
+    Mockito.when(adminRbac.statusSnapshot())
+        .thenReturn(
+            new AdminRbacService.AdminRbacStatusSnapshot(
+                false, true, false, false, false, false, false, false, false, false));
+    var service = new IdentitySecurityStatusService(sso, scim, mfa, siem, adminRbac);
     assertThat(service.build().siem().secretConfigured()).isFalse();
   }
 }

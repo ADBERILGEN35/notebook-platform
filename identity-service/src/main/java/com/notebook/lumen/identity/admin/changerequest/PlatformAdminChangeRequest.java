@@ -40,6 +40,9 @@ public class PlatformAdminChangeRequest {
   @Column(name = "requested_value", nullable = false, length = 500)
   private String requestedValue;
 
+  @Column(name = "target_environment", nullable = false, length = 32)
+  private String targetEnvironment;
+
   @Enumerated(EnumType.STRING)
   @Column(name = "status", nullable = false, length = 20)
   private ChangeRequestStatus status;
@@ -93,6 +96,7 @@ public class PlatformAdminChangeRequest {
       String targetKey,
       String currentValue,
       String requestedValue,
+      String targetEnvironment,
       ChangeRequestStatus status,
       Map<String, Object> impactSummary,
       Map<String, Object> validationResult,
@@ -107,6 +111,7 @@ public class PlatformAdminChangeRequest {
     this.targetKey = targetKey;
     this.currentValue = currentValue;
     this.requestedValue = requestedValue;
+    this.targetEnvironment = targetEnvironment;
     this.status = status;
     this.impactSummary = impactSummary;
     this.validationResult = validationResult;
@@ -145,6 +150,10 @@ public class PlatformAdminChangeRequest {
 
   public String getRequestedValue() {
     return requestedValue;
+  }
+
+  public String getTargetEnvironment() {
+    return targetEnvironment;
   }
 
   public ChangeRequestStatus getStatus() {

@@ -3,6 +3,8 @@ package com.notebook.lumen.identity.admin;
 import com.notebook.lumen.identity.admin.changerequest.AdminChangeRequestException;
 import com.notebook.lumen.identity.admin.changerequest.AdminChangeRequestService;
 import com.notebook.lumen.identity.admin.changerequest.api.AdminChangeRequestDtos;
+import com.notebook.lumen.identity.admin.gitops.AdminGitOpsPrService;
+import com.notebook.lumen.identity.admin.gitops.api.AdminGitOpsDtos;
 import com.notebook.lumen.identity.audit.AuditAdminAuthorizer;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.UUID;
@@ -26,11 +28,15 @@ public class InternalAdminChangeRequestController {
 
   private final AuditAdminAuthorizer authorizer;
   private final AdminChangeRequestService changeRequestService;
+  private final AdminGitOpsPrService adminGitOpsPrService;
 
   public InternalAdminChangeRequestController(
-      AuditAdminAuthorizer authorizer, AdminChangeRequestService changeRequestService) {
+      AuditAdminAuthorizer authorizer,
+      AdminChangeRequestService changeRequestService,
+      AdminGitOpsPrService adminGitOpsPrService) {
     this.authorizer = authorizer;
     this.changeRequestService = changeRequestService;
+    this.adminGitOpsPrService = adminGitOpsPrService;
   }
 
   @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
@@ -72,10 +78,11 @@ public class InternalAdminChangeRequestController {
       @RequestHeader(AuditAdminAuthorizer.HEADER_NAME) String serviceAuthorization,
       @RequestHeader(HEADER_ADMIN_USER_ID) String adminUserId,
       @PathVariable UUID id,
+      @RequestParam(name = "globalCancel", defaultValue = "false") boolean globalCancel,
       HttpServletRequest request) {
     authorizer.authorize(serviceAuthorization, AuditAdminAuthorizer.CHANGE_REQUEST_SCOPE);
     UUID uid = parseAdminUserId(adminUserId);
-    changeRequestService.cancel(id, uid, request);
+    changeRequestService.cancel(id, uid, globalCancel, request);
   }
 
   @PostMapping(path = "/{id}/approve", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -100,6 +107,36 @@ public class InternalAdminChangeRequestController {
     authorizer.authorize(serviceAuthorization, AuditAdminAuthorizer.CHANGE_REQUEST_SCOPE);
     UUID uid = parseAdminUserId(adminUserId);
     return changeRequestService.reject(id, uid, body, request);
+  }
+
+  @PostMapping(
+      path = "/{id}/gitops/dry-run",
+      consumes = MediaType.APPLICATION_JSON_VALUE,
+      produces = MediaType.APPLICATION_JSON_VALUE)
+  public AdminGitOpsDtos.DryRunResponse gitopsDryRun(
+      @RequestHeader(AuditAdminAuthorizer.HEADER_NAME) String serviceAuthorization,
+      @RequestHeader(HEADER_ADMIN_USER_ID) String adminUserId,
+      @PathVariable UUID id,
+      @RequestBody(required = false) AdminGitOpsDtos.DryRunBody body,
+      HttpServletRequest request) {
+    authorizer.authorize(serviceAuthorization, AuditAdminAuthorizer.CHANGE_REQUEST_SCOPE);
+    UUID uid = parseAdminUserId(adminUserId);
+    return adminGitOpsPrService.dryRun(id, body, uid, request);
+  }
+
+  @PostMapping(
+      path = "/{id}/gitops/create-pr",
+      consumes = MediaType.APPLICATION_JSON_VALUE,
+      produces = MediaType.APPLICATION_JSON_VALUE)
+  public AdminGitOpsDtos.CreatePrResponse gitopsCreatePr(
+      @RequestHeader(AuditAdminAuthorizer.HEADER_NAME) String serviceAuthorization,
+      @RequestHeader(HEADER_ADMIN_USER_ID) String adminUserId,
+      @PathVariable UUID id,
+      @RequestBody AdminGitOpsDtos.CreatePrBody body,
+      HttpServletRequest request) {
+    authorizer.authorize(serviceAuthorization, AuditAdminAuthorizer.CHANGE_REQUEST_SCOPE);
+    UUID uid = parseAdminUserId(adminUserId);
+    return adminGitOpsPrService.createPr(id, body, uid, request);
   }
 
   private static UUID parseAdminUserId(String raw) {

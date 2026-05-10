@@ -28,7 +28,7 @@ Defaults: **disabled** in Helm `values.yaml`; **enabled** in GitOps `dev` overla
 
 ## Public gateway API (browser)
 
-All routes require an authenticated **platform admin** JWT. **Email/user allowlists are not sufficient** for writes: `PLATFORM_ADMIN` (or equivalent role claims) is required. **MFA** is required whenever gateway admin MFA mode is not `off` or `gateway.admin.require-mfa` is true.
+All routes require an authenticated admin JWT. **Email/user allowlists are not sufficient** for writes: `PLATFORM_ADMIN` (or equivalent role claims) is required when **fine-grained RBAC enforce is off**. When `GATEWAY_ADMIN_RBAC_ENFORCE=true`, the user needs the permissions in [`docs/admin-permission-matrix.md`](admin-permission-matrix.md) (signed `platform_permissions` claim); allowlist alone is not enough. **MFA** is required whenever gateway admin MFA mode is not `off` or `gateway.admin.require-mfa` is true.
 
 | Method | Path | Description |
 |--------|------|-------------|

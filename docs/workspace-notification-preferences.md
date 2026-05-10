@@ -10,6 +10,8 @@ Users can override **global** notification channel settings **per workspace** fo
 
 Workspace overrides only answer: *for this workspace, for this notification type, should this channel be allowed?* Global digest and quiet-hours logic still run after email is allowed at the preference layer.
 
+**Faz 81:** Global vs workspace preference skips are rolled up as aggregate event kinds (no user/workspace dimensions in MVP); see [`notification-analytics-privacy.md`](notification-analytics-privacy.md).
+
 ## Resolution order
 
 1. If the notification type is mandatory security (e.g. `SECURITY_SESSIONS_REVOKED`), channels stay **enabled**; workspace rows are rejected for those types.

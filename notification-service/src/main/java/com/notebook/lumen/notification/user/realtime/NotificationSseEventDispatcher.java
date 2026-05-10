@@ -1,5 +1,7 @@
 package com.notebook.lumen.notification.user.realtime;
 
+import com.notebook.lumen.notification.analytics.NotificationAnalyticsEventKind;
+import com.notebook.lumen.notification.analytics.NotificationAnalyticsRecorder;
 import com.notebook.lumen.notification.shared.config.NotificationSseProperties;
 import com.notebook.lumen.notification.user.domain.UserNotification;
 import com.notebook.lumen.notification.user.fanout.NotificationFanoutOutbox;
@@ -21,18 +23,21 @@ public class NotificationSseEventDispatcher {
   private final NotificationSseProperties sseProperties;
   private final NotificationInstanceIdProvider instanceIdProvider;
   private final MeterRegistry meterRegistry;
+  private final NotificationAnalyticsRecorder analyticsRecorder;
 
   public NotificationSseEventDispatcher(
       NotificationSseBroker broker,
       NotificationSseDistributedPublisher distributedPublisher,
       NotificationSseProperties sseProperties,
       NotificationInstanceIdProvider instanceIdProvider,
-      MeterRegistry meterRegistry) {
+      MeterRegistry meterRegistry,
+      NotificationAnalyticsRecorder analyticsRecorder) {
     this.broker = broker;
     this.distributedPublisher = distributedPublisher;
     this.sseProperties = sseProperties;
     this.instanceIdProvider = instanceIdProvider;
     this.meterRegistry = meterRegistry;
+    this.analyticsRecorder = analyticsRecorder;
   }
 
   public NotificationSseEventEnvelope buildCreatedEnvelope(UserNotification notification, long unreadCount) {
@@ -165,10 +170,12 @@ public class NotificationSseEventDispatcher {
     }
     try {
       distributedPublisher.publish(envelope);
+      analyticsRecorder.record(NotificationAnalyticsEventKind.REDIS_FANOUT_PUBLISH_SUCCESS, "", "", "", 1);
       meterRegistry
           .counter("notifications_sse_distributed_published_total", "status", "success")
           .increment();
     } catch (RuntimeException e) {
+      analyticsRecorder.record(NotificationAnalyticsEventKind.REDIS_FANOUT_PUBLISH_FAILURE, "", "", "", 1);
       meterRegistry
           .counter("notifications_sse_distributed_published_total", "status", "failure")
           .increment();

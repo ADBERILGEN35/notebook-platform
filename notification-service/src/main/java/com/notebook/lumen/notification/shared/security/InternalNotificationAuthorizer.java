@@ -16,6 +16,19 @@ public class InternalNotificationAuthorizer {
   public static final String SUPPRESSION_READ_SCOPE = "internal:notification:suppression:read";
   public static final String SUPPRESSION_MANAGE_SCOPE = "internal:notification:suppression:manage";
   public static final String ADMIN_STATUS_SCOPE = "internal:admin:status:read";
+  public static final String ADMIN_NOTIFICATIONS_ANALYTICS_SCOPE = "internal:admin:notifications:analytics:read";
+  public static final String ADMIN_NOTIFICATIONS_DEAD_LETTER_READ_SCOPE =
+      "internal:admin:notifications:dead-letter:read";
+  public static final String ADMIN_NOTIFICATIONS_DEAD_LETTER_REQUEUE_SCOPE =
+      "internal:admin:notifications:dead-letter:requeue";
+  public static final String ADMIN_NOTIFICATIONS_RETENTION_READ_SCOPE =
+      "internal:admin:notifications:retention:read";
+  public static final String ADMIN_NOTIFICATIONS_RETENTION_RUN_SCOPE =
+      "internal:admin:notifications:retention:run";
+  public static final String ADMIN_NOTIFICATIONS_LEGAL_HOLD_READ_SCOPE =
+      "internal:admin:notifications:legal-hold:read";
+  public static final String ADMIN_NOTIFICATIONS_LEGAL_HOLD_WRITE_SCOPE =
+      "internal:admin:notifications:legal-hold:write";
 
   private final NotificationProperties properties;
 

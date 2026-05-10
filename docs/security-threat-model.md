@@ -59,6 +59,28 @@
 - At-least-once-ish delivery may duplicate events; clients must treat handlers as idempotent
   (`docs/notification-durable-fanout.md`).
 
+## Faz 81 additions
+
+- Admin notification **delivery analytics** stores only hourly aggregates (event kinds, channel, type, severity, counts). No raw bodies, emails, tokens, or per-user identifiers in analytics tables.
+- Gateway access requires `admin:notifications:analytics:read`; internal notification-service path uses service JWT with `internal:admin:notifications:analytics:read`.
+- See [`notification-analytics-privacy.md`](notification-analytics-privacy.md).
+
+## Faz 82 additions
+
+- **Dead-letter admin** surfaces only non-sensitive fields (hashed recipient, error summary, counts). Raw fanout JSON payload is not exposed to admins via these APIs.
+- Requeue is permission-gated (`admin:notifications:dead-letter:requeue`), MFA-step-up aligned with other admin writes, rate-limited, idempotent, and audited. Mis-requeue can cause duplicate SSE acceleration events; clients must remain idempotent.
+- See [`notification-dead-letter-requeue.md`](notification-dead-letter-requeue.md).
+
+## Faz 83 additions
+
+- **Retention admin** plans and (optionally) deletes only pre-defined eligible rows: hourly analytics aggregates, terminal fanout/email/digest rows, and old dead-letter requeue audit rows. No user in-app notification inbox purge and no security audit-event purge in this phase.
+- Gateway read uses `admin:notifications:retention:read`; destructive runs use `admin:notifications:retention:run` with admin-write MFA when enforced. Defaults keep the worker in **dry-run-only** and manual destructive runs **disabled** until explicitly configured.
+- Misconfiguration could delete operational history early; use dry-run plans, staged rollouts, and conservative retention values. See [`notification-retention-worker.md`](notification-retention-worker.md) and [`notification-retention-policy.md`](notification-retention-policy.md).
+
+## Faz 84 additions
+
+- Notification **legal holds** (`admin:notifications:legal-hold:read|write`) block destructive retention purge per scope when `NOTIFICATION_LEGAL_HOLD_ENABLED=true`. Holds store no raw notification payloads; `expiresAt` does not auto-release. See [`notification-legal-hold.md`](notification-legal-hold.md).
+
 ## Faz 58 additions
 
 - Security-critical notifications bypass digest and quiet hours to avoid delayed account protection.
@@ -261,7 +283,7 @@
 
 - Risk: Showing operational audit context to unintended browser sessions before hardened RBAC.
 - Current mitigation: Route + navigation gates behind `ADMIN_UI_ENABLED`; gateway `GET /admin/audit-events`
-  requires authenticated admin allowlist/role checks and signs downstream service JWTs server-side.
+  requires authenticated admin allowlist/role checks (and optional JWT `platform_permissions` when `GATEWAY_ADMIN_RBAC_ENFORCE=true`) and signs downstream service JWTs server-side.
 - Remaining gap: PLATFORM_ADMIN claim lifecycle + IdP group sync are still pending.
 - Recommended next action: Move from allowlist fallback to identity-issued PLATFORM_ADMIN claims and ship
   audit access logs to SIEM (see [`docs/admin-audit-proxy.md`](admin-audit-proxy.md)).
@@ -345,4 +367,5 @@
 ## Enterprise admin console (Faz 63)
 
 Browser calls `GET /admin/enterprise/status` and (when enabled) change-request routes under `/admin/enterprise/change-requests` (including **approve/reject** in Faz 78); gateway holds service JWTs for internal status and change-request endpoints. Change requests do not mutate runtime secrets or return secret material; approval only transitions workflow state (`docs/enterprise-admin-write-operations.md`, `docs/admin-change-request-approval-workflow.md`).
+**Faz 79** adds signed JWT `platform_permissions` for least-privilege admin; gateway must not trust client-supplied permission headers.
 No SCIM/SIEM/OIDC secrets are returned — see `docs/enterprise-admin-console.md`.

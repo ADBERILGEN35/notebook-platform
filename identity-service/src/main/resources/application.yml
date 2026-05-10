@@ -97,6 +97,17 @@ identity:
     admin-status:
       enabled: ${IDENTITY_INTERNAL_ADMIN_STATUS_ENABLED:false}
   admin:
+    rbac:
+      enabled: ${ADMIN_RBAC_ENABLED:false}
+      legacy-platform-admin-implies-all: ${ADMIN_RBAC_LEGACY_PLATFORM_ADMIN_IMPLIES_ALL:true}
+      group-platform-admin: ${ADMIN_RBAC_GROUP_PLATFORM_ADMIN:}
+      group-audit-viewer: ${ADMIN_RBAC_GROUP_AUDIT_VIEWER:}
+      group-audit-exporter: ${ADMIN_RBAC_GROUP_AUDIT_EXPORTER:}
+      group-security-admin: ${ADMIN_RBAC_GROUP_SECURITY_ADMIN:}
+      group-identity-admin: ${ADMIN_RBAC_GROUP_IDENTITY_ADMIN:}
+      group-change-request-author: ${ADMIN_RBAC_GROUP_CHANGE_REQUEST_AUTHOR:}
+      group-change-request-approver: ${ADMIN_RBAC_GROUP_CHANGE_REQUEST_APPROVER:}
+      group-observability-viewer: ${ADMIN_RBAC_GROUP_OBSERVABILITY_VIEWER:}
     change-requests:
       enabled: ${ADMIN_CHANGE_REQUESTS_ENABLED:false}
       retention-days: ${ADMIN_CHANGE_REQUEST_RETENTION_DAYS:180}
@@ -107,6 +118,17 @@ identity:
         high-severity-requires-approval: ${ADMIN_CHANGE_REQUEST_HIGH_SEVERITY_REQUIRES_APPROVAL:true}
         low-severity-auto-approve: ${ADMIN_CHANGE_REQUEST_LOW_SEVERITY_AUTO_APPROVE:false}
         reject-reason-required-for-high-severity: ${ADMIN_CHANGE_REQUEST_REJECT_REASON_REQUIRED_FOR_HIGH:true}
+    gitops:
+      enabled: ${ADMIN_GITOPS_PR_ENABLED:false}
+      provider: ${ADMIN_GITOPS_PROVIDER:mock}
+      allowed-environments: ${ADMIN_GITOPS_ALLOWED_ENVIRONMENTS:dev,staging,prod}
+      default-environment: ${ADMIN_GITOPS_DEFAULT_ENVIRONMENT:staging}
+      base-branch: ${ADMIN_GITOPS_BASE_BRANCH:main}
+      branch-prefix: ${ADMIN_GITOPS_BRANCH_PREFIX:admin-change}
+      repository-owner: ${ADMIN_GITOPS_REPOSITORY_OWNER:}
+      repository-name: ${ADMIN_GITOPS_REPOSITORY_NAME:}
+      github-token: ${ADMIN_GITOPS_GITHUB_TOKEN:}
+      require-approved-change: ${ADMIN_GITOPS_REQUIRE_APPROVED_CHANGE:true}
   mfa:
     enabled: ${MFA_ENABLED:false}
     webauthn:

@@ -8,6 +8,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.notebook.lumen.notification.analytics.NotificationAnalyticsRecorder;
 import com.notebook.lumen.notification.shared.config.NotificationProperties;
 import com.notebook.lumen.notification.shared.config.NotificationSseProperties;
 import com.notebook.lumen.notification.user.realtime.NotificationInstanceIdProvider;
@@ -33,6 +34,7 @@ class NotificationFanoutOutboxProcessorTest {
       mock(NotificationSseDistributedPublisher.class);
   private final NotificationInstanceIdProvider instanceIdProvider = mock(NotificationInstanceIdProvider.class);
   private final SimpleMeterRegistry meterRegistry = new SimpleMeterRegistry();
+  private final NotificationAnalyticsRecorder analyticsRecorder = mock(NotificationAnalyticsRecorder.class);
   private NotificationSseEventDispatcher sseDispatcher;
   private NotificationFanoutOutboxProcessor processor;
 
@@ -44,8 +46,10 @@ class NotificationFanoutOutboxProcessorTest {
     sseProperties.getDistributed().setPublishLocalFirst(false);
     sseDispatcher =
         new NotificationSseEventDispatcher(
-            broker, distributedPublisher, sseProperties, instanceIdProvider, meterRegistry);
-    processor = new NotificationFanoutOutboxProcessor(repository, properties, sseDispatcher, meterRegistry);
+            broker, distributedPublisher, sseProperties, instanceIdProvider, meterRegistry, analyticsRecorder);
+    processor =
+        new NotificationFanoutOutboxProcessor(
+            repository, properties, sseDispatcher, meterRegistry, analyticsRecorder);
     when(properties.fanout())
         .thenReturn(
             new NotificationProperties.Fanout(true, true, true, 5, 100, 10, 5, 300, 60, 24, 30));

@@ -6,6 +6,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.notebook.lumen.identity.admin.AdminRbacProperties;
+import com.notebook.lumen.identity.admin.AdminRbacService;
 import com.notebook.lumen.identity.auth.api.AuthResponse;
 import com.notebook.lumen.identity.auth.application.AuthService;
 import com.notebook.lumen.identity.shared.exception.SsoException;
@@ -126,6 +128,8 @@ class SsoServiceTest {
     SsoService service =
         new SsoService(
             props,
+            rbacProps(false),
+            mock(AdminRbacService.class),
             authService,
             userRepository,
             identityRepository,
@@ -145,6 +149,8 @@ class SsoServiceTest {
     when(redis.opsForValue()).thenReturn(valueOps);
     return new SsoService(
         props,
+        rbacProps(false),
+        mock(AdminRbacService.class),
         mock(AuthService.class),
         mock(UserRepository.class),
         mock(ExternalIdentityRepository.class),
@@ -152,6 +158,11 @@ class SsoServiceTest {
         redis,
         new ObjectMapper().findAndRegisterModules(),
         mock(OidcClient.class));
+  }
+
+  private static AdminRbacProperties rbacProps(boolean enabled) {
+    return new AdminRbacProperties(
+        enabled, true, "", "", "", "", "", "", "", "");
   }
 
   private SsoProperties properties(boolean enabled) {

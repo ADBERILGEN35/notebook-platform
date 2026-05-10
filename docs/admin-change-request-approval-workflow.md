@@ -42,7 +42,7 @@ Suggested production posture: **approvals on**, **different approver on**, **low
 - `POST /admin/enterprise/change-requests/{id}/approve` — body optional `{ "reason": "..." }`.
 - `POST /admin/enterprise/change-requests/{id}/reject` — body `{ "reason": "..." }` (reason required for HIGH when configured).
 
-Same auth as other change-request writes: **PLATFORM_ADMIN**, admin write enabled, **MFA** when gateway policy requires, **CSRF** for cookie sessions, admin-write **rate limit** bucket.
+Same auth as other change-request writes: **PLATFORM_ADMIN** (legacy) or the matching **`platform_permissions`** entries when `GATEWAY_ADMIN_RBAC_ENFORCE=true` (see [`docs/admin-permission-matrix.md`](admin-permission-matrix.md)), admin write enabled, **MFA** when gateway policy requires, **CSRF** for cookie sessions, admin-write **rate limit** bucket.
 
 ### Identity (internal)
 

@@ -30,6 +30,10 @@ export type AuthUser = {
   avatarUrl?: string | null
   status?: string
   roles?: string[]
+  /** Normalized platform roles from JWT (e.g. PLATFORM_AUDIT_VIEWER). */
+  platformRoles?: string[]
+  /** Resolved admin permissions from identity-service when RBAC is enabled. */
+  platformPermissions?: string[]
 }
 
 export type AuthResponse = {

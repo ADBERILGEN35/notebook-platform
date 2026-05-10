@@ -9,6 +9,7 @@ import com.notebook.lumen.identity.user.domain.User;
 import com.notebook.lumen.identity.user.domain.UserStatus;
 import java.util.ArrayDeque;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
@@ -82,5 +83,32 @@ public class ScimEffectiveMembershipService {
       }
     }
     return effective;
+  }
+
+  /**
+   * Lowercase display names and external IDs for all effective active SCIM groups for a user
+   * (including parents), used for RBAC group mapping.
+   */
+  @Transactional(readOnly = true)
+  public Set<String> effectiveGroupKeysForUser(UUID userId, ScimProperties scimProperties) {
+    Set<String> keys = new LinkedHashSet<>();
+    if (!scimProperties.groupsEnabled()) {
+      return keys;
+    }
+    Set<UUID> effective = effectiveActiveGroupIdsForUser(userId);
+    for (UUID gid : effective) {
+      Optional<ScimGroup> g = scimGroupRepository.findByIdAndActiveIsTrue(gid);
+      if (g.isEmpty()) {
+        continue;
+      }
+      ScimGroup group = g.get();
+      if (group.getDisplayName() != null && !group.getDisplayName().isBlank()) {
+        keys.add(group.getDisplayName().toLowerCase(Locale.ROOT).trim());
+      }
+      if (group.getExternalId() != null && !group.getExternalId().isBlank()) {
+        keys.add(group.getExternalId().toLowerCase(Locale.ROOT).trim());
+      }
+    }
+    return keys;
   }
 }

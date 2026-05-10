@@ -152,6 +152,8 @@ gateway:
       requested-tokens: ${GATEWAY_ADMIN_WRITE_RATE_LIMIT_REQUESTED_TOKENS:1}
   admin:
     enabled: ${GATEWAY_ADMIN_ENABLED:false}
+    rbac:
+      enforce: ${GATEWAY_ADMIN_RBAC_ENFORCE:false}
     require-mfa: ${GATEWAY_ADMIN_REQUIRE_MFA:${ADMIN_REQUIRE_MFA:false}}
     mfa-mode: ${GATEWAY_ADMIN_MFA_MODE:off}
     mfa-accepted-methods: ${GATEWAY_ADMIN_MFA_ACCEPTED_METHODS:webauthn,recovery_code}
@@ -167,6 +169,10 @@ gateway:
       notification-service-url: ${NOTIFICATION_SERVICE_URL:http://notification-service:8084}
       identity-status-path: ${GATEWAY_ADMIN_ENTERPRISE_IDENTITY_STATUS_PATH:/internal/admin/status/identity-security}
       notification-status-path: ${GATEWAY_ADMIN_ENTERPRISE_NOTIFICATION_STATUS_PATH:/internal/admin/status/notification}
+      notification-analytics-path: ${GATEWAY_ADMIN_ENTERPRISE_NOTIFICATION_ANALYTICS_PATH:/internal/admin/notifications/analytics/summary}
+      notification-dead-letter-path: ${GATEWAY_ADMIN_ENTERPRISE_NOTIFICATION_DEAD_LETTER_PATH:/internal/admin/notifications/dead-letter}
+      notification-retention-path: ${GATEWAY_ADMIN_ENTERPRISE_NOTIFICATION_RETENTION_PATH:/internal/admin/notifications/retention}
+      notification-legal-hold-path: ${GATEWAY_ADMIN_ENTERPRISE_NOTIFICATION_LEGAL_HOLD_PATH:/internal/admin/notifications/legal-holds}
       content-status-path: ${GATEWAY_ADMIN_ENTERPRISE_CONTENT_STATUS_PATH:/internal/admin/status/content}
     audit-export:
       enabled: ${GATEWAY_ADMIN_AUDIT_EXPORT_ENABLED:false}

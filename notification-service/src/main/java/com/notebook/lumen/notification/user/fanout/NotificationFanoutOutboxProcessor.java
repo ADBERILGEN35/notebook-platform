@@ -1,6 +1,8 @@
 package com.notebook.lumen.notification.user.fanout;
 
 import com.notebook.lumen.common.security.worker.WorkerInstanceIds;
+import com.notebook.lumen.notification.analytics.NotificationAnalyticsEventKind;
+import com.notebook.lumen.notification.analytics.NotificationAnalyticsRecorder;
 import com.notebook.lumen.notification.shared.config.NotificationProperties;
 import com.notebook.lumen.notification.user.realtime.NotificationSseEventDispatcher;
 import com.notebook.lumen.notification.user.realtime.NotificationSseEventEnvelope;
@@ -21,6 +23,7 @@ public class NotificationFanoutOutboxProcessor {
   private final NotificationProperties properties;
   private final NotificationSseEventDispatcher sseDispatcher;
   private final MeterRegistry meterRegistry;
+  private final NotificationAnalyticsRecorder analyticsRecorder;
   private final Timer processTimer;
   private final String workerInstanceId;
 
@@ -28,11 +31,13 @@ public class NotificationFanoutOutboxProcessor {
       NotificationFanoutOutboxRepository repository,
       NotificationProperties properties,
       NotificationSseEventDispatcher sseDispatcher,
-      MeterRegistry meterRegistry) {
+      MeterRegistry meterRegistry,
+      NotificationAnalyticsRecorder analyticsRecorder) {
     this.repository = repository;
     this.properties = properties;
     this.sseDispatcher = sseDispatcher;
     this.meterRegistry = meterRegistry;
+    this.analyticsRecorder = analyticsRecorder;
     this.processTimer =
         Timer.builder("notifications_fanout_outbox_duration_seconds")
             .publishPercentileHistogram()
@@ -65,6 +70,7 @@ public class NotificationFanoutOutboxProcessor {
         NotificationSseEventEnvelope envelope = sseDispatcher.envelopeFromOutbox(row, workerInstanceId);
         sseDispatcher.dispatchStrictDistributed(envelope);
         row.markSent(now);
+        analyticsRecorder.record(NotificationAnalyticsEventKind.FANOUT_SENT, "", "", "", 1);
         meterRegistry.counter("notifications_fanout_outbox_published_total", "result", "sent").increment();
         sample.stop(processTimer);
       } catch (RuntimeException e) {
@@ -95,6 +101,7 @@ public class NotificationFanoutOutboxProcessor {
     String err = safeError(e);
     if (failures >= effectiveMaxAttempts(fanout)) {
       row.markDead(err, now);
+      analyticsRecorder.record(NotificationAnalyticsEventKind.FANOUT_DEAD, "", "", "", 1);
       meterRegistry.counter("notifications_fanout_outbox_dead_total").increment();
       meterRegistry.counter("notifications_fanout_outbox_published_total", "result", "dead").increment();
       return;

@@ -9,6 +9,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.notebook.lumen.identity.admin.changerequest.api.AdminChangeRequestDtos;
+import com.notebook.lumen.identity.admin.gitops.AdminGitOpsPrProperties;
 import com.notebook.lumen.identity.audit.AuditService;
 import com.notebook.lumen.identity.user.infrastructure.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
@@ -31,6 +32,18 @@ class AdminChangeRequestServiceTest {
   @Mock AuditService auditService;
 
   final AdminOperationRegistry registry = new AdminOperationRegistry();
+  final AdminGitOpsPrProperties gitOpsProps =
+      new AdminGitOpsPrProperties(
+          false,
+          "mock",
+          "dev,staging,prod",
+          "staging",
+          "main",
+          "admin-change",
+          "",
+          "",
+          "",
+          true);
   AdminChangeRequestProperties properties =
       new AdminChangeRequestProperties(
           true,
@@ -42,7 +55,7 @@ class AdminChangeRequestServiceTest {
   void setUp() {
     service =
         new AdminChangeRequestService(
-            properties, registry, changeRequestRepository, userRepository, auditService);
+            properties, gitOpsProps, registry, changeRequestRepository, userRepository, auditService);
   }
 
   @Test
@@ -50,7 +63,7 @@ class AdminChangeRequestServiceTest {
     assertThatThrownBy(
             () ->
                 service.validate(
-                    new AdminChangeRequestDtos.ValidateBody("NOT_ALLOWED", "true", null)))
+                    new AdminChangeRequestDtos.ValidateBody("NOT_ALLOWED", "true", null, null)))
         .isInstanceOf(AdminChangeRequestException.class)
         .hasFieldOrPropertyWithValue("errorCode", "ADMIN_OPERATION_NOT_ALLOWED");
   }
@@ -60,7 +73,7 @@ class AdminChangeRequestServiceTest {
     AdminChangeRequestDtos.ValidateResponse r =
         service.validate(
             new AdminChangeRequestDtos.ValidateBody(
-                AdminOperationRegistry.OP_MERGE_ANALYSIS_ROLLOUT_REQUEST, "YES", null));
+                AdminOperationRegistry.OP_MERGE_ANALYSIS_ROLLOUT_REQUEST, "YES", null, null));
     assertThat(r.valid()).isTrue();
     assertThat(r.requiresApproval()).isTrue();
     assertThat(r.impactSummary().get("severity")).isEqualTo("MEDIUM");
@@ -78,7 +91,7 @@ class AdminChangeRequestServiceTest {
                     uid,
                     "a@b.com",
                     new AdminChangeRequestDtos.CreateBody(
-                        AdminOperationRegistry.OP_MERGE_APPLY_ROLLOUT_REQUEST, "true", null, null),
+                        AdminOperationRegistry.OP_MERGE_APPLY_ROLLOUT_REQUEST, "true", null, null, "staging"),
                     "rid",
                     req))
         .isInstanceOf(AdminChangeRequestException.class)
@@ -94,7 +107,7 @@ class AdminChangeRequestServiceTest {
         uid,
         "a@b.com",
         new AdminChangeRequestDtos.CreateBody(
-            AdminOperationRegistry.OP_MERGE_ANALYSIS_ROLLOUT_REQUEST, "false", null, null),
+            AdminOperationRegistry.OP_MERGE_ANALYSIS_ROLLOUT_REQUEST, "false", null, null, "staging"),
         "rid",
         req);
     verify(changeRequestRepository).save(any());
@@ -147,7 +160,7 @@ class AdminChangeRequestServiceTest {
             new AdminChangeRequestProperties.Approvals(true, false, true, true, false, true));
     service =
         new AdminChangeRequestService(
-            properties, registry, changeRequestRepository, userRepository, auditService);
+            properties, gitOpsProps, registry, changeRequestRepository, userRepository, auditService);
     UUID uid = UUID.randomUUID();
     UUID rid = UUID.randomUUID();
     PlatformAdminChangeRequest row = pendingRow(rid, uid);
@@ -165,7 +178,9 @@ class AdminChangeRequestServiceTest {
     PlatformAdminChangeRequest row = highPendingRow(rid, creator);
     when(changeRequestRepository.findById(rid)).thenReturn(Optional.of(row));
     when(userRepository.existsById(approver)).thenReturn(true);
-    assertThatThrownBy(() -> service.reject(rid, approver, new AdminChangeRequestDtos.DecisionBody(""), new MockHttpServletRequest()))
+    assertThatThrownBy(
+            () ->
+                service.reject(rid, approver, new AdminChangeRequestDtos.DecisionBody(""), new MockHttpServletRequest()))
         .isInstanceOf(AdminChangeRequestException.class)
         .hasFieldOrPropertyWithValue("errorCode", "ADMIN_CHANGE_REQUEST_REJECT_REASON_REQUIRED");
   }
@@ -194,7 +209,7 @@ class AdminChangeRequestServiceTest {
             new AdminChangeRequestProperties.Approvals(false, true, true, true, false, true));
     service =
         new AdminChangeRequestService(
-            properties, registry, changeRequestRepository, userRepository, auditService);
+            properties, gitOpsProps, registry, changeRequestRepository, userRepository, auditService);
     UUID rid = UUID.randomUUID();
     UUID approver = UUID.randomUUID();
     assertThatThrownBy(() -> service.approve(rid, approver, null, new MockHttpServletRequest()))
@@ -216,6 +231,7 @@ class AdminChangeRequestServiceTest {
             "NOTE_MERGE_ANALYSIS_ENABLED",
             null,
             "true",
+            "staging",
             ChangeRequestStatus.APPLIED,
             java.util.Map.of(),
             java.util.Map.of(),
@@ -223,7 +239,7 @@ class AdminChangeRequestServiceTest {
             java.time.Instant.now(),
             "MEDIUM");
     when(changeRequestRepository.findByIdAndRequestedByUserId(rid, uid)).thenReturn(Optional.of(row));
-    assertThatThrownBy(() -> service.cancel(rid, uid, new MockHttpServletRequest()))
+    assertThatThrownBy(() -> service.cancel(rid, uid, false, new MockHttpServletRequest()))
         .isInstanceOf(AdminChangeRequestException.class)
         .hasFieldOrPropertyWithValue("errorCode", "ADMIN_CHANGE_REQUEST_NOT_CANCELLABLE");
   }
@@ -242,6 +258,7 @@ class AdminChangeRequestServiceTest {
             "NOTE_MERGE_ANALYSIS_ENABLED",
             null,
             "true",
+            "staging",
             ChangeRequestStatus.PENDING,
             java.util.Map.of(),
             java.util.Map.of(),
@@ -249,7 +266,7 @@ class AdminChangeRequestServiceTest {
             java.time.Instant.now(),
             "MEDIUM");
     when(changeRequestRepository.findByIdAndRequestedByUserId(rid, uid)).thenReturn(Optional.of(row));
-    service.cancel(rid, uid, new MockHttpServletRequest());
+    service.cancel(rid, uid, false, new MockHttpServletRequest());
     ArgumentCaptor<PlatformAdminChangeRequest> cap = ArgumentCaptor.forClass(PlatformAdminChangeRequest.class);
     verify(changeRequestRepository).save(cap.capture());
     assertThat(cap.getValue().getStatus()).isEqualTo(ChangeRequestStatus.CANCELLED);
@@ -268,12 +285,12 @@ class AdminChangeRequestServiceTest {
     properties = new AdminChangeRequestProperties(false, 180, AdminChangeRequestProperties.Approvals.defaults());
     service =
         new AdminChangeRequestService(
-            properties, registry, changeRequestRepository, userRepository, auditService);
+            properties, gitOpsProps, registry, changeRequestRepository, userRepository, auditService);
     assertThatThrownBy(
             () ->
                 service.validate(
                     new AdminChangeRequestDtos.ValidateBody(
-                        AdminOperationRegistry.OP_MERGE_ANALYSIS_ROLLOUT_REQUEST, "true", null)))
+                        AdminOperationRegistry.OP_MERGE_ANALYSIS_ROLLOUT_REQUEST, "true", null, null)))
         .isInstanceOf(AdminChangeRequestException.class)
         .hasFieldOrPropertyWithValue("errorCode", "ADMIN_WRITE_DISABLED");
     verify(changeRequestRepository, never()).save(any());
@@ -289,6 +306,7 @@ class AdminChangeRequestServiceTest {
         "NOTE_MERGE_ANALYSIS_ENABLED",
         null,
         "true",
+        "staging",
         ChangeRequestStatus.PENDING,
         java.util.Map.of("severity", "MEDIUM"),
         java.util.Map.of(),
@@ -307,6 +325,7 @@ class AdminChangeRequestServiceTest {
         "NOTE_MERGE_APPLY_ENABLED",
         null,
         "true",
+        "staging",
         ChangeRequestStatus.PENDING,
         java.util.Map.of("severity", "HIGH"),
         java.util.Map.of(),

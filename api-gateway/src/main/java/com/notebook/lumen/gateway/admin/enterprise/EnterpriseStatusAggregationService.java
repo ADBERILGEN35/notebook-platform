@@ -12,7 +12,9 @@ import com.notebook.lumen.gateway.config.GatewayAuthProperties;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -212,12 +214,30 @@ public class EnterpriseStatusAggregationService {
     ScimStatus scim = mapScim(identity);
     MfaStatus mfa = mapMfa(identity);
     SiemStatus siem = mapSiem(identity);
+    AdminRbacStatus adminRbac = mapAdminRbac(identity);
     AuditExportStatus auditExport = mapAuditExport();
     NotificationsStatus notifications = mapNotifications(notification);
     GatewaySecurityStatus gatewaySecurity = mapGatewaySecurity();
     MergeResolutionStatus mergeResolution = mapMerge(content);
     return new EnterpriseStatusFeatures(
-        sso, scim, mfa, siem, auditExport, notifications, gatewaySecurity, mergeResolution);
+        sso, scim, mfa, siem, adminRbac, auditExport, notifications, gatewaySecurity, mergeResolution);
+  }
+
+  private AdminRbacStatus mapAdminRbac(JsonNode identity) {
+    if (identity == null || identity.path("adminRbac").isMissingNode()) {
+      return new AdminRbacStatus(false, true, Map.of());
+    }
+    JsonNode n = identity.path("adminRbac");
+    Map<String, Boolean> roles = new LinkedHashMap<>();
+    JsonNode rc = n.path("rolesConfigured");
+    if (rc.isObject()) {
+      rc.fields()
+          .forEachRemaining(e -> roles.put(e.getKey(), e.getValue().asBoolean(false)));
+    }
+    return new AdminRbacStatus(
+        n.path("enabled").asBoolean(false),
+        n.path("legacyPlatformAdminImpliesAll").asBoolean(true),
+        roles);
   }
 
   private SsoStatus mapSso(JsonNode identity) {
