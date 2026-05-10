@@ -162,7 +162,7 @@ class SsoServiceTest {
 
   private static AdminRbacProperties rbacProps(boolean enabled) {
     return new AdminRbacProperties(
-        enabled, true, "", "", "", "", "", "", "", "");
+        enabled, true, "", "", "", "", "", "", "", "", false, false, "");
   }
 
   private SsoProperties properties(boolean enabled) {

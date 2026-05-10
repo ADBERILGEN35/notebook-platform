@@ -25,6 +25,7 @@ public class AdminChangeRequestService {
   private final AdminChangeRequestProperties properties;
   private final AdminGitOpsPrProperties gitOpsPrProperties;
   private final AdminOperationRegistry registry;
+  private final AdminRbacRoleChangeRequestValidator rbacRoleChangeRequestValidator;
   private final PlatformAdminChangeRequestRepository repository;
   private final UserRepository userRepository;
   private final AuditService auditService;
@@ -33,12 +34,14 @@ public class AdminChangeRequestService {
       AdminChangeRequestProperties properties,
       AdminGitOpsPrProperties gitOpsPrProperties,
       AdminOperationRegistry registry,
+      AdminRbacRoleChangeRequestValidator rbacRoleChangeRequestValidator,
       PlatformAdminChangeRequestRepository repository,
       UserRepository userRepository,
       AuditService auditService) {
     this.properties = properties;
     this.gitOpsPrProperties = gitOpsPrProperties;
     this.registry = registry;
+    this.rbacRoleChangeRequestValidator = rbacRoleChangeRequestValidator;
     this.repository = repository;
     this.userRepository = userRepository;
     this.auditService = auditService;
@@ -47,6 +50,9 @@ public class AdminChangeRequestService {
   public AdminChangeRequestDtos.ValidateResponse validate(AdminChangeRequestDtos.ValidateBody body) {
     ensureEnabled();
     AdminOperationDefinition def = resolveOperation(body.operationType());
+    if (AdminOperationRegistry.isRbacRoleOperation(body.operationType())) {
+      return rbacRoleChangeRequestValidator.validate(body, def);
+    }
     String targetEnv =
         body.targetEnvironment() == null || body.targetEnvironment().isBlank()
             ? gitOpsPrProperties.defaultEnvironment()
@@ -85,6 +91,9 @@ public class AdminChangeRequestService {
           "ADMIN_CHANGE_REQUEST_INVALID", HttpStatus.BAD_REQUEST, "Unknown requesting user");
     }
     AdminOperationDefinition def = resolveOperation(body.operationType());
+    if (AdminOperationRegistry.isRbacRoleOperation(body.operationType())) {
+      return rbacRoleChangeRequestValidator.create(actorUserId, actorEmail, body, def, externalRequestId, request);
+    }
     if (body.targetEnvironment() == null || body.targetEnvironment().isBlank()) {
       throw new AdminChangeRequestException(
           "ADMIN_CHANGE_REQUEST_INVALID", HttpStatus.BAD_REQUEST, "targetEnvironment is required");
@@ -134,7 +143,8 @@ public class AdminChangeRequestService {
 
     AdminChangeRequestProperties.Approvals appr = properties.effectiveApprovals();
     boolean autoApprove =
-        appr.enabled()
+        !AdminOperationRegistry.isRbacRoleOperation(def.operationType())
+            && appr.enabled()
             && appr.lowSeverityAutoApprove()
             && !"HIGH".equalsIgnoreCase(def.severity());
 
@@ -374,14 +384,42 @@ public class AdminChangeRequestService {
         entity.getId(), entity.getStatus().name(), entity.getDecisionReason(), entity.getDecidedAt());
   }
 
-  public void recordValidatedAudit(UUID actorUserId, String operationType, HttpServletRequest request) {
+  public void recordValidatedAudit(
+      UUID actorUserId, AdminChangeRequestDtos.ValidateBody body, HttpServletRequest request) {
+    if (AdminOperationRegistry.isRbacRoleOperation(body.operationType())) {
+      Map<String, Object> meta = new HashMap<>();
+      meta.put("operationType", body.operationType() == null ? "" : body.operationType());
+      meta.put("actorUserId", actorUserId.toString());
+      if (body.structuredPayload() != null) {
+        Object uid = body.structuredPayload().get("userId");
+        Object role = body.structuredPayload().get("role");
+        if (uid != null) {
+          meta.put("targetUserId", String.valueOf(uid));
+        }
+        if (role != null) {
+          meta.put("requestedRole", String.valueOf(role));
+        }
+        Object reason = body.structuredPayload().get("reason");
+        meta.put("reasonPresent", reason != null && !String.valueOf(reason).isBlank());
+      } else {
+        meta.put("reasonPresent", false);
+      }
+      auditService.record(
+          "ADMIN_RBAC_ROLE_CHANGE_REQUEST_VALIDATED",
+          actorUserId,
+          "ADMIN_CHANGE_REQUEST",
+          null,
+          request,
+          meta);
+      return;
+    }
     auditService.record(
         "ADMIN_CHANGE_REQUEST_VALIDATED",
         actorUserId,
         "ADMIN_CHANGE_REQUEST",
         null,
         request,
-        Map.of("operationType", operationType == null ? "" : operationType));
+        Map.of("operationType", body.operationType() == null ? "" : body.operationType()));
   }
 
   private Map<String, Object> decisionMetadata(

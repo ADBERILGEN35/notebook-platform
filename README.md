@@ -383,6 +383,7 @@ Faz 82 adds **admin dead-letter list, dry-run, and requeue** for fanout `DEAD` r
 Faz 83 adds **notification retention planner, optional scheduled worker, and admin purge API/UI** for analytics aggregates, fanout terminal rows, digest/email terminal rows, and dead-letter requeue audit rows — default dry-run / disabled destructive (`docs/notification-retention-worker.md`, `docs/notification-retention-policy.md`). Faz 84 adds **notification legal holds** so destructive retention respects governance (`docs/notification-legal-hold.md`, `docs/retention-governance.md`).
 Faz 65 adds **per-workspace notification preference overrides** (channel gates only; digest/quiet
 hours stay global) — see `docs/workspace-notification-preferences.md`.
+Faz 85 adds **workspace admin managed notification policies** (owner/admin; force channel modes for all members) — see `docs/workspace-notification-policies.md`.
 Faz 66 adds **client-side conflict diff** and optional **Apply suggested merge** for BlockNote
 content (three-way model; no backend merge endpoint) — see `docs/note-conflict-diff-merge.md`.
 Faz 67 adds **offline edit/sync design** and IndexedDB **draft** foundation (flags default off; no

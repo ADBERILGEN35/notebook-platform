@@ -63,7 +63,8 @@ public class NotificationAnalyticsRecorder {
             .increment(delta);
       }
       if (eventKind == NotificationAnalyticsEventKind.SKIPPED_PREFERENCE
-          || eventKind == NotificationAnalyticsEventKind.SKIPPED_WORKSPACE_PREFERENCE) {
+          || eventKind == NotificationAnalyticsEventKind.SKIPPED_WORKSPACE_PREFERENCE
+          || eventKind == NotificationAnalyticsEventKind.SKIPPED_WORKSPACE_ADMIN_POLICY) {
         meterRegistry
             .counter(
                 "notification_delivery_skipped_total",

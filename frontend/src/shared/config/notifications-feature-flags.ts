@@ -21,6 +21,13 @@ export const isWorkspaceNotificationPreferencesEnabled = (): boolean =>
     false,
   )
 
+export const isWorkspaceNotificationPoliciesEnabled = (): boolean =>
+  parseBool(
+    window.__NOTEBOOK_CONFIG__?.WORKSPACE_NOTIFICATION_POLICIES_ENABLED ??
+      import.meta.env.VITE_WORKSPACE_NOTIFICATION_POLICIES_ENABLED,
+    false,
+  )
+
 export const isNotificationsSseEnabled = (): boolean =>
   parseBool(
     window.__NOTEBOOK_CONFIG__?.NOTIFICATIONS_SSE_ENABLED ?? import.meta.env.VITE_NOTIFICATIONS_SSE_ENABLED,

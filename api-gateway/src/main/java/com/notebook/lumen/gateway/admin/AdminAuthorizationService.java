@@ -228,6 +228,11 @@ public class AdminAuthorizationService {
   }
 
   /** Create / release legal hold: dedicated permission plus admin-write MFA gate (Faz 84). */
+  /** Faz 86: read-only admin RBAC directory (identity-sourced; no raw IdP claims). */
+  public Optional<ErrorCode> ensureAdminRbacRead(Jwt jwt) {
+    return ensureAdminPermission(jwt, PlatformAdminRbacConstants.PERM_RBAC_READ);
+  }
+
   public Optional<ErrorCode> ensureNotificationLegalHoldWrite(Jwt jwt) {
     if (!rbacProperties.enforce()) {
       if (!isAdmin(jwt)) {

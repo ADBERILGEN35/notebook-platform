@@ -23,6 +23,9 @@ class AdminRbacServiceTest {
             "",
             "",
             "",
+            "",
+            false,
+            false,
             "");
     var svc = new AdminRbacService(props);
     assertThat(svc.mapIdpGroupsToRoles(null, List.of("audit-view"))).isEmpty();
@@ -41,6 +44,9 @@ class AdminRbacServiceTest {
             "",
             "",
             "",
+            "",
+            false,
+            false,
             "");
     var svc = new AdminRbacService(props);
     assertThat(svc.mapIdpGroupsToRoles(null, List.of("Notebook-Audit-Viewers")))
@@ -60,6 +66,9 @@ class AdminRbacServiceTest {
             "",
             "",
             "notebook-change-approvers",
+            "",
+            false,
+            false,
             "");
     var svc = new AdminRbacService(props);
     assertThat(svc.mapScimGroupKeysToRoles(Set.of("notebook-change-approvers")))
@@ -68,21 +77,27 @@ class AdminRbacServiceTest {
 
   @Test
   void resolvePermissionsPlatformAdminCoversAll() {
-    var svc = new AdminRbacService(new AdminRbacProperties(true, true, "", "", "", "", "", "", "", ""));
+    var svc =
+        new AdminRbacService(
+            new AdminRbacProperties(true, true, "", "", "", "", "", "", "", "", false, false, ""));
     assertThat(svc.resolvePermissions(List.of(PlatformAdminRbacConstants.ROLE_PLATFORM_ADMIN)))
         .containsExactlyInAnyOrderElementsOf(PlatformAdminRbacConstants.allPermissions());
   }
 
   @Test
   void resolvePermissionsAuditViewer() {
-    var svc = new AdminRbacService(new AdminRbacProperties(true, true, "", "", "", "", "", "", "", ""));
+    var svc =
+        new AdminRbacService(
+            new AdminRbacProperties(true, true, "", "", "", "", "", "", "", "", false, false, ""));
     assertThat(svc.resolvePermissions(List.of(PlatformAdminRbacConstants.ROLE_PLATFORM_AUDIT_VIEWER)))
         .containsExactly(PlatformAdminRbacConstants.PERM_AUDIT_READ);
   }
 
   @Test
   void resolvePermissionsEmptyWhenRbacDisabled() {
-    var off = new AdminRbacService(new AdminRbacProperties(false, true, "", "", "", "", "", "", "", ""));
+    var off =
+        new AdminRbacService(
+            new AdminRbacProperties(false, true, "", "", "", "", "", "", "", "", false, false, ""));
     assertThat(off.resolvePermissions(List.of(PlatformAdminRbacConstants.ROLE_PLATFORM_AUDIT_VIEWER))).isEmpty();
   }
 
@@ -99,6 +114,9 @@ class AdminRbacServiceTest {
             "",
             "",
             "",
+            "",
+            false,
+            false,
             "");
     var s = new AdminRbacService(props).statusSnapshot();
     assertThat(s.enabled()).isTrue();
@@ -122,6 +140,9 @@ class AdminRbacServiceTest {
             "",
             "",
             "",
+            "",
+            false,
+            false,
             "");
     var provider =
         new SsoProperties.Provider(

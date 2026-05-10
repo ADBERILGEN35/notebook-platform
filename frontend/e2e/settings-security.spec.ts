@@ -175,6 +175,92 @@ test('workspace notification preferences section and mocked 403 save error', asy
   await expect(page.getByText(/permission denied for this operation/i)).toBeVisible()
 })
 
+test('workspace admin notification policies: mock owner saves force-enabled', async ({ page }) => {
+  const data = createE2eData()
+  await page.addInitScript(() => {
+    ;(window as unknown as { __NOTEBOOK_CONFIG__?: Record<string, unknown> }).__NOTEBOOK_CONFIG__ = {
+      ...(window as unknown as { __NOTEBOOK_CONFIG__?: Record<string, unknown> }).__NOTEBOOK_CONFIG__,
+      NOTIFICATION_PREFERENCES_ENABLED: 'true',
+      WORKSPACE_NOTIFICATION_PREFERENCES_ENABLED: 'false',
+      WORKSPACE_NOTIFICATION_POLICIES_ENABLED: 'true',
+    }
+  })
+  await signUpAndLogin(page, data.email, data.password)
+
+  const wsId = '00000000-0000-0000-0000-000000000088'
+  await page.route(`**/workspaces?**`, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        items: [
+          {
+            id: wsId,
+            slug: 'e2e-pol',
+            name: 'Policy Workspace',
+            type: 'PERSONAL',
+            ownerId: 'x',
+            createdAt: '',
+            updatedAt: '',
+          },
+        ],
+        page: 0,
+        size: 20,
+        totalElements: 1,
+        totalPages: 1,
+        hasNext: false,
+        hasPrevious: false,
+      }),
+    })
+  })
+
+  const policyBody = (inAppMode: string, reason: string | null) =>
+    JSON.stringify({
+      workspaceId: wsId,
+      canManagePolicies: true,
+      policies: [
+        {
+          notificationType: 'COMMENT_ADDED',
+          label: 'Comments',
+          channels: {
+            IN_APP: { policyMode: inAppMode, reason, manageable: true },
+            EMAIL: { policyMode: 'USER_CONTROLLED', reason: null, manageable: true },
+          },
+        },
+      ],
+    })
+
+  await page.route(`**/notification-policies/workspaces/${wsId}`, async (route) => {
+    const method = route.request().method()
+    if (method === 'GET') {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: policyBody('USER_CONTROLLED', null),
+      })
+      return
+    }
+    if (method === 'PATCH') {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: policyBody('FORCE_ENABLED', 'E2E collaboration requirement'),
+      })
+      return
+    }
+    await route.continue()
+  })
+
+  await page.goto('/app/settings/security')
+  await expect(page.getByText('Workspace notifications')).toBeVisible()
+  await expect(page.getByText('Admin notification policies')).toBeVisible()
+
+  await page.getByLabel('policy-COMMENT_ADDED-IN_APP-mode').selectOption('FORCE_ENABLED')
+  await page.getByLabel('policy-COMMENT_ADDED-IN_APP-reason').fill('E2E collaboration requirement')
+  await page.getByRole('button', { name: 'Save workspace policies' }).click()
+  await expect(page.getByText('Workspace policies saved.')).toBeVisible()
+})
+
 test('401 response clears session and redirects login', async ({ page }) => {
   const data = createE2eData()
   await signUpAndLogin(page, data.email, data.password)

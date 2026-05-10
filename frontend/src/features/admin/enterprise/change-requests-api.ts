@@ -33,6 +33,7 @@ export type ValidateChangeRequestBody = {
   requestedValue: string
   currentValue?: string | null
   targetEnvironment?: string | null
+  structuredPayload?: Record<string, unknown> | null
 }
 
 export type ValidateChangeRequestResponse = {
@@ -48,6 +49,7 @@ export type CreateChangeRequestBody = {
   currentValue?: string | null
   confirmation?: string | null
   targetEnvironment: string
+  structuredPayload?: Record<string, unknown> | null
 }
 
 export type GitOpsPathChange = {

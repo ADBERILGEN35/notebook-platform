@@ -43,6 +43,7 @@ Docs:
 - [`../docs/notification-center.md`](../docs/notification-center.md)
 - [`../docs/notification-preferences.md`](../docs/notification-preferences.md)
 - [`../docs/workspace-notification-preferences.md`](../docs/workspace-notification-preferences.md)
+- [`../docs/workspace-notification-policies.md`](../docs/workspace-notification-policies.md)
 - [`../docs/realtime-notifications-sse.md`](../docs/realtime-notifications-sse.md)
 - [`../docs/realtime-notifications-redis-fanout.md`](../docs/realtime-notifications-redis-fanout.md)
 - [`../docs/notification-digest-quiet-hours.md`](../docs/notification-digest-quiet-hours.md)

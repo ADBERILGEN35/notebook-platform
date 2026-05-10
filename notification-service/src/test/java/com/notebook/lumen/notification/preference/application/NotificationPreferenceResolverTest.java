@@ -8,6 +8,10 @@ import static org.mockito.Mockito.when;
 
 import com.notebook.lumen.notification.NotificationTestFanout;
 import com.notebook.lumen.notification.NotificationTestWorkspace;
+import com.notebook.lumen.notification.analytics.NotificationAnalyticsEventKind;
+import com.notebook.lumen.notification.policy.domain.WorkspaceNotificationPolicy;
+import com.notebook.lumen.notification.policy.domain.WorkspaceNotificationPolicyMode;
+import com.notebook.lumen.notification.policy.infrastructure.WorkspaceNotificationPolicyRepository;
 import com.notebook.lumen.notification.preference.domain.NotificationChannel;
 import com.notebook.lumen.notification.preference.domain.UserWorkspaceNotificationPreference;
 import com.notebook.lumen.notification.preference.infrastructure.UserWorkspaceNotificationPreferenceRepository;
@@ -22,12 +26,20 @@ class NotificationPreferenceResolverTest {
   private final NotificationPreferenceService global = mock(NotificationPreferenceService.class);
   private final UserWorkspaceNotificationPreferenceRepository workspaceRepo =
       mock(UserWorkspaceNotificationPreferenceRepository.class);
+  private final WorkspaceNotificationPolicyRepository policyRepo =
+      mock(WorkspaceNotificationPolicyRepository.class);
 
   private NotificationPreferenceResolver resolver(boolean workspacePrefsEnabled) {
+    return resolver(workspacePrefsEnabled, false);
+  }
+
+  private NotificationPreferenceResolver resolver(boolean workspacePrefsEnabled, boolean policiesEnabled) {
     NotificationProperties.WorkspaceClient workspace =
         workspacePrefsEnabled
             ? new NotificationProperties.WorkspaceClient(
                 true,
+                policiesEnabled,
+                false,
                 "http://localhost:8082",
                 3000,
                 new NotificationProperties.OutboundServiceJwt(
@@ -72,7 +84,7 @@ class NotificationPreferenceResolverTest {
                 true, true, 60, 100, 50, "09:00", java.time.DayOfWeek.MONDAY, "09:00"),
             NotificationTestFanout.disabled(),
             workspace);
-    return new NotificationPreferenceResolver(global, workspaceRepo, props);
+    return new NotificationPreferenceResolver(global, workspaceRepo, policyRepo, props);
   }
 
   @Test
@@ -118,6 +130,9 @@ class NotificationPreferenceResolverTest {
                     NotificationChannel.EMAIL,
                     false,
                     Instant.now())));
+    when(policyRepo.findByWorkspaceIdAndNotificationTypeAndChannel(
+            eq(ws), eq(UserNotificationType.COMMENT_ADDED), eq(NotificationChannel.EMAIL)))
+        .thenReturn(Optional.empty());
     var resolver = resolver(true);
     assertThat(
             resolver.isChannelEnabled(
@@ -134,6 +149,8 @@ class NotificationPreferenceResolverTest {
         .thenReturn(false);
     when(workspaceRepo.findByUserIdAndWorkspaceIdAndNotificationTypeAndChannel(
             any(), any(), any(), any()))
+        .thenReturn(Optional.empty());
+    when(policyRepo.findByWorkspaceIdAndNotificationTypeAndChannel(any(), any(), any()))
         .thenReturn(Optional.empty());
     var resolver = resolver(true);
     assertThat(
@@ -179,5 +196,108 @@ class NotificationPreferenceResolverTest {
             resolver.isChannelEnabled(
                 user, null, UserNotificationType.COMMENT_ADDED, NotificationChannel.IN_APP))
         .isTrue();
+  }
+
+  @Test
+  void forceEnabledOverridesUserDisabledPreference() {
+    UUID user = UUID.randomUUID();
+    UUID ws = UUID.randomUUID();
+    when(global.isEnabled(
+            eq(user), eq(UserNotificationType.COMMENT_ADDED), eq(NotificationChannel.IN_APP)))
+        .thenReturn(true);
+    when(workspaceRepo.findByUserIdAndWorkspaceIdAndNotificationTypeAndChannel(
+            eq(user), eq(ws), eq(UserNotificationType.COMMENT_ADDED), eq(NotificationChannel.IN_APP)))
+        .thenReturn(
+            Optional.of(
+                new UserWorkspaceNotificationPreference(
+                    UUID.randomUUID(),
+                    user,
+                    ws,
+                    UserNotificationType.COMMENT_ADDED,
+                    NotificationChannel.IN_APP,
+                    false,
+                    Instant.now())));
+    when(policyRepo.findByWorkspaceIdAndNotificationTypeAndChannel(
+            eq(ws), eq(UserNotificationType.COMMENT_ADDED), eq(NotificationChannel.IN_APP)))
+        .thenReturn(
+            Optional.of(
+                new WorkspaceNotificationPolicy(
+                    UUID.randomUUID(),
+                    ws,
+                    UserNotificationType.COMMENT_ADDED,
+                    NotificationChannel.IN_APP,
+                    WorkspaceNotificationPolicyMode.FORCE_ENABLED,
+                    "collab",
+                    user,
+                    user,
+                    Instant.now(),
+                    Instant.now())));
+    var resolver = resolver(true, true);
+    assertThat(
+            resolver.isChannelEnabled(
+                user, ws, UserNotificationType.COMMENT_ADDED, NotificationChannel.IN_APP))
+        .isTrue();
+  }
+
+  @Test
+  void forceDisabledOverridesUserEnabledPreference() {
+    UUID user = UUID.randomUUID();
+    UUID ws = UUID.randomUUID();
+    when(global.isEnabled(
+            eq(user), eq(UserNotificationType.COMMENT_ADDED), eq(NotificationChannel.EMAIL)))
+        .thenReturn(true);
+    when(workspaceRepo.findByUserIdAndWorkspaceIdAndNotificationTypeAndChannel(
+            eq(user), eq(ws), eq(UserNotificationType.COMMENT_ADDED), eq(NotificationChannel.EMAIL)))
+        .thenReturn(Optional.empty());
+    when(policyRepo.findByWorkspaceIdAndNotificationTypeAndChannel(
+            eq(ws), eq(UserNotificationType.COMMENT_ADDED), eq(NotificationChannel.EMAIL)))
+        .thenReturn(
+            Optional.of(
+                new WorkspaceNotificationPolicy(
+                    UUID.randomUUID(),
+                    ws,
+                    UserNotificationType.COMMENT_ADDED,
+                    NotificationChannel.EMAIL,
+                    WorkspaceNotificationPolicyMode.FORCE_DISABLED,
+                    "quiet",
+                    user,
+                    user,
+                    Instant.now(),
+                    Instant.now())));
+    var resolver = resolver(true, true);
+    assertThat(
+            resolver.isChannelEnabled(
+                user, ws, UserNotificationType.COMMENT_ADDED, NotificationChannel.EMAIL))
+        .isFalse();
+    assertThat(
+            resolver.classifyChannelDisabledAnalyticsReason(
+                user, ws, UserNotificationType.COMMENT_ADDED, NotificationChannel.EMAIL))
+        .isEqualTo(NotificationAnalyticsEventKind.SKIPPED_WORKSPACE_ADMIN_POLICY);
+  }
+
+  @Test
+  void policiesDisabledIgnoresStoredPolicyRow() {
+    UUID user = UUID.randomUUID();
+    UUID ws = UUID.randomUUID();
+    when(global.isEnabled(
+            eq(user), eq(UserNotificationType.COMMENT_ADDED), eq(NotificationChannel.IN_APP)))
+        .thenReturn(true);
+    when(workspaceRepo.findByUserIdAndWorkspaceIdAndNotificationTypeAndChannel(
+            eq(user), eq(ws), eq(UserNotificationType.COMMENT_ADDED), eq(NotificationChannel.IN_APP)))
+        .thenReturn(
+            Optional.of(
+                new UserWorkspaceNotificationPreference(
+                    UUID.randomUUID(),
+                    user,
+                    ws,
+                    UserNotificationType.COMMENT_ADDED,
+                    NotificationChannel.IN_APP,
+                    false,
+                    Instant.now())));
+    var resolver = resolver(true, false);
+    assertThat(
+            resolver.isChannelEnabled(
+                user, ws, UserNotificationType.COMMENT_ADDED, NotificationChannel.IN_APP))
+        .isFalse();
   }
 }

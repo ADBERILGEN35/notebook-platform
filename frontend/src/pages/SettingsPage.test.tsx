@@ -52,6 +52,7 @@ vi.mock('../features/admin/access/admin-access', () => ({
 vi.mock('../shared/config/notifications-feature-flags', () => ({
   isNotificationPreferencesEnabled: () => true,
   isWorkspaceNotificationPreferencesEnabled: () => false,
+  isWorkspaceNotificationPoliciesEnabled: () => false,
   isMfaUiEnabled: () => true,
 }))
 vi.mock('../features/notifications/notification-preferences-api', () => ({

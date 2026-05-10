@@ -189,7 +189,10 @@ When disabled, topbar bell and `/app/notifications` experience are hidden/blocke
 
 - Runtime / Vite: `FRONTEND_WORKSPACE_NOTIFICATION_PREFERENCES_ENABLED` /
   `VITE_WORKSPACE_NOTIFICATION_PREFERENCES_ENABLED` (Settings → per-workspace channel overrides).
-- Backend feature `WORKSPACE_NOTIFICATION_PREFERENCES_ENABLED` must be on for API calls to succeed.
+- Runtime / Vite: `FRONTEND_WORKSPACE_NOTIFICATION_POLICIES_ENABLED` /
+  `VITE_WORKSPACE_NOTIFICATION_POLICIES_ENABLED` (Settings → workspace owner/admin notification policies).
+- Backend feature `WORKSPACE_NOTIFICATION_PREFERENCES_ENABLED` must be on for preference API calls to succeed.
+- Backend feature `WORKSPACE_NOTIFICATION_POLICIES_ENABLED` must be on for policy API calls to succeed.
 
 ## Realtime notification SSE (Faz 56)
 

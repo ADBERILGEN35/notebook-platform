@@ -12,6 +12,7 @@ public class AuditAdminAuthorizer {
   public static final String REQUIRED_SCOPE = "internal:audit:read";
   public static final String ADMIN_STATUS_SCOPE = "internal:admin:status:read";
   public static final String CHANGE_REQUEST_SCOPE = "internal:admin:change-requests:manage";
+  public static final String RBAC_READ_SCOPE = "internal:admin:rbac:read";
 
   private final AuditAdminProperties properties;
 

@@ -66,6 +66,8 @@ public class NotificationAnalyticsSummaryService {
     long skippedPref = kindTotals.getOrDefault(NotificationAnalyticsEventKind.SKIPPED_PREFERENCE, 0L);
     long skippedWs =
         kindTotals.getOrDefault(NotificationAnalyticsEventKind.SKIPPED_WORKSPACE_PREFERENCE, 0L);
+    long skippedWsAdmin =
+        kindTotals.getOrDefault(NotificationAnalyticsEventKind.SKIPPED_WORKSPACE_ADMIN_POLICY, 0L);
     long digestQueued = kindTotals.getOrDefault(NotificationAnalyticsEventKind.DIGEST_QUEUED, 0L);
     long digestSent = kindTotals.getOrDefault(NotificationAnalyticsEventKind.DIGEST_SENT, 0L);
     long quietHours = kindTotals.getOrDefault(NotificationAnalyticsEventKind.QUIET_HOURS_DELAYED, 0L);
@@ -121,7 +123,7 @@ public class NotificationAnalyticsSummaryService {
             sent,
             failed,
             dead,
-            skippedPref + skippedWs,
+            skippedPref + skippedWs + skippedWsAdmin,
             digestQueued,
             digestSent,
             quietHours);

@@ -94,6 +94,7 @@
 - Delivery preference APIs are user-scoped through `X-User-Id`; cross-user updates are not allowed.
 - Faz 65 workspace notification preference APIs additionally require workspace-service **membership**
   verification via service JWT; non-members receive `403` without reading or mutating overrides.
+- Faz 85 **workspace admin notification policies** use the same membership client; **mutations** require workspace **owner/admin** role. Platform-wide admin RBAC does not replace workspace role checks for policy changes.
 
 ## Faz 59 additions
 

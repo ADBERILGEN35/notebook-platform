@@ -7,6 +7,7 @@ import {
   PERM_NOTIFICATIONS_ANALYTICS_READ,
   PERM_NOTIFICATIONS_DEAD_LETTER_READ,
   PERM_NOTIFICATIONS_LEGAL_HOLD_READ,
+  PERM_RBAC_READ,
   hasPlatformPermission,
 } from '../../features/admin/access/admin-permissions'
 import {
@@ -17,6 +18,7 @@ import {
   isNotificationDeadLetterUiEnabled,
   isNotificationRetentionUiEnabled,
   isNotificationLegalHoldUiEnabled,
+  isAdminRbacUiEnabled,
 } from '../../shared/config/admin-feature-flags'
 
 const linkClass = ({ isActive }: { isActive: boolean }) =>
@@ -42,6 +44,8 @@ export function AdminLayout() {
   const showNotificationLegalHolds =
     isNotificationLegalHoldUiEnabled() &&
     (devNavOpen || hasPlatformPermission(user, PERM_NOTIFICATIONS_LEGAL_HOLD_READ))
+  const showAdminRbac =
+    isAdminRbacUiEnabled() && (devNavOpen || hasPlatformPermission(user, PERM_RBAC_READ))
 
   return (
     <div className="flex flex-col gap-4 lg:flex-row lg:gap-8">
@@ -85,6 +89,13 @@ export function AdminLayout() {
             <li className="pl-3">
               <NavLink to="/app/admin/enterprise/change-requests" className={linkClass}>
                 Change requests
+              </NavLink>
+            </li>
+          ) : null}
+          {showAdminRbac ? (
+            <li>
+              <NavLink to="/app/admin/rbac" className={linkClass}>
+                Admin RBAC
               </NavLink>
             </li>
           ) : null}

@@ -90,22 +90,16 @@ public class EmailNotificationService {
               request.workspaceId(),
               mappedType.get(),
               NotificationChannel.EMAIL)) {
-        if (preferenceResolver.isEmailDisabledOnlyByWorkspace(
-            request.recipientUserId(), request.workspaceId(), mappedType.get())) {
-          analyticsRecorder.record(
-              NotificationAnalyticsEventKind.SKIPPED_WORKSPACE_PREFERENCE,
-              mappedType.get().name(),
-              "EMAIL",
-              "",
-              1);
-        } else {
-          analyticsRecorder.record(
-              NotificationAnalyticsEventKind.SKIPPED_PREFERENCE,
-              mappedType.get().name(),
-              "EMAIL",
-              "",
-              1);
-        }
+        analyticsRecorder.record(
+            preferenceResolver.classifyChannelDisabledAnalyticsReason(
+                request.recipientUserId(),
+                request.workspaceId(),
+                mappedType.get(),
+                NotificationChannel.EMAIL),
+            mappedType.get().name(),
+            "EMAIL",
+            "",
+            1);
         return new EmailNotificationResponse(
             null, EmailNotificationStatus.SKIPPED, "USER_PREFERENCE_DISABLED");
       }

@@ -21,12 +21,16 @@ export const PERM_NOTIFICATIONS_RETENTION_READ = 'admin:notifications:retention:
 export const PERM_NOTIFICATIONS_RETENTION_RUN = 'admin:notifications:retention:run'
 export const PERM_NOTIFICATIONS_LEGAL_HOLD_READ = 'admin:notifications:legal-hold:read'
 export const PERM_NOTIFICATIONS_LEGAL_HOLD_WRITE = 'admin:notifications:legal-hold:write'
+export const PERM_RBAC_READ = 'admin:rbac:read'
+export const PERM_RBAC_CHANGE_REQUEST_CREATE = 'admin:rbac:change-request:create'
 
 const OP_TO_CREATE_PERM: Record<string, string> = {
   ADMIN_MFA_MODE_UPDATE: PERM_SECURITY_CHANGE_REQUEST_CREATE,
   MERGE_ANALYSIS_ROLLOUT_REQUEST: PERM_MERGE_CHANGE_REQUEST_CREATE,
   MERGE_APPLY_ROLLOUT_REQUEST: PERM_MERGE_CHANGE_REQUEST_CREATE,
   SCIM_BULK_ROLLOUT_REQUEST: PERM_SCIM_CHANGE_REQUEST_CREATE,
+  ADMIN_RBAC_ROLE_GRANT_REQUEST: PERM_RBAC_CHANGE_REQUEST_CREATE,
+  ADMIN_RBAC_ROLE_REVOKE_REQUEST: PERM_RBAC_CHANGE_REQUEST_CREATE,
 }
 
 export function isPlatformAdmin(user: AuthUser | null): boolean {

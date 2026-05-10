@@ -1,4 +1,4 @@
-# Notification Preferences (Faz 49/58/65)
+# Notification Preferences (Faz 49/58/65/85)
 
 ## Scope
 
@@ -32,6 +32,12 @@ Faz 65 **per-workspace** overrides (see [`workspace-notification-preferences.md`
 - `GET /notification-preferences/workspaces/{workspaceId}`
 - `PATCH /notification-preferences/workspaces/{workspaceId}`
 - `POST /notification-preferences/workspaces/{workspaceId}/reset`
+
+Faz 85 **workspace admin policies** (owner/admin only; see [`workspace-notification-policies.md`](workspace-notification-policies.md)):
+
+- `GET /notification-policies/workspaces/{workspaceId}`
+- `PATCH /notification-policies/workspaces/{workspaceId}`
+- `POST /notification-policies/workspaces/{workspaceId}/reset`
 
 Validation rules:
 

@@ -90,7 +90,7 @@ audit:
     issuer: ${AUDIT_ADMIN_SERVICE_JWT_ISSUER:audit-admin}
     audience: ${AUDIT_ADMIN_SERVICE_JWT_AUDIENCE:identity-service}
     clock-skew-seconds: ${AUDIT_ADMIN_SERVICE_JWT_CLOCK_SKEW_SECONDS:5}
-    allowed-scopes: ${AUDIT_ADMIN_SERVICE_JWT_ALLOWED_SCOPES:internal:audit:read,internal:admin:status:read,internal:admin:change-requests:manage}
+    allowed-scopes: ${AUDIT_ADMIN_SERVICE_JWT_ALLOWED_SCOPES:internal:audit:read,internal:admin:status:read,internal:admin:change-requests:manage,internal:admin:rbac:read}
 
 identity:
   internal:
@@ -108,6 +108,9 @@ identity:
       group-change-request-author: ${ADMIN_RBAC_GROUP_CHANGE_REQUEST_AUTHOR:}
       group-change-request-approver: ${ADMIN_RBAC_GROUP_CHANGE_REQUEST_APPROVER:}
       group-observability-viewer: ${ADMIN_RBAC_GROUP_OBSERVABILITY_VIEWER:}
+      visibility-enabled: ${ADMIN_RBAC_VISIBILITY_ENABLED:false}
+      role-change-requests-enabled: ${ADMIN_RBAC_ROLE_CHANGE_REQUESTS_ENABLED:false}
+      visibility-allowlist-emails: ${ADMIN_RBAC_VISIBILITY_ALLOWLIST_EMAILS:}
     change-requests:
       enabled: ${ADMIN_CHANGE_REQUESTS_ENABLED:false}
       retention-days: ${ADMIN_CHANGE_REQUEST_RETENTION_DAYS:180}

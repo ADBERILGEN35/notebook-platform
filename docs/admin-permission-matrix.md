@@ -1,4 +1,4 @@
-# Admin permission matrix (Faz 79–84)
+# Admin permission matrix (Faz 79–86)
 
 Gateway routes and change-request operations require permissions when `GATEWAY_ADMIN_RBAC_ENFORCE=true`. When enforce is **false**, legacy admin checks apply (`PLATFORM_ADMIN`, allowlist, MFA).
 
@@ -11,8 +11,8 @@ Resolved when `ADMIN_RBAC_ENABLED=true`. `PLATFORM_ADMIN` adds **all** permissio
 | `PLATFORM_ADMIN` | All permissions in `PlatformAdminRbacConstants.allPermissions()` |
 | `PLATFORM_AUDIT_VIEWER` | `admin:audit:read` |
 | `PLATFORM_AUDIT_EXPORTER` | `admin:audit:read`, `admin:audit:export` |
-| `PLATFORM_SECURITY_ADMIN` | `admin:enterprise:status:read`, `admin:change-request:list`, `admin:change-request:create`, `admin:security:change-request:create`, `admin:change-request:gitops:dry-run`, `admin:change-request:gitops:create`, `admin:notifications:dead-letter:read`, `admin:notifications:dead-letter:requeue`, `admin:notifications:retention:read`, `admin:notifications:retention:run`, `admin:notifications:legal-hold:read`, `admin:notifications:legal-hold:write` |
-| `PLATFORM_IDENTITY_ADMIN` | `admin:identity:read`, `admin:enterprise:status:read`, `admin:change-request:list`, `admin:change-request:create`, `admin:scim:change-request:create`, `admin:change-request:gitops:dry-run`, `admin:change-request:gitops:create` |
+| `PLATFORM_SECURITY_ADMIN` | `admin:enterprise:status:read`, `admin:rbac:read`, `admin:change-request:list`, `admin:change-request:create`, `admin:security:change-request:create`, `admin:change-request:gitops:dry-run`, `admin:change-request:gitops:create`, `admin:notifications:dead-letter:read`, `admin:notifications:dead-letter:requeue`, `admin:notifications:retention:read`, `admin:notifications:retention:run`, `admin:notifications:legal-hold:read`, `admin:notifications:legal-hold:write` |
+| `PLATFORM_IDENTITY_ADMIN` | `admin:identity:read`, `admin:enterprise:status:read`, `admin:rbac:read`, `admin:rbac:change-request:create`, `admin:change-request:list`, `admin:change-request:create`, `admin:scim:change-request:create`, `admin:change-request:gitops:dry-run`, `admin:change-request:gitops:create` |
 | `PLATFORM_CHANGE_REQUEST_AUTHOR` | `admin:change-request:list`, `admin:change-request:create`, `admin:change-request:cancel` |
 | `PLATFORM_CHANGE_REQUEST_APPROVER` | `admin:enterprise:status:read`, `admin:change-request:list`, `admin:change-request:approve`, `admin:change-request:reject`, `admin:change-request:gitops:dry-run`, `admin:change-request:gitops:create` |
 | `PLATFORM_OBSERVABILITY_VIEWER` | `admin:enterprise:status:read`, `admin:notifications:analytics:read`, `admin:notifications:dead-letter:read`, `admin:notifications:retention:read`, `admin:notifications:legal-hold:read` |
@@ -22,6 +22,8 @@ Resolved when `ADMIN_RBAC_ENABLED=true`. `PLATFORM_ADMIN` adds **all** permissio
 | Route | Permission(s) |
 |-------|----------------|
 | `GET /admin/enterprise/status` | `admin:enterprise:status:read` |
+| `GET /admin/rbac/users` | `admin:rbac:read` |
+| `GET /admin/rbac/users/{userId}` | `admin:rbac:read` |
 | `GET /admin/notifications/analytics/summary` | `admin:notifications:analytics:read` |
 | `GET /admin/notifications/dead-letter` | `admin:notifications:dead-letter:read` |
 | `POST /admin/notifications/dead-letter/{id}/requeue/dry-run` | `admin:notifications:dead-letter:read` |
@@ -50,8 +52,10 @@ Resolved when `ADMIN_RBAC_ENABLED=true`. `PLATFORM_ADMIN` adds **all** permissio
 | `MERGE_ANALYSIS_ROLLOUT_REQUEST` | `admin:merge:change-request:create` |
 | `MERGE_APPLY_ROLLOUT_REQUEST` | `admin:merge:change-request:create` |
 | `SCIM_BULK_ROLLOUT_REQUEST` | `admin:scim:change-request:create` |
+| `ADMIN_RBAC_ROLE_GRANT_REQUEST` | `admin:rbac:change-request:create` |
+| `ADMIN_RBAC_ROLE_REVOKE_REQUEST` | `admin:rbac:change-request:create` |
 
-Identity `AdminOperationRegistry` mirrors these for validation.
+Identity `AdminOperationRegistry` mirrors these for validation. RBAC role requests use free-form `requestedValue` encoding (`grant|revoke:role:userId`); **runtime apply is not supported** (GitOps/runbook only after approval).
 
 ## Error codes
 

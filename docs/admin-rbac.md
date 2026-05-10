@@ -39,6 +39,7 @@ Canonical strings live in `common-security` (`PlatformAdminRbacConstants`).
 - Notification dead-letter (fanout DEAD rows): `admin:notifications:dead-letter:read`, `admin:notifications:dead-letter:requeue` (Faz 82; observability viewer = read-only)
 - Notification retention (planner + optional purge): `admin:notifications:retention:read`, `admin:notifications:retention:run` (Faz 83; observability viewer = read-only; security admin = read + run)
 - Notification legal holds (retention governance): `admin:notifications:legal-hold:read`, `admin:notifications:legal-hold:write` (Faz 84; observability viewer = read-only; security admin = read + write)
+- **Workspace notification policies** (Faz 85) are **not** governed here: notification-service authorizes `PATCH` / `POST .../reset` on `/notification-policies/workspaces/{workspaceId}` using **workspace owner/admin** membership from workspace-service. Platform admin permissions alone do **not** grant workspace policy writes unless the user is also an owner/admin of that workspace.
 - Change requests: `admin:change-request:list`, `:create`, `:approve`, `:reject`, `:cancel`
 - Operation-specific creates: `admin:security:change-request:create`, `admin:merge:change-request:create`, `admin:scim:change-request:create`, `admin:siem:change-request:create`
 - Identity read: `admin:identity:read`

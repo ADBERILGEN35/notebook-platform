@@ -8,6 +8,8 @@ public final class NotificationTestWorkspace {
   public static NotificationProperties.WorkspaceClient disabled() {
     return new NotificationProperties.WorkspaceClient(
         false,
+        false,
+        false,
         "http://localhost:8082",
         3000,
         new NotificationProperties.OutboundServiceJwt(

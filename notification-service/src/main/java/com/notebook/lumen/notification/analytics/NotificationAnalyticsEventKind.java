@@ -9,6 +9,8 @@ public enum NotificationAnalyticsEventKind {
   DEAD,
   SKIPPED_PREFERENCE,
   SKIPPED_WORKSPACE_PREFERENCE,
+  /** Delivery skipped because workspace admin policy force-disabled the channel. */
+  SKIPPED_WORKSPACE_ADMIN_POLICY,
   DIGEST_QUEUED,
   DIGEST_SENT,
   QUIET_HOURS_DELAYED,

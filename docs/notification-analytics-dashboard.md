@@ -41,6 +41,8 @@ Successful gateway calls log `admin_notification_analytics_viewed` with `from`, 
 
 Hourly table: `notification_delivery_analytics_hourly` (Flyway). Dimensions: `notificationType`, `channel`, `severity`, `eventKind`. **No** `userId`, **no** `workspaceId`, **no** raw metadata.
 
+Skip-related event kinds include `SKIPPED_PREFERENCE`, `SKIPPED_WORKSPACE_PREFERENCE`, and `SKIPPED_WORKSPACE_ADMIN_POLICY` (Faz 85: email/in-app skipped because a workspace admin policy force-disabled the channel while the user’s base preference would have allowed delivery).
+
 Live snapshots in the summary response (not hourly rows): fanout outbox counts, digest pending count, SSE connection count (pod-local), worker last-run timestamps.
 
 ## Retention / purge (manual)

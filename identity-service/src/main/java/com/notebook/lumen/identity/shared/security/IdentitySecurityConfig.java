@@ -29,6 +29,7 @@ public class IdentitySecurityConfig {
                         "/internal/audit-events",
                         "/internal/admin/status/**",
                         "/internal/admin/change-requests/**",
+                        "/internal/admin/rbac/**",
                         "/.well-known/jwks.json",
                         "/actuator/health",
                         "/swagger-ui.html",

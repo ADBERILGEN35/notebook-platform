@@ -73,7 +73,7 @@ class NotificationAnalyticsSummaryServiceTest {
         new NotificationProperties.OutboundServiceJwt(
             "k", "", "/p", "iss", "sub", "svc", 60, "aud");
     var workspace =
-        new NotificationProperties.WorkspaceClient(false, "http://localhost", 3000, outbound);
+        new NotificationProperties.WorkspaceClient(false, false, false, "http://localhost", 3000, outbound);
     return new NotificationProperties(
         "w1",
         email,
@@ -122,6 +122,7 @@ class NotificationAnalyticsSummaryServiceTest {
             kindTotal(NotificationAnalyticsEventKind.SENT, 4),
             kindTotal(NotificationAnalyticsEventKind.SKIPPED_PREFERENCE, 10),
             kindTotal(NotificationAnalyticsEventKind.SKIPPED_WORKSPACE_PREFERENCE, 3),
+            kindTotal(NotificationAnalyticsEventKind.SKIPPED_WORKSPACE_ADMIN_POLICY, 2),
             kindTotal(NotificationAnalyticsEventKind.SSE_SEND_FAILURE, 1));
     var channelRows =
         List.of(
@@ -148,7 +149,7 @@ class NotificationAnalyticsSummaryServiceTest {
 
     assertThat(resp.totals().created()).isEqualTo(3L);
     assertThat(resp.totals().sent()).isEqualTo(4L);
-    assertThat(resp.totals().skippedPreference()).isEqualTo(13L);
+    assertThat(resp.totals().skippedPreference()).isEqualTo(15L);
     assertThat(resp.fanout().pending()).isEqualTo(5L);
     assertThat(resp.fanout().retrying()).isEqualTo(1L);
     assertThat(resp.fanout().dead()).isEqualTo(2L);

@@ -158,6 +158,7 @@ public class AdminRbacService {
         }
         case PlatformAdminRbacConstants.ROLE_PLATFORM_SECURITY_ADMIN -> {
           perms.add(PlatformAdminRbacConstants.PERM_ENTERPRISE_STATUS_READ);
+          perms.add(PlatformAdminRbacConstants.PERM_RBAC_READ);
           perms.add(PlatformAdminRbacConstants.PERM_CHANGE_REQUEST_LIST);
           perms.add(PlatformAdminRbacConstants.PERM_CHANGE_REQUEST_CREATE);
           perms.add(PlatformAdminRbacConstants.PERM_SECURITY_CHANGE_REQUEST_CREATE);
@@ -173,6 +174,8 @@ public class AdminRbacService {
         case PlatformAdminRbacConstants.ROLE_PLATFORM_IDENTITY_ADMIN -> {
           perms.add(PlatformAdminRbacConstants.PERM_IDENTITY_READ);
           perms.add(PlatformAdminRbacConstants.PERM_ENTERPRISE_STATUS_READ);
+          perms.add(PlatformAdminRbacConstants.PERM_RBAC_READ);
+          perms.add(PlatformAdminRbacConstants.PERM_RBAC_CHANGE_REQUEST_CREATE);
           perms.add(PlatformAdminRbacConstants.PERM_CHANGE_REQUEST_LIST);
           perms.add(PlatformAdminRbacConstants.PERM_CHANGE_REQUEST_CREATE);
           perms.add(PlatformAdminRbacConstants.PERM_SCIM_CHANGE_REQUEST_CREATE);

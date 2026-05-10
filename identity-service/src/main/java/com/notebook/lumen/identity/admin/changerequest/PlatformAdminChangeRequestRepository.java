@@ -13,4 +13,6 @@ public interface PlatformAdminChangeRequestRepository
   List<PlatformAdminChangeRequest> findTop100ByStatusOrderByCreatedAtDesc(ChangeRequestStatus status);
 
   Optional<PlatformAdminChangeRequest> findByIdAndRequestedByUserId(UUID id, UUID userId);
+
+  long countByRequestedByUserId(UUID requestedByUserId);
 }

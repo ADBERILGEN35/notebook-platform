@@ -98,6 +98,7 @@ public class RedisRateLimitGlobalFilter implements GlobalFilter, Ordered {
       limiter = authRedisRateLimiter;
     } else if (isAdminAuditEndpoint(exchange)
         || isAdminEnterpriseStatusEndpoint(exchange)
+        || isAdminRbacReadEndpoint(exchange)
         || isAdminNotificationAnalyticsEndpoint(exchange)
         || isAdminNotificationDeadLetterReadOrDryRunEndpoint(exchange)
         || isAdminNotificationRetentionReadEndpoint(exchange)
@@ -152,6 +153,11 @@ public class RedisRateLimitGlobalFilter implements GlobalFilter, Ordered {
 
   private boolean isAdminEnterpriseStatusEndpoint(ServerWebExchange exchange) {
     return "/admin/enterprise/status".equals(exchange.getRequest().getPath().value());
+  }
+
+  private boolean isAdminRbacReadEndpoint(ServerWebExchange exchange) {
+    String path = exchange.getRequest().getPath().value();
+    return path.startsWith("/admin/rbac/users");
   }
 
   private boolean isAdminNotificationAnalyticsEndpoint(ServerWebExchange exchange) {

@@ -26,6 +26,14 @@ import {
   type WorkspaceNotificationPreferencesResponse,
   type WorkspacePreferenceUpdate,
 } from '../features/notifications/workspace-notification-preferences-api'
+import {
+  getWorkspaceNotificationPolicies,
+  patchWorkspaceNotificationPolicies,
+  resetWorkspaceNotificationPolicies,
+  type WorkspaceNotificationPoliciesResponse,
+  type WorkspaceNotificationPolicyMode,
+  type WorkspaceNotificationPolicyUpdate,
+} from '../features/notifications/workspace-notification-policies-api'
 import { listWorkspaces } from '../features/workspaces/workspace-api'
 import { useWorkspaceStore } from '../features/workspaces/workspace-store'
 import { Button } from '../shared/components/Button'
@@ -37,6 +45,7 @@ import { canShowAdminNavigation } from '../features/admin/access/admin-access'
 import {
   isMfaUiEnabled,
   isNotificationPreferencesEnabled,
+  isWorkspaceNotificationPoliciesEnabled,
   isWorkspaceNotificationPreferencesEnabled,
 } from '../shared/config/notifications-feature-flags'
 import { isWebAuthnSupported } from '../shared/security/webauthn-support'
@@ -72,6 +81,7 @@ export function SettingsPage() {
   const user = useAuthStore((state) => state.user)
   const preferencesEnabled = isNotificationPreferencesEnabled()
   const workspacePrefsEnabled = isWorkspaceNotificationPreferencesEnabled()
+  const workspacePoliciesEnabled = isWorkspaceNotificationPoliciesEnabled()
   const mfaUiEnabled = isMfaUiEnabled()
   const webAuthnSupported = isWebAuthnSupported()
   const offlineNotesEnabled = isOfflineNotesEnabled()
@@ -117,7 +127,7 @@ export function SettingsPage() {
   const workspacesQuery = useQuery({
     queryKey: ['workspaces', 'settings-notification'],
     queryFn: () => listWorkspaces(0, 50),
-    enabled: preferencesEnabled && workspacePrefsEnabled,
+    enabled: preferencesEnabled && (workspacePrefsEnabled || workspacePoliciesEnabled),
   })
   const [selectedWorkspaceId, setSelectedWorkspaceId] = useState<string | null>(null)
   useEffect(() => {
@@ -176,6 +186,58 @@ export function SettingsPage() {
     onSuccess: () => {
       void workspacePrefsQuery.refetch()
       setWorkspaceDraft({})
+    },
+  })
+  const workspacePoliciesQuery = useQuery({
+    queryKey: ['workspace-notification-policies', selectedWorkspaceId],
+    queryFn: () => getWorkspaceNotificationPolicies(selectedWorkspaceId!),
+    enabled: Boolean(preferencesEnabled && workspacePoliciesEnabled && selectedWorkspaceId),
+  })
+  const [policyDraft, setPolicyDraft] = useState<
+    Record<string, { policyMode: WorkspaceNotificationPolicyMode; reason: string }>
+  >({})
+  const policyBaseline = useMemo(
+    () => extractPolicyBaseline(workspacePoliciesQuery.data),
+    [workspacePoliciesQuery.data],
+  )
+  const policyEffective = useMemo(
+    () => ({ ...policyBaseline, ...policyDraft }),
+    [policyBaseline, policyDraft],
+  )
+  const policyDirty = useMemo(() => {
+    return Object.keys(policyEffective).some((key) => {
+      const b = policyBaseline[key]
+      const e = policyEffective[key]
+      if (!b || !e) return false
+      return b.policyMode !== e.policyMode || b.reason !== e.reason
+    })
+  }, [policyBaseline, policyEffective])
+  useEffect(() => {
+    setPolicyDraft({})
+  }, [selectedWorkspaceId, workspacePoliciesQuery.data?.workspaceId])
+  const saveWorkspacePoliciesMutation = useMutation({
+    mutationFn: async () => {
+      if (!selectedWorkspaceId) throw new Error('no workspace')
+      const updates = buildPolicyUpdates(
+        policyBaseline,
+        policyEffective,
+        workspacePoliciesQuery.data,
+      )
+      return patchWorkspaceNotificationPolicies(selectedWorkspaceId, updates)
+    },
+    onSuccess: () => {
+      void workspacePoliciesQuery.refetch()
+      setPolicyDraft({})
+    },
+  })
+  const resetWorkspacePoliciesMutation = useMutation({
+    mutationFn: async () => {
+      if (!selectedWorkspaceId) throw new Error('no workspace')
+      return resetWorkspaceNotificationPolicies(selectedWorkspaceId)
+    },
+    onSuccess: () => {
+      void workspacePoliciesQuery.refetch()
+      setPolicyDraft({})
     },
   })
   const mfaSettingsQuery = useQuery({
@@ -347,6 +409,8 @@ export function SettingsPage() {
   const setWorkspaceChannel = (type: UserNotificationType, channel: NotificationChannel, enabled: boolean) => {
     const key = `${type}::${channel}`
     if (!workspaceBaseline[key]) return
+    const st = workspacePrefsQuery.data?.preferences.find((p) => p.notificationType === type)?.channels[channel]
+    if (st?.lockedByPolicy) return
     setWorkspaceDraft((prev) => ({
       ...prev,
       [key]: { inheritGlobal: false, enabled },
@@ -357,7 +421,7 @@ export function SettingsPage() {
     const key = `${type}::${channel}`
     const row = workspacePrefsQuery.data?.preferences.find((p) => p.notificationType === type)
     const st = row?.channels[channel]
-    if (!st) return
+    if (!st || st.lockedByPolicy) return
     if (inheritGlobal) {
       setWorkspaceDraft((prev) => ({
         ...prev,
@@ -757,12 +821,18 @@ export function SettingsPage() {
             </Button>
           </div>
         </Card>
-        {workspacePrefsEnabled ? (
+        {workspacePrefsEnabled || workspacePoliciesEnabled ? (
           <Card>
-            <p className="text-sm font-medium text-slate-800">Workspace notification preferences</p>
+            <p className="text-sm font-medium text-slate-800">
+              {workspacePrefsEnabled ? 'Workspace notification preferences' : 'Workspace notifications'}
+            </p>
             <p className="mt-1 text-sm text-slate-600">
-              Per-workspace overrides for notification channels. Email digest timing and quiet hours stay global (see
-              delivery schedule above).
+              {workspacePrefsEnabled
+                ? 'Per-workspace overrides for notification channels. Email digest timing and quiet hours stay global (see delivery schedule above).'
+                : 'Workspace-level notification governance for all members.'}{' '}
+              {workspacePoliciesEnabled
+                ? 'Workspace owners and admins can set mandatory channel policies; they apply to every member.'
+                : null}
             </p>
             {workspacesQuery.isLoading ? <p className="mt-2 text-xs text-slate-500">Loading workspaces…</p> : null}
             {workspacesQuery.isError ? <ErrorAlert error={workspacesQuery.error} /> : null}
@@ -776,6 +846,7 @@ export function SettingsPage() {
                   onChange={(e) => {
                     setSelectedWorkspaceId(e.target.value || null)
                     setWorkspaceDraft({})
+                    setPolicyDraft({})
                   }}
                 >
                   {workspacesQuery.data.items.map((w) => (
@@ -787,87 +858,214 @@ export function SettingsPage() {
               </label>
             ) : (
               !workspacesQuery.isLoading ? (
-                <p className="mt-2 text-xs text-slate-600">No workspaces yet; create one to manage overrides.</p>
+                <p className="mt-2 text-xs text-slate-600">No workspaces yet; create one to manage settings.</p>
               ) : null
             )}
-            {workspacePrefsQuery.isError ? <ErrorAlert error={workspacePrefsQuery.error} /> : null}
-            <div className="mt-3 space-y-3">
-              {workspacePrefsQuery.data?.preferences.map((item) => (
-                <div key={item.notificationType} className="rounded border border-slate-200 p-3">
-                  <p className="text-sm font-medium text-slate-800">{item.label}</p>
-                  <p className="text-xs text-slate-600">{item.description}</p>
-                  {(['IN_APP', 'EMAIL'] as const).map((channel) => {
-                    const st = item.channels[channel]
-                    const key = `${item.notificationType}::${channel}`
-                    const eff = workspaceEffective[key]
-                    if (!eff) return null
-                    return (
-                      <div key={channel} className="mt-2 space-y-1 rounded border border-slate-100 p-2">
-                        <p className="text-xs font-medium text-slate-700">{channel === 'IN_APP' ? 'In-app' : 'Email'}</p>
-                        <p className="text-[11px] text-slate-500">
-                          {eff.inheritGlobal
-                            ? `Using global: ${eff.enabled ? 'on' : 'off'} · effective ${st.effectiveEnabled ? 'on' : 'off'}`
-                            : `Overridden: ${eff.enabled ? 'on' : 'off'} · effective ${st.effectiveEnabled ? 'on' : 'off'}`}
-                        </p>
-                        <label className="flex items-center justify-between gap-2 text-sm text-slate-700">
-                          <span>Use global setting</span>
-                          <input
-                            aria-label={`workspace-${item.notificationType}-${channel}-inherit`}
-                            type="checkbox"
-                            checked={eff.inheritGlobal}
-                            disabled={st.mandatory}
-                            onChange={(e) => setWorkspaceInherit(item.notificationType, channel, e.target.checked)}
-                          />
-                        </label>
-                        <label className="flex items-center justify-between gap-2 text-sm text-slate-700">
-                          <span>{channel === 'IN_APP' ? 'In-app' : 'Email'} enabled</span>
-                          <input
-                            aria-label={`workspace-${item.notificationType}-${channel}`}
-                            type="checkbox"
-                            checked={eff.enabled}
-                            disabled={st.mandatory || eff.inheritGlobal}
-                            onChange={(e) => setWorkspaceChannel(item.notificationType, channel, e.target.checked)}
-                          />
-                        </label>
-                        {st.mandatory ? (
-                          <p className="text-[11px] text-amber-700">Required; cannot override per workspace.</p>
-                        ) : null}
-                      </div>
-                    )
-                  })}
+            {workspacePoliciesEnabled ? (
+              <>
+                <p className="mt-4 text-sm font-medium text-slate-800">Admin notification policies</p>
+                <p className="mt-1 rounded border border-amber-200 bg-amber-50 p-2 text-[11px] text-amber-900">
+                  Policies affect all members of this workspace. Force-enabled channels stay on regardless of member
+                  preference; force-disabled channels stay off. Digest and quiet hours scheduling remain global per user.
+                </p>
+                {workspacePoliciesQuery.isError ? <ErrorAlert error={workspacePoliciesQuery.error} /> : null}
+                <div className="mt-3 space-y-3">
+                  {workspacePoliciesQuery.data?.policies.map((row) => (
+                    <div key={row.notificationType} className="rounded border border-slate-200 p-3">
+                      <p className="text-sm font-medium text-slate-800">{row.label}</p>
+                      {(['IN_APP', 'EMAIL'] as const).map((channel) => {
+                        const key = `${row.notificationType}::${channel}`
+                        const eff = policyEffective[key]
+                        if (!eff) return null
+                        const canEdit =
+                          Boolean(workspacePoliciesQuery.data?.canManagePolicies) &&
+                          row.channels[channel].manageable
+                        return (
+                          <div key={channel} className="mt-2 space-y-1 rounded border border-slate-100 p-2">
+                            <p className="text-xs font-medium text-slate-700">
+                              {channel === 'IN_APP' ? 'In-app' : 'Email'}
+                            </p>
+                            <label className="block text-xs text-slate-700">
+                              Policy mode
+                              <select
+                                aria-label={`policy-${row.notificationType}-${channel}-mode`}
+                                className="ml-2 mt-1 block rounded border border-slate-200 px-2 py-1 text-sm"
+                                disabled={!canEdit}
+                                value={eff.policyMode}
+                                onChange={(e) => {
+                                  const v = e.target.value as WorkspaceNotificationPolicyMode
+                                  setPolicyDraft((prev) => ({
+                                    ...prev,
+                                    [key]: { policyMode: v, reason: eff.reason },
+                                  }))
+                                }}
+                              >
+                                <option value="USER_CONTROLLED">User controlled</option>
+                                <option value="FORCE_ENABLED">Force enabled</option>
+                                <option value="FORCE_DISABLED">Force disabled</option>
+                              </select>
+                            </label>
+                            <label className="mt-1 block text-xs text-slate-700">
+                              Reason (required for force modes when server requires it)
+                              <input
+                                aria-label={`policy-${row.notificationType}-${channel}-reason`}
+                                className="mt-1 w-full rounded border border-slate-200 px-2 py-1 text-sm"
+                                disabled={!canEdit}
+                                value={eff.reason}
+                                onChange={(e) =>
+                                  setPolicyDraft((prev) => ({
+                                    ...prev,
+                                    [key]: { policyMode: eff.policyMode, reason: e.target.value },
+                                  }))
+                                }
+                              />
+                            </label>
+                            {!canEdit ? (
+                              <p className="text-[11px] text-slate-500">
+                                Only workspace owners and admins can edit policies.
+                              </p>
+                            ) : null}
+                          </div>
+                        )
+                      })}
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-            {saveWorkspacePrefsMutation.isError ? <ErrorAlert error={saveWorkspacePrefsMutation.error} /> : null}
-            {resetWorkspacePrefsMutation.isError ? <ErrorAlert error={resetWorkspacePrefsMutation.error} /> : null}
-            {saveWorkspacePrefsMutation.isSuccess ? (
-              <p className="mt-2 text-xs text-emerald-700">Workspace preferences saved.</p>
+                {saveWorkspacePoliciesMutation.isError ? (
+                  <ErrorAlert error={saveWorkspacePoliciesMutation.error} />
+                ) : null}
+                {resetWorkspacePoliciesMutation.isError ? (
+                  <ErrorAlert error={resetWorkspacePoliciesMutation.error} />
+                ) : null}
+                {saveWorkspacePoliciesMutation.isSuccess ? (
+                  <p className="mt-2 text-xs text-emerald-700">Workspace policies saved.</p>
+                ) : null}
+                {resetWorkspacePoliciesMutation.isSuccess ? (
+                  <p className="mt-2 text-xs text-emerald-700">Workspace policies reset to user-controlled defaults.</p>
+                ) : null}
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <Button
+                    type="button"
+                    onClick={() => saveWorkspacePoliciesMutation.mutate()}
+                    disabled={
+                      !selectedWorkspaceId ||
+                      !policyDirty ||
+                      !workspacePoliciesQuery.data?.canManagePolicies ||
+                      saveWorkspacePoliciesMutation.isPending ||
+                      workspacePoliciesQuery.isLoading
+                    }
+                  >
+                    Save workspace policies
+                  </Button>
+                  <Button
+                    type="button"
+                    className="bg-slate-100 text-slate-800 hover:bg-slate-200"
+                    onClick={() => {
+                      if (window.confirm('Reset all workspace notification policies to user-controlled defaults?')) {
+                        resetWorkspacePoliciesMutation.mutate()
+                      }
+                    }}
+                    disabled={
+                      !selectedWorkspaceId ||
+                      !workspacePoliciesQuery.data?.canManagePolicies ||
+                      resetWorkspacePoliciesMutation.isPending
+                    }
+                  >
+                    Reset workspace policies
+                  </Button>
+                </div>
+              </>
             ) : null}
-            {resetWorkspacePrefsMutation.isSuccess ? (
-              <p className="mt-2 text-xs text-emerald-700">Workspace preferences reset to global defaults.</p>
+            {workspacePrefsEnabled ? (
+              <>
+                {workspacePrefsQuery.isError ? <ErrorAlert error={workspacePrefsQuery.error} /> : null}
+                <div className="mt-3 space-y-3">
+                  {workspacePrefsQuery.data?.preferences.map((item) => (
+                    <div key={item.notificationType} className="rounded border border-slate-200 p-3">
+                      <p className="text-sm font-medium text-slate-800">{item.label}</p>
+                      <p className="text-xs text-slate-600">{item.description}</p>
+                      {(['IN_APP', 'EMAIL'] as const).map((channel) => {
+                        const st = item.channels[channel]
+                        const key = `${item.notificationType}::${channel}`
+                        const eff = workspaceEffective[key]
+                        if (!eff) return null
+                        return (
+                          <div key={channel} className="mt-2 space-y-1 rounded border border-slate-100 p-2">
+                            <p className="text-xs font-medium text-slate-700">
+                              {channel === 'IN_APP' ? 'In-app' : 'Email'}
+                            </p>
+                            <p className="text-[11px] text-slate-500">
+                              {eff.inheritGlobal
+                                ? `Using global: ${eff.enabled ? 'on' : 'off'} · effective ${st.effectiveEnabled ? 'on' : 'off'}`
+                                : `Overridden: ${eff.enabled ? 'on' : 'off'} · effective ${st.effectiveEnabled ? 'on' : 'off'}`}
+                            </p>
+                            {st.lockedByPolicy && st.workspacePolicy ? (
+                              <p className="text-[11px] text-amber-800">
+                                Required by workspace policy ({st.workspacePolicy.policyMode}
+                                {st.workspacePolicy.reason ? `: ${st.workspacePolicy.reason}` : ''}).
+                              </p>
+                            ) : null}
+                            <label className="flex items-center justify-between gap-2 text-sm text-slate-700">
+                              <span>Use global setting</span>
+                              <input
+                                aria-label={`workspace-${item.notificationType}-${channel}-inherit`}
+                                type="checkbox"
+                                checked={eff.inheritGlobal}
+                                disabled={st.mandatory || st.lockedByPolicy}
+                                onChange={(e) => setWorkspaceInherit(item.notificationType, channel, e.target.checked)}
+                              />
+                            </label>
+                            <label className="flex items-center justify-between gap-2 text-sm text-slate-700">
+                              <span>{channel === 'IN_APP' ? 'In-app' : 'Email'} enabled</span>
+                              <input
+                                aria-label={`workspace-${item.notificationType}-${channel}`}
+                                type="checkbox"
+                                checked={eff.enabled}
+                                disabled={st.mandatory || eff.inheritGlobal || st.lockedByPolicy}
+                                onChange={(e) => setWorkspaceChannel(item.notificationType, channel, e.target.checked)}
+                              />
+                            </label>
+                            {st.mandatory ? (
+                              <p className="text-[11px] text-amber-700">Required; cannot override per workspace.</p>
+                            ) : null}
+                          </div>
+                        )
+                      })}
+                    </div>
+                  ))}
+                </div>
+                {saveWorkspacePrefsMutation.isError ? <ErrorAlert error={saveWorkspacePrefsMutation.error} /> : null}
+                {resetWorkspacePrefsMutation.isError ? <ErrorAlert error={resetWorkspacePrefsMutation.error} /> : null}
+                {saveWorkspacePrefsMutation.isSuccess ? (
+                  <p className="mt-2 text-xs text-emerald-700">Workspace preferences saved.</p>
+                ) : null}
+                {resetWorkspacePrefsMutation.isSuccess ? (
+                  <p className="mt-2 text-xs text-emerald-700">Workspace preferences reset to global defaults.</p>
+                ) : null}
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <Button
+                    type="button"
+                    onClick={() => saveWorkspacePrefsMutation.mutate()}
+                    disabled={
+                      !selectedWorkspaceId ||
+                      !workspaceDirty ||
+                      saveWorkspacePrefsMutation.isPending ||
+                      workspacePrefsQuery.isLoading
+                    }
+                  >
+                    Save workspace overrides
+                  </Button>
+                  <Button
+                    type="button"
+                    className="bg-slate-100 text-slate-800 hover:bg-slate-200"
+                    onClick={() => resetWorkspacePrefsMutation.mutate()}
+                    disabled={!selectedWorkspaceId || resetWorkspacePrefsMutation.isPending}
+                  >
+                    Reset workspace preferences
+                  </Button>
+                </div>
+              </>
             ) : null}
-            <div className="mt-3 flex flex-wrap gap-2">
-              <Button
-                type="button"
-                onClick={() => saveWorkspacePrefsMutation.mutate()}
-                disabled={
-                  !selectedWorkspaceId ||
-                  !workspaceDirty ||
-                  saveWorkspacePrefsMutation.isPending ||
-                  workspacePrefsQuery.isLoading
-                }
-              >
-                Save workspace overrides
-              </Button>
-              <Button
-                type="button"
-                className="bg-slate-100 text-slate-800 hover:bg-slate-200"
-                onClick={() => resetWorkspacePrefsMutation.mutate()}
-                disabled={!selectedWorkspaceId || resetWorkspacePrefsMutation.isPending}
-              >
-                Reset workspace preferences
-              </Button>
-            </div>
           </Card>
         ) : null}
         </>
@@ -1007,3 +1205,44 @@ function buildWorkspacePreferenceUpdates(
   return updates
 }
 
+type PolicyChannelDraft = { policyMode: WorkspaceNotificationPolicyMode; reason: string }
+
+function extractPolicyBaseline(
+  data?: WorkspaceNotificationPoliciesResponse,
+): Record<string, PolicyChannelDraft> {
+  const out: Record<string, PolicyChannelDraft> = {}
+  if (!data) return out
+  for (const row of data.policies) {
+    for (const channel of ['IN_APP', 'EMAIL'] as const) {
+      const st = row.channels[channel]
+      const key = `${row.notificationType}::${channel}`
+      out[key] = { policyMode: st.policyMode, reason: st.reason ?? '' }
+    }
+  }
+  return out
+}
+
+function buildPolicyUpdates(
+  baseline: Record<string, PolicyChannelDraft>,
+  effective: Record<string, PolicyChannelDraft>,
+  data?: WorkspaceNotificationPoliciesResponse,
+): WorkspaceNotificationPolicyUpdate[] {
+  if (!data) return []
+  const updates: WorkspaceNotificationPolicyUpdate[] = []
+  for (const row of data.policies) {
+    for (const channel of ['IN_APP', 'EMAIL'] as const) {
+      const key = `${row.notificationType}::${channel}`
+      const b = baseline[key]
+      const e = effective[key]
+      if (!b || !e) continue
+      if (b.policyMode === e.policyMode && b.reason === e.reason) continue
+      updates.push({
+        notificationType: row.notificationType,
+        channel,
+        policyMode: e.policyMode,
+        reason: e.reason.trim() === '' ? null : e.reason,
+      })
+    }
+  }
+  return updates
+}

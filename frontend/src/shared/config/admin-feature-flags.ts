@@ -89,6 +89,22 @@ export const isNotificationLegalHoldUiEnabled = (): boolean =>
     false,
   )
 
+/** Faz 86: admin RBAC directory (read-only via gateway). */
+export const isAdminRbacUiEnabled = (): boolean =>
+  parseBool(
+    window.__NOTEBOOK_CONFIG__?.ADMIN_RBAC_UI_ENABLED ?? import.meta.env.VITE_ADMIN_RBAC_UI_ENABLED,
+    false,
+  )
+
+/** Faz 86: role grant/revoke change requests (no runtime apply). */
+export const isAdminRbacRoleRequestsUiEnabled = (): boolean =>
+  isAdminRbacUiEnabled() &&
+  parseBool(
+    window.__NOTEBOOK_CONFIG__?.ADMIN_RBAC_ROLE_REQUESTS_ENABLED ??
+      import.meta.env.VITE_ADMIN_RBAC_ROLE_REQUESTS_ENABLED,
+    false,
+  )
+
 export const getAuditApiMode = (): AuditApiMode => {
   const raw =
     window.__NOTEBOOK_CONFIG__?.AUDIT_API_MODE ?? import.meta.env.VITE_AUDIT_API_MODE ?? 'mock'

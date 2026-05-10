@@ -1,11 +1,18 @@
 import { apiRequest } from '../../shared/api/api-client'
 import type { NotificationChannel, UserNotificationType } from './notification-preferences-api'
 
+export type WorkspacePolicyState = {
+  policyMode: string
+  reason: string | null
+}
+
 export type WorkspaceChannelState = {
   enabled: boolean | null
   inherited: boolean
   effectiveEnabled: boolean
   mandatory: boolean
+  workspacePolicy?: WorkspacePolicyState | null
+  lockedByPolicy?: boolean
 }
 
 export type WorkspaceNotificationPreferenceRow = {

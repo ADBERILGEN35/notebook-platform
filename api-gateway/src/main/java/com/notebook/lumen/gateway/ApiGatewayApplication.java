@@ -9,6 +9,7 @@ import com.notebook.lumen.gateway.config.GatewayAdminEnterpriseProperties;
 import com.notebook.lumen.gateway.config.GatewayAuditProxyProperties;
 import com.notebook.lumen.gateway.config.GatewayAuditExportProperties;
 import com.notebook.lumen.gateway.config.GatewayAdminRbacProperties;
+import com.notebook.lumen.gateway.config.GatewayAdminRbacVisibilityProperties;
 import com.notebook.lumen.gateway.config.GatewayAdminWriteProperties;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -22,6 +23,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
   GatewayRateLimitProperties.class,
   GatewayAdminProperties.class,
   GatewayAdminRbacProperties.class,
+  GatewayAdminRbacVisibilityProperties.class,
   GatewayAdminEnterpriseProperties.class,
   GatewayAuditProxyProperties.class,
   GatewayAuditExportProperties.class,

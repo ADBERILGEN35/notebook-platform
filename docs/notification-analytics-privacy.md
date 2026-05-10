@@ -6,7 +6,7 @@ Delivery analytics exist so platform operators can see **health and flow** (crea
 
 ## Stored and exposed data
 
-- **Allowed in DB aggregates**: low-cardinality fields such as `notificationType`, `channel`, `severity`, `eventKind`, hourly `bucketStart`, and counts.
+- **Allowed in DB aggregates**: low-cardinality fields such as `notificationType`, `channel`, `severity`, `eventKind`, hourly `bucketStart`, and counts. Skip-related `eventKind` values include `SKIPPED_PREFERENCE`, `SKIPPED_WORKSPACE_PREFERENCE`, and `SKIPPED_WORKSPACE_ADMIN_POLICY` (Faz 85 policy blocks) without storing *why* beyond that coarse category.
 - **Not stored**: raw notification body, note title/content, user messages, tokens, email addresses, full metadata blobs, `userId`, `workspaceId` (MVP is global aggregate only).
 
 ## Metrics (Micrometer)

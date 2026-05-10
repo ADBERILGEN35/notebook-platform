@@ -197,6 +197,13 @@ See [`notification-center.md`](notification-center.md) and
 - Resolution via `NotificationPreferenceResolver`; workspace-service membership check for API calls.
 - Digest/quiet hours remain global; see [`workspace-notification-preferences.md`](workspace-notification-preferences.md).
 
+## Faz 85 Workspace admin notification policies
+
+- Table: `workspace_notification_policies` (`V15__workspace_notification_policies.sql`).
+- Public API: `GET/PATCH /notification-policies/workspaces/{workspaceId}` and `POST .../reset` (mutations: workspace owner/admin only via workspace-service role).
+- `NotificationPreferenceResolver` applies `FORCE_ENABLED` / `FORCE_DISABLED` after mandatory security types and before user workspace/global preferences when `WORKSPACE_NOTIFICATION_POLICIES_ENABLED=true`.
+- See [`workspace-notification-policies.md`](workspace-notification-policies.md).
+
 ## Admin status (Faz 63)
 
 `GET /internal/admin/status/notification` (service JWT, opt-in) returns SSE/digest/email **configuration class**

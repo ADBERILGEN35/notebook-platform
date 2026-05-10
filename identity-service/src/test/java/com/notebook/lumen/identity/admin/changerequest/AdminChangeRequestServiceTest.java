@@ -30,6 +30,7 @@ class AdminChangeRequestServiceTest {
   @Mock PlatformAdminChangeRequestRepository changeRequestRepository;
   @Mock UserRepository userRepository;
   @Mock AuditService auditService;
+  @Mock AdminRbacRoleChangeRequestValidator rbacRoleChangeRequestValidator;
 
   final AdminOperationRegistry registry = new AdminOperationRegistry();
   final AdminGitOpsPrProperties gitOpsProps =
@@ -55,7 +56,13 @@ class AdminChangeRequestServiceTest {
   void setUp() {
     service =
         new AdminChangeRequestService(
-            properties, gitOpsProps, registry, changeRequestRepository, userRepository, auditService);
+            properties,
+            gitOpsProps,
+            registry,
+            rbacRoleChangeRequestValidator,
+            changeRequestRepository,
+            userRepository,
+            auditService);
   }
 
   @Test
@@ -63,7 +70,7 @@ class AdminChangeRequestServiceTest {
     assertThatThrownBy(
             () ->
                 service.validate(
-                    new AdminChangeRequestDtos.ValidateBody("NOT_ALLOWED", "true", null, null)))
+                    new AdminChangeRequestDtos.ValidateBody("NOT_ALLOWED", "true", null, null, null)))
         .isInstanceOf(AdminChangeRequestException.class)
         .hasFieldOrPropertyWithValue("errorCode", "ADMIN_OPERATION_NOT_ALLOWED");
   }
@@ -73,7 +80,7 @@ class AdminChangeRequestServiceTest {
     AdminChangeRequestDtos.ValidateResponse r =
         service.validate(
             new AdminChangeRequestDtos.ValidateBody(
-                AdminOperationRegistry.OP_MERGE_ANALYSIS_ROLLOUT_REQUEST, "YES", null, null));
+                AdminOperationRegistry.OP_MERGE_ANALYSIS_ROLLOUT_REQUEST, "YES", null, null, null));
     assertThat(r.valid()).isTrue();
     assertThat(r.requiresApproval()).isTrue();
     assertThat(r.impactSummary().get("severity")).isEqualTo("MEDIUM");
@@ -91,7 +98,12 @@ class AdminChangeRequestServiceTest {
                     uid,
                     "a@b.com",
                     new AdminChangeRequestDtos.CreateBody(
-                        AdminOperationRegistry.OP_MERGE_APPLY_ROLLOUT_REQUEST, "true", null, null, "staging"),
+                        AdminOperationRegistry.OP_MERGE_APPLY_ROLLOUT_REQUEST,
+                        "true",
+                        null,
+                        null,
+                        "staging",
+                        null),
                     "rid",
                     req))
         .isInstanceOf(AdminChangeRequestException.class)
@@ -107,7 +119,7 @@ class AdminChangeRequestServiceTest {
         uid,
         "a@b.com",
         new AdminChangeRequestDtos.CreateBody(
-            AdminOperationRegistry.OP_MERGE_ANALYSIS_ROLLOUT_REQUEST, "false", null, null, "staging"),
+            AdminOperationRegistry.OP_MERGE_ANALYSIS_ROLLOUT_REQUEST, "false", null, null, "staging", null),
         "rid",
         req);
     verify(changeRequestRepository).save(any());
@@ -160,7 +172,13 @@ class AdminChangeRequestServiceTest {
             new AdminChangeRequestProperties.Approvals(true, false, true, true, false, true));
     service =
         new AdminChangeRequestService(
-            properties, gitOpsProps, registry, changeRequestRepository, userRepository, auditService);
+            properties,
+            gitOpsProps,
+            registry,
+            rbacRoleChangeRequestValidator,
+            changeRequestRepository,
+            userRepository,
+            auditService);
     UUID uid = UUID.randomUUID();
     UUID rid = UUID.randomUUID();
     PlatformAdminChangeRequest row = pendingRow(rid, uid);
@@ -209,7 +227,13 @@ class AdminChangeRequestServiceTest {
             new AdminChangeRequestProperties.Approvals(false, true, true, true, false, true));
     service =
         new AdminChangeRequestService(
-            properties, gitOpsProps, registry, changeRequestRepository, userRepository, auditService);
+            properties,
+            gitOpsProps,
+            registry,
+            rbacRoleChangeRequestValidator,
+            changeRequestRepository,
+            userRepository,
+            auditService);
     UUID rid = UUID.randomUUID();
     UUID approver = UUID.randomUUID();
     assertThatThrownBy(() -> service.approve(rid, approver, null, new MockHttpServletRequest()))
@@ -285,12 +309,18 @@ class AdminChangeRequestServiceTest {
     properties = new AdminChangeRequestProperties(false, 180, AdminChangeRequestProperties.Approvals.defaults());
     service =
         new AdminChangeRequestService(
-            properties, gitOpsProps, registry, changeRequestRepository, userRepository, auditService);
+            properties,
+            gitOpsProps,
+            registry,
+            rbacRoleChangeRequestValidator,
+            changeRequestRepository,
+            userRepository,
+            auditService);
     assertThatThrownBy(
             () ->
                 service.validate(
                     new AdminChangeRequestDtos.ValidateBody(
-                        AdminOperationRegistry.OP_MERGE_ANALYSIS_ROLLOUT_REQUEST, "true", null, null)))
+                        AdminOperationRegistry.OP_MERGE_ANALYSIS_ROLLOUT_REQUEST, "true", null, null, null)))
         .isInstanceOf(AdminChangeRequestException.class)
         .hasFieldOrPropertyWithValue("errorCode", "ADMIN_WRITE_DISABLED");
     verify(changeRequestRepository, never()).save(any());

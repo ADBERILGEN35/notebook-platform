@@ -1,5 +1,6 @@
 package com.notebook.lumen.identity.admin.changerequest.api;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -8,8 +9,13 @@ import java.util.UUID;
 public final class AdminChangeRequestDtos {
   private AdminChangeRequestDtos() {}
 
+  @JsonInclude(JsonInclude.Include.NON_NULL)
   public record ValidateBody(
-      String operationType, String requestedValue, String currentValue, String targetEnvironment) {}
+      String operationType,
+      String requestedValue,
+      String currentValue,
+      String targetEnvironment,
+      Map<String, Object> structuredPayload) {}
 
   public record ValidateResponse(
       boolean valid,
@@ -17,12 +23,14 @@ public final class AdminChangeRequestDtos {
       Map<String, Object> impactSummary,
       Map<String, Object> validationResult) {}
 
+  @JsonInclude(JsonInclude.Include.NON_NULL)
   public record CreateBody(
       String operationType,
       String requestedValue,
       String currentValue,
       String confirmation,
-      String targetEnvironment) {}
+      String targetEnvironment,
+      Map<String, Object> structuredPayload) {}
 
   public record DecisionBody(String reason) {}
 

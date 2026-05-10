@@ -15,6 +15,16 @@ public class AdminOperationRegistry {
   public static final String OP_MERGE_ANALYSIS_ROLLOUT_REQUEST = "MERGE_ANALYSIS_ROLLOUT_REQUEST";
   public static final String OP_MERGE_APPLY_ROLLOUT_REQUEST = "MERGE_APPLY_ROLLOUT_REQUEST";
   public static final String OP_SCIM_BULK_ROLLOUT_REQUEST = "SCIM_BULK_ROLLOUT_REQUEST";
+  public static final String OP_ADMIN_RBAC_ROLE_GRANT_REQUEST = "ADMIN_RBAC_ROLE_GRANT_REQUEST";
+  public static final String OP_ADMIN_RBAC_ROLE_REVOKE_REQUEST = "ADMIN_RBAC_ROLE_REVOKE_REQUEST";
+
+  public static boolean isRbacRoleOperation(String operationType) {
+    if (operationType == null || operationType.isBlank()) {
+      return false;
+    }
+    String t = operationType.trim();
+    return OP_ADMIN_RBAC_ROLE_GRANT_REQUEST.equals(t) || OP_ADMIN_RBAC_ROLE_REVOKE_REQUEST.equals(t);
+  }
 
   private static final Map<String, AdminOperationDefinition> BY_TYPE =
       Map.ofEntries(
@@ -31,7 +41,8 @@ public class AdminOperationRegistry {
                   false,
                   "Revert via GitOps to prior GATEWAY_ADMIN_MFA_MODE or submit a change request with a lower mode.",
                   List.of("/admin/**", "Admin audit & enterprise console"),
-                  "Gateway admin MFA policy mode (off/observe/warn/enforce).")),
+                  "Gateway admin MFA policy mode (off/observe/warn/enforce).",
+                  false)),
           Map.entry(
               OP_MERGE_ANALYSIS_ROLLOUT_REQUEST,
               new AdminOperationDefinition(
@@ -45,7 +56,8 @@ public class AdminOperationRegistry {
                   false,
                   "Set NOTE_MERGE_ANALYSIS_ENABLED to the previous boolean in GitOps.",
                   List.of("POST /notes/{id}/merge/analyze"),
-                  "Backend merge analysis feature flag.")),
+                  "Backend merge analysis feature flag.",
+                  false)),
           Map.entry(
               OP_MERGE_APPLY_ROLLOUT_REQUEST,
               new AdminOperationDefinition(
@@ -59,7 +71,8 @@ public class AdminOperationRegistry {
                   false,
                   "Set NOTE_MERGE_APPLY_ENABLED to false in GitOps if rollback needed.",
                   List.of("POST /notes/{id}/merge/apply"),
-                  "Backend merge apply feature flag.")),
+                  "Backend merge apply feature flag.",
+                  false)),
           Map.entry(
               OP_SCIM_BULK_ROLLOUT_REQUEST,
               new AdminOperationDefinition(
@@ -73,7 +86,38 @@ public class AdminOperationRegistry {
                   false,
                   "Disable SCIM_BULK_ENABLED in GitOps; bulk is non-transactional.",
                   List.of("POST /scim/v2/Bulk"),
-                  "SCIM bulk operations enablement.")));
+                  "SCIM bulk operations enablement.",
+                  false),
+          Map.entry(
+              OP_ADMIN_RBAC_ROLE_GRANT_REQUEST,
+              new AdminOperationDefinition(
+                  OP_ADMIN_RBAC_ROLE_GRANT_REQUEST,
+                  "identity-service",
+                  "admin.rbac.role",
+                  Set.of(),
+                  "MEDIUM",
+                  PlatformAdminRbacConstants.PERM_RBAC_CHANGE_REQUEST_CREATE,
+                  true,
+                  false,
+                  "Submit ADMIN_RBAC_ROLE_REVOKE_REQUEST for the same user and role, or follow the platform access runbook.",
+                  List.of("Enterprise admin RBAC", "Identity SSO/SCIM group mappings"),
+                  "Request grant of a platform admin role (approval/GitOps only; runtime apply not supported).",
+                  true)),
+          Map.entry(
+              OP_ADMIN_RBAC_ROLE_REVOKE_REQUEST,
+              new AdminOperationDefinition(
+                  OP_ADMIN_RBAC_ROLE_REVOKE_REQUEST,
+                  "identity-service",
+                  "admin.rbac.role",
+                  Set.of(),
+                  "MEDIUM",
+                  PlatformAdminRbacConstants.PERM_RBAC_CHANGE_REQUEST_CREATE,
+                  true,
+                  false,
+                  "Submit ADMIN_RBAC_ROLE_GRANT_REQUEST for the same user and role, or follow the platform access runbook.",
+                  List.of("Enterprise admin RBAC", "Identity SSO/SCIM group mappings"),
+                  "Request revocation of a platform admin role (approval/GitOps only; runtime apply not supported).",
+                  true)));
 
   public Optional<AdminOperationDefinition> find(String operationType) {
     if (operationType == null || operationType.isBlank()) {

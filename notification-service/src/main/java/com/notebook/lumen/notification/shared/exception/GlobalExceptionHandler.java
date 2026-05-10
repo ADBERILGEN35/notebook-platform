@@ -33,6 +33,18 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(MethodArgumentNotValidException.class)
   ResponseEntity<ErrorResponse> handleValidation(
       MethodArgumentNotValidException ex, HttpServletRequest request) {
+    if (isWorkspaceNotificationPolicyPath(request)) {
+      return ResponseEntity.badRequest()
+          .body(
+              new ErrorResponse(
+                  Instant.now(),
+                  400,
+                  "INVALID_WORKSPACE_NOTIFICATION_POLICY_REQUEST",
+                  "Invalid workspace notification policy request",
+                  request.getRequestURI(),
+                  requestId(request),
+                  List.of()));
+    }
     if (isWorkspaceNotificationPreferencePath(request)) {
       return ResponseEntity.badRequest()
           .body(
@@ -87,6 +99,18 @@ public class GlobalExceptionHandler {
     HttpMessageNotReadableException.class
   })
   ResponseEntity<ErrorResponse> handleRequestParseErrors(Exception ex, HttpServletRequest request) {
+    if (isWorkspaceNotificationPolicyPath(request)) {
+      return ResponseEntity.badRequest()
+          .body(
+              new ErrorResponse(
+                  Instant.now(),
+                  400,
+                  "INVALID_WORKSPACE_NOTIFICATION_POLICY_REQUEST",
+                  "Invalid workspace notification policy request",
+                  request.getRequestURI(),
+                  requestId(request),
+                  List.of()));
+    }
     if (isWorkspaceNotificationPreferencePath(request)) {
       return ResponseEntity.badRequest()
           .body(
@@ -126,6 +150,18 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(MissingRequestHeaderException.class)
   ResponseEntity<ErrorResponse> handleMissingHeader(
       MissingRequestHeaderException ex, HttpServletRequest request) {
+    if (isWorkspaceNotificationPolicyPath(request)) {
+      return ResponseEntity.status(403)
+          .body(
+              new ErrorResponse(
+                  Instant.now(),
+                  403,
+                  "WORKSPACE_NOTIFICATION_POLICY_ACCESS_DENIED",
+                  "Workspace notification policy access denied",
+                  request.getRequestURI(),
+                  requestId(request),
+                  List.of()));
+    }
     if (isWorkspaceNotificationPreferencePath(request)) {
       return ResponseEntity.status(403)
           .body(
@@ -183,6 +219,10 @@ public class GlobalExceptionHandler {
 
   private boolean isWorkspaceNotificationPreferencePath(HttpServletRequest request) {
     return request.getRequestURI().startsWith("/notification-preferences/workspaces");
+  }
+
+  private boolean isWorkspaceNotificationPolicyPath(HttpServletRequest request) {
+    return request.getRequestURI().startsWith("/notification-policies/workspaces");
   }
 
   /** Global user notification preferences or digest/quiet-hours delivery preferences. */

@@ -162,6 +162,8 @@ notification:
     weekly-send-time: ${NOTIFICATION_DIGEST_WEEKLY_SEND_TIME:09:00}
   workspace:
     preferences-enabled: ${WORKSPACE_NOTIFICATION_PREFERENCES_ENABLED:false}
+    policies-enabled: ${WORKSPACE_NOTIFICATION_POLICIES_ENABLED:false}
+    policy-reason-required-for-force: ${WORKSPACE_NOTIFICATION_POLICY_REASON_REQUIRED:true}
     service-url: ${WORKSPACE_SERVICE_URL:http://localhost:8082}
     timeout-ms: ${NOTIFICATION_WORKSPACE_CLIENT_TIMEOUT_MS:3000}
     service-jwt:

@@ -23,11 +23,16 @@ public final class WorkspaceNotificationPreferenceDtos {
       Map<NotificationChannel, WorkspaceChannelState> channels) {}
 
   @JsonInclude(JsonInclude.Include.NON_NULL)
+  public record WorkspacePolicyState(String policyMode, String reason) {}
+
+  @JsonInclude(JsonInclude.Include.NON_NULL)
   public record WorkspaceChannelState(
       Boolean enabled,
       boolean inherited,
       boolean effectiveEnabled,
-      boolean mandatory) {}
+      boolean mandatory,
+      WorkspacePolicyState workspacePolicy,
+      boolean lockedByPolicy) {}
 
   public record WorkspaceNotificationPreferencePatchRequest(
       @NotNull @NotEmpty List<@Valid WorkspacePreferencePatchItem> updates) {}

@@ -278,6 +278,60 @@ class AdminAuthorizationServiceTest {
         .contains(ErrorCode.ADMIN_OPERATION_PERMISSION_REQUIRED);
   }
 
+  @Test
+  void ensureAdminRbacRead_requiresPermissionWhenEnforced() {
+    AdminAuthorizationService service =
+        new AdminAuthorizationService(
+            new GatewayAdminProperties(
+                true, false, "off", "webauthn,recovery_code", "", "", new Audit(true), new Enterprise(true)),
+            writeOff(),
+            rbacOn());
+    Instant now = Instant.now();
+    Jwt jwt =
+        new Jwt(
+            "token",
+            now.minusSeconds(10),
+            now.plusSeconds(300),
+            Map.of("alg", "RS256"),
+            Map.of(
+                "sub",
+                "user-x",
+                "email",
+                "x@example.com",
+                "platform_permissions",
+                List.of(PlatformAdminRbacConstants.PERM_ENTERPRISE_STATUS_READ),
+                "token_type",
+                "access"));
+    assertThat(service.ensureAdminRbacRead(jwt)).contains(ErrorCode.ADMIN_PERMISSION_REQUIRED);
+  }
+
+  @Test
+  void ensureAdminRbacRead_allowsExplicitPermission() {
+    AdminAuthorizationService service =
+        new AdminAuthorizationService(
+            new GatewayAdminProperties(
+                true, false, "off", "webauthn,recovery_code", "", "", new Audit(true), new Enterprise(true)),
+            writeOff(),
+            rbacOn());
+    Instant now = Instant.now();
+    Jwt jwt =
+        new Jwt(
+            "token",
+            now.minusSeconds(10),
+            now.plusSeconds(300),
+            Map.of("alg", "RS256"),
+            Map.of(
+                "sub",
+                "user-x",
+                "email",
+                "x@example.com",
+                "platform_permissions",
+                List.of(PlatformAdminRbacConstants.PERM_RBAC_READ),
+                "token_type",
+                "access"));
+    assertThat(service.ensureAdminRbacRead(jwt)).isEmpty();
+  }
+
   private static Jwt jwt(String sub, String email, List<String> roles) {
     Instant now = Instant.now();
     return new Jwt(

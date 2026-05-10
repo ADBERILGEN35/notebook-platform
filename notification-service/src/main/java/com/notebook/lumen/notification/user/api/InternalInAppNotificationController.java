@@ -1,5 +1,6 @@
 package com.notebook.lumen.notification.user.api;
 
+import com.notebook.lumen.notification.analytics.NotificationAnalyticsRecorder;
 import com.notebook.lumen.notification.shared.config.NotificationProperties;
 import com.notebook.lumen.notification.shared.exception.NotificationException;
 import com.notebook.lumen.notification.shared.security.InternalNotificationAuthorizer;
@@ -22,16 +23,19 @@ public class InternalInAppNotificationController {
   private final InternalNotificationAuthorizer authorizer;
   private final UserNotificationService notificationService;
   private final NotificationPreferenceResolver preferenceResolver;
+  private final NotificationAnalyticsRecorder analyticsRecorder;
   private final NotificationProperties properties;
 
   public InternalInAppNotificationController(
       InternalNotificationAuthorizer authorizer,
       UserNotificationService notificationService,
       NotificationPreferenceResolver preferenceResolver,
+      NotificationAnalyticsRecorder analyticsRecorder,
       NotificationProperties properties) {
     this.authorizer = authorizer;
     this.notificationService = notificationService;
     this.preferenceResolver = preferenceResolver;
+    this.analyticsRecorder = analyticsRecorder;
     this.properties = properties;
   }
 
@@ -50,6 +54,13 @@ public class InternalInAppNotificationController {
         preferenceResolver.isChannelEnabled(
             userId, request.workspaceId(), request.type(), NotificationChannel.IN_APP);
     if (!enabled) {
+      analyticsRecorder.record(
+          preferenceResolver.classifyChannelDisabledAnalyticsReason(
+              userId, request.workspaceId(), request.type(), NotificationChannel.IN_APP),
+          request.type().name(),
+          NotificationChannel.IN_APP.name(),
+          "",
+          1);
       return new InternalInAppNotificationResponse(null, "SKIPPED", "USER_PREFERENCE_DISABLED");
     }
     return new InternalInAppNotificationResponse(

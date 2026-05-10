@@ -14,9 +14,13 @@ public record AdminOperationDefinition(
     boolean runtimeApplySupported,
     String rollbackHint,
     List<String> affectedSurfaces,
-    String description) {
+    String description,
+    boolean freeFormRequestedValue) {
 
   public boolean isValueAllowed(String normalizedValue) {
+    if (freeFormRequestedValue) {
+      return normalizedValue != null && !normalizedValue.isBlank();
+    }
     return allowedNormalizedValues.contains(normalizedValue);
   }
 }

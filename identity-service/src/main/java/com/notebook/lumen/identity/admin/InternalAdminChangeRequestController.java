@@ -55,7 +55,7 @@ public class InternalAdminChangeRequestController {
       HttpServletRequest request) {
     authorizer.authorize(serviceAuthorization, AuditAdminAuthorizer.CHANGE_REQUEST_SCOPE);
     UUID uid = parseAdminUserId(adminUserId);
-    changeRequestService.recordValidatedAudit(uid, body.operationType(), request);
+    changeRequestService.recordValidatedAudit(uid, body, request);
     return changeRequestService.validate(body);
   }
 

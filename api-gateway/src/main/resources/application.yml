@@ -85,6 +85,10 @@ spring:
               uri: ${NOTIFICATION_SERVICE_URL:http://notification-service:8084}
               predicates:
                 - Path=/notification-preferences/**
+            - id: notification-policies-user
+              uri: ${NOTIFICATION_SERVICE_URL:http://notification-service:8084}
+              predicates:
+                - Path=/notification-policies/**
             - id: notification-delivery-preferences-user
               uri: ${NOTIFICATION_SERVICE_URL:http://notification-service:8084}
               predicates:
@@ -164,6 +168,8 @@ gateway:
     write:
       enabled: ${GATEWAY_ADMIN_WRITE_ENABLED:false}
       internal-path: ${GATEWAY_ADMIN_CHANGE_REQUESTS_INTERNAL_PATH:/internal/admin/change-requests}
+    rbac-visibility:
+      internal-path: ${GATEWAY_ADMIN_RBAC_VISIBILITY_PATH:/internal/admin/rbac}
     enterprise:
       enabled: ${GATEWAY_ADMIN_ENTERPRISE_ENABLED:false}
       notification-service-url: ${NOTIFICATION_SERVICE_URL:http://notification-service:8084}

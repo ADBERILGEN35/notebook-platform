@@ -31,12 +31,15 @@ declare global {
       NOTIFICATIONS_SSE_ENABLED?: boolean | string
       NOTIFICATION_PREFERENCES_ENABLED?: boolean | string
       WORKSPACE_NOTIFICATION_PREFERENCES_ENABLED?: boolean | string
+      WORKSPACE_NOTIFICATION_POLICIES_ENABLED?: boolean | string
       MFA_UI_ENABLED?: boolean | string
       ADMIN_UI_ENABLED?: boolean | string
       ADMIN_UI_DEV_OPEN?: boolean | string
       ENTERPRISE_ADMIN_WRITE_ENABLED?: boolean | string
       ENTERPRISE_ADMIN_APPROVALS_ENABLED?: boolean | string
       ENTERPRISE_GITOPS_PR_ENABLED?: boolean | string
+      ADMIN_RBAC_UI_ENABLED?: boolean | string
+      ADMIN_RBAC_ROLE_REQUESTS_ENABLED?: boolean | string
       NOTIFICATION_ANALYTICS_UI_ENABLED?: boolean | string
       NOTIFICATION_DEAD_LETTER_UI_ENABLED?: boolean | string
       NOTIFICATION_RETENTION_UI_ENABLED?: boolean | string

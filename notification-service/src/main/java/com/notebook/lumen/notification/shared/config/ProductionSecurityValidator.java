@@ -58,6 +58,17 @@ public class ProductionSecurityValidator implements ApplicationRunner {
             "NOTIFICATION_WORKSPACE_CLIENT_JWT signing key is required when WORKSPACE_NOTIFICATION_PREFERENCES_ENABLED=true in prod");
       }
     }
+    if (properties.workspace() != null && properties.workspace().policiesEnabled()) {
+      if (isBlank(properties.workspace().serviceUrl())) {
+        throw new IllegalStateException(
+            "WORKSPACE_SERVICE_URL is required when WORKSPACE_NOTIFICATION_POLICIES_ENABLED=true in prod");
+      }
+      var outboundPolicies = properties.workspace().serviceJwt();
+      if (outboundPolicies == null || !outboundPolicies.signingConfigured()) {
+        throw new IllegalStateException(
+            "NOTIFICATION_WORKSPACE_CLIENT_JWT signing key is required when WORKSPACE_NOTIFICATION_POLICIES_ENABLED=true in prod");
+      }
+    }
   }
 
   private boolean isBlank(String value) {

@@ -87,9 +87,11 @@ public record NotificationProperties(
       long sentRetentionHours,
       long deadRetentionDays) {}
 
-  /** Outbound calls from notification-service to workspace-service (Faz 65). */
+  /** Outbound calls from notification-service to workspace-service (Faz 65 / Faz 85). */
   public record WorkspaceClient(
       boolean preferencesEnabled,
+      boolean policiesEnabled,
+      boolean policyReasonRequiredForForce,
       String serviceUrl,
       long timeoutMs,
       OutboundServiceJwt serviceJwt) {}

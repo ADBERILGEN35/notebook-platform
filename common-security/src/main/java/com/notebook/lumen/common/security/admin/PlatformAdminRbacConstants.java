@@ -1,6 +1,7 @@
 package com.notebook.lumen.common.security.admin;
 
 import java.util.List;
+import java.util.Set;
 
 /** Shared admin RBAC identifiers for identity-service and api-gateway. */
 public final class PlatformAdminRbacConstants {
@@ -22,6 +23,8 @@ public final class PlatformAdminRbacConstants {
         PERM_SCIM_CHANGE_REQUEST_CREATE,
         PERM_SIEM_CHANGE_REQUEST_CREATE,
         PERM_IDENTITY_READ,
+        PERM_RBAC_READ,
+        PERM_RBAC_CHANGE_REQUEST_CREATE,
         PERM_CHANGE_REQUEST_GITOPS_DRY_RUN,
         PERM_CHANGE_REQUEST_GITOPS_CREATE,
         PERM_NOTIFICATIONS_ANALYTICS_READ,
@@ -31,6 +34,19 @@ public final class PlatformAdminRbacConstants {
         PERM_NOTIFICATIONS_RETENTION_RUN,
         PERM_NOTIFICATIONS_LEGAL_HOLD_READ,
         PERM_NOTIFICATIONS_LEGAL_HOLD_WRITE);
+  }
+
+  /** Roles that may appear in admin RBAC change requests (grant/revoke requests; no runtime apply). */
+  public static Set<String> assignableAdminRoles() {
+    return Set.of(
+        ROLE_PLATFORM_ADMIN,
+        ROLE_PLATFORM_AUDIT_VIEWER,
+        ROLE_PLATFORM_AUDIT_EXPORTER,
+        ROLE_PLATFORM_SECURITY_ADMIN,
+        ROLE_PLATFORM_IDENTITY_ADMIN,
+        ROLE_PLATFORM_CHANGE_REQUEST_AUTHOR,
+        ROLE_PLATFORM_CHANGE_REQUEST_APPROVER,
+        ROLE_PLATFORM_OBSERVABILITY_VIEWER);
   }
 
   public static final String ROLE_PLATFORM_ADMIN = "PLATFORM_ADMIN";
@@ -55,6 +71,8 @@ public final class PlatformAdminRbacConstants {
   public static final String PERM_SCIM_CHANGE_REQUEST_CREATE = "admin:scim:change-request:create";
   public static final String PERM_SIEM_CHANGE_REQUEST_CREATE = "admin:siem:change-request:create";
   public static final String PERM_IDENTITY_READ = "admin:identity:read";
+  public static final String PERM_RBAC_READ = "admin:rbac:read";
+  public static final String PERM_RBAC_CHANGE_REQUEST_CREATE = "admin:rbac:change-request:create";
   public static final String PERM_CHANGE_REQUEST_GITOPS_DRY_RUN = "admin:change-request:gitops:dry-run";
   public static final String PERM_CHANGE_REQUEST_GITOPS_CREATE = "admin:change-request:gitops:create";
   public static final String PERM_NOTIFICATIONS_ANALYTICS_READ = "admin:notifications:analytics:read";
