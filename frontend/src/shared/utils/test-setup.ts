@@ -1,2 +1,1 @@
-// Shared test setup placeholder.
-
+import '@testing-library/jest-dom/vitest'

@@ -11,7 +11,21 @@ public record ScimProperties(
     String bearerToken,
     String bearerTokenHash,
     boolean groupsEnabled,
-    String adminGroups) {
+    String adminGroups,
+    boolean groupNestingEnabled,
+    int groupNestingMaxDepth,
+    boolean bulkEnabled,
+    int bulkMaxOperations,
+    int bulkFailOnErrorsMax) {
+
+  public ScimProperties(
+      boolean enabled,
+      String bearerToken,
+      String bearerTokenHash,
+      boolean groupsEnabled,
+      String adminGroups) {
+    this(enabled, bearerToken, bearerTokenHash, groupsEnabled, adminGroups, true, 5, false, 100, 10);
+  }
 
   public boolean authConfigured() {
     return (bearerToken != null && !bearerToken.isBlank())

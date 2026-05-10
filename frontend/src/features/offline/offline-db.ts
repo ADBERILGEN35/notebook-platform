@@ -1,7 +1,7 @@
 import { openDB } from 'idb'
 
 export const OFFLINE_DB_NAME = 'notebook-offline'
-export const OFFLINE_DB_VERSION = 2
+export const OFFLINE_DB_VERSION = 3
 export const OFFLINE_NOTES_STORE = 'notes'
 export const OFFLINE_DRAFTS_STORE = 'offline_note_drafts'
 
@@ -18,6 +18,9 @@ export function openOfflineDb() {
           drafts.createIndex('lastEditedAt', 'lastEditedAt')
           drafts.createIndex('status', 'status')
         }
+      }
+      if (oldVersion < 3) {
+        // V3 introduces optional encrypted payload fields in existing stores.
       }
     },
   })

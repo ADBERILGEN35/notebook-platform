@@ -34,7 +34,12 @@ import tools.jackson.databind.json.JsonMapper;
 @Testcontainers
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-    properties = "app.rls.strict-workspace-header=true")
+    properties = {
+      "app.rls.strict-workspace-header=true",
+      "content.merge.analysis-enabled=true",
+      "content.merge.apply-enabled=true",
+      "content.merge.supported-versions=1"
+    })
 class ContentIntegrationTest {
   private static final UUID WORKSPACE_ID = UUID.randomUUID();
   private static final UUID NOTEBOOK_ID = UUID.randomUUID();
@@ -213,6 +218,101 @@ class ContentIntegrationTest {
             "\"bad-etag\"",
             400);
     assertThat(invalidIfMatch.get("errorCode").asText()).isEqualTo("INVALID_IF_MATCH_HEADER");
+  }
+
+  @Test
+  void mergeAnalyze_returnsSuggestionForDisjointChanges() throws Exception {
+    JsonNode created = createNote(OWNER, "Base", blocks("paragraph", ",\"props\":{\"v\":1}"));
+    String noteId = created.get("id").asText();
+    String baseEtag =
+        sendResponse("GET", "/notes/" + noteId, OWNER, WORKSPACE_ID, null)
+            .headers()
+            .firstValue("etag")
+            .orElseThrow();
+
+    patch(
+        "/notes/" + noteId,
+        OWNER,
+        "{\"title\":\"Base\",\"contentBlocks\":[{\"id\":\"b1\",\"type\":\"paragraph\",\"props\":{\"v\":2}}]}",
+        200);
+
+    JsonNode analysis =
+        post(
+            "/notes/" + noteId + "/merge/analyze",
+            OWNER,
+            """
+            {
+              "base":{"etag":"%s","title":"Base","contentBlocks":[{"id":"b1","type":"paragraph","props":{"v":1}}]},
+              "local":{"title":"Local title","contentBlocks":[{"id":"b1","type":"paragraph","props":{"v":1}}]},
+              "clientMergeVersion":1
+            }
+            """
+                .formatted(baseEtag),
+            200);
+
+    assertThat(analysis.get("canAutoMerge").asBoolean()).isTrue();
+    assertThat(analysis.get("hasConflicts").asBoolean()).isFalse();
+    assertThat(analysis.get("suggested").get("title").asText()).isEqualTo("Local title");
+  }
+
+  @Test
+  void mergeAnalyze_rejectsCommenterWithoutEditPermission() throws Exception {
+    JsonNode created = createNote(OWNER, "Base", blocks("paragraph", ""));
+    String noteId = created.get("id").asText();
+    JsonNode denied =
+        post(
+            "/notes/" + noteId + "/merge/analyze",
+            COMMENTER,
+            """
+            {
+              "base":{"etag":"\\"note-rev-0\\"","title":"Base","contentBlocks":[{"id":"b1","type":"paragraph"}]},
+              "local":{"title":"Local","contentBlocks":[{"id":"b1","type":"paragraph"}]},
+              "clientMergeVersion":1
+            }
+            """,
+            403);
+    assertThat(denied.get("errorCode").asText()).isEqualTo("NOTE_UPDATE_FORBIDDEN");
+  }
+
+  @Test
+  void mergeApply_updatesNoteWhenSafeAndExpectedRemoteMatches() throws Exception {
+    JsonNode created = createNote(OWNER, "Base", blocks("paragraph", ",\"props\":{\"v\":1}"));
+    String noteId = created.get("id").asText();
+    String baseEtag =
+        sendResponse("GET", "/notes/" + noteId, OWNER, WORKSPACE_ID, null)
+            .headers()
+            .firstValue("etag")
+            .orElseThrow();
+
+    patch(
+        "/notes/" + noteId,
+        OWNER,
+        "{\"title\":\"Base\",\"contentBlocks\":[{\"id\":\"b1\",\"type\":\"paragraph\",\"props\":{\"v\":2}}]}",
+        200);
+    String remoteEtag =
+        sendResponse("GET", "/notes/" + noteId, OWNER, WORKSPACE_ID, null)
+            .headers()
+            .firstValue("etag")
+            .orElseThrow();
+
+    JsonNode applied =
+        post(
+            "/notes/" + noteId + "/merge/apply",
+            OWNER,
+            """
+            {
+              "base":{"etag":"%s","title":"Base","contentBlocks":[{"id":"b1","type":"paragraph","props":{"v":1}}]},
+              "local":{"title":"Local title","contentBlocks":[{"id":"b1","type":"paragraph","props":{"v":1}}]},
+              "expectedRemoteEtag":"%s",
+              "mergeVersion":1,
+              "idempotencyKey":"merge-apply-idem-1"
+            }
+            """
+                .formatted(baseEtag, remoteEtag),
+            200);
+    assertThat(applied.get("merged").asBoolean()).isTrue();
+    assertThat(applied.get("title").asText()).isEqualTo("Local title");
+    assertThat(items(get("/notes/" + noteId + "/versions", OWNER, 200))).hasSize(3);
   }
 
   private JsonNode createNote(User user, String title, String blocks) throws Exception {

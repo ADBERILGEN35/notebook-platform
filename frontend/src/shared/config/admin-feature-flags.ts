@@ -19,6 +19,23 @@ export const isAdminUiDevOpen = (): boolean =>
     false,
   )
 
+/** Faz 77: enterprise admin change requests (validate + create PENDING only; no live config mutation). */
+export const isEnterpriseAdminWriteEnabled = (): boolean =>
+  parseBool(
+    window.__NOTEBOOK_CONFIG__?.ENTERPRISE_ADMIN_WRITE_ENABLED ??
+      import.meta.env.VITE_ENTERPRISE_ADMIN_WRITE_ENABLED,
+    false,
+  )
+
+/** Faz 78: approve/reject controls on change requests (defaults on when enterprise write is enabled). */
+export const isEnterpriseAdminApprovalsUiEnabled = (): boolean =>
+  isEnterpriseAdminWriteEnabled() &&
+  parseBool(
+    window.__NOTEBOOK_CONFIG__?.ENTERPRISE_ADMIN_APPROVALS_ENABLED ??
+      import.meta.env.VITE_ENTERPRISE_ADMIN_APPROVALS_ENABLED,
+    true,
+  )
+
 export const getAuditApiMode = (): AuditApiMode => {
   const raw =
     window.__NOTEBOOK_CONFIG__?.AUDIT_API_MODE ?? import.meta.env.VITE_AUDIT_API_MODE ?? 'mock'

@@ -1,3 +1,9 @@
+## Faz 76 contract notes
+
+- identity-service SCIM: `GET|PATCH /scim/v2/Groups/{id}`; group JSON may include `members` with `type` `User` or `Group` and `active`.
+- `POST /scim/v2/Bulk` (when `SCIM_BULK_ENABLED=true`): non-transactional sequential operations; per-op SCIM error bodies in bulk response entries.
+- Detailed semantics: `docs/scim-group-nesting.md`, `docs/scim-bulk-operations.md`.
+
 ## Faz 53 contract notes
 
 - Existing endpoint reused: `GET /admin/audit-events/export`.
@@ -5,6 +11,27 @@
   - JSONL archive payload
   - manifest JSON schema (versioned with `schemaVersion`)
   - SHA256 sidecar
+
+## Faz 71 contract notes
+
+- New content-service endpoint: `POST /notes/{noteId}/merge/analyze`
+- Endpoint is **analyze-only** (no note update/version write).
+- Request includes `base` + `local` snapshots and `clientMergeVersion`.
+- Response includes merge summary, typed conflicts and optional suggested payload.
+- Version mismatch contract: `400 UNSUPPORTED_MERGE_VERSION`.
+
+## Faz 72 contract notes
+
+- New content-service endpoint: `POST /notes/{noteId}/merge/apply`
+- Requires `expectedRemoteEtag`; mismatch returns `412 NOTE_MERGE_REMOTE_CHANGED`
+- Analyze conflict result returns `409 NOTE_MERGE_CONFLICTS`
+- Supports optional request idempotency key
+
+## Faz 73 contract notes
+
+- New internal status endpoint: `GET /internal/admin/status/content`
+- Scope requirement: `internal:admin:status:read` (service JWT)
+- Gateway enterprise status response now includes content merge readiness slice.
 ## Faz 34 Internal Contract Additions
 
 - `GET /internal/notebooks/{notebookId}/search-permission-snapshot`
@@ -335,6 +362,7 @@ routes directly.
 ## Faz 63 additive contract
 
 - `GET /admin/enterprise/status` — authenticated platform-admin response with aggregated secret-safe feature flags
+- **Faz 77–78:** `GET|POST /admin/enterprise/change-requests` (+ `/validate`, `/{id}/cancel`, `/{id}/approve`, `/{id}/reject`) — platform-admin **role required** for writes (allowlist not sufficient), MFA per gateway policy; proxies to identity internal change-requests API (see `docs/enterprise-admin-write-operations.md`, `docs/admin-change-request-approval-workflow.md`)
   (gateway + optional identity/notification internal status); errors: `ADMIN_ENTERPRISE_DISABLED`,
   `ADMIN_MFA_REQUIRED`, `ADMIN_ACCESS_DENIED`. Documented in `docs/enterprise-admin-console.md`.
 

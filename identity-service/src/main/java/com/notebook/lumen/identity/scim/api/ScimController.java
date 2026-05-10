@@ -1,6 +1,8 @@
 package com.notebook.lumen.identity.scim.api;
 
+import com.notebook.lumen.identity.scim.ScimProperties;
 import com.notebook.lumen.identity.scim.application.ScimAuthService;
+import com.notebook.lumen.identity.scim.application.ScimBulkService;
 import com.notebook.lumen.identity.scim.application.ScimService;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
@@ -25,10 +27,18 @@ import org.springframework.web.bind.annotation.RestController;
 public class ScimController {
   private final ScimAuthService scimAuthService;
   private final ScimService scimService;
+  private final ScimBulkService scimBulkService;
+  private final ScimProperties scimProperties;
 
-  public ScimController(ScimAuthService scimAuthService, ScimService scimService) {
+  public ScimController(
+      ScimAuthService scimAuthService,
+      ScimService scimService,
+      ScimBulkService scimBulkService,
+      ScimProperties scimProperties) {
     this.scimAuthService = scimAuthService;
     this.scimService = scimService;
+    this.scimBulkService = scimBulkService;
+    this.scimProperties = scimProperties;
   }
 
   @GetMapping("/ServiceProviderConfig")
@@ -37,7 +47,8 @@ public class ScimController {
     return Map.of(
         "schemas", List.of("urn:ietf:params:scim:schemas:core:2.0:ServiceProviderConfig"),
         "patch", Map.of("supported", true),
-        "bulk", Map.of("supported", false),
+        "bulk",
+            Map.of("supported", scimProperties.bulkEnabled(), "maxOperations", scimProperties.bulkMaxOperations()),
         "filter", Map.of("supported", true, "maxResults", 200),
         "changePassword", Map.of("supported", false),
         "sort", Map.of("supported", false),
@@ -148,6 +159,12 @@ public class ScimController {
     return scimService.upsertGroup(null, payload, request);
   }
 
+  @GetMapping("/Groups/{id}")
+  public ScimGroupResponse getGroup(@PathVariable UUID id, HttpServletRequest request) {
+    scimAuthService.requireAuthorized(request);
+    return scimService.getGroup(id);
+  }
+
   @PutMapping("/Groups/{id}")
   public ScimGroupResponse putGroup(
       @PathVariable String id, @RequestBody ScimGroupRequest payload, HttpServletRequest request) {
@@ -155,10 +172,23 @@ public class ScimController {
     return scimService.upsertGroup(id, payload, request);
   }
 
+  @PatchMapping("/Groups/{id}")
+  public ScimGroupResponse patchGroup(
+      @PathVariable UUID id, @RequestBody ScimPatchRequest payload, HttpServletRequest request) {
+    scimAuthService.requireAuthorized(request);
+    return scimService.patchGroup(id, payload, request);
+  }
+
   @DeleteMapping("/Groups/{id}")
   public ResponseEntity<Void> deleteGroup(@PathVariable UUID id, HttpServletRequest request) {
     scimAuthService.requireAuthorized(request);
     scimService.deleteGroup(id, request);
     return ResponseEntity.noContent().build();
+  }
+
+  @PostMapping("/Bulk")
+  public ScimBulkResponse bulk(@RequestBody ScimBulkRequest payload, HttpServletRequest request) {
+    scimAuthService.requireAuthorized(request);
+    return scimBulkService.execute(payload, request);
   }
 }

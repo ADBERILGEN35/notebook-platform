@@ -76,10 +76,21 @@ export const enterpriseStatusResponseSchema = z.object({
         cookieModeEnabled: z.boolean(),
       })
       .optional(),
+    mergeResolution: z
+      .object({
+        analysisEnabled: z.boolean(),
+        applyEnabled: z.boolean(),
+        supportedVersions: z.array(z.number()),
+        idempotencyEnabled: z.boolean(),
+        metricsEnabled: z.boolean(),
+        auditFailuresEnabled: z.boolean(),
+      })
+      .optional(),
   }),
   warnings: z.array(enterpriseWarningSchema),
   identityUnavailable: z.boolean().optional(),
   notificationUnavailable: z.boolean().optional(),
+  contentUnavailable: z.boolean().optional(),
 })
 
 export type EnterpriseStatusResponse = z.infer<typeof enterpriseStatusResponseSchema>

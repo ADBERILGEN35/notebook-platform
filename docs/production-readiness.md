@@ -44,6 +44,40 @@
 - `SIEM_PROVIDER=generic-http` ise endpoint/auth config startup validationdan gecmeli.
 - Outbox `PENDING/DEAD` count metricleri ve worker health gozlenmeli.
 - Rollback icin `SIEM_PUSH_ENABLED=false` ile worker/push hizla devre disi birakilabilir.
+
+## Faz 71 readiness checks
+
+- `NOTE_MERGE_ANALYSIS_ENABLED` should start `false` in production; enable first in dev/staging.
+- `NOTE_MERGE_SUPPORTED_VERSIONS` must be pinned (`1`) across frontend/backend for rollout consistency.
+- `FRONTEND_BACKEND_MERGE_ANALYSIS_ENABLED` can be enabled gradually while keeping client fallback.
+- Validate merge-analysis logs/metrics do not include raw note content.
+
+## Faz 72 readiness checks
+
+- Keep `NOTE_MERGE_APPLY_ENABLED=false` in production until dev/staging conflict scenarios pass.
+- Roll out `FRONTEND_BACKEND_MERGE_APPLY_ENABLED` after backend apply endpoint is validated.
+- Verify `NOTE_MERGE_REMOTE_CHANGED` and `NOTE_MERGE_CONFLICTS` paths in staging UX.
+- Confirm idempotency key table retention/cleanup policy (`NOTE_MERGE_IDEMPOTENCY_TTL_HOURS`).
+
+## Faz 73 readiness checks
+
+- Confirm merge metrics are scraped (`note_merge_*`) and labels remain low-cardinality.
+- Validate enterprise status aggregation includes content merge slice and partial-status warnings.
+- Keep `NOTE_MERGE_AUDIT_FAILURES_ENABLED=false` in prod until failure-event noise is assessed.
+
+## Faz 74 readiness checks
+
+- Keep `FRONTEND_OFFLINE_BACKGROUND_SYNC_ENABLED=false` in production by default.
+- Validate `prompt` mode first in dev/staging before any `auto_safe` pilot.
+- Ensure session/encryption guardrails block runs when auth/key state is unavailable.
+- Confirm diagnostics contain counters only (no raw note content, titles, ids).
+
+## Faz 75 readiness checks
+
+- Validate lifecycle triggers (`online`, `focus`, boot, settings/manual) do not create retry storms.
+- Confirm prompt mode requires explicit consent before batch sync.
+- Confirm auto-safe mode skips active-note/conflict/failed/locked drafts.
+- Keep production defaults: `OFFLINE_BACKGROUND_SYNC_ENABLED=false`, mode `disabled`.
 ## Faz 34 Readiness Notes
 
 - Configure `SEARCH_PERMISSION_SNAPSHOT_ENABLED`, `SEARCH_PERMISSION_RUNTIME_CHECK_ENABLED` and
@@ -79,10 +113,21 @@
 | Frontend deployment runtime model | PARTIAL | Frontend has Docker image, nginx hardening headers, runtime API base URL injection (`FRONTEND_API_BASE_URL`), Helm frontend deployment/service/ingress and GitOps environment values; admin/audit runtime flags ship in Faz 42 (default off in prod). | Validate in real cluster with TLS, ingress and smoke/e2e gates before production switch. |
 | Frontend CSP hardening | PARTIAL | Faz 44 adds runtime-configurable CSP (`disabled/report-only/enforce`), additional browser isolation headers and rollout-ready Helm/GitOps values. | Observe report-only violations in staging, then enforce in production with rollback toggles. |
 | Frontend PWA/offline read mode | PARTIAL | Faz 59 adds manifest + service worker foundation, IndexedDB note cache and offline read-only UX. Faz 67 adds offline **draft** schema + policy utilities (flags default off; no production sync worker). | Validate device policy/privacy guidance, tune cache/draft caps per environment; keep `FRONTEND_OFFLINE_EDIT_ENABLED` false in prod until manual sync UX is validated. |
+| Offline edit/sync MVP | PARTIAL | Faz 68 adds flag-gated offline edit for cached notes, draft autosave, settings draft list, and manual sync/conflict handling. | Keep both offline edit/sync flags disabled in prod by default; run staged validation for conflict/permission/error paths before wider rollout. |
+| Offline data encryption hardening | PARTIAL | Faz 69 adds optional WebCrypto encryption for drafts and cache, memory-only key lifecycle, and encryption-required guardrail for offline edit. | Validate browser support policy, monitor UX fallback behavior, and enable in sensitive enterprise environments before enabling offline edit. |
+| Offline sync rollout hardening | PARTIAL | Faz 70 adds rollout modes, stale-sync recovery, max attempts, conflict retry guardrails, and diagnostics counters. | Keep prod defaults conservative (`sync disabled`), run guarded pilot first, and monitor failure/conflict ratios before expanding cohort. |
+| Offline foreground background sync foundation | PARTIAL | Faz 74 adds app-level foreground background sync policy/service foundation with `disabled/prompt/auto_safe`, guarded eligibility and local diagnostics; no production auto-sync rollout by default. | Keep prod disabled, validate prompt/auto-safe in staging, then decide MVP rollout scope in next phase. |
+| Offline foreground background sync MVP | PARTIAL | Faz 75 wires app lifecycle triggers, prompt consent flow, auto-safe sequential batch runs, summary/prompt banners and expanded local diagnostics while preserving manual sync path. | Keep prod disabled, run staged dev/staging pilot with prompt first, then auto-safe canary. |
 | Enterprise SSO / admin identity hardening | PARTIAL | Faz 60 adds OIDC SSO foundation, external identity mapping and platform_roles claim mapping with allowlist coexistence. | Validate real IdP integration in staging, keep SSO disabled in prod until secrets + claims policy are approved. |
 | In-app notification center | PARTIAL | Faz 45 adds polling-based in-app notifications. Faz 49 adds user channel preferences. Faz 56 adds SSE realtime updates (`/notifications/stream`) with polling fallback. Faz 57 adds Redis pub/sub fanout. Faz 58 adds digest/quiet-hours delivery scheduling for non-critical emails. Faz 64 adds optional PostgreSQL durable fanout outbox + worker retries (`docs/notification-durable-fanout.md`). | Add richer analytics, per-workspace preferences and advanced scheduling in future phases. |
 | Cookie auth + CSRF | PARTIAL | Auth transport supports `bearer|cookie|dual`, gateway cookie token extraction and CSRF double-submit checks are implemented, frontend cookie mode supports `credentials: include` and CSRF header injection. | Run staged rollout (`dual` -> frontend cookie mode -> prod cookie-only) and monitor 401/403 spikes. |
-| Admin / audit UI/export | PARTIAL | Faz 43 adds gateway admin audit proxy (`/admin/audit-events`) with admin allowlist/role checks and server-side service JWT fan-out. Faz 48 adds bounded export endpoint (`/admin/audit-events/export`) with CSV/JSONL, redaction and separate rate limit bucket. Faz 63 adds read-only enterprise admin console status (`/admin/enterprise/status`, `docs/enterprise-admin-console.md`). | Replace allowlist with PLATFORM_ADMIN claims + IdP group mapping, add scheduled exports and direct SIEM streaming. |
+| Admin / audit UI/export | PARTIAL | Faz 43 adds gateway admin audit proxy (`/admin/audit-events`) with admin allowlist/role checks and server-side service JWT fan-out. Faz 48 adds bounded export endpoint (`/admin/audit-events/export`) with CSV/JSONL, redaction and separate rate limit bucket. Faz 63 adds read-only enterprise admin console status (`/admin/enterprise/status`, `docs/enterprise-admin-console.md`). Faz 77 adds audited **change requests** (`/admin/enterprise/change-requests`, `docs/enterprise-admin-write-operations.md`) without live config apply. Faz 78 adds **four-eyes approve/reject** (`docs/admin-change-request-approval-workflow.md`) still without runtime apply. | Replace allowlist with PLATFORM_ADMIN claims + IdP group mapping, add scheduled exports and direct SIEM streaming; add GitOps PR automation after approval. |
 | MFA / WebAuthn | PARTIAL | Faz 51 adds active WebAuthn/recovery endpoints, MFA step-up session flow and token issuance after MFA verification. | Harden full cryptographic verification coverage, enforce admin policy by default and complete recovery/support UX. |
 | Pagination | DONE | Workspace/content list endpoints return `PageResponse<T>` with page/size/sort validation and sort allow-lists. | Evaluate cursor pagination for high-growth notes/comments/search after load testing. |
 | Refresh token revoke-all | DONE | `POST /auth/logout` and `POST /auth/revoke-all` revoke refresh tokens with audit events and token metadata. | Add future session listing and optional access token introspection/blacklist. |
+
+## Faz 76 readiness checks
+
+- SCIM group nesting flags (`SCIM_GROUP_NESTING_*`) and bulk flags (`SCIM_BULK_*`) pinned per environment; bulk remains **off** in prod by default.
+- Staging validates nested admin group → `PLATFORM_ADMIN` claim and cycle/depth rejection paths before enabling bulk.
+- Operators acknowledge **non-transactional** bulk semantics (`docs/scim-bulk-operations.md`).

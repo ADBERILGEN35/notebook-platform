@@ -7,6 +7,7 @@ Recommended environment values:
 - `SEARCH_PERMISSION_REFRESH_ENABLED=true`
 - trusted service JWT configs for workspace/search refresh path
 - `SIEM_PUSH_ENABLED=false` by default; enable progressively with endpoint+secret placeholders
+- Faz 76: keep `SCIM_BULK_ENABLED=false` in prod until IdP-tested; nesting defaults ship enabled with conservative max depth
 
 # GitOps Deployment
 

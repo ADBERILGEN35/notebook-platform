@@ -1,6 +1,6 @@
-# SCIM Provisioning (Faz 61)
+# SCIM Provisioning (Faz 61, Faz 76)
 
-Bu fazda `identity-service` altinda SCIM 2.0 foundation eklendi.
+Bu dokuman SCIM 2.0 foundation (Faz 61) ve grup nesting + bulk MVP (Faz 76) davranisini ozetler.
 
 ## Endpointler
 
@@ -8,7 +8,8 @@ Bu fazda `identity-service` altinda SCIM 2.0 foundation eklendi.
 - `GET /scim/v2/Schemas`
 - `GET /scim/v2/ResourceTypes`
 - `GET|POST|PUT|PATCH|DELETE /scim/v2/Users`
-- `GET|POST|PUT|DELETE /scim/v2/Groups` (minimal foundation)
+- `GET|POST|PUT|PATCH|DELETE /scim/v2/Groups`
+- `POST /scim/v2/Bulk` (flag: `SCIM_BULK_ENABLED`, default kapali)
 
 ## Guvenlik Modeli
 
@@ -28,9 +29,9 @@ Bu fazda `identity-service` altinda SCIM 2.0 foundation eklendi.
 
 ## Notlar ve Limitler
 
-- Bulk operasyonlar bu fazda yok.
-- SCIM PATCH full-spec path coverage yok; sadece gerekli yollar desteklenir.
-- Group nesting/fan-out bu faz kapsaminda degil.
+- Bulk: MVP, transactional rollback yok; ayrintilar `docs/scim-bulk-operations.md`.
+- SCIM PATCH full-spec path coverage yok; sadece desteklenen yollar.
+- Grup nesting: `docs/scim-group-nesting.md`. Derinlik ve dongu limitleri `SCIM_GROUP_NESTING_*` ile konfigüre edilir.
 
 ## Operational visibility (Faz 63)
 

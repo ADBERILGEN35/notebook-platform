@@ -43,6 +43,8 @@ Public endpointler:
 
 Protected endpointlerde `Authorization: Bearer <accessToken>` zorunludur. Gateway tercihen identity-service JWKS endpointini `JWT_JWKS_URI` ile kullanir; yoksa `JWT_PUBLIC_KEY_PATH` veya `JWT_PUBLIC_KEY` fallback'i devam eder. Sadece `token_type=access` tokenlari kabul edilir.
 
+SCIM provisioning (`/scim/v2/**`, ayri bearer token) gateway uzerinden identity-service'e proxylanir; Faz 76 ile grup nesting ve opsiyonel Bulk MVP desteklenir (`docs/scim-provisioning.md`).
+
 Identity-service Faz 18 ile refresh token lifecycle hardening destekler:
 
 - `POST /auth/logout`: authenticated kullanicinin sundugu tek refresh tokeni revoke eder.
@@ -84,6 +86,13 @@ Faz 19 itibariyla content-service list/search endpointleri `PageResponse<T>` env
 `page`, `size`, `sort` parametrelerini destekler.
 
 Ayrintilar ve curl ornekleri: [`content-service/README.md`](content-service/README.md)
+
+Faz 71 ile content-service, conflict aninda kullanilabilen analyze-only endpointini ekler:
+`POST /notes/{noteId}/merge/analyze`. Bu endpoint merge onerisi uretebilir ancak note kaydi yapmaz.
+Faz 72 ile `POST /notes/{noteId}/merge/apply` endpointi eklenir; apply yalnizca kullanici aksiyonu
+ile calisir ve `expectedRemoteEtag` ile stale merge korumasi yapar.
+Faz 73 ile merge analyze/apply akisina privacy-safe observability metricleri, structured loglar ve
+Enterprise Console merge status karti eklenir.
 
 ## Notification Service
 
@@ -307,6 +316,7 @@ Dokumanlar:
 - [`docs/frontend-csp-hardening.md`](docs/frontend-csp-hardening.md)
 - [`docs/pwa-offline-read-mode.md`](docs/pwa-offline-read-mode.md)
 - [`docs/offline-edit-sync-design.md`](docs/offline-edit-sync-design.md)
+- [`docs/offline-data-encryption.md`](docs/offline-data-encryption.md)
 - [`docs/enterprise-sso.md`](docs/enterprise-sso.md)
 - [`docs/sso-admin-role-mapping.md`](docs/sso-admin-role-mapping.md)
 - [`docs/auth-cookie-csrf.md`](docs/auth-cookie-csrf.md)
@@ -360,6 +370,10 @@ Faz 62 adds streaming SIEM push foundation with identity outbox/worker architect
 (`docs/siem-streaming-push.md`, `docs/siem-event-schema.md`, `docs/siem-provider-generic-http.md`).
 Faz 63 adds a read-only **Enterprise Admin Console** (gateway `/admin/enterprise/status`, internal
 service JWT aggregation, secret-safe cards + warnings) — see `docs/enterprise-admin-console.md`.
+Faz 77 adds **enterprise admin change requests** (validate + `PENDING` records in identity-service;
+gateway `/admin/enterprise/change-requests`; no live config mutation). Faz 78 adds **approve/reject**
+with four-eyes policy (still no automatic apply) — see `docs/enterprise-admin-write-operations.md`,
+`docs/admin-change-request-workflow.md`, and `docs/admin-change-request-approval-workflow.md`.
 Faz 64 adds a **durable DB outbox** for notification SSE fanout with worker retries and dead-letter
 semantics while keeping Redis pub/sub as the realtime layer (`docs/notification-durable-fanout.md`).
 Faz 65 adds **per-workspace notification preference overrides** (channel gates only; digest/quiet
@@ -368,3 +382,14 @@ Faz 66 adds **client-side conflict diff** and optional **Apply suggested merge**
 content (three-way model; no backend merge endpoint) — see `docs/note-conflict-diff-merge.md`.
 Faz 67 adds **offline edit/sync design** and IndexedDB **draft** foundation (flags default off; no
 production sync worker) — see `docs/offline-edit-sync-design.md`.
+Faz 68 adds **offline edit/sync MVP** behind flags: NotePage offline draft editing, settings draft
+list, and manual sync/conflict handling (still no automatic background sync).
+Faz 69 adds **offline storage encryption hardening** for drafts/cache with session-bound WebCrypto
+key lifecycle and encryption-required guardrails.
+Faz 70 adds **offline sync rollout hardening** with rollout modes, stale sync recovery, attempt
+limits, and safer conflict/locked draft handling for staged production pilots.
+Faz 74 adds **offline foreground background sync design/foundation** with guarded eligibility and
+trigger policies (`disabled/prompt/auto_safe`) while keeping production default disabled and manual
+sync unchanged.
+Faz 75 adds **offline foreground background sync MVP**: app lifecycle triggers, prompt consent flow,
+auto-safe sequential batch sync and local summary banners/diagnostics, without service-worker rollout.

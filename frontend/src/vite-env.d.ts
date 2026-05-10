@@ -14,6 +14,8 @@ interface ImportMetaEnv {
   readonly VITE_ADMIN_UI_ENABLED?: string
   readonly VITE_ADMIN_UI_DEV_OPEN?: string
   readonly VITE_AUDIT_API_MODE?: string
+  readonly VITE_ENTERPRISE_ADMIN_WRITE_ENABLED?: string
+  readonly VITE_ENTERPRISE_ADMIN_APPROVALS_ENABLED?: string
   readonly VITE_SOURCEMAP?: string
 }
 

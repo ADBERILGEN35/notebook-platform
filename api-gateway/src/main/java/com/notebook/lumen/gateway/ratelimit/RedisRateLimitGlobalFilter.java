@@ -25,6 +25,7 @@ public class RedisRateLimitGlobalFilter implements GlobalFilter, Ordered {
   private final RedisRateLimiter adminAuditExportRedisRateLimiter;
   private final RedisRateLimiter adminAuditExportMachineRedisRateLimiter;
   private final RedisRateLimiter scimRedisRateLimiter;
+  private final RedisRateLimiter adminWriteRedisRateLimiter;
   private final GatewayErrorResponseWriter errorResponseWriter;
 
   public RedisRateLimitGlobalFilter(
@@ -35,6 +36,7 @@ public class RedisRateLimitGlobalFilter implements GlobalFilter, Ordered {
       @Qualifier("adminAuditExportMachineRedisRateLimiter")
           RedisRateLimiter adminAuditExportMachineRedisRateLimiter,
       @Qualifier("scimRedisRateLimiter") RedisRateLimiter scimRedisRateLimiter,
+      @Qualifier("adminWriteRedisRateLimiter") RedisRateLimiter adminWriteRedisRateLimiter,
       GatewayErrorResponseWriter errorResponseWriter) {
     this.authRedisRateLimiter = authRedisRateLimiter;
     this.protectedRedisRateLimiter = protectedRedisRateLimiter;
@@ -42,6 +44,7 @@ public class RedisRateLimitGlobalFilter implements GlobalFilter, Ordered {
     this.adminAuditExportRedisRateLimiter = adminAuditExportRedisRateLimiter;
     this.adminAuditExportMachineRedisRateLimiter = adminAuditExportMachineRedisRateLimiter;
     this.scimRedisRateLimiter = scimRedisRateLimiter;
+    this.adminWriteRedisRateLimiter = adminWriteRedisRateLimiter;
     this.errorResponseWriter = errorResponseWriter;
   }
 
@@ -76,6 +79,9 @@ public class RedisRateLimitGlobalFilter implements GlobalFilter, Ordered {
     }
     if (isScimEndpoint(exchange)) {
       return checkAllowed(exchange, chain, scimRedisRateLimiter, routeId, Mono.just(clientIp(exchange)));
+    }
+    if (isAdminEnterpriseChangeRequestsEndpoint(exchange)) {
+      return checkAllowed(exchange, chain, adminWriteRedisRateLimiter, routeId, userId(exchange));
     }
 
     RedisRateLimiter limiter;
@@ -132,6 +138,10 @@ public class RedisRateLimitGlobalFilter implements GlobalFilter, Ordered {
 
   private boolean isAdminEnterpriseStatusEndpoint(ServerWebExchange exchange) {
     return "/admin/enterprise/status".equals(exchange.getRequest().getPath().value());
+  }
+
+  private boolean isAdminEnterpriseChangeRequestsEndpoint(ServerWebExchange exchange) {
+    return exchange.getRequest().getPath().value().startsWith("/admin/enterprise/change-requests");
   }
 
   private boolean isAdminAuditExportEndpoint(ServerWebExchange exchange) {

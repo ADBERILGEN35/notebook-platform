@@ -90,12 +90,23 @@ audit:
     issuer: ${AUDIT_ADMIN_SERVICE_JWT_ISSUER:audit-admin}
     audience: ${AUDIT_ADMIN_SERVICE_JWT_AUDIENCE:identity-service}
     clock-skew-seconds: ${AUDIT_ADMIN_SERVICE_JWT_CLOCK_SKEW_SECONDS:5}
-    allowed-scopes: ${AUDIT_ADMIN_SERVICE_JWT_ALLOWED_SCOPES:internal:audit:read,internal:admin:status:read}
+    allowed-scopes: ${AUDIT_ADMIN_SERVICE_JWT_ALLOWED_SCOPES:internal:audit:read,internal:admin:status:read,internal:admin:change-requests:manage}
 
 identity:
   internal:
     admin-status:
       enabled: ${IDENTITY_INTERNAL_ADMIN_STATUS_ENABLED:false}
+  admin:
+    change-requests:
+      enabled: ${ADMIN_CHANGE_REQUESTS_ENABLED:false}
+      retention-days: ${ADMIN_CHANGE_REQUEST_RETENTION_DAYS:180}
+      approvals:
+        enabled: ${ADMIN_CHANGE_REQUEST_APPROVALS_ENABLED:true}
+        require-different-approver: ${ADMIN_CHANGE_REQUEST_REQUIRE_DIFFERENT_APPROVER:true}
+        require-mfa-for-approval: ${ADMIN_CHANGE_REQUEST_REQUIRE_MFA_FOR_APPROVAL:true}
+        high-severity-requires-approval: ${ADMIN_CHANGE_REQUEST_HIGH_SEVERITY_REQUIRES_APPROVAL:true}
+        low-severity-auto-approve: ${ADMIN_CHANGE_REQUEST_LOW_SEVERITY_AUTO_APPROVE:false}
+        reject-reason-required-for-high-severity: ${ADMIN_CHANGE_REQUEST_REJECT_REASON_REQUIRED_FOR_HIGH:true}
   mfa:
     enabled: ${MFA_ENABLED:false}
     webauthn:
@@ -128,6 +139,11 @@ identity:
     bearer-token-hash: ${SCIM_BEARER_TOKEN_HASH:}
     groups-enabled: ${SCIM_GROUPS_ENABLED:true}
     admin-groups: ${SCIM_ADMIN_GROUPS:notebook-admins}
+    group-nesting-enabled: ${SCIM_GROUP_NESTING_ENABLED:true}
+    group-nesting-max-depth: ${SCIM_GROUP_NESTING_MAX_DEPTH:5}
+    bulk-enabled: ${SCIM_BULK_ENABLED:false}
+    bulk-max-operations: ${SCIM_BULK_MAX_OPERATIONS:100}
+    bulk-fail-on-errors-max: ${SCIM_BULK_FAIL_ON_ERRORS_MAX:10}
   siem:
     push-enabled: ${SIEM_PUSH_ENABLED:false}
     provider: ${SIEM_PROVIDER:noop}

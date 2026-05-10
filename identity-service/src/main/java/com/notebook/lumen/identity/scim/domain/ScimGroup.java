@@ -14,7 +14,7 @@ public class ScimGroup {
   @Column(name = "id", nullable = false)
   private UUID id;
 
-  @Column(name = "external_id", nullable = false, length = 255)
+  @Column(name = "external_id", length = 255)
   private String externalId;
 
   @Column(name = "display_name", nullable = false, length = 255)
@@ -22,6 +22,12 @@ public class ScimGroup {
 
   @Column(name = "platform_role", length = 80)
   private String platformRole;
+
+  @Column(name = "provider", length = 255)
+  private String provider;
+
+  @Column(name = "active", nullable = false)
+  private boolean active;
 
   @Column(name = "created_at", nullable = false)
   private Instant createdAt;
@@ -36,12 +42,16 @@ public class ScimGroup {
       String externalId,
       String displayName,
       String platformRole,
+      String provider,
+      boolean active,
       Instant createdAt,
       Instant updatedAt) {
     this.id = id;
     this.externalId = externalId;
     this.displayName = displayName;
     this.platformRole = platformRole;
+    this.provider = provider;
+    this.active = active;
     this.createdAt = createdAt;
     this.updatedAt = updatedAt;
   }
@@ -62,6 +72,14 @@ public class ScimGroup {
     return platformRole;
   }
 
+  public String getProvider() {
+    return provider;
+  }
+
+  public boolean isActive() {
+    return active;
+  }
+
   public Instant getCreatedAt() {
     return createdAt;
   }
@@ -70,9 +88,16 @@ public class ScimGroup {
     return updatedAt;
   }
 
-  public void update(String displayName, String platformRole) {
+  public void update(String displayName, String platformRole, String externalId, String provider) {
     this.displayName = displayName;
     this.platformRole = platformRole;
+    this.externalId = externalId;
+    this.provider = provider;
+    this.updatedAt = Instant.now();
+  }
+
+  public void deactivate() {
+    this.active = false;
     this.updatedAt = Instant.now();
   }
 }

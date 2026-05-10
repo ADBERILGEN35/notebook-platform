@@ -30,6 +30,7 @@ Included:
 - Frontend CSP/runtime security settings through Helm values
   (`FRONTEND_CSP_*` from `frontend.security.csp.*`).
 - Enterprise SSO toggles and OIDC provider placeholders (`SSO_*`) with secret-backed client secret.
+- SCIM provisioning toggles (`SCIM_*`, including Faz 76 `SCIM_GROUP_NESTING_*`, `SCIM_BULK_*`) with secret-backed bearer token.
 - SIEM streaming push toggles (`SIEM_*`) with secret-backed auth headers/tokens.
 
 Not included:

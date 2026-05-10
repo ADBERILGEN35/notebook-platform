@@ -9,6 +9,7 @@ public record GatewayRateLimitProperties(
     Bucket adminAudit,
     Bucket adminAuditExport,
     Bucket adminAuditExportMachine,
+    Bucket adminWrite,
     Bucket scim) {
   public Bucket effectiveAdminAudit() {
     return adminAudit == null ? protectedApi : adminAudit;
@@ -22,6 +23,10 @@ public record GatewayRateLimitProperties(
     return adminAuditExportMachine == null
         ? new Bucket(1, 1, 1)
         : adminAuditExportMachine;
+  }
+
+  public Bucket effectiveAdminWrite() {
+    return adminWrite == null ? effectiveAdminAudit() : adminWrite;
   }
 
   public Bucket effectiveScim() {

@@ -32,6 +32,7 @@ is explicitly enabled, offline notes stay read-only when the network is unavaila
 - `FRONTEND_OFFLINE_EDIT_ENABLED` (default **`false`**) — experimental local drafts; see [`offline-edit-sync-design.md`](offline-edit-sync-design.md)
 - `FRONTEND_OFFLINE_SYNC_ENABLED` (default **`false`**) — reserved; no production sync worker in Faz 67
 - `FRONTEND_OFFLINE_EDIT_MAX_DRAFTS` / `FRONTEND_OFFLINE_EDIT_MAX_DRAFT_AGE_DAYS` — draft retention caps
+- `FRONTEND_OFFLINE_ENCRYPTION_ENABLED` / `FRONTEND_OFFLINE_DRAFT_ENCRYPTION_REQUIRED` / `FRONTEND_OFFLINE_CACHE_ENCRYPTION_ENABLED` — offline storage hardening controls (Faz 69)
 
 These are exposed through `/runtime-config.js` and consumed by frontend runtime feature checks.
 
@@ -61,11 +62,16 @@ Cache policy:
 - Shared devices should use logout + "Clear cached notes".
 - Security/admin/audit/export datasets are not cached by this phase.
 - Sensitive deployments can disable offline notes with `FRONTEND_OFFLINE_NOTES_ENABLED=false`.
+- Faz 69 adds optional at-rest encryption foundation for offline drafts/cache; see [`offline-data-encryption.md`](offline-data-encryption.md).
 
 ## UX Behavior
 
 - Global offline banner appears when network is unavailable.
 - If note API fails and a cached copy exists, note page opens in offline read-only mode.
+- Faz 68 adds optional offline draft editing when `FRONTEND_OFFLINE_EDIT_ENABLED=true`; sync is still manual and gated by `FRONTEND_OFFLINE_SYNC_ENABLED`.
+- Faz 70 adds rollout mode and sync hardening flags for production-safe staged rollout.
+- Faz 74 adds app-level foreground background sync **design/foundation** behind dedicated flags; production default remains disabled and no service-worker background sync is shipped.
+- Faz 75 adds foreground lifecycle-driven prompt/auto-safe MVP behavior while keeping background sync app-open only (no closed-app/background-worker execution).
 - Offline mode disables:
   - editor writes (`readOnly`)
   - manual save and autosave writes

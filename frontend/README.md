@@ -73,6 +73,24 @@ Runtime Docker/Kubernetes config:
 - Successful save/restore stores returned new ETag baseline.
 - `412` / `428` responses map to conflict UI and require reloading latest server note.
 
+## Backend merge analysis flag (Faz 71)
+
+- `FRONTEND_BACKEND_MERGE_ANALYSIS_ENABLED=false` by default.
+- When enabled, conflict dialog first calls backend `POST /notes/{id}/merge/analyze`.
+- If backend analysis fails, frontend automatically falls back to Faz 66 client merge analysis.
+
+## Backend merge apply flag (Faz 72)
+
+- `FRONTEND_BACKEND_MERGE_APPLY_ENABLED=false` by default.
+- When enabled, "Apply suggested merge" can call backend `POST /notes/{id}/merge/apply`.
+- If backend apply fails or is disabled, existing client-side save/PATCH conflict flow remains fallback.
+
+## Merge analytics adapter (Faz 73)
+
+- Frontend adds a privacy-safe `trackMergeEvent()` contract with a default no-op adapter.
+- Conflict actions are instrumented with non-sensitive fields only (`source`, action, conflict count, backend usage booleans).
+- No note content, block text, user ID, or note ID is tracked.
+
 ## Cookie Auth + CSRF (Faz 41)
 
 - Cookie mode (`AUTH_TRANSPORT=cookie`) stores auth tokens in httpOnly cookies.
@@ -83,7 +101,7 @@ Runtime Docker/Kubernetes config:
 
 ## Admin / Audit Explorer (Faz 42)
 
-- Routes: `/app/admin`, `/app/admin/audit`, `/app/admin/audit/:eventId`, `/app/admin/enterprise` (+ security/integrations) (nested under authenticated shell).
+- Routes: `/app/admin`, `/app/admin/audit`, `/app/admin/audit/:eventId`, `/app/admin/enterprise` (+ security/integrations/change-requests when `FRONTEND_ENTERPRISE_ADMIN_WRITE_ENABLED`; approve/reject UI gated by `FRONTEND_ENTERPRISE_ADMIN_APPROVALS_ENABLED`, default on) (nested under authenticated shell).
 - Gated behind `VITE_ADMIN_UI_ENABLED` / `ADMIN_UI_ENABLED` with optional trusted `ADMIN_UI_DEV_OPEN` for localhost-style sessions.
 - `VITE_AUDIT_API_MODE` / `AUDIT_API_MODE` selects `mock` (default dev) vs `real` placeholder (`GET /admin/audit-events` once the gateway exposes it).
 - See `docs/admin-audit-ui.md` for rollout guidance (service JWT never ships to browsers).
@@ -242,6 +260,55 @@ When disabled, topbar bell and `/app/notifications` experience are hidden/blocke
 - Code: `src/features/offline/offline-db.ts` (IndexedDB v2 + `offline_note_drafts`),
   `offline-note-drafts.ts`, `offline-sync-policy.ts`, `offline-sync-types.ts`.
 - No production background sync worker in this phase; NotePage offline editing remains gated on future work.
+
+## Offline edit/sync MVP (Faz 68)
+
+- `NotePage` offline cached notes can be edited when `FRONTEND_OFFLINE_EDIT_ENABLED=true`.
+- Draft writes stay local (IndexedDB) and do not call backend while offline.
+- Manual controls: `Save offline draft`, `Queue for sync`, `Sync now`.
+- Manual sync requires `FRONTEND_OFFLINE_SYNC_ENABLED=true` and online status.
+- Conflict resolution for offline draft sync reuses the Faz 66 conflict dialog flow.
+
+## Offline encryption hardening (Faz 69)
+
+- New flags:
+  - `FRONTEND_OFFLINE_ENCRYPTION_ENABLED`
+  - `FRONTEND_OFFLINE_DRAFT_ENCRYPTION_REQUIRED`
+  - `FRONTEND_OFFLINE_CACHE_ENCRYPTION_ENABLED`
+- Session-bound, memory-only WebCrypto key (AES-GCM) is used for encrypted offline payloads.
+- If draft encryption is required but unavailable, offline edit is disabled and read-only fallback is used.
+
+## Offline sync rollout hardening (Faz 70)
+
+- Added flags:
+  - `FRONTEND_OFFLINE_SYNC_ROLLOUT_MODE`
+  - `FRONTEND_OFFLINE_SYNC_MAX_ATTEMPTS`
+  - `FRONTEND_OFFLINE_SYNC_STALE_MINUTES`
+- Sync mode remains flag-gated; production can keep sync disabled while piloting manual/guarded rollout.
+
+## Offline foreground background sync foundation (Faz 74)
+
+- New runtime flags:
+  - `FRONTEND_OFFLINE_BACKGROUND_SYNC_ENABLED`
+  - `FRONTEND_OFFLINE_BACKGROUND_SYNC_MODE` (`disabled | prompt | auto_safe`)
+  - `FRONTEND_OFFLINE_BACKGROUND_SYNC_MAX_BATCH`
+  - `FRONTEND_OFFLINE_BACKGROUND_SYNC_MIN_INTERVAL_SECONDS`
+  - `FRONTEND_OFFLINE_BACKGROUND_SYNC_REQUIRE_UNMETERED`
+  - `FRONTEND_OFFLINE_BACKGROUND_SYNC_REQUIRE_CHARGING` (reserved)
+- Foundation is app-level foreground only (no service-worker production background sync in this phase).
+- Existing manual sync flow remains intact; production default should stay `disabled`.
+
+## Offline foreground background sync MVP (Faz 75)
+
+- AppShell now evaluates background sync on foreground lifecycle triggers:
+  - app boot (auth/session ready)
+  - browser `online` event
+  - app `focus` event
+  - settings section open
+  - manual run button
+- `prompt` mode shows consent banner before running batch sync.
+- `auto_safe` mode runs eligible drafts sequentially and shows syncing/summary banners.
+- Current note being edited is skipped from background batch (`currently_editing` guardrail).
 
 ## Enterprise SSO login (Faz 60)
 

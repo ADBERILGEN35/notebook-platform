@@ -1,0 +1,6 @@
+ALTER TABLE platform_admin_change_requests
+  ADD COLUMN IF NOT EXISTS decision_reason VARCHAR(2000),
+  ADD COLUMN IF NOT EXISTS approval_policy_snapshot VARCHAR(256),
+  ADD COLUMN IF NOT EXISTS severity VARCHAR(16),
+  ADD COLUMN IF NOT EXISTS approved_at TIMESTAMPTZ,
+  ADD COLUMN IF NOT EXISTS rejected_at TIMESTAMPTZ;

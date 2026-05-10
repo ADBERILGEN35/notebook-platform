@@ -54,4 +54,11 @@ public class RateLimitConfig {
     GatewayRateLimitProperties.Bucket scim = properties.effectiveScim();
     return new RedisRateLimiter(scim.replenishRate(), scim.burstCapacity(), scim.requestedTokens());
   }
+
+  @Bean
+  RedisRateLimiter adminWriteRedisRateLimiter(GatewayRateLimitProperties properties) {
+    GatewayRateLimitProperties.Bucket adminWrite = properties.effectiveAdminWrite();
+    return new RedisRateLimiter(
+        adminWrite.replenishRate(), adminWrite.burstCapacity(), adminWrite.requestedTokens());
+  }
 }

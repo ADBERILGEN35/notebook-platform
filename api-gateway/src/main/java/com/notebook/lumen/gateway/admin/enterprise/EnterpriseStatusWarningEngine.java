@@ -10,7 +10,8 @@ public class EnterpriseStatusWarningEngine {
   public List<EnterpriseWarning> build(
       EnterpriseStatusFeatures features,
       boolean identityUnavailable,
-      boolean notificationUnavailable) {
+      boolean notificationUnavailable,
+      boolean contentUnavailable) {
     List<EnterpriseWarning> warnings = new ArrayList<>();
     if (identityUnavailable) {
       warnings.add(
@@ -24,6 +25,13 @@ public class EnterpriseStatusWarningEngine {
           new EnterpriseWarning(
               "NOTIFICATION_STATUS_UNAVAILABLE",
               "Could not load notification-service status (partial data).",
+              WarningSeverity.WARNING));
+    }
+    if (contentUnavailable) {
+      warnings.add(
+          new EnterpriseWarning(
+              "CONTENT_STATUS_UNAVAILABLE",
+              "Could not load content-service merge status (partial data).",
               WarningSeverity.WARNING));
     }
     if (features == null) {
@@ -115,6 +123,22 @@ public class EnterpriseStatusWarningEngine {
                 "NOTIFICATION_DIGEST_WORKER_DISABLED",
                 "Digest emails are enabled but the digest worker is disabled.",
                 WarningSeverity.WARNING));
+      }
+    }
+    if (features.mergeResolution() != null) {
+      if (!features.mergeResolution().applyEnabled()) {
+        warnings.add(
+            new EnterpriseWarning(
+                "MERGE_APPLY_DISABLED",
+                "Backend semantic merge apply is disabled.",
+                WarningSeverity.INFO));
+      }
+      if (!features.mergeResolution().auditFailuresEnabled()) {
+        warnings.add(
+            new EnterpriseWarning(
+                "MERGE_AUDIT_FAILURES_DISABLED",
+                "Merge apply failure audit events are disabled.",
+                WarningSeverity.INFO));
       }
     }
     return warnings;

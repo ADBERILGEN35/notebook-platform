@@ -1,5 +1,6 @@
 import type { Note } from '../../shared/types/api'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { clearOfflineEncryptionKey, createOfflineEncryptionKey, isOfflineCryptoSupported } from './offline-crypto'
 import {
   clearOfflineNotes,
   deleteOfflineNote,
@@ -76,10 +77,13 @@ describe('offline-note-cache', () => {
   beforeEach(() => {
     notesStore.clear()
     draftsStore.clear()
+    clearOfflineEncryptionKey()
     window.__NOTEBOOK_CONFIG__ = {
       ...(window.__NOTEBOOK_CONFIG__ ?? {}),
       OFFLINE_NOTES_ENABLED: true,
       OFFLINE_NOTES_MAX_ITEMS: 2,
+      OFFLINE_ENCRYPTION_ENABLED: false,
+      OFFLINE_CACHE_ENCRYPTION_ENABLED: false,
     }
   })
 
@@ -99,5 +103,22 @@ describe('offline-note-cache', () => {
     await deleteOfflineNote('b')
     await clearOfflineNotes()
     expect(await listOfflineNotes()).toHaveLength(0)
+  })
+
+  it('encrypts cache payload when cache encryption enabled', async () => {
+    if (!isOfflineCryptoSupported()) return
+    window.__NOTEBOOK_CONFIG__ = {
+      ...(window.__NOTEBOOK_CONFIG__ ?? {}),
+      OFFLINE_NOTES_ENABLED: true,
+      OFFLINE_ENCRYPTION_ENABLED: true,
+      OFFLINE_CACHE_ENCRYPTION_ENABLED: true,
+    }
+    await createOfflineEncryptionKey()
+    await saveOfflineNote(baseNote('enc'), 'etag-enc')
+    const decoded = await getOfflineNote('enc')
+    expect(decoded?.etag).toBe('etag-enc')
+    clearOfflineEncryptionKey()
+    const locked = await getOfflineNote('enc')
+    expect(locked).toBeNull()
   })
 })

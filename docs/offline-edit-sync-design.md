@@ -8,6 +8,69 @@ This document specifies how **offline editing** and **sync** should work on top 
 
 Faz 67 is **design + minimal frontend foundation** only. It does **not** turn on production offline editing or background sync by default.
 
+## Faz 68 MVP update
+
+Faz 68 adds a **feature-flagged offline edit/sync MVP**:
+
+- `NotePage` can edit cached offline notes when `FRONTEND_OFFLINE_EDIT_ENABLED=true`.
+- Offline title/content changes are persisted as draft snapshots with local debounce (`750ms`).
+- Manual actions are available: **Save offline draft**, **Queue for sync**, **Sync now**.
+- Sync remains **manual only**; no background/periodic worker.
+- Conflict path reuses Faz 66 three-way analysis and dialog actions.
+
+Production posture remains unchanged: offline edit/sync flags are disabled by default.
+
+## Faz 71 backend merge analysis update
+
+- Added optional server-side analyze-only merge contract for conflict dialogs.
+- Frontend may call backend analysis first when `FRONTEND_BACKEND_MERGE_ANALYSIS_ENABLED=true`.
+- On backend failure/unavailability, client keeps Faz 66 local analysis fallback.
+- Sync/save behavior remains unchanged: no server-side silent merge apply in this phase.
+
+## Faz 72 backend merge apply update
+
+- Optional backend apply endpoint can be used for user-approved suggested merge apply.
+- Apply is ETag-guarded (`expectedRemoteEtag`) and idempotency-aware.
+- If backend apply is disabled or fails, client fallback flow remains available.
+
+## Faz 73 observability update
+
+- Merge conflict resolution flow now has privacy-safe observability hooks and backend metrics.
+- Offline draft vs online conflict source separation is supported in frontend merge event contract.
+
+## Faz 69 security hardening update
+
+- Added WebCrypto-based encryption foundation for offline storage.
+- Draft-sensitive fields can be encrypted at rest using session-bound AES-GCM key.
+- Optional cache encryption path added with independent flag.
+- If encryption is required but unavailable, offline edit falls back to read-only.
+- See [`offline-data-encryption.md`](offline-data-encryption.md).
+
+## Faz 70 rollout hardening update
+
+- Added rollout controls: `disabled | manual | guarded` for sync UI exposure.
+- Added stale `SYNCING` recovery and max-attempt guardrails.
+- Conflict-loop prevention: `CONFLICT` drafts are not auto-retried by bulk/manual pending sync loops.
+- Missing base ETag now blocks sync and marks a recoverable failure path (copy/resolve UX).
+- Diagnostics counters are available locally in Settings (no content telemetry).
+
+## Faz 74 background sync design/foundation update
+
+- Added **app-level foreground** background sync design (no production service worker sync).
+- Added `disabled | prompt | auto_safe` background sync mode model.
+- Added trigger policy utility for online/session/encryption/interval/network guardrails.
+- Added eligibility policy utility to keep `CONFLICT`/`FAILED`/locked/review-required drafts out of auto-safe runs.
+- Added local-only background sync summary diagnostics in frontend foundation.
+- Production default remains `disabled`; manual sync behavior is unchanged.
+
+## Faz 75 foreground background sync MVP update
+
+- App lifecycle triggers are now wired for foreground-only sync evaluation (boot/online/focus/settings/manual action).
+- `prompt` mode now shows explicit user-consent banner and runs batch only after confirmation.
+- `auto_safe` mode now runs safe eligible drafts in foreground and shows non-intrusive syncing/summary banners.
+- Active note drafts are skipped during background run to avoid interrupting in-progress editing.
+- Conflict/failed/locked/review-required drafts remain outside automatic batch behavior.
+
 ## Goals
 
 1. **Deterministic** sync: one **snapshot** per note to push (not an operation log in this phase).
@@ -31,6 +94,9 @@ Faz 67 is **design + minimal frontend foundation** only. It does **not** turn on
 | `FRONTEND_OFFLINE_SYNC_ENABLED` | Reserved for automatic sync after reconnect | **`false`** (no worker in Faz 67) |
 | `FRONTEND_OFFLINE_EDIT_MAX_DRAFTS` | Prune oldest drafts by `lastEditedAt` | `50` |
 | `FRONTEND_OFFLINE_EDIT_MAX_DRAFT_AGE_DAYS` | Prune drafts older than this | `7` |
+| `FRONTEND_OFFLINE_ENCRYPTION_ENABLED` | Enable offline storage encryption foundation | `false` |
+| `FRONTEND_OFFLINE_DRAFT_ENCRYPTION_REQUIRED` | Require draft encryption to allow offline edit | `false` |
+| `FRONTEND_OFFLINE_CACHE_ENCRYPTION_ENABLED` | Encrypt offline read cache payloads | `false` |
 
 Runtime injection follows existing `FRONTEND_*` → `window.__NOTEBOOK_CONFIG__` pattern (see `frontend/docker-entrypoint.sh`).
 

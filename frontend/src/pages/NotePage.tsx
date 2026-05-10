@@ -3,7 +3,14 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { listComments, createComment, resolveComment, reopenComment } from '../features/comments/comments-api'
 import { useNoteAutoSave } from '../features/notes/hooks/useNoteAutoSave'
 import { BlockNoteEditor } from '../features/notes/components/BlockNoteEditor'
-import { createNote, getNote, type NoteWithEtag, updateNote } from '../features/notes/note-api'
+import {
+  applyMerge,
+  analyzeMerge,
+  createNote,
+  getNote,
+  type NoteWithEtag,
+  updateNote,
+} from '../features/notes/note-api'
 import {
   createEmptyDocument,
   toBlockNoteDocument,
@@ -13,6 +20,8 @@ import { Button } from '../shared/components/Button'
 import { ErrorAlert } from '../shared/components/ErrorAlert'
 import { Input } from '../shared/components/Input'
 import { LoadingState } from '../shared/components/LoadingState'
+import { ApiError } from '../shared/api/api-client'
+import { trackMergeEvent } from '../features/notes/merge-analytics'
 import { RightPanel } from '../shared/layout/RightPanel'
 import type { NoteBlock } from '../shared/types/api'
 import { useEffect, useMemo, useState } from 'react'
@@ -20,16 +29,47 @@ import { useMediaQuery } from '../shared/hooks/useMediaQuery'
 import { RightPanelDrawer } from '../shared/layout/RightPanelDrawer'
 import { extractPlainTextFromBlocks } from '../features/notes/utils/blocknote-serialization'
 import { createNoteSaveSnapshot } from '../features/notes/utils/note-save-snapshot'
-import { analyzeNoteConflict } from '../features/notes/utils/blocknote-merge'
+import {
+  analyzeNoteConflict,
+  type MergeAnalysis,
+  type MergeConflictReason,
+} from '../features/notes/utils/blocknote-merge'
 import { NoteConflictResolutionDialog } from '../features/notes/components/NoteConflictResolutionDialog'
 import { useOnlineStatus } from '../shared/hooks/useOnlineStatus'
 import { getOfflineNote, saveOfflineNote } from '../features/offline/offline-note-cache'
-import { isOfflineNotesEnabled } from '../shared/config/offline-feature-flags'
+import {
+  isOfflineDraftEncryptionRequired,
+  isOfflineEditEnabled,
+  isOfflineNotesEnabled,
+  isOfflineSyncEnabled,
+  isBackendMergeApplyEnabled,
+  isBackendMergeAnalysisEnabled,
+  offlineSyncRolloutMode,
+} from '../shared/config/offline-feature-flags'
+import {
+  deleteOfflineDraft,
+  getOfflineDraft,
+  markDraftQueued,
+  saveOfflineDraft,
+} from '../features/offline/offline-note-drafts'
+import {
+  getOfflineDraftConflictData,
+  resolveDraftConflictOverwrite,
+  resolveDraftConflictSaveAsCopy,
+  resolveDraftConflictSuggestedMerge,
+  syncOfflineDraft,
+} from '../features/offline/offline-sync-service'
+import {
+  ensureOfflineEncryptionKey,
+  hasOfflineEncryptionKey,
+  isOfflineCryptoSupported,
+} from '../features/offline/offline-crypto'
 
 type RightTab = 'comments' | 'versions' | 'info'
 const AUTO_SAVE_ENABLED = true
 const AUTO_SAVE_DEBOUNCE_MS = 1500
 const AUTO_SAVE_MIN_CHANGE_INTERVAL_MS = 1000
+const OFFLINE_DRAFT_SAVE_DEBOUNCE_MS = 750
 
 export function NotePage() {
   const { noteId } = useParams()
@@ -42,9 +82,29 @@ export function NotePage() {
   const [hydratedNoteSignature, setHydratedNoteSignature] = useState<string | null>(null)
   const [isRightPanelOpen, setIsRightPanelOpen] = useState(false)
   const [isConflictDialogOpen, setIsConflictDialogOpen] = useState(false)
+  const [offlineDraftStatus, setOfflineDraftStatus] = useState('Saved')
+  const [hasDraftPrompt, setHasDraftPrompt] = useState(false)
+  const [activeOfflineDraftNoteId, setActiveOfflineDraftNoteId] = useState<string | null>(null)
+  const [draftConflictNoteId, setDraftConflictNoteId] = useState<string | null>(null)
   const isDesktop = useMediaQuery('(min-width: 1024px)')
   const { isOnline } = useOnlineStatus()
   const offlineEnabled = isOfflineNotesEnabled()
+  const backendMergeAnalysisEnabled = isBackendMergeAnalysisEnabled()
+  const backendMergeApplyEnabled = isBackendMergeApplyEnabled()
+  const offlineEditEnabled = isOfflineEditEnabled()
+  const offlineSyncEnabled = isOfflineSyncEnabled()
+  const syncRolloutMode = offlineSyncRolloutMode()
+  const offlineDraftEncryptionRequired = isOfflineDraftEncryptionRequired()
+  const offlineEditSecurityBlocked =
+    offlineEditEnabled &&
+    offlineDraftEncryptionRequired &&
+    (!isOfflineCryptoSupported() || !hasOfflineEncryptionKey())
+
+  useEffect(() => {
+    if (offlineEditEnabled && offlineDraftEncryptionRequired) {
+      void ensureOfflineEncryptionKey()
+    }
+  }, [offlineDraftEncryptionRequired, offlineEditEnabled])
 
   const noteQuery = useQuery({
     queryKey: ['note', noteId],
@@ -68,16 +128,18 @@ export function NotePage() {
     },
     enabled: Boolean(noteId),
   })
-  const isOfflineReadOnly = noteQuery.data?.source === 'offline'
+  const isOfflineSource = noteQuery.data?.source === 'offline'
+  const isOfflineReadOnly = isOfflineSource && (!offlineEditEnabled || offlineEditSecurityBlocked)
+  const canEditOfflineDraft = isOfflineSource && offlineEditEnabled && !offlineEditSecurityBlocked
   const commentsQuery = useQuery({
     queryKey: ['comments', noteId],
     queryFn: () => listComments(noteId!, 0, 20),
-    enabled: Boolean(noteId) && isOnline && !isOfflineReadOnly,
+    enabled: Boolean(noteId) && isOnline && !isOfflineSource,
   })
   const versionsQuery = useQuery({
     queryKey: ['versions', noteId],
     queryFn: () => listVersions(noteId!, 0, 20),
-    enabled: Boolean(noteId) && isOnline && !isOfflineReadOnly,
+    enabled: Boolean(noteId) && isOnline && !isOfflineSource,
   })
 
   const saveMutation = useMutation({
@@ -119,7 +181,7 @@ export function NotePage() {
     noteId: noteId ?? '',
     title,
     contentBlocks,
-    enabled: AUTO_SAVE_ENABLED && !isOfflineReadOnly,
+    enabled: AUTO_SAVE_ENABLED && !isOfflineSource,
     debounceMs: AUTO_SAVE_DEBOUNCE_MS,
     minChangeIntervalMs: AUTO_SAVE_MIN_CHANGE_INTERVAL_MS,
     baseUpdatedAt: noteQuery.data?.note.updatedAt ?? null,
@@ -130,12 +192,66 @@ export function NotePage() {
   const note = noteQuery.data?.note
   const noteEtag = noteQuery.data?.etag ?? null
   const conflictInfo = autoSave.conflictInfo
+  const draftConflictQuery = useQuery({
+    queryKey: ['note', noteId, 'offline-draft-conflict'],
+    queryFn: () => getOfflineDraftConflictData(draftConflictNoteId!),
+    enabled: Boolean(draftConflictNoteId),
+  })
   const conflictRemoteQuery = useQuery({
     queryKey: ['note', noteId, 'conflict-remote'],
     queryFn: () => getNote(noteId!),
     enabled: Boolean(noteId && isConflictDialogOpen && conflictInfo && !isOfflineReadOnly),
   })
+  const backendMergeQuery = useQuery({
+    queryKey: ['note', noteId, 'conflict-backend-merge', conflictInfo?.failedAt],
+    queryFn: () =>
+      analyzeMerge(noteId!, {
+        base: {
+          ...conflictInfo!.baseSnapshot,
+          etag: conflictInfo?.serverEtagAtFailure ?? noteEtag ?? null,
+        },
+        local: conflictInfo!.localSnapshot,
+        clientMergeVersion: 1,
+      }),
+    enabled: Boolean(
+      noteId && isConflictDialogOpen && conflictInfo && !isOfflineReadOnly && backendMergeAnalysisEnabled,
+    ),
+    retry: 0,
+  })
+  const backendToClientReason = (type: string): MergeConflictReason => {
+    switch (type) {
+      case 'SAME_BLOCK_CHANGED':
+        return 'same_block_divergent'
+      case 'DELETE_VS_EDIT':
+        return 'delete_vs_edit'
+      case 'UNKNOWN_BLOCK_TYPE':
+        return 'unknown_block_type'
+      case 'MISSING_BLOCK_ID':
+        return 'missing_block_id'
+      case 'DUPLICATE_BLOCK_ID':
+        return 'duplicate_block_id'
+      case 'TITLE_DIVERGENT':
+        return 'title_divergent'
+      default:
+        return 'move_or_structure'
+    }
+  }
+  const serverMergeAnalysis: MergeAnalysis | null = useMemo(() => {
+    if (!backendMergeQuery.data) return null
+    return {
+      suggestion: backendMergeQuery.data.suggested,
+      conflicts: backendMergeQuery.data.conflicts.map((conflict) => ({
+        reason: backendToClientReason(conflict.type),
+        blockId: conflict.blockId ?? undefined,
+        message: conflict.message,
+      })),
+      localChangeSummary: backendMergeQuery.data.summary.localChanges,
+      remoteChangeSummary: backendMergeQuery.data.summary.remoteChanges,
+      conflictSummaries: backendMergeQuery.data.summary.conflicts,
+    }
+  }, [backendMergeQuery.data])
   const mergeAnalysis = useMemo(() => {
+    if (serverMergeAnalysis) return serverMergeAnalysis
     if (!conflictInfo || !conflictRemoteQuery.data) return null
     return analyzeNoteConflict(
       conflictInfo.baseSnapshot,
@@ -145,7 +261,18 @@ export function NotePage() {
         conflictRemoteQuery.data.note.contentBlocks,
       ),
     )
-  }, [conflictInfo, conflictRemoteQuery.data])
+  }, [conflictInfo, conflictRemoteQuery.data, serverMergeAnalysis])
+  const trackConflictAction = (action: 'apply_merge' | 'reload_latest' | 'save_copy' | 'overwrite_latest' | 'cancel' | 'backend_analyze_fallback') => {
+    const effectiveAnalysis = draftConflictQuery.data?.analysis ?? mergeAnalysis
+    trackMergeEvent({
+      source: draftConflictNoteId ? 'offline_draft' : 'online',
+      backendAnalyzeUsed: Boolean(backendMergeQuery.data),
+      backendApplyUsed: backendMergeApplyEnabled,
+      action,
+      hasSafeSuggestion: Boolean(effectiveAnalysis?.suggestion),
+      conflictCount: effectiveAnalysis?.conflicts.length ?? 0,
+    })
+  }
   const localConflictPreview = extractPlainTextFromBlocks(conflictInfo?.localSnapshot.contentBlocks ?? [])
   const serverPreview = extractPlainTextFromBlocks(
     conflictRemoteQuery.data?.note.contentBlocks ?? note?.contentBlocks ?? [],
@@ -173,7 +300,71 @@ export function NotePage() {
     }
   }, [autoSave, hydratedNoteSignature, note, noteEtag])
 
+  useEffect(() => {
+    if (!isConflictDialogOpen) return
+    const effectiveAnalysis = draftConflictQuery.data?.analysis ?? mergeAnalysis
+    trackMergeEvent({
+      source: draftConflictNoteId ? 'offline_draft' : 'online',
+      backendAnalyzeUsed: Boolean(backendMergeQuery.data),
+      backendApplyUsed: backendMergeApplyEnabled,
+      action: 'dialog_opened',
+      hasSafeSuggestion: Boolean(effectiveAnalysis?.suggestion),
+      conflictCount: effectiveAnalysis?.conflicts.length ?? 0,
+    })
+  }, [
+    backendMergeApplyEnabled,
+    backendMergeQuery.data,
+    draftConflictNoteId,
+    draftConflictQuery.data,
+    isConflictDialogOpen,
+    mergeAnalysis,
+  ])
+
+  useEffect(() => {
+    if (!noteId || !offlineEditEnabled) return
+    let cancelled = false
+    void getOfflineDraft(noteId).then((draft) => {
+      if (cancelled || !draft) return
+      if (['DRAFT', 'QUEUED', 'CONFLICT'].includes(draft.status)) {
+        setHasDraftPrompt(true)
+        setActiveOfflineDraftNoteId(draft.noteId)
+          if (draft.status === 'QUEUED') setOfflineDraftStatus('Queued for sync')
+          if (draft.status === 'CONFLICT') setOfflineDraftStatus('This draft has a conflict')
+        if (draft.status === 'CONFLICT') {
+          setDraftConflictNoteId(draft.noteId)
+        }
+      }
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [noteId, offlineEditEnabled])
+
+  useEffect(() => {
+    if (!note || !noteId || !offlineEditEnabled || !canEditOfflineDraft) return
+    const timer = window.setTimeout(() => {
+      void saveOfflineDraft({
+        noteId,
+        workspaceId: note.workspaceId,
+        notebookId: note.notebookId,
+        baseEtag: noteEtag,
+        baseUpdatedAt: note.updatedAt,
+        baseSnapshot: { title: note.title, contentBlocks: note.contentBlocks },
+        localSnapshot: { title, contentBlocks },
+      }).then((saved) => {
+        if (saved) {
+          setOfflineDraftStatus(saved.status === 'QUEUED' ? 'Queued for sync' : 'Saved offline')
+          setActiveOfflineDraftNoteId(saved.noteId)
+        }
+      })
+    }, OFFLINE_DRAFT_SAVE_DEBOUNCE_MS)
+    return () => window.clearTimeout(timer)
+  }, [canEditOfflineDraft, contentBlocks, note, note?.notebookId, note?.workspaceId, note?.updatedAt, noteEtag, noteId, offlineEditEnabled, title])
+
   const saveStatusLabel = useMemo(() => {
+    if (canEditOfflineDraft) {
+      return offlineDraftStatus
+    }
     switch (autoSave.saveState) {
       case 'saving':
         return 'Saving...'
@@ -189,7 +380,7 @@ export function NotePage() {
       default:
         return 'Saved'
     }
-  }, [autoSave.saveState])
+  }, [autoSave.saveState, canEditOfflineDraft, offlineDraftStatus])
 
   if (noteQuery.isLoading) return <LoadingState />
   if (noteQuery.isError && (noteQuery.error as Error).message === 'OFFLINE_NOTE_UNAVAILABLE') {
@@ -210,6 +401,59 @@ export function NotePage() {
             Offline copy loaded. Editing is disabled while offline.
           </div>
         ) : null}
+        {canEditOfflineDraft ? (
+          <div className="mb-2 rounded border border-emerald-300 bg-emerald-50 p-2 text-sm text-emerald-800">
+            You are offline. Changes are stored locally as an offline draft.
+          </div>
+        ) : null}
+        {offlineEditSecurityBlocked ? (
+          <div className="mb-2 rounded border border-amber-300 bg-amber-50 p-2 text-sm text-amber-800">
+            Offline editing is disabled because encrypted local storage is unavailable.
+          </div>
+        ) : null}
+        {offlineDraftStatus === 'Queued for sync' ? (
+          <div className="mb-2 rounded border border-blue-300 bg-blue-50 p-2 text-sm text-blue-800">
+            This draft is queued for sync.
+          </div>
+        ) : null}
+        {offlineDraftStatus.includes('conflict') || offlineDraftStatus.includes('Conflict') ? (
+          <div className="mb-2 rounded border border-amber-300 bg-amber-50 p-2 text-sm text-amber-800">
+            This draft has a conflict and requires manual resolution before syncing again.
+          </div>
+        ) : null}
+        {hasDraftPrompt && activeOfflineDraftNoteId ? (
+          <div className="mb-2 rounded border border-indigo-300 bg-indigo-50 p-2 text-sm text-indigo-800">
+            You have an offline draft for this note.
+            <div className="mt-2 flex flex-wrap gap-2">
+              <Button
+                type="button"
+                onClick={async () => {
+                  const draft = await getOfflineDraft(activeOfflineDraftNoteId)
+                  if (!draft) return
+                  setTitle(draft.localSnapshot.title)
+                  setContentBlocks(draft.localSnapshot.contentBlocks)
+                  setOfflineDraftStatus(draft.status === 'QUEUED' ? 'Queued for sync' : 'Offline draft')
+                  setHasDraftPrompt(false)
+                }}
+              >
+                Continue draft
+              </Button>
+              <Button
+                type="button"
+                onClick={async () => {
+                  await deleteOfflineDraft(activeOfflineDraftNoteId)
+                  setHasDraftPrompt(false)
+                  setDraftConflictNoteId(null)
+                }}
+              >
+                Discard draft
+              </Button>
+              <Button type="button" onClick={() => setHasDraftPrompt(false)}>
+                View server version
+              </Button>
+            </div>
+          </div>
+        ) : null}
         {contentParseError ? <ErrorAlert error={new Error(contentParseError)} /> : null}
         <Input
           data-testid="note-title-input"
@@ -220,7 +464,7 @@ export function NotePage() {
               autoSave.scheduleSave()
             }
           }}
-          disabled={isOfflineReadOnly}
+          disabled={isOfflineSource}
           className="mb-2 text-lg sm:text-xl"
         />
         <BlockNoteEditor
@@ -261,16 +505,69 @@ export function NotePage() {
               {saveStatusLabel}
             </span>
             <span data-testid="autosave-indicator" className="text-xs text-slate-400">
-              Auto-save {AUTO_SAVE_ENABLED && !isOfflineReadOnly ? 'on' : 'off'} ({AUTO_SAVE_DEBOUNCE_MS}ms)
+              Auto-save {AUTO_SAVE_ENABLED && !isOfflineSource ? 'on' : 'off'} ({AUTO_SAVE_DEBOUNCE_MS}ms)
             </span>
             <Button
               data-testid="note-save-button"
               className="bg-primary-600 text-white hover:bg-primary-700"
-              onClick={() => autoSave.saveNow()}
+              onClick={async () => {
+                if (canEditOfflineDraft && note && noteId) {
+                  const saved = await saveOfflineDraft({
+                    noteId,
+                    workspaceId: note.workspaceId,
+                    notebookId: note.notebookId,
+                    baseEtag: noteEtag,
+                    baseUpdatedAt: note.updatedAt,
+                    baseSnapshot: { title: note.title, contentBlocks: note.contentBlocks },
+                    localSnapshot: { title, contentBlocks },
+                  })
+                  if (saved) setOfflineDraftStatus('Saved offline')
+                  return
+                }
+                await autoSave.saveNow()
+              }}
               disabled={autoSave.saveState === 'saving' || isOfflineReadOnly}
             >
-              Save now
+              {canEditOfflineDraft ? 'Save offline draft' : 'Save now'}
             </Button>
+            {offlineEditEnabled && noteId ? (
+              <Button
+                type="button"
+                onClick={async () => {
+                  await markDraftQueued(noteId)
+                  setOfflineDraftStatus('Queued for sync')
+                }}
+                disabled={!canEditOfflineDraft}
+              >
+                Queue for sync
+              </Button>
+            ) : null}
+            {offlineEditEnabled && noteId ? (
+              <Button
+                type="button"
+                onClick={async () => {
+                  const result = await syncOfflineDraft(noteId)
+                  if (result.status === 'synced') {
+                    setOfflineDraftStatus('Synced')
+                    setDraftConflictNoteId(null)
+                    void noteQuery.refetch()
+                  } else if (result.status === 'conflict') {
+                    setOfflineDraftStatus('Sync conflict')
+                    setDraftConflictNoteId(noteId)
+                    setIsConflictDialogOpen(true)
+                    } else if (result.status === 'locked') {
+                      setOfflineDraftStatus('This draft cannot be decrypted in this session')
+                  } else if (result.status === 'queued') {
+                    setOfflineDraftStatus('Queued for sync')
+                  } else {
+                    setOfflineDraftStatus('Sync failed')
+                  }
+                }}
+                disabled={!isOnline || !offlineSyncEnabled || syncRolloutMode === 'disabled'}
+              >
+                Sync now
+              </Button>
+            ) : null}
             {!isDesktop ? (
               <Button
                 type="button"
@@ -326,23 +623,97 @@ export function NotePage() {
             onReopenComment={(commentId) => reopenMutation.mutate(commentId)}
             onRestoreVersion={(version) => restoreMutation.mutate(version)}
             compact
-            disabled={isOfflineReadOnly}
+            disabled={isOfflineSource}
           />
         </RightPanelDrawer>
       )}
     </div>
+    {isConflictDialogOpen && draftConflictQuery.isError ? (
+      <div className="mb-2">
+        <ErrorAlert error={new Error('Latest server version is temporarily unavailable. Try again.')} />
+      </div>
+    ) : null}
     <NoteConflictResolutionDialog
-      open={Boolean(conflictInfo) && isConflictDialogOpen}
-      onClose={() => setIsConflictDialogOpen(false)}
-      localSnapshot={conflictInfo?.localSnapshot ?? { title: '', contentBlocks: createEmptyDocument(), serialized: '' }}
-      serverTitle={serverTitleForDialog}
-      serverPreview={serverPreview}
-      localPreview={localConflictPreview}
-      canSaveCopy={Boolean(note?.notebookId)}
-      mergeAnalysis={mergeAnalysis}
-      remoteLoading={conflictRemoteQuery.isFetching}
+      open={isConflictDialogOpen && (Boolean(conflictInfo) || Boolean(draftConflictQuery.data))}
+      onClose={() => {
+        trackConflictAction('cancel')
+        setIsConflictDialogOpen(false)
+      }}
+      localSnapshot={
+        conflictInfo?.localSnapshot ??
+        (draftConflictQuery.data
+          ? createNoteSaveSnapshot(
+              draftConflictQuery.data.localSnapshot.title,
+              draftConflictQuery.data.localSnapshot.contentBlocks,
+            )
+          : { title: '', contentBlocks: createEmptyDocument(), serialized: '' })
+      }
+      serverTitle={draftConflictQuery.data?.remote.note.title ?? serverTitleForDialog}
+      serverPreview={
+        draftConflictQuery.data
+          ? extractPlainTextFromBlocks(draftConflictQuery.data.remote.note.contentBlocks)
+          : serverPreview
+      }
+      localPreview={
+        draftConflictQuery.data
+          ? extractPlainTextFromBlocks(draftConflictQuery.data.localSnapshot.contentBlocks)
+          : localConflictPreview
+      }
+      canSaveCopy={Boolean(note?.notebookId || draftConflictQuery.data)}
+      mergeAnalysis={draftConflictQuery.data?.analysis ?? mergeAnalysis}
+      remoteLoading={conflictRemoteQuery.isFetching || draftConflictQuery.isFetching}
       onApplySuggestedMerge={async () => {
+        trackConflictAction('apply_merge')
+        if (draftConflictNoteId) {
+          const result = await resolveDraftConflictSuggestedMerge(draftConflictNoteId)
+          if (result.status === 'synced') {
+            setDraftConflictNoteId(null)
+            setOfflineDraftStatus('Synced')
+            setIsConflictDialogOpen(false)
+            void noteQuery.refetch()
+          }
+          return
+        }
         if (!mergeAnalysis?.suggestion || !conflictRemoteQuery.data || !noteId) return
+        if (backendMergeApplyEnabled && conflictInfo) {
+          try {
+            const applied = await applyMerge(noteId, {
+              base: {
+                ...conflictInfo.baseSnapshot,
+                etag: conflictInfo.serverEtagAtFailure ?? noteEtag ?? null,
+              },
+              local: conflictInfo.localSnapshot,
+              expectedRemoteEtag:
+                backendMergeQuery.data?.remoteEtag ?? conflictRemoteQuery.data.etag ?? '',
+              mergeVersion: backendMergeQuery.data?.mergeVersion ?? 1,
+              idempotencyKey: window.crypto?.randomUUID?.(),
+            })
+            setTitle(applied.title)
+            setContentBlocks(applied.contentBlocks)
+            autoSave.resetWithServerVersion(
+              {
+                ...(note ?? conflictRemoteQuery.data.note),
+                title: applied.title,
+                contentBlocks: applied.contentBlocks,
+              },
+              applied.etag,
+            )
+            setIsConflictDialogOpen(false)
+            void noteQuery.refetch()
+            return
+          } catch (error) {
+            if (
+              error instanceof ApiError &&
+              (error.errorCode === 'NOTE_MERGE_REMOTE_CHANGED' || error.errorCode === 'NOTE_MERGE_CONFLICTS')
+            ) {
+              trackConflictAction('backend_analyze_fallback')
+              await conflictRemoteQuery.refetch()
+              await backendMergeQuery.refetch()
+              return
+            }
+            // fall back to existing client-side save path on apply endpoint errors
+          }
+        }
         const merged = createNoteSaveSnapshot(
           mergeAnalysis.suggestion.title,
           mergeAnalysis.suggestion.contentBlocks,
@@ -358,6 +729,11 @@ export function NotePage() {
         void noteQuery.refetch()
       }}
       onReloadLatest={async () => {
+        trackConflictAction('reload_latest')
+        if (draftConflictNoteId) {
+          setIsConflictDialogOpen(false)
+          return
+        }
         const confirmed = window.confirm('Reload latest and discard local unsaved changes?')
         if (!confirmed) return
         await noteQuery.refetch()
@@ -365,6 +741,16 @@ export function NotePage() {
         setIsConflictDialogOpen(false)
       }}
       onSaveCopy={async () => {
+        trackConflictAction('save_copy')
+        if (draftConflictNoteId) {
+          const created = await resolveDraftConflictSaveAsCopy(draftConflictNoteId)
+          if (created) {
+            setDraftConflictNoteId(null)
+            setIsConflictDialogOpen(false)
+            navigate(`/app/notes/${created.noteId}`)
+          }
+          return
+        }
         if (!note?.notebookId || !conflictInfo) return
         const newTitle = `${conflictInfo.localSnapshot.title || note.title} (conflict copy)`
         const created = await copyMutation.mutateAsync({
@@ -377,6 +763,21 @@ export function NotePage() {
         navigate(`/app/notes/${created.id}`)
       }}
       onOverwrite={async () => {
+        trackConflictAction('overwrite_latest')
+        if (draftConflictNoteId) {
+          const confirmed = window.confirm(
+            'Overwrite the latest server version with your offline draft? Previous versions remain in history.',
+          )
+          if (!confirmed) return
+          const result = await resolveDraftConflictOverwrite(draftConflictNoteId)
+          if (result.status === 'synced') {
+            setDraftConflictNoteId(null)
+            setOfflineDraftStatus('Synced')
+            setIsConflictDialogOpen(false)
+            void noteQuery.refetch()
+          }
+          return
+        }
         if (isOfflineReadOnly) return
         if (!conflictInfo || !noteId) return
         const confirmed = window.confirm(

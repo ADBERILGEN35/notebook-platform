@@ -46,6 +46,14 @@ docker compose up --build
 - `ALLOW_UNKNOWN_BLOCK_TYPES`: default `false`
 - `CONTENT_REQUIRE_IF_MATCH_FOR_NOTE_UPDATE`: `true` ise `PATCH /notes/{noteId}` ve
   `POST /notes/{noteId}/restore/{versionNumber}` icin `If-Match` zorunludur (missing -> `428`)
+- `NOTE_MERGE_ANALYSIS_ENABLED`: `POST /notes/{noteId}/merge/analyze` endpointini acar/kapatir
+- `NOTE_MERGE_APPLY_ENABLED`: `POST /notes/{noteId}/merge/apply` endpointini acar/kapatir
+- `NOTE_MERGE_SUPPORTED_VERSIONS`: desteklenen merge versiyonlari (ornek: `1`)
+- `NOTE_MERGE_IDEMPOTENCY_ENABLED`: merge apply idempotency davranisini acar/kapatir
+- `NOTE_MERGE_IDEMPOTENCY_TTL_HOURS`: idempotency key retention suresi
+- `NOTE_MERGE_METRICS_ENABLED`: merge analyze/apply Micrometer metriclerini acar/kapatir
+- `NOTE_MERGE_AUDIT_FAILURES_ENABLED`: merge apply failure audit eventlerini acar/kapatir
+- `CONTENT_INTERNAL_ADMIN_STATUS_ENABLED`: `/internal/admin/status/content` endpointini acar/kapatir
 - `APP_RLS_ENABLED`: transaction icinde PostgreSQL tenant setting uygular
 - `APP_RLS_STRICT_WORKSPACE_HEADER`: aggregate-id endpointlerde `X-Workspace-Id` zorunlu kilar
 
@@ -67,6 +75,26 @@ oldugunda revision artar.
 - `CONTENT_REQUIRE_IF_MATCH_FOR_NOTE_UPDATE=false` iken missing `If-Match` backward-compatible
   olarak kabul edilir ve `NOTE_UPDATE_WITHOUT_IF_MATCH` / `NOTE_RESTORED_WITHOUT_IF_MATCH`
   audit eventleri yazilir.
+
+## Backend Semantic Merge Analyze (Faz 71)
+
+- Endpoint: `POST /notes/{noteId}/merge/analyze`
+- Behavior: three-way (`base/local/remote`) **analyze-only**, no write side effects
+- Guardrails: edit permission required, strict workspace-context checks preserved
+- Conflict-first rule: belirsiz durumda `hasConflicts=true`, `suggested=null`
+
+## Backend Semantic Merge Apply (Faz 72)
+
+- Endpoint: `POST /notes/{noteId}/merge/apply`
+- User action required: endpoint kendiliginden merge/save tetiklemez
+- `expectedRemoteEtag` latest ile eslesmelidir (`412 NOTE_MERGE_REMOTE_CHANGED`)
+- Apply success mevcut update/version/link/index path'ini reuse eder
+
+## Merge Observability (Faz 73)
+
+- Analyze/apply request, outcome, conflict type ve idempotency countersi mevcuttur.
+- Analyze/apply sureleri timer metricleriyle olculur.
+- Structured merge loglari raw content icermez.
 
 ## Block JSON
 

@@ -3,6 +3,7 @@ package com.notebook.lumen.identity.scim.application;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -10,8 +11,9 @@ import com.notebook.lumen.identity.audit.AuditService;
 import com.notebook.lumen.identity.scim.ScimProperties;
 import com.notebook.lumen.identity.scim.api.ScimPatchRequest;
 import com.notebook.lumen.identity.scim.api.ScimUserRequest;
+import com.notebook.lumen.identity.scim.domain.ScimMemberType;
+import com.notebook.lumen.identity.scim.infrastructure.ScimGroupMembershipRepository;
 import com.notebook.lumen.identity.scim.infrastructure.ScimGroupRepository;
-import com.notebook.lumen.identity.scim.infrastructure.UserScimGroupMembershipRepository;
 import com.notebook.lumen.identity.user.domain.RefreshToken;
 import com.notebook.lumen.identity.user.domain.User;
 import com.notebook.lumen.identity.user.domain.UserSource;
@@ -34,8 +36,9 @@ class ScimServiceTest {
   void createUserSetsScimSource() {
     UserRepository userRepository = mock(UserRepository.class);
     RefreshTokenRepository refreshTokenRepository = mock(RefreshTokenRepository.class);
-    UserScimGroupMembershipRepository memberships = mock(UserScimGroupMembershipRepository.class);
+    ScimGroupMembershipRepository memberships = mock(ScimGroupMembershipRepository.class);
     ScimGroupRepository groups = mock(ScimGroupRepository.class);
+    ScimGroupGraphValidation graphValidation = mock(ScimGroupGraphValidation.class);
     PasswordEncoder encoder = mock(PasswordEncoder.class);
     when(encoder.encode(any())).thenReturn("pw");
     when(userRepository.findByEmail("scim@example.com")).thenReturn(Optional.empty());
@@ -49,7 +52,8 @@ class ScimServiceTest {
             groups,
             encoder,
             mock(AuditService.class),
-            new ScimProperties(true, "token", "", true, "notebook-admins"));
+            new ScimProperties(true, "token", "", true, "notebook-admins"),
+            graphValidation);
 
     var result =
         service.createUser(
@@ -70,8 +74,9 @@ class ScimServiceTest {
   void patchActiveFalseRevokesRefreshTokens() {
     UserRepository userRepository = mock(UserRepository.class);
     RefreshTokenRepository refreshTokenRepository = mock(RefreshTokenRepository.class);
-    UserScimGroupMembershipRepository memberships = mock(UserScimGroupMembershipRepository.class);
+    ScimGroupMembershipRepository memberships = mock(ScimGroupMembershipRepository.class);
     ScimGroupRepository groups = mock(ScimGroupRepository.class);
+    ScimGroupGraphValidation graphValidation = mock(ScimGroupGraphValidation.class);
     User user =
         new User(
             UUID.randomUUID(),
@@ -91,7 +96,8 @@ class ScimServiceTest {
             null);
     when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
     when(userRepository.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
-    when(memberships.findByUserId(user.getId())).thenReturn(List.of());
+    when(memberships.findByMemberTypeAndMemberUser_Id(eq(ScimMemberType.USER), any()))
+        .thenReturn(List.of());
     when(refreshTokenRepository.findByUserIdAndRevokedAtIsNullAndExpiresAtAfter(any(), any()))
         .thenReturn(
             List.of(
@@ -114,7 +120,8 @@ class ScimServiceTest {
             groups,
             mock(PasswordEncoder.class),
             mock(AuditService.class),
-            new ScimProperties(true, "token", "", true, "notebook-admins"));
+            new ScimProperties(true, "token", "", true, "notebook-admins"),
+            graphValidation);
 
     var patched =
         service.patchUser(
@@ -133,11 +140,12 @@ class ScimServiceTest {
         new ScimService(
             mock(UserRepository.class),
             mock(RefreshTokenRepository.class),
-            mock(UserScimGroupMembershipRepository.class),
+            mock(ScimGroupMembershipRepository.class),
             mock(ScimGroupRepository.class),
             mock(PasswordEncoder.class),
             mock(AuditService.class),
-            new ScimProperties(true, "token", "", true, "notebook-admins"));
+            new ScimProperties(true, "token", "", true, "notebook-admins"),
+            mock(ScimGroupGraphValidation.class));
     assertThatThrownBy(() -> service.listUsers(1, 10, "title co \"x\""))
         .isInstanceOf(ScimException.class)
         .satisfies(ex -> assertThat(((ScimException) ex).getStatus()).isEqualTo(HttpStatus.BAD_REQUEST));

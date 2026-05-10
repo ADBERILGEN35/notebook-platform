@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
+import { isEnterpriseAdminWriteEnabled } from '../../shared/config/admin-feature-flags'
 import { PageHeader } from '../../shared/components/PageHeader'
 import { Card } from '../../shared/components/Card'
 import { LoadingState } from '../../shared/components/LoadingState'
@@ -17,6 +18,7 @@ const DOCS = {
   siem: 'docs/siem-streaming-push.md',
   audit: 'docs/admin-audit-proxy.md',
   notifications: 'docs/notification-service.md',
+  merge: 'docs/merge-observability.md',
 } as const
 
 function DocLink({ path, label }: { path: string; label: string }) {
@@ -86,6 +88,7 @@ function FeatureCard({
   docPath,
   docLabel,
   warnCount,
+  footer,
 }: {
   title: string
   enabled: boolean
@@ -93,6 +96,7 @@ function FeatureCard({
   docPath: string
   docLabel: string
   warnCount?: number
+  footer?: ReactNode
 }) {
   return (
     <Card className="space-y-2">
@@ -107,6 +111,7 @@ function FeatureCard({
       </div>
       <div className="text-xs text-slate-600">{children}</div>
       <DocLink path={docPath} label={docLabel} />
+      {footer}
     </Card>
   )
 }
@@ -148,6 +153,7 @@ function EnterpriseContent({
     'NOTIFICATION_SSE_WITHOUT_DISTRIBUTED_FANOUT',
     'NOTIFICATION_DIGEST_WORKER_DISABLED',
   ])
+  const mergeW = warningCountForCodes(w, ['MERGE_APPLY_DISABLED', 'MERGE_AUDIT_FAILURES_DISABLED'])
 
   const show = {
     overview: mode === 'overview',
@@ -165,11 +171,12 @@ function EnterpriseContent({
             Heuristic score from gateway warnings (not a security certification). Partial data lowers trust — see
             warnings.
           </p>
-          {(data.identityUnavailable || data.notificationUnavailable) && (
+          {(data.identityUnavailable || data.notificationUnavailable || data.contentUnavailable) && (
             <p className="mt-2 text-xs text-amber-800">
               Partial status:{' '}
               {data.identityUnavailable ? 'identity-service status unavailable. ' : ''}
               {data.notificationUnavailable ? 'notification-service status unavailable.' : ''}
+              {data.contentUnavailable ? 'content-service status unavailable.' : ''}
             </p>
           )}
         </Card>
@@ -212,7 +219,25 @@ function EnterpriseContent({
         ) : null}
 
         {(show.overview || show.security) && features.mfa ? (
-          <FeatureCard title="MFA" enabled={features.mfa.identityMfaEnabled} docPath={DOCS.enterpriseConsole} docLabel="Console docs" warnCount={mfaW}>
+          <FeatureCard
+            title="MFA"
+            enabled={features.mfa.identityMfaEnabled}
+            docPath={DOCS.enterpriseConsole}
+            docLabel="Console docs"
+            warnCount={mfaW}
+            footer={
+              isEnterpriseAdminWriteEnabled() && features.mfa.adminMfaMode !== 'enforce' ? (
+                <p className="text-xs text-slate-600">
+                  <Link
+                    className="text-primary-700 underline"
+                    to="/app/admin/enterprise/change-requests?op=ADMIN_MFA_MODE_UPDATE&val=enforce"
+                  >
+                    Request change: enforce admin MFA mode
+                  </Link>
+                </p>
+              ) : null
+            }
+          >
             <ul className="list-inside list-disc space-y-0.5">
               <li>Admin MFA mode (gateway): {features.mfa.adminMfaMode}</li>
               <li>Accepted methods: {features.mfa.acceptedMethods.join(', ') || '—'}</li>
@@ -287,6 +312,51 @@ function EnterpriseContent({
               <li>Distributed fan-out: {features.notifications.distributedFanoutEnabled ? 'on' : 'off'}</li>
               <li>Digest: {features.notifications.digestEnabled ? 'on' : 'off'}</li>
               <li>Digest worker: {features.notifications.digestWorkerEnabled ? 'on' : 'off'}</li>
+            </ul>
+          </FeatureCard>
+        ) : null}
+
+        {(show.overview || show.integrations) && features.mergeResolution ? (
+          <FeatureCard
+            title="Merge / conflict resolution"
+            enabled={features.mergeResolution.analysisEnabled}
+            docPath={DOCS.merge}
+            docLabel="Merge observability"
+            warnCount={mergeW}
+            footer={
+              isEnterpriseAdminWriteEnabled() ? (
+                <div className="space-y-1 text-xs text-slate-600">
+                  {!features.mergeResolution.applyEnabled ? (
+                    <p>
+                      <Link
+                        className="text-primary-700 underline"
+                        to="/app/admin/enterprise/change-requests?op=MERGE_APPLY_ROLLOUT_REQUEST&val=true"
+                      >
+                        Request enable merge apply
+                      </Link>
+                    </p>
+                  ) : null}
+                  {!features.mergeResolution.analysisEnabled ? (
+                    <p>
+                      <Link
+                        className="text-primary-700 underline"
+                        to="/app/admin/enterprise/change-requests?op=MERGE_ANALYSIS_ROLLOUT_REQUEST&val=true"
+                      >
+                        Request enable merge analysis
+                      </Link>
+                    </p>
+                  ) : null}
+                </div>
+              ) : null
+            }
+          >
+            <ul className="list-inside list-disc space-y-0.5">
+              <li>Backend analyze: {features.mergeResolution.analysisEnabled ? 'enabled' : 'disabled'}</li>
+              <li>Backend apply: {features.mergeResolution.applyEnabled ? 'enabled' : 'disabled'}</li>
+              <li>Supported versions: {features.mergeResolution.supportedVersions.join(', ') || '—'}</li>
+              <li>Idempotency: {features.mergeResolution.idempotencyEnabled ? 'enabled' : 'disabled'}</li>
+              <li>Metrics: {features.mergeResolution.metricsEnabled ? 'enabled' : 'disabled'}</li>
+              <li>Failure audit events: {features.mergeResolution.auditFailuresEnabled ? 'enabled' : 'disabled'}</li>
             </ul>
           </FeatureCard>
         ) : null}

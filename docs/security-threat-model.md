@@ -6,6 +6,24 @@
 - WORM behavior is provider-managed (S3 Object Lock / GCS retention lock / Azure immutable blob),
   not application-enforced.
 
+## Faz 71 additions
+
+- Backend merge analysis receives local/base content snapshots; raw payload must not be written to logs.
+- Merge analysis endpoint requires edit permission, preventing read-only/comment-only merge probing.
+- Conservative analyze-only mode reduces integrity risk from unintended silent server merges.
+
+## Faz 72 additions
+
+- Merge apply endpoint remains explicit user action; backend does not perform silent merge saves.
+- Idempotency storage excludes raw note content (stores hash/status/result pointers only).
+- Audit metadata for merge apply excludes raw content payloads.
+
+## Faz 73 additions
+
+- Merge observability counters/timers avoid user/note/workspace label cardinality and PII leakage.
+- Frontend merge analytics adapter tracks only privacy-safe fields with a default no-op sink.
+- Structured merge logs include operational metadata only; raw note payload remains excluded.
+
 ## Faz 54 additions
 
 - Scheduled export machine identity uses short-lived JWT with strict scope/audience/issuer checks.
@@ -73,6 +91,39 @@
 - **Session failure policy (recommended)**: align with logout — wiping the offline DB on `clearSession`
   avoids orphaned sensitive drafts; tradeoff is losing unsynced work (documented in
   [`offline-edit-sync-design.md`](offline-edit-sync-design.md)).
+
+## Faz 68 additions (offline edit MVP)
+
+- Manual sync UI can surface pending drafts in Settings, which may reveal unsynced note intent on
+  shared devices; operational guidance remains "logout + clear offline data."
+- Draft sync uses existing authenticated API client path (cookie/CSRF or bearer), no separate
+  unauthenticated transport.
+
+## Faz 69 additions (offline data encryption)
+
+- Offline draft payloads can be encrypted with session-bound AES-GCM key (memory-only).
+- Optional offline cache encryption is available for stricter deployments.
+- At-rest exposure is reduced for IndexedDB content, but active-session XSS still remains a risk.
+- Encryption-required mode can force read-only fallback when crypto/key is unavailable.
+
+## Faz 70 additions (rollout hardening)
+
+- Production rollout adds strict sync guardrails (attempt cap, stale recovery, conflict-loop stop).
+- Local diagnostics intentionally exclude content and are limited to counters/state.
+
+## Faz 74 additions (foreground background sync)
+
+- Background sync foundation is foreground app-level only; no service-worker production sync yet.
+- Trigger guardrails require online + authenticated + encryption-ready context before run.
+- Auto-safe eligibility excludes conflict/failed/locked/review-required drafts to reduce retry storms and unsafe auto actions.
+- Local diagnostics remain aggregate-only; no raw note content, title, or user-level telemetry.
+
+## Faz 75 additions (foreground background sync MVP)
+
+- Prompt mode enforces explicit user consent before sync batch execution.
+- Active-note skip guardrail prevents background sync from touching currently edited note drafts.
+- Session-expired behavior stops batch immediately; no blind retries across auth failures.
+- Foreground-only runtime means sync is inactive when app is closed (no hidden worker behavior).
 ## Faz 34 Permission Snapshot Risk Notes
 
 - Snapshot staleness is accepted as eventual consistency.
@@ -103,8 +154,11 @@
 - Risk: IdP claim confusion (issuer/audience/group mismatch) could grant excess access.
 - Current mitigation: issuer + audience checks, state/nonce replay protection, verified email and
   allowed domain checks.
-- Remaining gap: no SCIM lifecycle sync and no manual secure account linking workflow.
-- Recommended next action: add SCIM + explicit admin account-link approvals in enterprise rollout.
+- SCIM (Faz 61/76): static bearer for provisioning; group nesting validation limits membership cycles
+  and depth; bulk is off by default and is non-transactional—integrators must not assume atomic batch
+  semantics.
+- Remaining gap: no manual secure account linking workflow for all enterprise edge cases.
+- Recommended next action: explicit admin account-link approvals where HRIS/IdP ownership is ambiguous.
 
 ## Frontend CSP Hardening (Faz 44)
 
@@ -290,5 +344,5 @@
 
 ## Enterprise admin console (Faz 63)
 
-Browser calls only `GET /admin/enterprise/status`; gateway holds service JWTs for internal status endpoints.
+Browser calls `GET /admin/enterprise/status` and (when enabled) change-request routes under `/admin/enterprise/change-requests` (including **approve/reject** in Faz 78); gateway holds service JWTs for internal status and change-request endpoints. Change requests do not mutate runtime secrets or return secret material; approval only transitions workflow state (`docs/enterprise-admin-write-operations.md`, `docs/admin-change-request-approval-workflow.md`).
 No SCIM/SIEM/OIDC secrets are returned — see `docs/enterprise-admin-console.md`.

@@ -54,6 +54,17 @@ content:
     max-json-bytes: ${CONTENT_BLOCKS_MAX_JSON_BYTES:262144}
   concurrency:
     require-if-match-for-note-update: ${CONTENT_REQUIRE_IF_MATCH_FOR_NOTE_UPDATE:false}
+  merge:
+    analysis-enabled: ${NOTE_MERGE_ANALYSIS_ENABLED:false}
+    apply-enabled: ${NOTE_MERGE_APPLY_ENABLED:false}
+    supported-versions: ${NOTE_MERGE_SUPPORTED_VERSIONS:1}
+    idempotency-enabled: ${NOTE_MERGE_IDEMPOTENCY_ENABLED:true}
+    idempotency-ttl-hours: ${NOTE_MERGE_IDEMPOTENCY_TTL_HOURS:24}
+    metrics-enabled: ${NOTE_MERGE_METRICS_ENABLED:true}
+    audit-failures-enabled: ${NOTE_MERGE_AUDIT_FAILURES_ENABLED:false}
+  internal:
+    admin-status:
+      enabled: ${CONTENT_INTERNAL_ADMIN_STATUS_ENABLED:false}
   workspace:
     service-url: ${WORKSPACE_SERVICE_URL:http://workspace-service:8082}
     timeout-ms: ${WORKSPACE_CLIENT_TIMEOUT_MS:1000}

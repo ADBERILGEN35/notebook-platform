@@ -28,6 +28,7 @@ public class EnterpriseStatusAggregationService {
   static final String STATUS_SCOPE = "internal:admin:status:read";
   private static final String IDENTITY_AUDIENCE = "identity-service";
   private static final String NOTIFICATION_AUDIENCE = "notification-service";
+  private static final String CONTENT_AUDIENCE = "content-service";
 
   private final ObjectMapper objectMapper;
   private final WebClient webClient;
@@ -66,24 +67,29 @@ public class EnterpriseStatusAggregationService {
   public Mono<EnterpriseStatusResponse> loadStatus() {
     Mono<Optional<JsonNode>> identityMono = fetchIdentityStatus();
     Mono<Optional<JsonNode>> notificationMono = fetchNotificationStatus();
-    return Mono.zip(identityMono, notificationMono)
+    Mono<Optional<JsonNode>> contentMono = fetchContentStatus();
+    return Mono.zip(identityMono, notificationMono, contentMono)
         .map(
             tuple -> {
               Optional<JsonNode> identity = tuple.getT1();
               Optional<JsonNode> notification = tuple.getT2();
+              Optional<JsonNode> content = tuple.getT3();
               boolean identityUnavailable = identity.isEmpty();
               boolean notificationUnavailable = notification.isEmpty();
+              boolean contentUnavailable = content.isEmpty();
               EnterpriseStatusFeatures features =
-                  mergeFeatures(identity.orElse(null), notification.orElse(null));
+                  mergeFeatures(identity.orElse(null), notification.orElse(null), content.orElse(null));
               List<EnterpriseWarning> warnings =
-                  warningEngine.build(features, identityUnavailable, notificationUnavailable);
+                  warningEngine.build(
+                      features, identityUnavailable, notificationUnavailable, contentUnavailable);
               return new EnterpriseStatusResponse(
                   resolveEnvironment(),
                   Instant.now(),
                   features,
                   warnings,
                   identityUnavailable,
-                  notificationUnavailable);
+                  notificationUnavailable,
+                  contentUnavailable);
             });
   }
 
@@ -159,6 +165,38 @@ public class EnterpriseStatusAggregationService {
             });
   }
 
+  private Mono<Optional<JsonNode>> fetchContentStatus() {
+    String base = auditProxyProperties.contentServiceUrl();
+    if (base == null || base.isBlank()) {
+      return Mono.just(Optional.empty());
+    }
+    String jwt;
+    try {
+      jwt = auditServiceJwtSigner.sign(CONTENT_AUDIENCE, STATUS_SCOPE);
+    } catch (RuntimeException e) {
+      log.warn("enterprise_status_content_jwt_failed message={}", e.getMessage());
+      return Mono.just(Optional.empty());
+    }
+    String uri = trimTrailingSlash(base) + enterpriseProperties.effectiveContentStatusPath();
+    return webClient
+        .get()
+        .uri(uri)
+        .header(AuditProxyService.INTERNAL_AUTH_HEADER, "Bearer " + jwt)
+        .retrieve()
+        .bodyToMono(String.class)
+        .timeout(Duration.ofSeconds(3))
+        .map(this::parseJson)
+        .onErrorResume(
+            e -> {
+              log.warn(
+                  "enterprise_status_content_failed message={}",
+                  e instanceof WebClientResponseException w
+                      ? w.getStatusCode().value() + " " + w.getResponseBodyAsString()
+                      : e.getMessage());
+              return Mono.just(Optional.empty());
+            });
+  }
+
   private Optional<JsonNode> parseJson(String body) {
     try {
       return Optional.of(objectMapper.readTree(body));
@@ -168,7 +206,8 @@ public class EnterpriseStatusAggregationService {
     }
   }
 
-  private EnterpriseStatusFeatures mergeFeatures(JsonNode identity, JsonNode notification) {
+  private EnterpriseStatusFeatures mergeFeatures(
+      JsonNode identity, JsonNode notification, JsonNode content) {
     SsoStatus sso = mapSso(identity);
     ScimStatus scim = mapScim(identity);
     MfaStatus mfa = mapMfa(identity);
@@ -176,7 +215,9 @@ public class EnterpriseStatusAggregationService {
     AuditExportStatus auditExport = mapAuditExport();
     NotificationsStatus notifications = mapNotifications(notification);
     GatewaySecurityStatus gatewaySecurity = mapGatewaySecurity();
-    return new EnterpriseStatusFeatures(sso, scim, mfa, siem, auditExport, notifications, gatewaySecurity);
+    MergeResolutionStatus mergeResolution = mapMerge(content);
+    return new EnterpriseStatusFeatures(
+        sso, scim, mfa, siem, auditExport, notifications, gatewaySecurity, mergeResolution);
   }
 
   private SsoStatus mapSso(JsonNode identity) {
@@ -265,6 +306,25 @@ public class EnterpriseStatusAggregationService {
         cookie,
         authProperties.effectiveTransport(),
         cookie);
+  }
+
+  private MergeResolutionStatus mapMerge(JsonNode content) {
+    if (content == null) {
+      return new MergeResolutionStatus(false, false, List.of(), false, false, false);
+    }
+    JsonNode merge = content.path("merge");
+    List<Integer> versions = new ArrayList<>();
+    JsonNode supported = merge.path("supportedVersions");
+    if (supported.isArray()) {
+      supported.forEach(v -> versions.add(v.asInt()));
+    }
+    return new MergeResolutionStatus(
+        merge.path("analysisEnabled").asBoolean(false),
+        merge.path("applyEnabled").asBoolean(false),
+        versions,
+        merge.path("idempotencyEnabled").asBoolean(false),
+        merge.path("metricsEnabled").asBoolean(false),
+        merge.path("auditFailuresEnabled").asBoolean(false));
   }
 
   private static String trimTrailingSlash(String base) {

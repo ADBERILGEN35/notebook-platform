@@ -146,6 +146,10 @@ gateway:
       replenish-rate: ${SCIM_RATE_LIMIT_REPLENISH_RATE:5}
       burst-capacity: ${SCIM_RATE_LIMIT_BURST_CAPACITY:20}
       requested-tokens: ${SCIM_RATE_LIMIT_REQUESTED_TOKENS:1}
+    admin-write:
+      replenish-rate: ${GATEWAY_ADMIN_WRITE_RATE_LIMIT_REPLENISH_RATE:2}
+      burst-capacity: ${GATEWAY_ADMIN_WRITE_RATE_LIMIT_BURST_CAPACITY:6}
+      requested-tokens: ${GATEWAY_ADMIN_WRITE_RATE_LIMIT_REQUESTED_TOKENS:1}
   admin:
     enabled: ${GATEWAY_ADMIN_ENABLED:false}
     require-mfa: ${GATEWAY_ADMIN_REQUIRE_MFA:${ADMIN_REQUIRE_MFA:false}}
@@ -155,11 +159,15 @@ gateway:
     allowed-emails: ${GATEWAY_ADMIN_ALLOWED_EMAILS:}
     audit:
       enabled: ${GATEWAY_ADMIN_AUDIT_ENABLED:false}
+    write:
+      enabled: ${GATEWAY_ADMIN_WRITE_ENABLED:false}
+      internal-path: ${GATEWAY_ADMIN_CHANGE_REQUESTS_INTERNAL_PATH:/internal/admin/change-requests}
     enterprise:
       enabled: ${GATEWAY_ADMIN_ENTERPRISE_ENABLED:false}
       notification-service-url: ${NOTIFICATION_SERVICE_URL:http://notification-service:8084}
       identity-status-path: ${GATEWAY_ADMIN_ENTERPRISE_IDENTITY_STATUS_PATH:/internal/admin/status/identity-security}
       notification-status-path: ${GATEWAY_ADMIN_ENTERPRISE_NOTIFICATION_STATUS_PATH:/internal/admin/status/notification}
+      content-status-path: ${GATEWAY_ADMIN_ENTERPRISE_CONTENT_STATUS_PATH:/internal/admin/status/content}
     audit-export:
       enabled: ${GATEWAY_ADMIN_AUDIT_EXPORT_ENABLED:false}
       max-range-days: ${GATEWAY_ADMIN_AUDIT_EXPORT_MAX_RANGE_DAYS:31}

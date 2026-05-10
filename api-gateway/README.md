@@ -50,6 +50,7 @@ Compose ile calistirirken tercih edilen yontem `JWT_JWKS_URI=http://identity-ser
 - `AUTH_RATE_LIMIT_REPLENISH_RATE`, `AUTH_RATE_LIMIT_BURST_CAPACITY`, `AUTH_RATE_LIMIT_REQUESTED_TOKENS`
 - `PROTECTED_RATE_LIMIT_REPLENISH_RATE`, `PROTECTED_RATE_LIMIT_BURST_CAPACITY`, `PROTECTED_RATE_LIMIT_REQUESTED_TOKENS`
 - `GATEWAY_ADMIN_ENABLED`, `GATEWAY_ADMIN_AUDIT_ENABLED`, `GATEWAY_ADMIN_ENTERPRISE_ENABLED` (Faz 63: `GET /admin/enterprise/status`)
+- `GATEWAY_ADMIN_WRITE_ENABLED`, `GATEWAY_ADMIN_CHANGE_REQUESTS_INTERNAL_PATH`, `GATEWAY_ADMIN_WRITE_RATE_LIMIT_*` (Faz 77: `/admin/enterprise/change-requests`)
 - `NOTIFICATION_SERVICE_URL` (enterprise status aggregation)
 - `GATEWAY_ADMIN_ALLOWED_USER_IDS`, `GATEWAY_ADMIN_ALLOWED_EMAILS`
 - `ADMIN_AUDIT_RATE_LIMIT_REPLENISH_RATE`, `ADMIN_AUDIT_RATE_LIMIT_BURST_CAPACITY`, `ADMIN_AUDIT_RATE_LIMIT_REQUESTED_TOKENS`
@@ -71,6 +72,7 @@ Protected routes:
 - `/notes/**`, `/comments/**` -> content-service
 - `/admin/audit-events` -> gateway controller (platform-admin auth + internal audit proxy fan-out)
 - `/admin/enterprise/status` -> gateway controller (platform-admin auth + service JWT fan-out to identity/notification internal status)
+- `/admin/enterprise/change-requests` (+ `/validate`, `/{id}/cancel`, `/{id}/approve`, `/{id}/reject`) -> gateway controller (platform-admin + MFA for writes, service JWT to identity internal change-requests API; Faz 77–78)
 
 Public actuator:
 
@@ -224,7 +226,7 @@ done
 
 ## SCIM routing (Faz 61)
 
-- `/scim/v2/**` is routed to `identity-service`.
+- `/scim/v2/**` (Users, Groups, **Bulk**, ServiceProviderConfig, etc.) is routed to `identity-service`. CSRF is not applied to SCIM (bearer-only provisioning). SCIM rate limit bucket applies to the whole path prefix.
 - Gateway JWT auth is bypassed for SCIM path; SCIM bearer validation is enforced by identity-service.
 - SCIM path has dedicated rate limit bucket (`SCIM_RATE_LIMIT_*`).
 

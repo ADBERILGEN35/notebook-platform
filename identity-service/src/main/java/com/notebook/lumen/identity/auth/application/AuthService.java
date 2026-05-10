@@ -12,7 +12,7 @@ import com.notebook.lumen.identity.auth.api.SignupRequest;
 import com.notebook.lumen.identity.mfa.application.MfaService;
 import com.notebook.lumen.identity.notification.SecurityNotificationService;
 import com.notebook.lumen.identity.scim.ScimProperties;
-import com.notebook.lumen.identity.scim.infrastructure.UserScimGroupMembershipRepository;
+import com.notebook.lumen.identity.scim.application.ScimEffectiveMembershipService;
 import com.notebook.lumen.identity.shared.exception.AccessTokenRequiredException;
 import com.notebook.lumen.identity.shared.exception.EmailAlreadyExistsException;
 import com.notebook.lumen.identity.shared.exception.InvalidCredentialsException;
@@ -62,7 +62,7 @@ public class AuthService {
   private final AuditService auditService;
   private final SecurityNotificationService securityNotificationService;
   private final MfaService mfaService;
-  private final UserScimGroupMembershipRepository membershipRepository;
+  private final ScimEffectiveMembershipService scimEffectiveMembershipService;
   private final ScimProperties scimProperties;
 
   public AuthService(
@@ -74,7 +74,7 @@ public class AuthService {
       AuditService auditService,
       SecurityNotificationService securityNotificationService,
       MfaService mfaService,
-      UserScimGroupMembershipRepository membershipRepository,
+      ScimEffectiveMembershipService scimEffectiveMembershipService,
       ScimProperties scimProperties) {
     this.userRepository = userRepository;
     this.refreshTokenRepository = refreshTokenRepository;
@@ -84,7 +84,7 @@ public class AuthService {
     this.auditService = auditService;
     this.securityNotificationService = securityNotificationService;
     this.mfaService = mfaService;
-    this.membershipRepository = membershipRepository;
+    this.scimEffectiveMembershipService = scimEffectiveMembershipService;
     this.scimProperties = scimProperties;
   }
 
@@ -378,7 +378,7 @@ public class AuthService {
     refreshTokenRepository.save(refreshToken);
 
     Map<String, Object> claims = new java.util.LinkedHashMap<>(accessClaims);
-    var scimRoles = platformRolesFromScimGroups(user.getId());
+    var scimRoles = platformRolesFromScimGroups(user);
     if (!scimRoles.isEmpty()) {
       var merged = new java.util.ArrayList<String>();
       Object existing = claims.get("platform_roles");
@@ -495,20 +495,10 @@ public class AuthService {
         .toList();
   }
 
-  private java.util.List<String> platformRolesFromScimGroups(UUID userId) {
-    if (!scimProperties.groupsEnabled()) {
-      return java.util.List.of();
+  private java.util.List<String> platformRolesFromScimGroups(User user) {
+    if (scimEffectiveMembershipService.userEffectiveMatchesAdminGroup(user, scimProperties)) {
+      return java.util.List.of("PLATFORM_ADMIN");
     }
-    return membershipRepository.findByUserId(userId).stream()
-        .filter(
-            m -> {
-              String display = m.getGroupDisplayName() == null ? "" : m.getGroupDisplayName().toLowerCase(Locale.ROOT);
-              String external = m.getGroupExternalId() == null ? "" : m.getGroupExternalId().toLowerCase(Locale.ROOT);
-              return scimProperties.adminGroupSet().stream()
-                  .anyMatch(group -> group.equals(display) || group.equals(external));
-            })
-        .map(m -> "PLATFORM_ADMIN")
-        .distinct()
-        .toList();
+    return java.util.List.of();
   }
 }

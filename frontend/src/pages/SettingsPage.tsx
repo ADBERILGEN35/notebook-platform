@@ -41,12 +41,31 @@ import {
 } from '../shared/config/notifications-feature-flags'
 import { isWebAuthnSupported } from '../shared/security/webauthn-support'
 import { clearOfflineNotes, listOfflineNotes } from '../features/offline/offline-note-cache'
-import { listPendingDrafts } from '../features/offline/offline-note-drafts'
 import {
+  deleteOfflineDraft,
+  listOfflineDraftOverview,
+  listOfflineDrafts,
+  listPendingDrafts,
+} from '../features/offline/offline-note-drafts'
+import {
+  isOfflineBackgroundSyncEnabled,
+  isOfflineCacheEncryptionEnabled,
+  offlineBackgroundSyncMode,
+  isOfflineDraftEncryptionRequired,
   isOfflineEditEnabled,
+  isOfflineEncryptionEnabled,
   isOfflineNotesEnabled,
   isOfflineSyncEnabled,
+  offlineSyncRolloutMode,
 } from '../shared/config/offline-feature-flags'
+import { refreshOfflineDraftDiagnostics, syncOfflineDraft, syncPendingDrafts } from '../features/offline/offline-sync-service'
+import { hasOfflineEncryptionKey, isOfflineCryptoSupported } from '../features/offline/offline-crypto'
+import { getOfflineSyncDiagnostics } from '../features/offline/offline-sync-diagnostics'
+import { runForegroundBackgroundSync } from '../features/offline/offline-background-sync-service'
+import {
+  getBackgroundSyncModePreference,
+  setBackgroundSyncModePreference,
+} from '../features/offline/offline-sync-preferences'
 
 export function SettingsPage() {
   const navigate = useNavigate()
@@ -58,6 +77,14 @@ export function SettingsPage() {
   const offlineNotesEnabled = isOfflineNotesEnabled()
   const offlineEditEnabled = isOfflineEditEnabled()
   const offlineSyncEnabled = isOfflineSyncEnabled()
+  const syncRolloutMode = offlineSyncRolloutMode()
+  const backgroundSyncEnabled = isOfflineBackgroundSyncEnabled()
+  const runtimeBackgroundMode = offlineBackgroundSyncMode()
+  const offlineEncryptionEnabled = isOfflineEncryptionEnabled()
+  const offlineDraftEncryptionRequired = isOfflineDraftEncryptionRequired()
+  const offlineCacheEncryptionEnabled = isOfflineCacheEncryptionEnabled()
+  const offlineCryptoSupported = isOfflineCryptoSupported()
+  const offlineKeyActive = hasOfflineEncryptionKey()
   const preferencesQuery = useQuery({
     queryKey: ['notification-preferences'],
     queryFn: getNotificationPreferences,
@@ -169,13 +196,89 @@ export function SettingsPage() {
     queryFn: async () => (await listPendingDrafts()).length,
     enabled: offlineNotesEnabled && offlineEditEnabled,
   })
+  const offlineDraftsQuery = useQuery({
+    queryKey: ['offline-drafts'],
+    queryFn: listOfflineDrafts,
+    enabled: offlineNotesEnabled && offlineEditEnabled,
+  })
+  const offlineDraftsOverviewQuery = useQuery({
+    queryKey: ['offline-drafts-overview'],
+    queryFn: listOfflineDraftOverview,
+    enabled: offlineNotesEnabled && offlineEditEnabled,
+  })
   const clearOfflineMutation = useMutation({
     mutationFn: clearOfflineNotes,
     onSuccess: () => {
       void offlineNotesQuery.refetch()
       void offlineDraftsPendingQuery.refetch()
+      void offlineDraftsQuery.refetch()
+      void offlineDraftsOverviewQuery.refetch()
     },
   })
+  const syncDraftMutation = useMutation({
+    mutationFn: syncOfflineDraft,
+    onSuccess: () => {
+      void offlineDraftsPendingQuery.refetch()
+      void offlineDraftsQuery.refetch()
+      void offlineNotesQuery.refetch()
+      void offlineDraftsOverviewQuery.refetch()
+    },
+  })
+  const discardDraftMutation = useMutation({
+    mutationFn: deleteOfflineDraft,
+    onSuccess: () => {
+      void offlineDraftsPendingQuery.refetch()
+      void offlineDraftsQuery.refetch()
+      void offlineDraftsOverviewQuery.refetch()
+    },
+  })
+  const syncAllMutation = useMutation({
+    mutationFn: syncPendingDrafts,
+    onSuccess: async () => {
+      await refreshOfflineDraftDiagnostics()
+      void offlineDraftsPendingQuery.refetch()
+      void offlineDraftsQuery.refetch()
+      void offlineDraftsOverviewQuery.refetch()
+      void offlineNotesQuery.refetch()
+    },
+  })
+  const discardFailedMutation = useMutation({
+    mutationFn: async () => {
+      const rows = await listOfflineDrafts()
+      await Promise.all(
+        rows.filter((r) => r.status === 'FAILED').map((r) => deleteOfflineDraft(r.noteId)),
+      )
+    },
+    onSuccess: () => {
+      void offlineDraftsPendingQuery.refetch()
+      void offlineDraftsQuery.refetch()
+      void offlineDraftsOverviewQuery.refetch()
+    },
+  })
+  const diagnostics = getOfflineSyncDiagnostics()
+  const [backgroundModePreference, setBackgroundModePreference] = useState(getBackgroundSyncModePreference())
+  const effectiveBackgroundMode = backgroundModePreference ?? runtimeBackgroundMode
+  const [lastBackgroundSummary, setLastBackgroundSummary] = useState<Awaited<
+    ReturnType<typeof runForegroundBackgroundSync>
+  > | null>(null)
+  const runBackgroundSyncMutation = useMutation({
+    mutationFn: () =>
+      runForegroundBackgroundSync({
+        authenticated: Boolean(user),
+        encryptionReady: !offlineEncryptionEnabled || offlineKeyActive || !offlineDraftEncryptionRequired,
+        modeOverride: effectiveBackgroundMode,
+        allowPromptExecution: true,
+      }),
+    onSuccess: async (summary) => {
+      setLastBackgroundSummary(summary)
+      await refreshOfflineDraftDiagnostics()
+      void offlineDraftsPendingQuery.refetch()
+      void offlineDraftsQuery.refetch()
+      void offlineDraftsOverviewQuery.refetch()
+      void offlineNotesQuery.refetch()
+    },
+  })
+
   const setupPasskeyMutation = useMutation({
     mutationFn: async () => {
       const options = await registrationOptions()
@@ -307,6 +410,15 @@ export function SettingsPage() {
             Logout clears this cache; use the button below for a manual wipe.
           </p>
         ) : null}
+        {offlineNotesEnabled ? (
+          <p className="mb-3 text-sm text-slate-600">
+            Offline encryption: {offlineEncryptionEnabled ? 'enabled' : 'disabled'} | WebCrypto:{' '}
+            {offlineCryptoSupported ? 'supported' : 'unsupported'} | Session key:{' '}
+            {offlineKeyActive ? 'active' : 'not active'} | Draft encryption required:{' '}
+            {offlineDraftEncryptionRequired ? 'yes' : 'no'} | Cache encryption:{' '}
+            {offlineCacheEncryptionEnabled ? 'enabled' : 'disabled'}
+          </p>
+        ) : null}
         <div className="flex flex-wrap gap-2">
           <Button onClick={() => logoutMutation.mutate()}>
             Logout
@@ -330,6 +442,19 @@ export function SettingsPage() {
               {offlineEditEnabled ? `, pending drafts: ${offlineDraftsPendingQuery.data ?? 0}` : ''}
             </Button>
           ) : null}
+          {offlineNotesEnabled && offlineEncryptionEnabled && !offlineKeyActive ? (
+            <Button
+              type="button"
+              onClick={() => {
+                const confirmed = window.confirm(
+                  'Encrypted offline data is locked for this session. Clear stale offline data now?',
+                )
+                if (confirmed) clearOfflineMutation.mutate()
+              }}
+            >
+              Clear stale encrypted offline data
+            </Button>
+          ) : null}
         </div>
         {revokeMutation.isSuccess ? (
           <p className="mt-2 text-sm text-slate-600">Revoked: {revokeMutation.data.revokedCount}</p>
@@ -337,6 +462,153 @@ export function SettingsPage() {
         {revokeMutation.isError ? <ErrorAlert error={revokeMutation.error} /> : null}
         {clearOfflineMutation.isError ? <ErrorAlert error={clearOfflineMutation.error} /> : null}
       </Card>
+      {offlineNotesEnabled && offlineEditEnabled ? (
+        <Card>
+          <p className="text-sm font-medium text-slate-800">Offline drafts</p>
+          <p className="mt-1 text-sm text-slate-600">
+            Drafts are stored locally on this browser. Shared devices should clear offline data after use.
+          </p>
+          <p className="mt-1 text-xs text-slate-500">
+            Rollout mode: {syncRolloutMode} · Pending: {diagnostics.draftsPending} · Conflict:{' '}
+            {diagnostics.draftsConflict} · Failed: {diagnostics.draftsFailed}
+          </p>
+          <p className="mt-1 text-xs text-slate-500">
+            Background sync: {backgroundSyncEnabled ? 'enabled' : 'disabled'} · Mode: {effectiveBackgroundMode}
+          </p>
+          <div className="mt-2 flex items-center gap-2 text-sm text-slate-700">
+            <label htmlFor="background-sync-mode">Background mode</label>
+            <select
+              id="background-sync-mode"
+              value={effectiveBackgroundMode}
+              disabled={!backgroundSyncEnabled}
+              onChange={(e) => {
+                const value = e.target.value as 'disabled' | 'prompt' | 'auto_safe'
+                setBackgroundModePreference(value)
+                setBackgroundSyncModePreference(value)
+              }}
+              className="rounded border border-slate-200 px-2 py-1 text-sm"
+            >
+              <option value="disabled">Disabled</option>
+              <option value="prompt">Prompt before syncing</option>
+              <option value="auto_safe">Auto-sync safe drafts</option>
+            </select>
+          </div>
+          {(backgroundSyncEnabled && effectiveBackgroundMode === 'prompt' && (offlineDraftsPendingQuery.data ?? 0) > 0) ? (
+            <p className="mt-2 text-xs text-amber-700">You have drafts ready to sync. Review or run Sync all pending.</p>
+          ) : null}
+          <div className="mt-2 flex flex-wrap gap-2">
+            <Button
+              type="button"
+              onClick={() => syncAllMutation.mutate()}
+              disabled={!offlineSyncEnabled || syncRolloutMode === 'disabled' || syncAllMutation.isPending}
+            >
+              Sync all pending
+            </Button>
+            <Button
+              type="button"
+              onClick={() => runBackgroundSyncMutation.mutate()}
+              disabled={!backgroundSyncEnabled || runBackgroundSyncMutation.isPending}
+            >
+              Run foreground background sync
+            </Button>
+            <Button
+              type="button"
+              onClick={() => {
+                const confirmed = window.confirm('Discard all failed drafts?')
+                if (confirmed) discardFailedMutation.mutate()
+              }}
+              disabled={discardFailedMutation.isPending}
+            >
+              Discard all failed drafts
+            </Button>
+          </div>
+          <div data-testid="offline-drafts-list" className="mt-3 space-y-2">
+            {(offlineDraftsOverviewQuery.data ?? []).length === 0 ? (
+              <p className="text-xs text-slate-500">No offline drafts.</p>
+            ) : (
+              (offlineDraftsOverviewQuery.data ?? []).map((draftRow) => (
+                <div key={draftRow.noteId} className="rounded border border-slate-200 p-2">
+                  <p className="text-sm font-medium text-slate-800">{draftRow.title}</p>
+                  <p className="text-xs text-slate-500">
+                    Status: {draftRow.status}
+                    {draftRow.locked ? ' (locked)' : ''} · Attempts: {draftRow.attemptCount} · Last edited:{' '}
+                    {new Date(draftRow.lastEditedAt).toLocaleString()} · Note: {draftRow.noteId.slice(0, 8)} · WS:{' '}
+                    {draftRow.workspaceId.slice(0, 8)}
+                  </p>
+                  {draftRow.lastError ? <p className="text-xs text-rose-700">Error: {draftRow.lastError}</p> : null}
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    <Link className="text-sm text-primary-600 hover:underline" to={`/app/notes/${draftRow.noteId}`}>
+                      Open
+                    </Link>
+                    <Button
+                      type="button"
+                      data-testid="offline-draft-sync-button"
+                      onClick={() => syncDraftMutation.mutate(draftRow.noteId)}
+                      disabled={
+                        !navigator.onLine ||
+                        !offlineSyncEnabled ||
+                        syncRolloutMode === 'disabled' ||
+                        syncDraftMutation.isPending ||
+                        draftRow.locked ||
+                        draftRow.status === 'CONFLICT'
+                      }
+                    >
+                      Sync now
+                    </Button>
+                    <Button
+                      type="button"
+                      data-testid="offline-draft-discard-button"
+                      onClick={() => discardDraftMutation.mutate(draftRow.noteId)}
+                      disabled={discardDraftMutation.isPending}
+                    >
+                      Discard
+                    </Button>
+                    {(draftRow.status === 'FAILED' || draftRow.status === 'CONFLICT') && !draftRow.locked ? (
+                      <Button
+                        type="button"
+                        onClick={() => syncDraftMutation.mutate(draftRow.noteId)}
+                        disabled={syncDraftMutation.isPending || syncRolloutMode === 'disabled'}
+                      >
+                        Retry
+                      </Button>
+                    ) : null}
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+          {!offlineSyncEnabled || syncRolloutMode === 'disabled' ? (
+            <p className="mt-2 text-xs text-amber-700">Sync is disabled in this environment.</p>
+          ) : null}
+          {syncAllMutation.isError ? <ErrorAlert error={syncAllMutation.error} /> : null}
+          {syncDraftMutation.isError ? <ErrorAlert error={syncDraftMutation.error} /> : null}
+          {discardDraftMutation.isError ? <ErrorAlert error={discardDraftMutation.error} /> : null}
+          {discardFailedMutation.isError ? <ErrorAlert error={discardFailedMutation.error} /> : null}
+          {runBackgroundSyncMutation.isError ? <ErrorAlert error={runBackgroundSyncMutation.error} /> : null}
+          {lastBackgroundSummary ? (
+            <p className="mt-2 text-xs text-slate-600">
+              Last background sync: attempted {lastBackgroundSummary.attempted}, synced {lastBackgroundSummary.synced},
+              conflicts {lastBackgroundSummary.conflicts}, failed {lastBackgroundSummary.failed}, skipped{' '}
+              {lastBackgroundSummary.skipped}
+              {lastBackgroundSummary.needsUserConsent ? ' (needs user consent)' : ''}
+            </p>
+          ) : null}
+          {diagnostics.lastBackgroundSyncResult ? (
+            <div className="mt-1 text-[11px] text-slate-500">
+              <p>Diagnostics: {diagnostics.lastBackgroundSyncResult}</p>
+              <p>
+                Last run: {diagnostics.lastBackgroundSyncStartedAt ?? '-'} {'->'}{' '}
+                {diagnostics.lastBackgroundSyncCompletedAt ?? '-'} | Mode:{' '}
+                {diagnostics.lastBackgroundSyncMode ?? '-'} | Stopped:{' '}
+                {diagnostics.backgroundStoppedReason ?? '-'}
+              </p>
+              {diagnostics.backgroundSkippedReasons ? (
+                <p>Skipped reasons: {JSON.stringify(diagnostics.backgroundSkippedReasons)}</p>
+              ) : null}
+            </div>
+          ) : null}
+        </Card>
+      ) : null}
       {canShowAdminNavigation(user) ? (
         <Card>
           <p className="text-sm font-medium text-slate-800">Admin</p>

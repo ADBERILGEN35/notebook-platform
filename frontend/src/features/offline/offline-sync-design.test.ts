@@ -4,6 +4,13 @@ import { ApiError } from '../../shared/api/api-client'
 import { analyzeNoteConflict } from '../notes/utils/blocknote-merge'
 import { createNoteSaveSnapshot } from '../notes/utils/note-save-snapshot'
 import {
+  clearOfflineEncryptionKey,
+  createOfflineEncryptionKey,
+  decryptJson,
+  encryptJson,
+  isOfflineCryptoSupported,
+} from './offline-crypto'
+import {
   clearOfflineDrafts,
   deleteOfflineDraft,
   getOfflineDraft,
@@ -145,12 +152,15 @@ describe('offline-note-drafts (IndexedDB foundation)', () => {
   beforeEach(() => {
     draftsStore.clear()
     notesStore.clear()
+    clearOfflineEncryptionKey()
     window.__NOTEBOOK_CONFIG__ = {
       ...(window.__NOTEBOOK_CONFIG__ ?? {}),
       OFFLINE_NOTES_ENABLED: true,
       OFFLINE_EDIT_ENABLED: true,
       OFFLINE_EDIT_MAX_DRAFTS: 50,
       OFFLINE_EDIT_MAX_DRAFT_AGE_DAYS: 7,
+      OFFLINE_ENCRYPTION_ENABLED: false,
+      OFFLINE_DRAFT_ENCRYPTION_REQUIRED: false,
     }
   })
 
@@ -230,6 +240,83 @@ describe('offline-note-drafts (IndexedDB foundation)', () => {
     await saveOfflineDraft(draftPayload('d'))
     await deleteOfflineDraft('d')
     expect(await getOfflineDraft('d')).toBeNull()
+  })
+
+  it('saves encrypted draft and cannot read without key', async () => {
+    if (!isOfflineCryptoSupported()) return
+    window.__NOTEBOOK_CONFIG__ = {
+      ...(window.__NOTEBOOK_CONFIG__ ?? {}),
+      OFFLINE_NOTES_ENABLED: true,
+      OFFLINE_EDIT_ENABLED: true,
+      OFFLINE_ENCRYPTION_ENABLED: true,
+      OFFLINE_DRAFT_ENCRYPTION_REQUIRED: true,
+    }
+    await createOfflineEncryptionKey()
+    await saveOfflineDraft(draftPayload('enc1'))
+    const withKey = await getOfflineDraft('enc1')
+    expect(withKey?.localSnapshot.title).toBe('L')
+    clearOfflineEncryptionKey()
+    const withoutKey = await getOfflineDraft('enc1')
+    expect(withoutKey).toBeNull()
+  })
+
+  it('clears plaintext draft rows when encryption required', async () => {
+    window.__NOTEBOOK_CONFIG__ = {
+      ...(window.__NOTEBOOK_CONFIG__ ?? {}),
+      OFFLINE_NOTES_ENABLED: true,
+      OFFLINE_EDIT_ENABLED: true,
+      OFFLINE_ENCRYPTION_ENABLED: true,
+      OFFLINE_DRAFT_ENCRYPTION_REQUIRED: true,
+    }
+    draftsStore.set('plain', {
+      draftId: 'x',
+      noteId: 'plain',
+      workspaceId: 'ws',
+      notebookId: 'nb',
+      baseEtag: 'e1',
+      baseUpdatedAt: '2020-01-01T00:00:00.000Z',
+      baseSnapshot: { title: 'B', contentBlocks: [] },
+      localSnapshot: { title: 'L', contentBlocks: [] },
+      status: 'DRAFT',
+      lastEditedAt: '2020-01-01T00:00:00.000Z',
+      queuedAt: null,
+      syncedAt: null,
+      conflictReason: null,
+      attemptCount: 0,
+      lastError: null,
+    })
+    expect(await getOfflineDraft('plain')).toBeNull()
+    expect(draftsStore.has('plain')).toBe(false)
+  })
+})
+
+describe('offline-crypto', () => {
+  beforeEach(() => {
+    clearOfflineEncryptionKey()
+  })
+
+  it('encrypt/decrypt roundtrip with AES-GCM', async () => {
+    if (!isOfflineCryptoSupported()) return
+    await createOfflineEncryptionKey()
+    const encrypted = await encryptJson({ hello: 'world' })
+    const decrypted = await decryptJson<{ hello: string }>(encrypted)
+    expect(decrypted.hello).toBe('world')
+  })
+
+  it('uses different IV for each encryption', async () => {
+    if (!isOfflineCryptoSupported()) return
+    await createOfflineEncryptionKey()
+    const a = await encryptJson({ v: 1 })
+    const b = await encryptJson({ v: 1 })
+    expect(a.iv).not.toBe(b.iv)
+  })
+
+  it('fails decrypt when key is missing', async () => {
+    if (!isOfflineCryptoSupported()) return
+    await createOfflineEncryptionKey()
+    const encrypted = await encryptJson({ v: 1 })
+    clearOfflineEncryptionKey()
+    await expect(decryptJson(encrypted)).rejects.toBeTruthy()
   })
 })
 

@@ -2,7 +2,10 @@
 
 BlockNote-backed notes use **optimistic concurrency** (`If-Match` / ETag). When a save returns `412 NOTE_CONFLICT`, the client keeps local edits and must resolve against a newer server revision.
 
-This phase adds a **three-way model** and **client-side suggested merge** only. There is **no** silent automatic save, **no** backend merge endpoint, and **no** CRDT/OT or realtime collaboration.
+This phase adds a **three-way model** and **client-side suggested merge** only. There is **no** silent automatic save and **no** CRDT/OT or realtime collaboration.
+
+> Faz 71 introduces backend **analyze-only** endpoint (`POST /notes/{id}/merge/analyze`) and Faz 72 adds optional backend **apply** endpoint (`POST /notes/{id}/merge/apply`). Frontend can gate these behind `FRONTEND_BACKEND_MERGE_ANALYSIS_ENABLED` and `FRONTEND_BACKEND_MERGE_APPLY_ENABLED`, with client-side fallback preserved.
+> Faz 73 adds privacy-safe observability counters/logs and conflict action instrumentation contract without note content tracking.
 
 ## Three snapshots
 
@@ -59,7 +62,7 @@ Anything outside these rules → **no** suggestion; existing actions remain (**R
 
 ## Future work
 
-- Optional **backend merge** endpoint with stricter invariants.
+- Optional **backend merge apply** endpoint with stricter invariants.
 - Richer move/reorder resolution.
 - Offline sync layered on top of the same three-way model (see [`offline-edit-sync-design.md`](offline-edit-sync-design.md); Faz 67 defines draft storage and sync mapping only).
 
@@ -69,3 +72,14 @@ When syncing an offline draft, a `412` should fetch **remote**, then call `analy
 **base** = draft `baseSnapshot`, **local** = `localSnapshot`, **remote** = fresh server note. Reuse the
 same dialog component family as online conflicts; **no** silent merge. Additional offline actions
 (keep draft as copy, discard draft, retry) are specified in the offline design doc.
+
+Faz 68 wires this flow into offline draft manual sync:
+
+- `syncOfflineDraft` marks `CONFLICT` on `412/409`.
+- UI opens the same conflict dialog family.
+- Actions now include suggested merge apply, save-as-copy, overwrite latest, and discard/keep draft paths.
+- Faz 70 ensures conflict rows are not repeatedly auto-retried by bulk sync loops until user resolution.
+- Faz 74 keeps this posture for background-sync foundation: conflicts are marked and left for explicit
+  user resolution; no silent merge/apply is added.
+- Faz 75 foreground background sync MVP keeps conflict handling unchanged: conflict dialog is not
+  auto-opened; users are directed to review drafts manually.

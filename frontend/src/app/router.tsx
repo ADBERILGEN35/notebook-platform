@@ -18,6 +18,7 @@ import {
   AdminEnterpriseSecurityPage,
   AdminEnterpriseIntegrationsPage,
 } from '../pages/admin/AdminEnterprisePages'
+import { AdminEnterpriseChangeRequestsPage } from '../pages/admin/AdminEnterpriseChangeRequestsPage'
 import { useAuthStore } from '../features/auth/auth-store'
 import { isCookieMode } from '../shared/config/auth-transport'
 import { isAdminUiEnabled } from '../shared/config/admin-feature-flags'
@@ -89,6 +90,7 @@ export const router = createBrowserRouter([
                   { index: true, element: <AdminEnterpriseOverviewPage /> },
                   { path: 'security', element: <AdminEnterpriseSecurityPage /> },
                   { path: 'integrations', element: <AdminEnterpriseIntegrationsPage /> },
+                  { path: 'change-requests', element: <AdminEnterpriseChangeRequestsPage /> },
                 ],
               },
             ],

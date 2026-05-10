@@ -1,4 +1,5 @@
 import { NavLink, Outlet } from 'react-router-dom'
+import { isEnterpriseAdminWriteEnabled } from '../../shared/config/admin-feature-flags'
 
 const linkClass = ({ isActive }: { isActive: boolean }) =>
   `block rounded px-2 py-1.5 text-sm ${isActive ? 'bg-primary-100 font-medium text-primary-800' : 'text-slate-600 hover:bg-slate-100'}`
@@ -34,6 +35,13 @@ export function AdminLayout() {
               Integrations
             </NavLink>
           </li>
+          {isEnterpriseAdminWriteEnabled() ? (
+            <li className="pl-3">
+              <NavLink to="/app/admin/enterprise/change-requests" className={linkClass}>
+                Change requests
+              </NavLink>
+            </li>
+          ) : null}
         </ul>
       </nav>
       <div className="min-w-0 flex-1">

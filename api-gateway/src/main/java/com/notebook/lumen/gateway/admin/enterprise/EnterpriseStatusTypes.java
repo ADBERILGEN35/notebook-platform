@@ -11,7 +11,8 @@ record EnterpriseStatusResponse(
     EnterpriseStatusFeatures features,
     List<EnterpriseWarning> warnings,
     boolean identityUnavailable,
-    boolean notificationUnavailable) {}
+    boolean notificationUnavailable,
+    boolean contentUnavailable) {}
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 record EnterpriseStatusFeatures(
@@ -21,7 +22,17 @@ record EnterpriseStatusFeatures(
     SiemStatus siem,
     AuditExportStatus auditExport,
     NotificationsStatus notifications,
-    GatewaySecurityStatus gatewaySecurity) {}
+    GatewaySecurityStatus gatewaySecurity,
+    MergeResolutionStatus mergeResolution) {}
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
+record MergeResolutionStatus(
+    boolean analysisEnabled,
+    boolean applyEnabled,
+    List<Integer> supportedVersions,
+    boolean idempotencyEnabled,
+    boolean metricsEnabled,
+    boolean auditFailuresEnabled) {}
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 record SsoStatus(

@@ -3,6 +3,8 @@ package com.notebook.lumen.gateway.admin;
 import com.notebook.lumen.gateway.config.GatewayAdminProperties;
 import com.notebook.lumen.gateway.config.GatewayAdminProperties.Audit;
 import com.notebook.lumen.gateway.config.GatewayAdminProperties.Enterprise;
+import com.notebook.lumen.gateway.config.GatewayAdminWriteProperties;
+import com.notebook.lumen.gateway.error.ErrorCode;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -13,12 +15,17 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class AdminAuthorizationServiceTest {
 
+  private static GatewayAdminWriteProperties writeOff() {
+    return new GatewayAdminWriteProperties(false, "");
+  }
+
   @Test
   void allowsPlatformAdminRole() {
     AdminAuthorizationService service =
         new AdminAuthorizationService(
             new GatewayAdminProperties(
-                true, false, "off", "webauthn,recovery_code", "", "", new Audit(true), new Enterprise(false)));
+                true, false, "off", "webauthn,recovery_code", "", "", new Audit(true), new Enterprise(false)),
+            writeOff());
     Jwt jwt = jwt("user-1", "member@example.com", List.of("PLATFORM_ADMIN"));
     assertThat(service.isAdmin(jwt)).isTrue();
   }
@@ -28,7 +35,8 @@ class AdminAuthorizationServiceTest {
     AdminAuthorizationService service =
         new AdminAuthorizationService(
             new GatewayAdminProperties(
-                true, false, "off", "webauthn,recovery_code", "", "", new Audit(true), new Enterprise(false)));
+                true, false, "off", "webauthn,recovery_code", "", "", new Audit(true), new Enterprise(false)),
+            writeOff());
     Instant now = Instant.now();
     Jwt jwt =
         new Jwt(
@@ -56,7 +64,8 @@ class AdminAuthorizationServiceTest {
                 "",
                 "admin@example.com",
                 new Audit(true),
-                new Enterprise(false)));
+                new Enterprise(false)),
+            writeOff());
     Jwt jwt = jwt("user-2", "admin@example.com", List.of("ROLE_USER"));
     assertThat(service.isAdmin(jwt)).isTrue();
   }
@@ -73,7 +82,8 @@ class AdminAuthorizationServiceTest {
                 "allowed-user",
                 "admin@example.com",
                 new Audit(true),
-                new Enterprise(false)));
+                new Enterprise(false)),
+            writeOff());
     Jwt jwt = jwt("user-3", "member@example.com", List.of("ROLE_USER"));
     assertThat(service.isAdmin(jwt)).isFalse();
   }
@@ -90,7 +100,8 @@ class AdminAuthorizationServiceTest {
                 "",
                 "",
                 new Audit(true),
-                new Enterprise(false)));
+                new Enterprise(false)),
+            writeOff());
     Jwt jwt = jwt("user-1", "member@example.com", List.of("PLATFORM_ADMIN"));
     assertThat(service.isAdmin(jwt)).isFalse();
   }
@@ -107,7 +118,8 @@ class AdminAuthorizationServiceTest {
                 "",
                 "",
                 new Audit(true),
-                new Enterprise(false)));
+                new Enterprise(false)),
+            writeOff());
     Instant now = Instant.now();
     Jwt jwt =
         new Jwt(
@@ -123,6 +135,47 @@ class AdminAuthorizationServiceTest {
                 "mfa_verified", true,
                 "amr", List.of("pwd", "webauthn")));
     assertThat(service.isAdmin(jwt)).isTrue();
+  }
+
+  @Test
+  void enterpriseWriteDeniesEmailAllowlistWithoutPlatformRole() {
+    AdminAuthorizationService service =
+        new AdminAuthorizationService(
+            new GatewayAdminProperties(
+                true,
+                false,
+                "off",
+                "webauthn,recovery_code",
+                "",
+                "ops@example.com",
+                new Audit(true),
+                new Enterprise(true)),
+            new GatewayAdminWriteProperties(true, ""));
+    Jwt jwt = jwt("user-2", "ops@example.com", List.of("ROLE_USER"));
+    assertThat(service.adminWriteFeatureEnabled()).isTrue();
+    assertThat(service.enterpriseAdminWriteDenialReason(jwt)).contains(ErrorCode.ADMIN_ACCESS_DENIED);
+  }
+
+  @Test
+  void enterpriseWriteRequiresMfaWhenMfaModeWarn() {
+    AdminAuthorizationService service =
+        new AdminAuthorizationService(
+            new GatewayAdminProperties(
+                true, false, "warn", "webauthn,recovery_code", "", "", new Audit(true), new Enterprise(true)),
+            new GatewayAdminWriteProperties(true, ""));
+    Jwt jwt = jwt("user-1", "member@example.com", List.of("PLATFORM_ADMIN"));
+    assertThat(service.enterpriseAdminWriteDenialReason(jwt)).contains(ErrorCode.ADMIN_WRITE_MFA_REQUIRED);
+  }
+
+  @Test
+  void enterpriseWriteAllowsPlatformAdminWhenMfaOff() {
+    AdminAuthorizationService service =
+        new AdminAuthorizationService(
+            new GatewayAdminProperties(
+                true, false, "off", "webauthn,recovery_code", "", "", new Audit(true), new Enterprise(true)),
+            new GatewayAdminWriteProperties(true, ""));
+    Jwt jwt = jwt("user-1", "member@example.com", List.of("PLATFORM_ADMIN"));
+    assertThat(service.enterpriseAdminWriteDenialReason(jwt)).isEmpty();
   }
 
   private static Jwt jwt(String sub, String email, List<String> roles) {

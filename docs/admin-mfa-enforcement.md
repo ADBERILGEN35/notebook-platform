@@ -6,6 +6,8 @@ Admin MFA enforcement applies to gateway admin endpoints under `/admin/**`, incl
 
 - `/admin/audit-events`
 - `/admin/audit-events/export`
+- `/admin/enterprise/status`
+- **Faz 77–78:** `/admin/enterprise/change-requests` **writes** (validate, create, cancel, **approve**, **reject**) use the same policy: any non-`off` MFA mode (or `require-mfa`) requires satisfied MFA for **platform-admin role** callers (`403 ADMIN_WRITE_MFA_REQUIRED` when blocked). See `docs/enterprise-admin-write-operations.md`.
 
 ## Gateway Config
 

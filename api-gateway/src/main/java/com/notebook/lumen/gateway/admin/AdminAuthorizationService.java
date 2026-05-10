@@ -1,6 +1,9 @@
 package com.notebook.lumen.gateway.admin;
 
 import com.notebook.lumen.gateway.config.GatewayAdminProperties;
+import com.notebook.lumen.gateway.config.GatewayAdminWriteProperties;
+import com.notebook.lumen.gateway.error.ErrorCode;
+import java.util.Optional;
 import java.util.Collection;
 import java.util.Locale;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -11,9 +14,12 @@ public class AdminAuthorizationService {
   private static final String PLATFORM_ADMIN = "PLATFORM_ADMIN";
 
   private final GatewayAdminProperties properties;
+  private final GatewayAdminWriteProperties writeProperties;
 
-  public AdminAuthorizationService(GatewayAdminProperties properties) {
+  public AdminAuthorizationService(
+      GatewayAdminProperties properties, GatewayAdminWriteProperties writeProperties) {
     this.properties = properties;
+    this.writeProperties = writeProperties;
   }
 
   public boolean isAdmin(Jwt jwt) {
@@ -49,6 +55,32 @@ public class AdminAuthorizationService {
 
   public boolean enterpriseFeatureEnabled() {
     return properties.enabled() && properties.effectiveEnterprise().enabled();
+  }
+
+  public boolean adminWriteFeatureEnabled() {
+    return enterpriseFeatureEnabled() && writeProperties.enabled();
+  }
+
+  /**
+   * Enterprise admin change requests require {@code PLATFORM_ADMIN} (or equivalent role claim). Email /
+   * user-id allowlists are not sufficient for write operations. MFA is required whenever MFA mode is
+   * not {@code off} or {@code gateway.admin.require-mfa} is true.
+   */
+  public Optional<ErrorCode> enterpriseAdminWriteDenialReason(Jwt jwt) {
+    if (jwt == null) {
+      return Optional.of(ErrorCode.ADMIN_ACCESS_DENIED);
+    }
+    if (!hasPlatformAdminRole(jwt)) {
+      return Optional.of(ErrorCode.ADMIN_ACCESS_DENIED);
+    }
+    if (adminWriteRequiresMfa() && !hasVerifiedMfa(jwt)) {
+      return Optional.of(ErrorCode.ADMIN_WRITE_MFA_REQUIRED);
+    }
+    return Optional.empty();
+  }
+
+  private boolean adminWriteRequiresMfa() {
+    return properties.requireMfa() || !"off".equals(properties.effectiveMfaMode());
   }
 
   @SuppressWarnings("unchecked")

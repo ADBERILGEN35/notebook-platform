@@ -53,8 +53,10 @@ class AdminEnterpriseStatusControllerDirectTest {
                 new AuditExportStatus(false, false, false, false, "", false),
                 new NotificationsStatus(false, false, false, false),
                 new GatewaySecurityStatus(
-                    true, true, "off", List.of(), true, false, "bearer", false)),
+                    true, true, "off", List.of(), true, false, "bearer", false),
+                new MergeResolutionStatus(false, false, List.of(1), true, true, false)),
             List.of(),
+            false,
             false,
             false);
     when(agg.loadStatus()).thenReturn(reactor.core.publisher.Mono.just(payload));

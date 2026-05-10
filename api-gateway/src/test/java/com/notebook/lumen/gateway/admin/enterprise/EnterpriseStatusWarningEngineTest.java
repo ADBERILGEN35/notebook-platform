@@ -19,9 +19,10 @@ class EnterpriseStatusWarningEngineTest {
             new SiemStatus(false, "noop", false, false, false),
             new AuditExportStatus(false, false, false, false, "", false),
             new NotificationsStatus(false, false, false, false),
-            new GatewaySecurityStatus(true, true, "warn", List.of(), true, false, "bearer", false));
+            new GatewaySecurityStatus(true, true, "warn", List.of(), true, false, "bearer", false),
+            new MergeResolutionStatus(false, false, List.of(1), true, true, false));
 
-    var warnings = engine.build(features, false, false);
+    var warnings = engine.build(features, false, false, false);
     assertThat(warnings.stream().map(EnterpriseWarning::code))
         .contains("ADMIN_MFA_MODE_NOT_ENFORCE");
   }
@@ -36,9 +37,10 @@ class EnterpriseStatusWarningEngineTest {
             new SiemStatus(false, "noop", false, false, false),
             new AuditExportStatus(false, false, false, false, "", false),
             new NotificationsStatus(true, false, true, true),
-            new GatewaySecurityStatus(true, true, "enforce", List.of(), true, false, "bearer", false));
+            new GatewaySecurityStatus(true, true, "enforce", List.of(), true, false, "bearer", false),
+            new MergeResolutionStatus(false, false, List.of(1), true, true, false));
 
-    var warnings = engine.build(features, false, false);
+    var warnings = engine.build(features, false, false, false);
     assertThat(warnings.stream().map(EnterpriseWarning::code)).contains("SSO_ADMIN_MAPPING_MISSING");
   }
 }

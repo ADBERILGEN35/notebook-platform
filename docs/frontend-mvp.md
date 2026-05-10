@@ -179,6 +179,31 @@ E2E scope moved to [`docs/frontend-e2e.md`](frontend-e2e.md).
 - Utilities: `offline-note-drafts.ts`, `offline-sync-policy.ts` (HTTP → draft status); **no** production background sync or NotePage offline editing unless flags and future wiring ship.
 - Settings/Security shows offline read vs experimental edit/sync state and clears the whole offline DB (notes + drafts).
 
+## Faz 68 Offline edit/sync MVP (manual)
+
+- `NotePage` now supports offline draft editing for cached notes behind `FRONTEND_OFFLINE_EDIT_ENABLED`.
+- Offline edits are autosaved to IndexedDB drafts with local debounce and explicit save/queue actions.
+- Manual sync (`Sync now`) is available when online and `FRONTEND_OFFLINE_SYNC_ENABLED=true`.
+- Sync outcomes:
+  - success => update offline cache + delete draft
+  - `412/409` => conflict flow (Faz 66 dialog reuse)
+  - `503/network` => re-queue
+  - `403/404` => failed
+
+## Faz 69 Offline draft encryption / security hardening
+
+- New `offline-crypto.ts` provides AES-GCM encryption/decryption for offline payloads.
+- Draft payload encryption can be required via runtime flags; when unavailable, offline edit falls back to read-only.
+- Cache encryption is optional and uses the same key lifecycle.
+- Session clear now treats encryption key + offline DB cleanup as a single security boundary.
+
+## Faz 70 Offline sync production rollout hardening
+
+- Runtime rollout mode controls sync exposure (`disabled|manual|guarded`).
+- Sync hardening includes stale `SYNCING` recovery and max-attempt cutoff.
+- Settings adds richer draft list metadata, bulk sync/discard actions, and local diagnostics counters.
+- NotePage improves offline draft state banners and encrypted unavailable fallback messaging.
+
 ## Faz 60 Enterprise SSO UX
 
 - Login page can show OIDC provider buttons from backend provider list.

@@ -30,6 +30,12 @@ data:
   GATEWAY_ADMIN_MFA_ACCEPTED_METHODS: {{ .Values.config.gatewayAdminMfaAcceptedMethods | quote }}
   GATEWAY_ADMIN_AUDIT_ENABLED: {{ .Values.config.gatewayAdminAuditEnabled | quote }}
   GATEWAY_ADMIN_ENTERPRISE_ENABLED: {{ .Values.config.gatewayAdminEnterpriseEnabled | quote }}
+  GATEWAY_ADMIN_WRITE_ENABLED: {{ .Values.config.gatewayAdminWriteEnabled | quote }}
+  GATEWAY_ADMIN_CHANGE_REQUESTS_INTERNAL_PATH: {{ .Values.config.gatewayAdminChangeRequestsInternalPath | quote }}
+  GATEWAY_ADMIN_WRITE_RATE_LIMIT_REPLENISH_RATE: {{ .Values.config.gatewayAdminWriteRateLimitReplenishRate | quote }}
+  GATEWAY_ADMIN_WRITE_RATE_LIMIT_BURST_CAPACITY: {{ .Values.config.gatewayAdminWriteRateLimitBurstCapacity | quote }}
+  GATEWAY_ADMIN_WRITE_RATE_LIMIT_REQUESTED_TOKENS: {{ .Values.config.gatewayAdminWriteRateLimitRequestedTokens | quote }}
+  GATEWAY_ADMIN_ENTERPRISE_CONTENT_STATUS_PATH: {{ .Values.config.gatewayAdminEnterpriseContentStatusPath | quote }}
   GATEWAY_ADMIN_AUDIT_EXPORT_ENABLED: {{ .Values.config.gatewayAdminAuditExportEnabled | quote }}
   GATEWAY_AUDIT_EXPORT_MACHINE_AUTH_ENABLED: {{ .Values.config.gatewayAuditExportMachineAuthEnabled | quote }}
   GATEWAY_AUDIT_EXPORT_MACHINE_AUTH_ALLOWED_ISSUERS: {{ .Values.config.gatewayAuditExportMachineAuthAllowedIssuers | quote }}
@@ -114,8 +120,17 @@ data:
   AUDIT_ADMIN_SERVICE_JWT_ALLOWED_SCOPES: {{ .Values.config.auditAdminServiceJwtAllowedScopes | quote }}
   AUDIT_ADMIN_SERVICE_JWT_AUDIENCE: "identity-service"
   AUDIT_ADMIN_SERVICE_JWT_NOTIFICATION_AUDIENCE: "notification-service"
+  ADMIN_CHANGE_REQUESTS_ENABLED: {{ .Values.config.adminChangeRequestsEnabled | quote }}
+  ADMIN_CHANGE_REQUEST_RETENTION_DAYS: {{ .Values.config.adminChangeRequestRetentionDays | quote }}
+  ADMIN_CHANGE_REQUEST_APPROVALS_ENABLED: {{ .Values.config.adminChangeRequestApprovalsEnabled | quote }}
+  ADMIN_CHANGE_REQUEST_REQUIRE_DIFFERENT_APPROVER: {{ .Values.config.adminChangeRequestRequireDifferentApprover | quote }}
+  ADMIN_CHANGE_REQUEST_REQUIRE_MFA_FOR_APPROVAL: {{ .Values.config.adminChangeRequestRequireMfaForApproval | quote }}
+  ADMIN_CHANGE_REQUEST_HIGH_SEVERITY_REQUIRES_APPROVAL: {{ .Values.config.adminChangeRequestHighSeverityRequiresApproval | quote }}
+  ADMIN_CHANGE_REQUEST_LOW_SEVERITY_AUTO_APPROVE: {{ .Values.config.adminChangeRequestLowSeverityAutoApprove | quote }}
+  ADMIN_CHANGE_REQUEST_REJECT_REASON_REQUIRED_FOR_HIGH: {{ .Values.config.adminChangeRequestRejectReasonRequiredForHigh | quote }}
   IDENTITY_INTERNAL_ADMIN_STATUS_ENABLED: {{ .Values.config.internalAdminStatusEnabled | quote }}
   NOTIFICATION_INTERNAL_ADMIN_STATUS_ENABLED: {{ .Values.config.internalAdminStatusEnabled | quote }}
+  CONTENT_INTERNAL_ADMIN_STATUS_ENABLED: {{ .Values.config.internalAdminStatusEnabled | quote }}
   TRUSTED_SERVICE_CONTENT_SERVICE_KID: {{ .Values.config.trustedContentServiceKid | quote }}
   TRUSTED_SERVICE_CONTENT_SERVICE_PUBLIC_KEY_PATH: "/etc/notebook/secrets/service-jwt/content-public.pem"
   TRUSTED_SERVICE_CONTENT_SERVICE_ISSUER: {{ .Values.config.trustedContentServiceIssuer | quote }}
@@ -131,6 +146,13 @@ data:
   SEARCH_OUTBOX_WORKER_ENABLED: {{ .Values.config.searchOutboxWorkerEnabled | quote }}
   SEARCH_OUTBOX_BATCH_SIZE: {{ .Values.config.searchOutboxBatchSize | quote }}
   SEARCH_OUTBOX_MAX_ATTEMPTS: {{ .Values.config.searchOutboxMaxAttempts | quote }}
+  NOTE_MERGE_ANALYSIS_ENABLED: {{ .Values.config.noteMergeAnalysisEnabled | quote }}
+  NOTE_MERGE_APPLY_ENABLED: {{ .Values.config.noteMergeApplyEnabled | quote }}
+  NOTE_MERGE_SUPPORTED_VERSIONS: {{ .Values.config.noteMergeSupportedVersions | quote }}
+  NOTE_MERGE_IDEMPOTENCY_ENABLED: {{ .Values.config.noteMergeIdempotencyEnabled | quote }}
+  NOTE_MERGE_IDEMPOTENCY_TTL_HOURS: {{ .Values.config.noteMergeIdempotencyTtlHours | quote }}
+  NOTE_MERGE_METRICS_ENABLED: {{ .Values.config.noteMergeMetricsEnabled | quote }}
+  NOTE_MERGE_AUDIT_FAILURES_ENABLED: {{ .Values.config.noteMergeAuditFailuresEnabled | quote }}
   SEARCH_OUTBOX_INITIAL_DELAY_SECONDS: {{ .Values.config.searchOutboxInitialDelaySeconds | quote }}
   SEARCH_OUTBOX_MAX_DELAY_SECONDS: {{ .Values.config.searchOutboxMaxDelaySeconds | quote }}
   SEARCH_OUTBOX_POLL_INTERVAL_SECONDS: {{ .Values.config.searchOutboxPollIntervalSeconds | quote }}
@@ -245,6 +267,11 @@ data:
   SCIM_BEARER_TOKEN_HASH: {{ .Values.config.scimBearerTokenHash | quote }}
   SCIM_GROUPS_ENABLED: {{ .Values.config.scimGroupsEnabled | quote }}
   SCIM_ADMIN_GROUPS: {{ .Values.config.scimAdminGroups | quote }}
+  SCIM_GROUP_NESTING_ENABLED: {{ .Values.config.scimGroupNestingEnabled | quote }}
+  SCIM_GROUP_NESTING_MAX_DEPTH: {{ .Values.config.scimGroupNestingMaxDepth | quote }}
+  SCIM_BULK_ENABLED: {{ .Values.config.scimBulkEnabled | quote }}
+  SCIM_BULK_MAX_OPERATIONS: {{ .Values.config.scimBulkMaxOperations | quote }}
+  SCIM_BULK_FAIL_ON_ERRORS_MAX: {{ .Values.config.scimBulkFailOnErrorsMax | quote }}
   SIEM_PUSH_ENABLED: {{ .Values.config.siemPushEnabled | quote }}
   SIEM_PROVIDER: {{ .Values.config.siemProvider | quote }}
   SIEM_ENDPOINT_URL: {{ .Values.config.siemEndpointUrl | quote }}

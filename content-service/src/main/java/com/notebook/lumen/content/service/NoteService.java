@@ -14,6 +14,7 @@ import com.notebook.lumen.content.tenant.StrictWorkspaceHeaderValidator;
 import com.notebook.lumen.content.tenant.TenantDatabaseSession;
 import java.time.Instant;
 import java.util.List;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -153,24 +154,48 @@ public class NoteService {
     permissionService.requireWritable(user.userId(), note.getNotebookId());
     enforceIfMatch(note, ifMatchHeader, user, "NOTE_UPDATE_WITHOUT_IF_MATCH");
     blockValidationService.validate(request.contentBlocks());
-    int versionNumber = nextVersion(note.getId());
-    note.update(
+    return applyNoteUpdate(
+        note,
+        user.userId(),
         request.title(),
-        mapper.write(request.contentBlocks()),
+        request.contentBlocks(),
         schema(request.contentSchemaVersion()),
-        user.userId(),
-        Instant.now());
-    createVersion(note, versionNumber, user.userId(), Instant.now());
-    replaceLinks(note, request.contentBlocks(), Instant.now());
-    auditService.record(
         "NOTE_UPDATED",
-        user.userId(),
-        note.getWorkspaceId(),
-        "NOTE",
-        note.getId(),
         Map.of("notebookId", note.getNotebookId().toString()));
-    searchIndexingService.upsert(note, request.contentBlocks(), versionNumber);
-    return mapper.toResponse(note);
+  }
+
+  @Transactional
+  public MergeApplyResult applyMerged(
+      UserContext user,
+      UUID noteId,
+      String ifMatchHeader,
+      String mergedTitle,
+      tools.jackson.databind.JsonNode mergedBlocks,
+      int mergeVersion,
+      String baseEtag,
+      String idempotencyKey) {
+    Note note = load(noteId);
+    tenantDatabaseSession.applyWorkspace(note.getWorkspaceId());
+    assertAggregateWorkspaceHeader(user, note.getWorkspaceId());
+    permissionService.requireWritable(user.userId(), note.getNotebookId());
+    enforceIfMatch(note, ifMatchHeader, user, "NOTE_MERGE_APPLY_WITHOUT_IF_MATCH");
+    blockValidationService.validate(mergedBlocks);
+    NoteResponse response =
+        applyNoteUpdate(
+            note,
+            user.userId(),
+            mergedTitle,
+            mergedBlocks,
+            note.getContentSchemaVersion(),
+            "NOTE_MERGE_APPLIED",
+            Map.of(
+                "notebookId", note.getNotebookId().toString(),
+                "mergeVersion", mergeVersion,
+                "baseEtag", baseEtag == null ? "" : baseEtag,
+                "expectedRemoteEtag", ifMatchHeader,
+                "idempotencyKeyPresent", idempotencyKey != null && !idempotencyKey.isBlank()));
+    int versionNumber = versionRepository.countByNoteId(noteId);
+    return new MergeApplyResult(response, versionNumber);
   }
 
   @Transactional
@@ -324,6 +349,41 @@ public class NoteService {
             now));
   }
 
+  private NoteResponse applyNoteUpdate(
+      Note note,
+      UUID actorUserId,
+      String title,
+      tools.jackson.databind.JsonNode contentBlocks,
+      int contentSchemaVersion,
+      String auditEventType,
+      Map<String, Object> auditMetadata) {
+    Instant now = Instant.now();
+    int versionNumber = nextVersion(note.getId());
+    note.update(
+        title,
+        mapper.write(contentBlocks),
+        contentSchemaVersion,
+        actorUserId,
+        now);
+    createVersion(note, versionNumber, actorUserId, now);
+    replaceLinks(note, contentBlocks, now);
+    Map<String, Object> finalAuditMetadata = new LinkedHashMap<>(auditMetadata);
+    if ("NOTE_MERGE_APPLIED".equals(auditEventType)) {
+      finalAuditMetadata.put("resultVersion", versionNumber);
+      finalAuditMetadata.put("conflictCount", 0);
+      finalAuditMetadata.put("source", "backend_apply");
+    }
+    auditService.record(
+        auditEventType,
+        actorUserId,
+        note.getWorkspaceId(),
+        "NOTE",
+        note.getId(),
+        finalAuditMetadata);
+    searchIndexingService.upsert(note, contentBlocks, versionNumber);
+    return mapper.toResponse(note);
+  }
+
   private void replaceLinks(Note note, tools.jackson.databind.JsonNode blocks, Instant now) {
     Set<UUID> targets = linkParser.parse(blocks, note.getId());
     for (UUID target : targets)
@@ -386,4 +446,6 @@ public class NoteService {
         "NOTE_CONFLICT",
         "Note changed on server, reload latest version before saving");
   }
+
+  public record MergeApplyResult(NoteResponse note, int versionNumber) {}
 }

@@ -1,5 +1,6 @@
 package com.notebook.lumen.content;
 
+import com.notebook.lumen.content.admin.InternalAdminStatusProperties;
 import com.notebook.lumen.content.audit.AuditAdminProperties;
 import com.notebook.lumen.content.config.ContentProperties;
 import org.springframework.boot.SpringApplication;
@@ -9,7 +10,11 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
 @EnableScheduling
-@EnableConfigurationProperties({ContentProperties.class, AuditAdminProperties.class})
+@EnableConfigurationProperties({
+  ContentProperties.class,
+  AuditAdminProperties.class,
+  InternalAdminStatusProperties.class
+})
 public class ContentServiceApplication {
 
   public static void main(String[] args) {

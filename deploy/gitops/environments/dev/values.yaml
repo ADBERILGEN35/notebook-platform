@@ -48,6 +48,11 @@ config:
   scimBearerTokenHash: ""
   scimGroupsEnabled: "true"
   scimAdminGroups: "notebook-admins"
+  scimGroupNestingEnabled: "true"
+  scimGroupNestingMaxDepth: "5"
+  scimBulkEnabled: "false"
+  scimBulkMaxOperations: "100"
+  scimBulkFailOnErrorsMax: "10"
   siemPushEnabled: "false"
   siemProvider: "noop"
   siemEndpointUrl: ""
@@ -68,6 +73,13 @@ config:
   notificationFanoutOutboxEnabled: "true"
   notificationFanoutWorkerEnabled: "true"
   notificationFanoutImmediateLocalDelivery: "true"
+  gatewayAdminEnabled: "true"
+  gatewayAdminAuditEnabled: "true"
+  gatewayAdminEnterpriseEnabled: "true"
+  gatewayAdminWriteEnabled: "true"
+  adminChangeRequestsEnabled: "true"
+  adminChangeRequestApprovalsEnabled: "true"
+  internalAdminStatusEnabled: "true"
 
 auditExport:
   scheduled:
@@ -130,6 +142,8 @@ frontend:
     FRONTEND_MFA_UI_ENABLED: "true"
     FRONTEND_ADMIN_UI_ENABLED: "true"
     FRONTEND_ADMIN_UI_DEV_OPEN: "true"
+    FRONTEND_ENTERPRISE_ADMIN_WRITE_ENABLED: "true"
+    FRONTEND_ENTERPRISE_ADMIN_APPROVALS_ENABLED: "true"
     FRONTEND_AUDIT_API_MODE: "mock"
   security:
     csp:

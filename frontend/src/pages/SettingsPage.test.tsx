@@ -93,6 +93,113 @@ vi.mock('../features/auth/mfa-api', () => ({
 vi.mock('../shared/security/webauthn-support', () => ({
   isWebAuthnSupported: () => false,
 }))
+vi.mock('../shared/config/offline-feature-flags', () => ({
+  isOfflineNotesEnabled: () => true,
+  isOfflineEditEnabled: () => true,
+  isOfflineSyncEnabled: () => false,
+  isOfflineBackgroundSyncEnabled: () => false,
+  offlineBackgroundSyncMode: () => 'disabled',
+  isOfflineEncryptionEnabled: () => true,
+  isOfflineDraftEncryptionRequired: () => true,
+  isOfflineCacheEncryptionEnabled: () => false,
+  offlineSyncRolloutMode: () => 'disabled',
+}))
+vi.mock('../features/offline/offline-crypto', () => ({
+  isOfflineCryptoSupported: () => true,
+  hasOfflineEncryptionKey: () => false,
+}))
+vi.mock('../features/offline/offline-note-cache', () => ({
+  listOfflineNotes: vi.fn(async () => []),
+  clearOfflineNotes: vi.fn(async () => undefined),
+}))
+vi.mock('../features/offline/offline-note-drafts', () => ({
+  listPendingDrafts: vi.fn(async () => [{ noteId: 'n1' }]),
+  listOfflineDraftOverview: vi.fn(async () => []),
+  listOfflineDrafts: vi.fn(async () => [
+    {
+      draftId: 'd1',
+      noteId: 'n1',
+      workspaceId: 'ws',
+      notebookId: 'nb',
+      baseEtag: 'e1',
+      baseUpdatedAt: new Date().toISOString(),
+      baseSnapshot: { title: 'Server title', contentBlocks: [] },
+      localSnapshot: { title: 'Offline title', contentBlocks: [] },
+      status: 'DRAFT',
+      lastEditedAt: new Date().toISOString(),
+      queuedAt: null,
+      syncedAt: null,
+      conflictReason: null,
+      attemptCount: 0,
+      lastError: null,
+    },
+  ]),
+  deleteOfflineDraft: vi.fn(async () => undefined),
+}))
+vi.mock('../features/offline/offline-sync-service', () => ({
+  syncOfflineDraft: vi.fn(async () => ({ status: 'queued', noteId: 'n1', reason: 'DISABLED' })),
+  syncPendingDrafts: vi.fn(async () => []),
+  refreshOfflineDraftDiagnostics: vi.fn(async () => undefined),
+}))
+vi.mock('../features/offline/offline-sync-diagnostics', () => ({
+  getOfflineSyncDiagnostics: () => ({
+    draftsPending: 0,
+    draftsConflict: 0,
+    draftsFailed: 0,
+    lastSyncAttemptAt: null,
+    syncAttempts: 0,
+    syncSuccess: 0,
+    lastBackgroundSyncStartedAt: null,
+    lastBackgroundSyncCompletedAt: null,
+    lastBackgroundSyncMode: null,
+    backgroundAttempted: 0,
+    backgroundSynced: 0,
+    backgroundConflicts: 0,
+    backgroundFailed: 0,
+    backgroundQueued: 0,
+    backgroundSkipped: 0,
+    backgroundSkippedReasons: null,
+    backgroundStoppedReason: null,
+    lastBackgroundSyncResult: null,
+  }),
+}))
+vi.mock('../features/offline/offline-background-sync-service', () => ({
+  runForegroundBackgroundSync: vi.fn(async () => ({
+    startedAt: new Date().toISOString(),
+    completedAt: new Date().toISOString(),
+    attempted: 0,
+    synced: 0,
+    conflicts: 0,
+    failed: 0,
+    queued: 0,
+    skipped: 0,
+    needsUserConsent: false,
+    mode: 'disabled',
+    stopReason: 'DISABLED',
+    eligibleCount: 0,
+    skippedReasons: {
+      conflict: 0,
+      failed: 0,
+      locked: 0,
+      missing_base_etag: 0,
+      max_attempts: 0,
+      stale_or_too_old: 0,
+      session_unavailable: 0,
+      network_guardrail: 0,
+      encryption_key_unavailable: 0,
+      requires_user_review: 0,
+      currently_editing: 0,
+      syncing: 0,
+      synced: 0,
+      status_not_eligible: 0,
+      batch_limit: 0,
+    },
+  })),
+}))
+vi.mock('../features/offline/offline-sync-preferences', () => ({
+  getBackgroundSyncModePreference: () => null,
+  setBackgroundSyncModePreference: vi.fn(),
+}))
 
 describe('SettingsPage notification preferences + mfa', () => {
   beforeEach(() => patchSpy.mockClear())
@@ -152,5 +259,12 @@ describe('SettingsPage notification preferences + mfa', () => {
     renderPage()
     expect(await screen.findByText('Multi-factor authentication')).toBeTruthy()
     expect(screen.getByText(/not supported in this browser/i)).toBeTruthy()
+  })
+
+  it('renders offline drafts list and disabled sync in environment', async () => {
+    renderPage()
+    expect(await screen.findByTestId('offline-drafts-list')).toBeTruthy()
+    expect(screen.getByText(/^Offline drafts$/)).toBeTruthy()
+    expect(screen.getByText(/sync is disabled in this environment/i)).toBeTruthy()
   })
 })

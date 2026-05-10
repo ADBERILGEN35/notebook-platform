@@ -37,4 +37,22 @@ public record ScimPatchRequest(List<String> schemas, List<Operation> operations)
                     String.valueOf(m.get("value")), String.valueOf(m.getOrDefault("display", ""))))
         .toList();
   }
+
+  @SuppressWarnings("unchecked")
+  public static List<ScimGroupRequest.Member> readGroupMembers(Object raw) {
+    if (!(raw instanceof List<?> list)) {
+      return List.of();
+    }
+    return list.stream()
+        .filter(Map.class::isInstance)
+        .map(Map.class::cast)
+        .map(
+            m ->
+                new ScimGroupRequest.Member(
+                    m.get("value") == null ? null : String.valueOf(m.get("value")),
+                    m.get("display") == null ? null : String.valueOf(m.get("display")),
+                    m.get("type") == null ? null : String.valueOf(m.get("type")),
+                    m.get("$ref") == null ? null : String.valueOf(m.get("$ref"))))
+        .toList();
+  }
 }

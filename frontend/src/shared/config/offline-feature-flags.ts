@@ -51,3 +51,104 @@ export const offlineEditMaxDraftAgeDays = (): number =>
       import.meta.env.VITE_OFFLINE_EDIT_MAX_DRAFT_AGE_DAYS,
     7,
   )
+
+export const isOfflineEncryptionEnabled = (): boolean =>
+  parseBool(
+    window.__NOTEBOOK_CONFIG__?.OFFLINE_ENCRYPTION_ENABLED ?? import.meta.env.VITE_OFFLINE_ENCRYPTION_ENABLED,
+    false,
+  )
+
+export const isOfflineDraftEncryptionRequired = (): boolean =>
+  parseBool(
+    window.__NOTEBOOK_CONFIG__?.OFFLINE_DRAFT_ENCRYPTION_REQUIRED ??
+      import.meta.env.VITE_OFFLINE_DRAFT_ENCRYPTION_REQUIRED,
+    false,
+  )
+
+export const isOfflineCacheEncryptionEnabled = (): boolean =>
+  parseBool(
+    window.__NOTEBOOK_CONFIG__?.OFFLINE_CACHE_ENCRYPTION_ENABLED ??
+      import.meta.env.VITE_OFFLINE_CACHE_ENCRYPTION_ENABLED,
+    false,
+  )
+
+export const offlineSyncRolloutMode = (): 'disabled' | 'manual' | 'guarded' => {
+  const raw =
+    window.__NOTEBOOK_CONFIG__?.OFFLINE_SYNC_ROLLOUT_MODE ??
+    import.meta.env.VITE_OFFLINE_SYNC_ROLLOUT_MODE ??
+    'disabled'
+  const value = String(raw).toLowerCase()
+  if (value === 'manual' || value === 'guarded') return value
+  return 'disabled'
+}
+
+export const offlineSyncMaxAttempts = (): number =>
+  parseNumber(
+    window.__NOTEBOOK_CONFIG__?.OFFLINE_SYNC_MAX_ATTEMPTS ?? import.meta.env.VITE_OFFLINE_SYNC_MAX_ATTEMPTS,
+    5,
+  )
+
+export const offlineSyncStaleMinutes = (): number =>
+  parseNumber(
+    window.__NOTEBOOK_CONFIG__?.OFFLINE_SYNC_STALE_MINUTES ?? import.meta.env.VITE_OFFLINE_SYNC_STALE_MINUTES,
+    15,
+  )
+
+export const isBackendMergeAnalysisEnabled = (): boolean =>
+  parseBool(
+    window.__NOTEBOOK_CONFIG__?.BACKEND_MERGE_ANALYSIS_ENABLED ??
+      import.meta.env.VITE_BACKEND_MERGE_ANALYSIS_ENABLED,
+    false,
+  )
+
+export const isBackendMergeApplyEnabled = (): boolean =>
+  parseBool(
+    window.__NOTEBOOK_CONFIG__?.BACKEND_MERGE_APPLY_ENABLED ??
+      import.meta.env.VITE_BACKEND_MERGE_APPLY_ENABLED,
+    false,
+  )
+
+export const isOfflineBackgroundSyncEnabled = (): boolean =>
+  parseBool(
+    window.__NOTEBOOK_CONFIG__?.OFFLINE_BACKGROUND_SYNC_ENABLED ??
+      import.meta.env.VITE_OFFLINE_BACKGROUND_SYNC_ENABLED,
+    false,
+  )
+
+export const offlineBackgroundSyncMode = (): 'disabled' | 'prompt' | 'auto_safe' => {
+  const raw =
+    window.__NOTEBOOK_CONFIG__?.OFFLINE_BACKGROUND_SYNC_MODE ??
+    import.meta.env.VITE_OFFLINE_BACKGROUND_SYNC_MODE ??
+    'disabled'
+  const value = String(raw).toLowerCase()
+  if (value === 'prompt' || value === 'auto_safe') return value
+  return 'disabled'
+}
+
+export const offlineBackgroundSyncMaxBatch = (): number =>
+  parseNumber(
+    window.__NOTEBOOK_CONFIG__?.OFFLINE_BACKGROUND_SYNC_MAX_BATCH ??
+      import.meta.env.VITE_OFFLINE_BACKGROUND_SYNC_MAX_BATCH,
+    5,
+  )
+
+export const offlineBackgroundSyncMinIntervalSeconds = (): number =>
+  parseNumber(
+    window.__NOTEBOOK_CONFIG__?.OFFLINE_BACKGROUND_SYNC_MIN_INTERVAL_SECONDS ??
+      import.meta.env.VITE_OFFLINE_BACKGROUND_SYNC_MIN_INTERVAL_SECONDS,
+    60,
+  )
+
+export const offlineBackgroundSyncRequireUnmetered = (): boolean =>
+  parseBool(
+    window.__NOTEBOOK_CONFIG__?.OFFLINE_BACKGROUND_SYNC_REQUIRE_UNMETERED ??
+      import.meta.env.VITE_OFFLINE_BACKGROUND_SYNC_REQUIRE_UNMETERED,
+    false,
+  )
+
+export const offlineBackgroundSyncRequireCharging = (): boolean =>
+  parseBool(
+    window.__NOTEBOOK_CONFIG__?.OFFLINE_BACKGROUND_SYNC_REQUIRE_CHARGING ??
+      import.meta.env.VITE_OFFLINE_BACKGROUND_SYNC_REQUIRE_CHARGING,
+    false,
+  )

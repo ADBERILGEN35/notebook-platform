@@ -2,6 +2,8 @@ import { create } from 'zustand'
 import type { AuthUser } from '../../shared/types/api'
 import { isCookieMode } from '../../shared/config/auth-transport'
 import { clearOfflineNotes } from '../offline/offline-note-cache'
+import { clearOfflineEncryptionKey, ensureOfflineEncryptionKey } from '../offline/offline-crypto'
+import { isOfflineEncryptionEnabled } from '../../shared/config/offline-feature-flags'
 
 const ACCESS_TOKEN_KEY = 'np_access_token'
 const REFRESH_TOKEN_KEY = 'np_refresh_token'
@@ -48,6 +50,9 @@ export const useAuthStore = create<AuthState>((set) => ({
       refreshToken: cookieMode ? null : refreshToken ?? null,
       user,
     })
+    if (isOfflineEncryptionEnabled()) {
+      void ensureOfflineEncryptionKey()
+    }
   },
   setUser: (user) => {
     if (user) {
@@ -61,8 +66,13 @@ export const useAuthStore = create<AuthState>((set) => ({
     localStorage.removeItem(ACCESS_TOKEN_KEY)
     localStorage.removeItem(REFRESH_TOKEN_KEY)
     localStorage.removeItem(USER_KEY)
+    clearOfflineEncryptionKey()
     void clearOfflineNotes()
     set({ accessToken: null, refreshToken: null, user: null })
   },
 }))
+
+if (isOfflineEncryptionEnabled() && readUser()) {
+  void ensureOfflineEncryptionKey()
+}
 

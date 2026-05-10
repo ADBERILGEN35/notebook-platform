@@ -6,7 +6,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public record GatewayAdminEnterpriseProperties(
     String notificationServiceUrl,
     String identityStatusPath,
-    String notificationStatusPath) {
+    String notificationStatusPath,
+    String contentStatusPath) {
 
   public String effectiveNotificationServiceUrl() {
     if (notificationServiceUrl == null || notificationServiceUrl.isBlank()) {
@@ -29,5 +30,12 @@ public record GatewayAdminEnterpriseProperties(
     return notificationStatusPath.startsWith("/")
         ? notificationStatusPath
         : "/" + notificationStatusPath;
+  }
+
+  public String effectiveContentStatusPath() {
+    if (contentStatusPath == null || contentStatusPath.isBlank()) {
+      return "/internal/admin/status/content";
+    }
+    return contentStatusPath.startsWith("/") ? contentStatusPath : "/" + contentStatusPath;
   }
 }

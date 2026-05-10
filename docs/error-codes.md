@@ -116,6 +116,22 @@
 | REINDEX_JOB_CANCELLED | 409 | search-service | Reindex job was cancelled | cancelled while polling |
 | REINDEX_JOB_FAILED | 500 | search-service | Reindex job failed | max failures exceeded |
 
+## SCIM (identity-service)
+
+SCIM endpoints use `urn:ietf:params:scim:api:messages:2.0:Error` JSON (`status`, `scimType`, `detail`) rather than the platform `errorCode` envelope below. `detail` often includes these tokens:
+
+| Token in `detail` | Typical HTTP | Meaning |
+|---|---:|---|
+| `SCIM_BULK_DISABLED` | 501 | `SCIM_BULK_ENABLED` is false |
+| `SCIM_BULK_TOO_MANY_OPERATIONS` | 400 | Bulk Operations array over limit |
+| `SCIM_BULK_OPERATION_UNSUPPORTED` | 400 | Method/path not implemented for bulk |
+| `SCIM_BULK_OPERATION_FAILED` | varies | Missing body or wrapped failure |
+| `SCIM_GROUP_CYCLE_DETECTED` | 400 | Nested group would create a cycle |
+| `SCIM_GROUP_NESTING_DEPTH_EXCEEDED` | 400 | Chain would exceed max depth |
+| `SCIM_GROUP_NOT_FOUND` | 404 | Unknown or inactive group |
+| `SCIM_GROUP_MEMBER_NOT_FOUND` | 404/400 | User/group member target missing |
+| `SCIM_INVALID_GROUP_MEMBER` | 400 | Bad member shape, type, or bulkId reference |
+
 All error responses use:
 
 ```json

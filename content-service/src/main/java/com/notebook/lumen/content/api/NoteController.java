@@ -3,6 +3,8 @@ package com.notebook.lumen.content.api;
 import com.notebook.lumen.content.dto.*;
 import com.notebook.lumen.content.dto.Requests.*;
 import com.notebook.lumen.content.service.NoteEtagSupport;
+import com.notebook.lumen.content.service.NoteMergeAnalyzeService;
+import com.notebook.lumen.content.service.NoteMergeApplyService;
 import com.notebook.lumen.content.service.NoteService;
 import com.notebook.lumen.content.shared.Pagination;
 import com.notebook.lumen.content.shared.UserContext;
@@ -21,12 +23,20 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 public class NoteController {
   private final NoteService noteService;
+  private final NoteMergeAnalyzeService noteMergeAnalyzeService;
+  private final NoteMergeApplyService noteMergeApplyService;
   private final NoteEtagSupport noteEtagSupport;
   private final UserContextResolver userContextResolver;
 
   public NoteController(
-      NoteService noteService, NoteEtagSupport noteEtagSupport, UserContextResolver userContextResolver) {
+      NoteService noteService,
+      NoteMergeAnalyzeService noteMergeAnalyzeService,
+      NoteMergeApplyService noteMergeApplyService,
+      NoteEtagSupport noteEtagSupport,
+      UserContextResolver userContextResolver) {
     this.noteService = noteService;
+    this.noteMergeAnalyzeService = noteMergeAnalyzeService;
+    this.noteMergeApplyService = noteMergeApplyService;
     this.noteEtagSupport = noteEtagSupport;
     this.userContextResolver = userContextResolver;
   }
@@ -69,6 +79,30 @@ public class NoteController {
       HttpServletRequest http) {
     NoteResponse response = noteService.update(user(http), noteId, request, ifMatch);
     return withEtag(response);
+  }
+
+  @PostMapping("/notes/{noteId}/merge/analyze")
+  @Operation(summary = "Analyze semantic merge for note conflict")
+  public NoteMergeDtos.NoteMergeAnalyzeResponse analyzeMerge(
+      @PathVariable UUID noteId,
+      @Valid @RequestBody NoteMergeDtos.NoteMergeAnalyzeRequest request,
+      HttpServletRequest http) {
+    return noteMergeAnalyzeService.analyze(user(http), noteId, request);
+  }
+
+  @PostMapping("/notes/{noteId}/merge/apply")
+  @Operation(summary = "Apply semantic merge for note conflict")
+  public ResponseEntity<?> applyMerge(
+      @PathVariable UUID noteId,
+      @Valid @RequestBody NoteMergeDtos.NoteMergeApplyRequest request,
+      HttpServletRequest http) {
+    NoteMergeApplyService.ApplyResult result = noteMergeApplyService.apply(user(http), noteId, request);
+    if (result instanceof NoteMergeApplyService.ApplyResult.Success success) {
+      return ResponseEntity.ok(success.response());
+    }
+    NoteMergeApplyService.ApplyResult.Conflict conflict =
+        (NoteMergeApplyService.ApplyResult.Conflict) result;
+    return ResponseEntity.status(HttpStatus.CONFLICT).body(conflict.response());
   }
 
   @DeleteMapping("/notes/{noteId}")

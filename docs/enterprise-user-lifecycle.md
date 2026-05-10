@@ -16,8 +16,8 @@ Bu dokuman Faz 60 SSO foundation uzerine gelen SCIM lifecycle davranisini ozetle
 
 ## Admin Group Mapping
 
-- SCIM grup kayitlari ve user membership kayitlari tutulur.
-- `SCIM_ADMIN_GROUPS` ile eslesen gruplar login tokeninda `PLATFORM_ADMIN` claimine katkida bulunur.
+- SCIM grup kayitlari `scim_groups`, uyelikler `scim_group_memberships` uzerinden tutulur (USER ve istege bagli GROUP ic uyeleri).
+- `SCIM_ADMIN_GROUPS` ile eslesen gruplar **effective** uyelik (direkt + ic ice aktif gruplar) uzerinden login tokeninda `PLATFORM_ADMIN` claimine katkida bulunur; deprovision/inaktif kullanici veya inaktif gruplar katki vermez.
 - SSO claim mapping ve legacy allowlist modeli birlikte calismaya devam eder.
 
 ## Operasyonel Not

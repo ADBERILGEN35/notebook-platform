@@ -22,6 +22,11 @@ Keep existing allowlist model while enabling IdP-group based admin identity thro
 - With `SSO_TRUST_IDP_MFA=false` (default), SSO login does not automatically satisfy platform MFA.
 - With trust enabled and required `acr`/`amr` matched, identity-service can mark `mfa_verified=true`.
 
+## SCIM parity (Faz 76)
+
+- `SCIM_ADMIN_GROUPS` uses the same case-insensitive displayName/externalId token idea as `SSO_ADMIN_GROUPS`, but resolves against **SCIM effective group membership** (direct + nested active groups).
+- Prefer matching stable `externalId` values from the IdP where possible.
+
 ## Rollout
 
 1. Keep SSO disabled by default.

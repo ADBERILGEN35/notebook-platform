@@ -212,15 +212,18 @@ revocation.
   - `SSO_ADMIN_GROUPS`
 - `SSO_PROVIDER_CLIENT_SECRET` must come from secrets, never from repo values.
 
-## SCIM provisioning (Faz 61)
+## SCIM provisioning (Faz 61, Faz 76)
 
-- SCIM endpoints are available under `/scim/v2/**`.
+- SCIM endpoints are available under `/scim/v2/**` (Users, Groups, Bulk, metadata endpoints).
 - SCIM auth uses static bearer token (`SCIM_BEARER_TOKEN` or `SCIM_BEARER_TOKEN_HASH`).
 - User lifecycle integration:
   - `source=SCIM`
   - `scim_external_id`
   - `deprovisioned_at`
 - Deprovision (`active=false` or `DELETE`) revokes active refresh tokens.
+- Groups: normalized `scim_group_memberships` supports USER and nested GROUP members; cycles/depth guarded (`SCIM_GROUP_NESTING_*`).
+- Bulk: `POST /scim/v2/Bulk` behind `SCIM_BULK_ENABLED` (default false); non-transactional MVP.
+- Docs: `docs/scim-provisioning.md`, `docs/scim-group-nesting.md`, `docs/scim-bulk-operations.md`.
 
 ## Streaming SIEM push (Faz 62)
 
@@ -233,3 +236,8 @@ revocation.
 
 - `GET /internal/admin/status/identity-security` — service JWT with scope `internal:admin:status:read`, opt-in via `IDENTITY_INTERNAL_ADMIN_STATUS_ENABLED`.
 - Returns secret-safe booleans only (no SCIM token, SIEM secret, OIDC client secret). See `docs/enterprise-admin-console.md`.
+
+## Platform admin change requests (Faz 77)
+
+- `GET|POST /internal/admin/change-requests` (+ `/validate`, `/{id}/cancel`, `/{id}/approve`, `/{id}/reject`) — service JWT scope `internal:admin:change-requests:manage`, gated by `ADMIN_CHANGE_REQUESTS_ENABLED` and `ADMIN_CHANGE_REQUEST_APPROVALS_ENABLED` for approve/reject.
+- Persists allow-listed **desired state** only (`platform_admin_change_requests`); no automatic env/GitOps apply. See `docs/enterprise-admin-write-operations.md`.
