@@ -1,0 +1,3 @@
+# Spotless / CI: normalize line endings on Windows checkouts (Spotless uses UNIX / LF).
+*.gradle.kts text eol=lf
+*.java text eol=lf

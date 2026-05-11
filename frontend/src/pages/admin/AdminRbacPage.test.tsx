@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { MemoryRouter } from 'react-router-dom'
 import { describe, expect, it, vi, afterEach } from 'vitest'
@@ -9,6 +9,7 @@ import { PERM_RBAC_READ } from '../../features/admin/access/admin-permissions'
 vi.mock('../../shared/config/admin-feature-flags', () => ({
   isAdminRbacUiEnabled: () => true,
   isAdminRbacRoleRequestsUiEnabled: () => false,
+  isAdminRbacOverridesStatusUiEnabled: () => false,
   isEnterpriseAdminWriteEnabled: () => true,
   isEnterpriseAdminApprovalsUiEnabled: () => true,
   isEnterpriseGitOpsPrUiEnabled: () => false,
@@ -72,6 +73,7 @@ describe('AdminRbacPage', () => {
     })
     renderPage()
     await waitFor(() => expect(screen.getByText('admin@b.com')).toBeInTheDocument())
-    expect(screen.getByText('PLATFORM_AUDIT_VIEWER')).toBeInTheDocument()
+    const table = screen.getByRole('table')
+    expect(within(table).getByText('PLATFORM_AUDIT_VIEWER')).toBeInTheDocument()
   })
 })

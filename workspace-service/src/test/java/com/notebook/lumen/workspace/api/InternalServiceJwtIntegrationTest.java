@@ -45,7 +45,8 @@ import org.testcontainers.junit.jupiter.Testcontainers;
       "workspace.internal.trusted-content-service.issuer=content-service",
       "workspace.internal.trusted-content-service.audience=workspace-service",
       "workspace.internal.trusted-content-service.clock-skew-seconds=0",
-      "workspace.internal.trusted-content-service.allowed-scopes=internal:workspace:permission:read,internal:workspace:tag:read"
+      "workspace.internal.trusted-content-service.allowed-scopes=internal:workspace:permission:read,internal:workspace:tag:read",
+      "spring.datasource.hikari.connection-timeout=120000"
     })
 class InternalServiceJwtIntegrationTest {
   private static final KeyPair KEY_PAIR = keyPair();
@@ -55,7 +56,8 @@ class InternalServiceJwtIntegrationTest {
       new PostgreSQLContainer<>("postgres:16")
           .withDatabaseName("notebook_platform")
           .withUsername("notebook")
-          .withPassword("notebook");
+          .withPassword("notebook")
+          .withStartupTimeout(Duration.ofMinutes(3));
 
   @DynamicPropertySource
   static void registerProps(DynamicPropertyRegistry registry) {

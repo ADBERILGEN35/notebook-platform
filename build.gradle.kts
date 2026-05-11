@@ -3,6 +3,7 @@ import org.gradle.api.plugins.JavaPluginExtension
 import org.gradle.jvm.toolchain.JavaLanguageVersion
 import org.springframework.boot.gradle.tasks.bundling.BootJar
 import com.diffplug.gradle.spotless.SpotlessExtension
+import com.diffplug.spotless.LineEnding
 
 plugins {
     id("org.springframework.boot") version "4.0.6" apply false
@@ -21,6 +22,7 @@ allprojects {
 
 plugins.apply("com.diffplug.spotless")
 extensions.configure<SpotlessExtension> {
+    setLineEndings(LineEnding.UNIX)
     kotlinGradle {
         target("*.gradle.kts")
         trimTrailingWhitespace()
@@ -57,6 +59,7 @@ subprojects {
     }
 
     extensions.configure<SpotlessExtension> {
+        setLineEndings(LineEnding.UNIX)
         java {
             target("src/**/*.java")
             googleJavaFormat("1.28.0")

@@ -15,6 +15,7 @@ import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Base64;
 import java.util.Date;
@@ -27,6 +28,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.reactive.server.WebTestClient;
@@ -34,6 +36,7 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
+import reactor.netty.http.client.HttpClient;
 
 @Testcontainers
 @SpringBootTest(
@@ -97,7 +100,11 @@ class ApiGatewayIntegrationTest {
 
   @BeforeEach
   void resetDownstream() {
-    webTestClient = WebTestClient.bindToServer().baseUrl("http://localhost:" + port).build();
+    HttpClient reactorHttpClient = HttpClient.create().responseTimeout(Duration.ofSeconds(60));
+    webTestClient =
+        WebTestClient.bindToServer(new ReactorClientHttpConnector(reactorHttpClient))
+            .baseUrl("http://localhost:" + port)
+            .build();
     IDENTITY.reset();
     WORKSPACE.reset();
     CONTENT.reset();
