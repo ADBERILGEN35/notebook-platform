@@ -6,7 +6,11 @@ import java.util.List;
 public final class AdminRbacVisibilityDtos {
   private AdminRbacVisibilityDtos() {}
 
-  public record RoleSource(String type, String sourceName, List<String> roles) {}
+  public record RoleSource(String type, String sourceName, List<String> roles, String reasonRef) {
+    public RoleSource(String type, String sourceName, List<String> roles) {
+      this(type, sourceName, roles, null);
+    }
+  }
 
   public record UserListItem(
       String userId,

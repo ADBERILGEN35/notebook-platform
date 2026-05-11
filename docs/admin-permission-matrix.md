@@ -1,4 +1,4 @@
-# Admin permission matrix (Faz 79–86)
+# Admin permission matrix (Faz 79–88)
 
 Gateway routes and change-request operations require permissions when `GATEWAY_ADMIN_RBAC_ENFORCE=true`. When enforce is **false**, legacy admin checks apply (`PLATFORM_ADMIN`, allowlist, MFA).
 
@@ -24,6 +24,8 @@ Resolved when `ADMIN_RBAC_ENABLED=true`. `PLATFORM_ADMIN` adds **all** permissio
 | `GET /admin/enterprise/status` | `admin:enterprise:status:read` |
 | `GET /admin/rbac/users` | `admin:rbac:read` |
 | `GET /admin/rbac/users/{userId}` | `admin:rbac:read` |
+| `GET /admin/rbac/overrides/status` | `admin:rbac:read` |
+| `POST /admin/rbac/overrides/validate` | `admin:rbac:read` (body is YAML-in-JSON for dry-run; **no persistence**) |
 | `GET /admin/notifications/analytics/summary` | `admin:notifications:analytics:read` |
 | `GET /admin/notifications/dead-letter` | `admin:notifications:dead-letter:read` |
 | `POST /admin/notifications/dead-letter/{id}/requeue/dry-run` | `admin:notifications:dead-letter:read` |
@@ -55,7 +57,7 @@ Resolved when `ADMIN_RBAC_ENABLED=true`. `PLATFORM_ADMIN` adds **all** permissio
 | `ADMIN_RBAC_ROLE_GRANT_REQUEST` | `admin:rbac:change-request:create` |
 | `ADMIN_RBAC_ROLE_REVOKE_REQUEST` | `admin:rbac:change-request:create` |
 
-Identity `AdminOperationRegistry` mirrors these for validation. RBAC role requests use free-form `requestedValue` encoding (`grant|revoke:role:userId`); **runtime apply is not supported** (GitOps/runbook only after approval).
+Identity `AdminOperationRegistry` mirrors these for validation. RBAC role requests use free-form `requestedValue` encoding (`grant|revoke:role:userId`); **no direct runtime mutation API** — approved rows land in GitOps (`admin-rbac-overrides.yaml`). **Faz 88:** identity-service may optionally merge **mounted** manifest rows into effective `platform_roles` when `ADMIN_RBAC_OVERRIDES_ENABLED=true` (default `false`); see [`docs/admin-rbac-runtime-overrides.md`](admin-rbac-runtime-overrides.md).
 
 ## Error codes
 

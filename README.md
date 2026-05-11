@@ -376,6 +376,12 @@ with four-eyes policy (still no automatic apply) — see `docs/enterprise-admin-
 `docs/admin-change-request-workflow.md`, and `docs/admin-change-request-approval-workflow.md`.
 Faz 79 adds **fine-grained admin RBAC** (`platform_permissions` on JWTs, optional gateway enforce,
 SSO/SCIM group mapping) — see `docs/admin-rbac.md` and `docs/admin-permission-matrix.md`.
+Faz 86 adds **admin RBAC directory visibility** (read-only UI + internal APIs; source breakdown).
+Faz 87 adds **GitOps PR proposals** for approved RBAC grant/revoke change requests into
+`deploy/gitops/environments/{env}/admin-rbac-overrides.yaml` (`docs/admin-rbac-gitops-integration.md`).
+Faz 88 adds **optional mounted-file runtime ingestion** for that manifest (feature-flagged off by default),
+gateway `GET/POST /admin/rbac/overrides/*`, metrics/audit, and read-only UI status — see
+`docs/admin-rbac-runtime-overrides.md` (no IdP/SCIM mutation, no direct role API).
 Faz 64 adds a **durable DB outbox** for notification SSE fanout with worker retries and dead-letter
 semantics while keeping Redis pub/sub as the realtime layer (`docs/notification-durable-fanout.md`).
 Faz 81 adds **admin notification delivery analytics** (aggregate-only; `docs/notification-analytics-dashboard.md`).

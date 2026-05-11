@@ -234,6 +234,13 @@ done
 - `GATEWAY_ADMIN_RBAC_ENFORCE` (default `false`): when `true`, admin routes require JWT `platform_permissions` (or `PLATFORM_ADMIN`), not email allowlist alone.
 - See `docs/admin-rbac.md` and `docs/admin-permission-matrix.md`.
 
+## Admin RBAC overrides proxy (Faz 88)
+
+- `GET /admin/rbac/overrides/status` and `POST /admin/rbac/overrides/validate` require `admin:rbac:read` when RBAC enforce is on; proxied to identity internal `/internal/admin/rbac/overrides/*` with service JWT.
+- Validate accepts JSON `{ "content": "<yaml>" }`; gateway does not persist body content.
+- Redis rate limit bucket includes `/admin/rbac/overrides` prefix.
+- See `docs/admin-rbac-runtime-overrides.md`.
+
 ## SCIM routing (Faz 61)
 
 - `/scim/v2/**` (Users, Groups, **Bulk**, ServiceProviderConfig, etc.) is routed to `identity-service`. CSRF is not applied to SCIM (bearer-only provisioning). SCIM rate limit bucket applies to the whole path prefix.

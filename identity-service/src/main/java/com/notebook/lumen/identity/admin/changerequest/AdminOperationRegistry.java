@@ -87,7 +87,7 @@ public class AdminOperationRegistry {
                   "Disable SCIM_BULK_ENABLED in GitOps; bulk is non-transactional.",
                   List.of("POST /scim/v2/Bulk"),
                   "SCIM bulk operations enablement.",
-                  false),
+                  false)),
           Map.entry(
               OP_ADMIN_RBAC_ROLE_GRANT_REQUEST,
               new AdminOperationDefinition(

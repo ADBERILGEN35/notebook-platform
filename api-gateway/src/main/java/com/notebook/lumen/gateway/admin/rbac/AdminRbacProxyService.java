@@ -5,6 +5,7 @@ import com.notebook.lumen.gateway.admin.audit.AuditProxyService;
 import com.notebook.lumen.gateway.config.GatewayAdminRbacVisibilityProperties;
 import com.notebook.lumen.gateway.config.GatewayAuditProxyProperties;
 import com.notebook.lumen.gateway.error.ErrorCode;
+import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -81,6 +82,65 @@ public class AdminRbacProxyService {
               .retrieve()
               .bodyToMono(Object.class)
               .map(body -> ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(body))
+              .onErrorResume(e -> Mono.just(mapException(e, gatewayPath, requestId)));
+        });
+  }
+
+  public Mono<ResponseEntity<Object>> overridesStatus(String adminUserId, String requestId, String gatewayPath) {
+    return Mono.defer(
+        () -> {
+          final String jwt;
+          try {
+            jwt = serviceJwtSigner.sign(IDENTITY_AUDIENCE, RBAC_READ_SCOPE);
+          } catch (RuntimeException e) {
+            return Mono.just(jwtFailure(requestId, gatewayPath));
+          }
+          String url = baseUrl() + "/overrides/status";
+          WebClient.RequestHeadersSpec<?> spec =
+              webClient
+                  .get()
+                  .uri(url)
+                  .accept(MediaType.APPLICATION_JSON)
+                  .header(AuditProxyService.INTERNAL_AUTH_HEADER, "Bearer " + jwt)
+                  .header(HDR_ADMIN_USER_ID, adminUserId);
+          if (requestId != null && !requestId.isBlank()) {
+            spec = spec.header("X-Request-Id", requestId);
+          }
+          return spec
+              .retrieve()
+              .bodyToMono(Object.class)
+              .map(body -> ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(body))
+              .onErrorResume(e -> Mono.just(mapException(e, gatewayPath, requestId)));
+        });
+  }
+
+  public Mono<ResponseEntity<Object>> overridesValidate(
+      Map<String, Object> body, String adminUserId, String requestId, String gatewayPath) {
+    return Mono.defer(
+        () -> {
+          final String jwt;
+          try {
+            jwt = serviceJwtSigner.sign(IDENTITY_AUDIENCE, RBAC_READ_SCOPE);
+          } catch (RuntimeException e) {
+            return Mono.just(jwtFailure(requestId, gatewayPath));
+          }
+          String url = baseUrl() + "/overrides/validate";
+          WebClient.RequestBodySpec spec =
+              webClient
+                  .post()
+                  .uri(url)
+                  .accept(MediaType.APPLICATION_JSON)
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .header(AuditProxyService.INTERNAL_AUTH_HEADER, "Bearer " + jwt)
+                  .header(HDR_ADMIN_USER_ID, adminUserId);
+          if (requestId != null && !requestId.isBlank()) {
+            spec = spec.header("X-Request-Id", requestId);
+          }
+          return spec
+              .bodyValue(body == null ? Map.of() : body)
+              .retrieve()
+              .bodyToMono(Object.class)
+              .map(resp -> ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(resp))
               .onErrorResume(e -> Mono.just(mapException(e, gatewayPath, requestId)));
         });
   }

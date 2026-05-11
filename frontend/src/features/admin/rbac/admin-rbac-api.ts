@@ -4,6 +4,20 @@ export type AdminRbacRoleSource = {
   type: string
   sourceName: string
   roles: string[]
+  reasonRef?: string | null
+}
+
+export type AdminRbacOverridesStatus = {
+  enabled: boolean
+  failClosed: boolean
+  fileConfigured: boolean
+  loaded: boolean
+  fileBasename: string
+  lastLoadedAt: string | null
+  assignmentCount: number
+  validAssignmentCount: number
+  ignoredAssignmentCount: number
+  warnings: string[]
 }
 
 export type AdminRbacUserRow = {
@@ -51,4 +65,8 @@ export async function getAdminRbacUser(userId: string): Promise<AdminRbacUserDet
   return apiRequest<AdminRbacUserDetailResponse>(`/admin/rbac/users/${encodeURIComponent(userId)}`, {
     method: 'GET',
   })
+}
+
+export async function getAdminRbacOverridesStatus(): Promise<AdminRbacOverridesStatus> {
+  return apiRequest<AdminRbacOverridesStatus>('/admin/rbac/overrides/status', { method: 'GET' })
 }

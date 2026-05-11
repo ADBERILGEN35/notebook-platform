@@ -106,6 +106,7 @@ Runtime Docker/Kubernetes config:
 - `VITE_AUDIT_API_MODE` / `AUDIT_API_MODE` selects `mock` (default dev) vs `real` placeholder (`GET /admin/audit-events` once the gateway exposes it).
 - See `docs/admin-audit-ui.md` for rollout guidance (service JWT never ships to browsers).
 - **Faz 79:** `/auth/me` may include `platformRoles` / `platformPermissions`; `src/features/admin/access/admin-permissions.ts` gates nav and actions (backend still authoritative). See `docs/admin-rbac.md`.
+- **Faz 88:** `FRONTEND_ADMIN_RBAC_OVERRIDES_STATUS_ENABLED` → `ADMIN_RBAC_OVERRIDES_STATUS_ENABLED` in `runtime-config.js` shows the read-only **GitOps RBAC overrides** card on `/app/admin/rbac` (no YAML upload). See `docs/admin-rbac-runtime-overrides.md`.
 
 ## Platform Admin Proxy (Faz 43)
 

@@ -4,6 +4,7 @@ import com.notebook.lumen.common.security.admin.PlatformAdminRbacConstants;
 import com.notebook.lumen.identity.admin.changerequest.AdminOperationRegistry;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -241,6 +242,7 @@ public class GitOpsYamlPatchService {
       UUID requestedByUserId,
       UUID approvedByUserId) {
     Map<String, Object> m = new LinkedHashMap<>();
+    m.put("id", UUID.randomUUID().toString());
     m.put("userId", userId);
     m.put("role", role);
     m.put("action", action);
@@ -249,6 +251,10 @@ public class GitOpsYamlPatchService {
     m.put("approvedBy", approvedByUserId == null ? "" : approvedByUserId.toString());
     m.put("expiresAt", null);
     m.put("status", "APPROVED_FOR_APPLY");
+    m.put("createdAt", Instant.now().toString());
+    Map<String, Object> meta = new LinkedHashMap<>();
+    meta.put("source", "gitops");
+    m.put("metadata", meta);
     return m;
   }
 

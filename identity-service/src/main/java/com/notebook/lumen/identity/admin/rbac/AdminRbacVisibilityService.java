@@ -5,6 +5,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.notebook.lumen.common.security.admin.PlatformAdminRbacConstants;
 import com.notebook.lumen.identity.admin.AdminRbacProperties;
 import com.notebook.lumen.identity.admin.AdminRbacService;
+import com.notebook.lumen.identity.admin.rbac.overrides.AdminRbacOverrideEffectiveApplier;
+import com.notebook.lumen.identity.admin.rbac.overrides.AdminRbacOverrideLoader;
+import com.notebook.lumen.identity.admin.rbac.overrides.AdminRbacOverridesProperties;
 import com.notebook.lumen.identity.admin.changerequest.PlatformAdminChangeRequestRepository;
 import com.notebook.lumen.identity.admin.rbac.api.AdminRbacVisibilityDtos;
 import com.notebook.lumen.identity.scim.ScimProperties;
@@ -49,6 +52,9 @@ public class AdminRbacVisibilityService {
   private final ScimProperties scimProperties;
   private final ScimGroupRepository scimGroupRepository;
   private final PlatformAdminChangeRequestRepository changeRequestRepository;
+  private final AdminRbacOverridesProperties adminRbacOverridesProperties;
+  private final AdminRbacOverrideLoader adminRbacOverrideLoader;
+  private final AdminRbacOverrideEffectiveApplier adminRbacOverrideEffectiveApplier;
 
   public AdminRbacVisibilityService(
       AdminRbacProperties adminRbacProperties,
@@ -60,7 +66,10 @@ public class AdminRbacVisibilityService {
       ScimEffectiveMembershipService scimEffectiveMembershipService,
       ScimProperties scimProperties,
       ScimGroupRepository scimGroupRepository,
-      PlatformAdminChangeRequestRepository changeRequestRepository) {
+      PlatformAdminChangeRequestRepository changeRequestRepository,
+      AdminRbacOverridesProperties adminRbacOverridesProperties,
+      AdminRbacOverrideLoader adminRbacOverrideLoader,
+      AdminRbacOverrideEffectiveApplier adminRbacOverrideEffectiveApplier) {
     this.adminRbacProperties = adminRbacProperties;
     this.adminRbacService = adminRbacService;
     this.userRepository = userRepository;
@@ -71,6 +80,9 @@ public class AdminRbacVisibilityService {
     this.scimProperties = scimProperties;
     this.scimGroupRepository = scimGroupRepository;
     this.changeRequestRepository = changeRequestRepository;
+    this.adminRbacOverridesProperties = adminRbacOverridesProperties;
+    this.adminRbacOverrideLoader = adminRbacOverrideLoader;
+    this.adminRbacOverrideEffectiveApplier = adminRbacOverrideEffectiveApplier;
   }
 
   private void ensureEnabled() {
@@ -141,6 +153,19 @@ public class AdminRbacVisibilityService {
 
     appendSsoSources(user, sources, roles);
     appendScimSources(user, sources, roles);
+
+    if (adminRbacOverridesProperties.enabled() && adminRbacOverrideLoader.snapshot().loaded()) {
+      LinkedHashSet<String> baseFromIdpAndScim = new LinkedHashSet<>(roles);
+      LinkedHashSet<String> merged = new LinkedHashSet<>(roles);
+      AdminRbacOverrideEffectiveApplier.ApplyOutcome ov =
+          adminRbacOverrideEffectiveApplier.apply(
+              user.getId(), merged, baseFromIdpAndScim, adminRbacOverrideLoader.snapshot().assignments());
+      roles.clear();
+      roles.addAll(merged);
+      sources.addAll(ov.overrideSources());
+      warnings.addAll(ov.userWarnings());
+    }
+
     appendAllowlistSource(user, sources);
 
     List<String> roleList = roles.stream().sorted().toList();

@@ -1,13 +1,15 @@
 import type { Page } from '@playwright/test'
 import { matchGatewayChangeRequestsApi } from './gateway-stub-urls'
 
-export type AdminRbacE2eProfile = 'audit-viewer' | 'change-approver' | 'no-admin-access'
+export type AdminRbacE2eProfile = 'audit-viewer' | 'change-approver' | 'no-admin-access' | 'rbac-reader'
 
 /**
  * Bearer-mode stubs with ADMIN_UI_DEV_OPEN off so RBAC helpers drive visibility (Faz 79 E2E).
  */
 export async function stubAdminRbacSession(page: Page, profile: AdminRbacE2eProfile) {
   const enterpriseWrite = profile === 'change-approver' ? 'true' : 'false'
+  const rbacUi = profile === 'rbac-reader' ? 'true' : 'false'
+  const rbacOverridesStatus = profile === 'rbac-reader' ? 'true' : 'false'
 
   await page.route('**/runtime-config.js', async (route) => {
     await route.fulfill({
@@ -21,6 +23,8 @@ export async function stubAdminRbacSession(page: Page, profile: AdminRbacE2eProf
   AUDIT_API_MODE: "mock",
   ENTERPRISE_ADMIN_WRITE_ENABLED: ${enterpriseWrite},
   ENTERPRISE_ADMIN_APPROVALS_ENABLED: true,
+  ADMIN_RBAC_UI_ENABLED: ${rbacUi},
+  ADMIN_RBAC_OVERRIDES_STATUS_ENABLED: ${rbacOverridesStatus},
 };
 `,
     })
@@ -39,6 +43,8 @@ export async function stubAdminRbacSession(page: Page, profile: AdminRbacE2eProf
 
   if (profile === 'audit-viewer') {
     platformPermissions = ['admin:audit:read']
+  } else if (profile === 'rbac-reader') {
+    platformPermissions = ['admin:rbac:read']
   } else if (profile === 'change-approver') {
     platformRoles = ['PLATFORM_CHANGE_REQUEST_APPROVER']
     platformPermissions = [

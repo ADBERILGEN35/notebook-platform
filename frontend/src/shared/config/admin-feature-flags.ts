@@ -117,6 +117,15 @@ export const isAdminRbacRoleRequestsUiEnabled = (): boolean =>
     false,
   )
 
+/** Faz 88: read-only GitOps RBAC override ingestion status on admin RBAC page. */
+export const isAdminRbacOverridesStatusUiEnabled = (): boolean =>
+  isAdminRbacUiEnabled() &&
+  parseBool(
+    window.__NOTEBOOK_CONFIG__?.ADMIN_RBAC_OVERRIDES_STATUS_ENABLED ??
+      import.meta.env.VITE_ADMIN_RBAC_OVERRIDES_STATUS_ENABLED,
+    false,
+  )
+
 export const getAuditApiMode = (): AuditApiMode => {
   const raw =
     window.__NOTEBOOK_CONFIG__?.AUDIT_API_MODE ?? import.meta.env.VITE_AUDIT_API_MODE ?? 'mock'

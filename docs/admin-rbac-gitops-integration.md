@@ -6,7 +6,7 @@ Approved `ADMIN_RBAC_ROLE_GRANT_REQUEST` and `ADMIN_RBAC_ROLE_REVOKE_REQUEST` ch
 
 `deploy/gitops/environments/{env}/admin-rbac-overrides.yaml`
 
-This file is an **approved desired-state proposal**. **identity-service does not ingest it at runtime** in Faz 87; merge is a human/CI governance step. A future phase may read the manifest or translate entries into IdP/SCIM automation.
+This file is an **approved desired-state proposal**. **Faz 87:** identity-service did not ingest it at runtime. **Faz 88:** optional, flag-gated ingestion from a **mounted copy** of the manifest may merge rows into effective `platform_roles` (see [admin-rbac-runtime-overrides.md](./admin-rbac-runtime-overrides.md)); defaults remain **off** in production. IdP/SCIM automation is still out of scope.
 
 ## Flags
 

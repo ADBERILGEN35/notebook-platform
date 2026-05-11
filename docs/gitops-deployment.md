@@ -73,6 +73,9 @@ later if production change control requires tighter permissions or a different a
 - gateway admin audit proxy enabled with staging allowlist (`gatewayAdminEnabled`,
   `gatewayAdminAuditEnabled`, `gatewayAdminAllowedEmails`); fine-grained admin RBAC flags default off
   (`gatewayAdminRbacEnforce`, `adminRbacEnabled` — see `docs/admin-rbac.md`)
+- optional identity **admin RBAC overrides** volume: `services.identity.adminRbacOverridesVolume` may mount a
+  ConfigMap copy of `admin-rbac-overrides.yaml` when `enabled: true` and `configMapName` is set; keep
+  `ADMIN_RBAC_OVERRIDES_ENABLED=false` until deliberately enabled (`docs/admin-rbac-runtime-overrides.md`)
 - frontend admin audit real mode enabled (`FRONTEND_ADMIN_UI_ENABLED=true`, `FRONTEND_AUDIT_API_MODE=real`)
 - frontend CSP in report-only (`frontend.security.csp.enabled=true`, `reportOnly=true`)
 - SSO should remain disabled unless staging IdP config and secret wiring are validated

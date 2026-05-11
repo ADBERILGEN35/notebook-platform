@@ -3,6 +3,8 @@ package com.notebook.lumen.identity.admin.rbac;
 import com.notebook.lumen.identity.admin.InternalAdminChangeRequestController;
 import com.notebook.lumen.identity.admin.changerequest.AdminChangeRequestException;
 import com.notebook.lumen.identity.admin.rbac.api.AdminRbacVisibilityDtos;
+import com.notebook.lumen.identity.admin.rbac.overrides.AdminRbacOverrideLoader;
+import com.notebook.lumen.identity.admin.rbac.overrides.AdminRbacOverridesDtos;
 import com.notebook.lumen.identity.audit.AuditAdminAuthorizer;
 import com.notebook.lumen.identity.audit.AuditService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -12,6 +14,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -23,14 +27,17 @@ public class InternalAdminRbacController {
 
   private final AuditAdminAuthorizer authorizer;
   private final AdminRbacVisibilityService visibilityService;
+  private final AdminRbacOverrideLoader adminRbacOverrideLoader;
   private final AuditService auditService;
 
   public InternalAdminRbacController(
       AuditAdminAuthorizer authorizer,
       AdminRbacVisibilityService visibilityService,
+      AdminRbacOverrideLoader adminRbacOverrideLoader,
       AuditService auditService) {
     this.authorizer = authorizer;
     this.visibilityService = visibilityService;
+    this.adminRbacOverrideLoader = adminRbacOverrideLoader;
     this.auditService = auditService;
   }
 
@@ -84,6 +91,60 @@ public class InternalAdminRbacController {
         userId,
         request,
         Map.of("targetUserId", userId.toString()));
+    return resp;
+  }
+
+  @GetMapping(path = "/overrides/status", produces = MediaType.APPLICATION_JSON_VALUE)
+  public AdminRbacOverridesDtos.OverridesStatusResponse overridesStatus(
+      @RequestHeader(AuditAdminAuthorizer.HEADER_NAME) String serviceAuthorization,
+      @RequestHeader(InternalAdminChangeRequestController.HEADER_ADMIN_USER_ID) String adminUserId,
+      HttpServletRequest request) {
+    authorizer.authorize(serviceAuthorization, AuditAdminAuthorizer.RBAC_READ_SCOPE);
+    UUID actor = parseAdminUserId(adminUserId);
+    AdminRbacOverridesDtos.OverridesStatusResponse resp = adminRbacOverrideLoader.status();
+    auditService.record(
+        "ADMIN_RBAC_OVERRIDES_STATUS_VIEWED",
+        actor,
+        "ADMIN_RBAC_OVERRIDES",
+        null,
+        request,
+        Map.of(
+            "assignmentCount",
+            resp.assignmentCount(),
+            "validAssignmentCount",
+            resp.validAssignmentCount(),
+            "ignoredAssignmentCount",
+            resp.ignoredAssignmentCount(),
+            "warningsCount",
+            resp.warnings().size()));
+    return resp;
+  }
+
+  @PostMapping(path = "/overrides/validate", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+  public AdminRbacOverridesDtos.OverridesValidateResponse overridesValidate(
+      @RequestHeader(AuditAdminAuthorizer.HEADER_NAME) String serviceAuthorization,
+      @RequestHeader(InternalAdminChangeRequestController.HEADER_ADMIN_USER_ID) String adminUserId,
+      @RequestBody AdminRbacOverridesDtos.OverridesValidateRequest body,
+      HttpServletRequest request) {
+    authorizer.authorize(serviceAuthorization, AuditAdminAuthorizer.RBAC_READ_SCOPE);
+    UUID actor = parseAdminUserId(adminUserId);
+    String content = body == null || body.content() == null ? "" : body.content();
+    AdminRbacOverridesDtos.OverridesValidateResponse resp = adminRbacOverrideLoader.validateContent(content);
+    auditService.record(
+        "ADMIN_RBAC_OVERRIDES_VALIDATED",
+        actor,
+        "ADMIN_RBAC_OVERRIDES",
+        null,
+        request,
+        Map.of(
+            "valid",
+            resp.valid(),
+            "assignmentCount",
+            resp.assignmentCount(),
+            "warningsCount",
+            resp.warnings().size(),
+            "errorsCount",
+            resp.errors().size()));
     return resp;
   }
 

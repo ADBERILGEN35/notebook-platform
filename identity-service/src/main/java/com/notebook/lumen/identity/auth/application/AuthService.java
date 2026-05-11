@@ -5,6 +5,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.notebook.lumen.common.security.admin.PlatformAdminRbacConstants;
 import com.notebook.lumen.identity.admin.AdminRbacProperties;
 import com.notebook.lumen.identity.admin.AdminRbacService;
+import com.notebook.lumen.identity.admin.rbac.overrides.AdminRbacOverrideEffectiveApplier;
+import com.notebook.lumen.identity.admin.rbac.overrides.AdminRbacOverrideLoader;
+import com.notebook.lumen.identity.admin.rbac.overrides.AdminRbacOverridesProperties;
 import com.notebook.lumen.identity.audit.AuditService;
 import com.notebook.lumen.identity.auth.api.AuthResponse;
 import com.notebook.lumen.identity.auth.api.AuthMeResponse;
@@ -78,6 +81,9 @@ public class AuthService {
   private final ScimProperties scimProperties;
   private final AdminRbacProperties adminRbacProperties;
   private final AdminRbacService adminRbacService;
+  private final AdminRbacOverridesProperties adminRbacOverridesProperties;
+  private final AdminRbacOverrideLoader adminRbacOverrideLoader;
+  private final AdminRbacOverrideEffectiveApplier adminRbacOverrideEffectiveApplier;
   private final ExternalIdentityRepository externalIdentityRepository;
   private final SsoProperties ssoProperties;
   private final ObjectMapper objectMapper;
@@ -95,6 +101,9 @@ public class AuthService {
       ScimProperties scimProperties,
       AdminRbacProperties adminRbacProperties,
       AdminRbacService adminRbacService,
+      AdminRbacOverridesProperties adminRbacOverridesProperties,
+      AdminRbacOverrideLoader adminRbacOverrideLoader,
+      AdminRbacOverrideEffectiveApplier adminRbacOverrideEffectiveApplier,
       ExternalIdentityRepository externalIdentityRepository,
       SsoProperties ssoProperties,
       ObjectMapper objectMapper) {
@@ -110,6 +119,9 @@ public class AuthService {
     this.scimProperties = scimProperties;
     this.adminRbacProperties = adminRbacProperties;
     this.adminRbacService = adminRbacService;
+    this.adminRbacOverridesProperties = adminRbacOverridesProperties;
+    this.adminRbacOverrideLoader = adminRbacOverrideLoader;
+    this.adminRbacOverrideEffectiveApplier = adminRbacOverrideEffectiveApplier;
     this.externalIdentityRepository = externalIdentityRepository;
     this.ssoProperties = ssoProperties;
     this.objectMapper = objectMapper;
@@ -446,6 +458,11 @@ public class AuthService {
       }
     }
     merged.addAll(platformRolesFromScim(user));
+    if (adminRbacOverridesProperties.enabled() && adminRbacOverrideLoader.snapshot().loaded()) {
+      LinkedHashSet<String> baseFromIdpAndScim = new LinkedHashSet<>(merged);
+      adminRbacOverrideEffectiveApplier.apply(
+          user.getId(), merged, baseFromIdpAndScim, adminRbacOverrideLoader.snapshot().assignments());
+    }
     List<String> roleList = merged.stream().sorted().toList();
     claims.put("platform_roles", roleList);
     if (adminRbacProperties.enabled()) {

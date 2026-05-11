@@ -289,6 +289,13 @@
 - Recommended next action: Move from allowlist fallback to identity-issued PLATFORM_ADMIN claims and ship
   audit access logs to SIEM (see [`docs/admin-audit-proxy.md`](admin-audit-proxy.md)).
 
+## GitOps admin RBAC overrides (Faz 88)
+
+- Risk: A tampered or overly broad mounted manifest could grant platform roles without going through normal IdP group controls; **validate** endpoint accepts arbitrary YAML in the request body (read-only parse, no persistence) — abuse could mean CPU/memory pressure if unbounded.
+- Current mitigation: **Defaults off** (`ADMIN_RBAC_OVERRIDES_ENABLED=false`, prod Helm conservative); strict parser (known roles, UUIDs, status allow-list); **REVOKE** does not strip IdP/SCIM-sourced roles; gateway requires `admin:rbac:read` for status/validate; rate limiting includes `/admin/rbac/overrides`; responses and audits **exclude raw YAML**; UI shows basename only.
+- Remaining gap: No hot reload; pod restart or remount needed after GitOps sync; no cryptographic attestation of manifest content inside the cluster.
+- Recommended next action: Treat the mounted file like other high-privilege config: restrict ConfigMap write RBAC, enable overrides only with `FAIL_CLOSED` in environments that require it after testing, and monitor `admin_rbac_overrides_*` metrics (see [`docs/admin-rbac-runtime-overrides.md`](admin-rbac-runtime-overrides.md)).
+
 ## Rate Limiting
 
 - Risk: Abuse of public or protected endpoints.

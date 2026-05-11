@@ -111,6 +111,12 @@ identity:
       visibility-enabled: ${ADMIN_RBAC_VISIBILITY_ENABLED:false}
       role-change-requests-enabled: ${ADMIN_RBAC_ROLE_CHANGE_REQUESTS_ENABLED:false}
       visibility-allowlist-emails: ${ADMIN_RBAC_VISIBILITY_ALLOWLIST_EMAILS:}
+      overrides:
+        enabled: ${ADMIN_RBAC_OVERRIDES_ENABLED:false}
+        file: ${ADMIN_RBAC_OVERRIDES_FILE:/etc/notebook/admin-rbac-overrides/admin-rbac-overrides.yaml}
+        fail-closed: ${ADMIN_RBAC_OVERRIDES_FAIL_CLOSED:false}
+        max-assignments: ${ADMIN_RBAC_OVERRIDES_MAX_ASSIGNMENTS:500}
+        require-approved-status: ${ADMIN_RBAC_OVERRIDES_REQUIRE_APPROVED_STATUS:true}
     change-requests:
       enabled: ${ADMIN_CHANGE_REQUESTS_ENABLED:false}
       retention-days: ${ADMIN_CHANGE_REQUEST_RETENTION_DAYS:180}

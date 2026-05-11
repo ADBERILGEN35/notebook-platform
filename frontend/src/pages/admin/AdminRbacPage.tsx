@@ -18,7 +18,11 @@ import {
   createChangeRequest,
   validateChangeRequest,
 } from '../../features/admin/enterprise/change-requests-api'
-import { isAdminRbacRoleRequestsUiEnabled, isAdminRbacUiEnabled } from '../../shared/config/admin-feature-flags'
+import {
+  isAdminRbacOverridesStatusUiEnabled,
+  isAdminRbacRoleRequestsUiEnabled,
+  isAdminRbacUiEnabled,
+} from '../../shared/config/admin-feature-flags'
 import { isEnterpriseAdminWriteEnabled } from '../../shared/config/admin-feature-flags'
 const ASSIGNABLE_ROLES = [
   'PLATFORM_ADMIN',
@@ -36,6 +40,7 @@ export function AdminRbacPage() {
   const canRead = hasPlatformPermission(user, PERM_RBAC_READ)
   const uiOn = isAdminRbacUiEnabled()
   const roleReqOn = isAdminRbacRoleRequestsUiEnabled() && isEnterpriseAdminWriteEnabled()
+  const overridesStatusOn = isAdminRbacOverridesStatusUiEnabled()
   const canRoleRequest = hasPlatformPermission(user, PERM_RBAC_CHANGE_REQUEST_CREATE)
 
   const [q, setQ] = useState('')
@@ -61,6 +66,12 @@ export function AdminRbacPage() {
     queryKey: ['admin-rbac-user', detailId],
     queryFn: () => rbacApi.getAdminRbacUser(detailId!),
     enabled: !!detailId && uiOn && canRead,
+  })
+
+  const overridesStatusQ = useQuery({
+    queryKey: ['admin-rbac-overrides-status'],
+    queryFn: () => rbacApi.getAdminRbacOverridesStatus(),
+    enabled: uiOn && canRead && overridesStatusOn,
   })
 
   const selected =
@@ -103,6 +114,56 @@ export function AdminRbacPage() {
           Change requests
         </Link>
       </div>
+
+      {overridesStatusOn && canRead ? (
+        <Card className="space-y-2 text-xs text-slate-700">
+          <p className="font-semibold text-slate-900">GitOps RBAC overrides (read-only)</p>
+          {overridesStatusQ.isLoading ? <LoadingState /> : null}
+          {overridesStatusQ.error ? <ErrorAlert error={overridesStatusQ.error} /> : null}
+          {overridesStatusQ.data ? (
+            <dl className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+              <div>
+                <dt className="text-slate-500">Ingestion enabled</dt>
+                <dd>{String(overridesStatusQ.data.enabled)}</dd>
+              </div>
+              <div>
+                <dt className="text-slate-500">Loaded</dt>
+                <dd>{String(overridesStatusQ.data.loaded)}</dd>
+              </div>
+              <div>
+                <dt className="text-slate-500">Manifest file</dt>
+                <dd className="font-mono">{overridesStatusQ.data.fileBasename || '—'}</dd>
+              </div>
+              <div>
+                <dt className="text-slate-500">Assignments (valid / ignored)</dt>
+                <dd>
+                  {overridesStatusQ.data.validAssignmentCount} / {overridesStatusQ.data.ignoredAssignmentCount}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-slate-500">Last loaded</dt>
+                <dd>
+                  {overridesStatusQ.data.lastLoadedAt
+                    ? new Date(overridesStatusQ.data.lastLoadedAt).toLocaleString()
+                    : '—'}
+                </dd>
+              </div>
+            </dl>
+          ) : null}
+          {overridesStatusQ.data?.warnings?.length ? (
+            <ul className="list-inside list-disc text-amber-900">
+              {overridesStatusQ.data.warnings.map((w) => (
+                <li key={w}>{w}</li>
+              ))}
+            </ul>
+          ) : null}
+          <p className="text-[11px] text-slate-500">
+            Raw manifest YAML is not shown. Enable <code className="rounded bg-slate-100 px-1">ADMIN_RBAC_OVERRIDES_ENABLED</code> on
+            identity-service and mount <code className="rounded bg-slate-100 px-1">admin-rbac-overrides.yaml</code> for live ingestion (defaults
+            off in production).
+          </p>
+        </Card>
+      ) : null}
 
       <Card className="flex flex-wrap gap-3">
         <label className="flex flex-col gap-1 text-xs">
@@ -286,9 +347,20 @@ function DetailDrawer({
               <div>
                 <p className="text-xs font-semibold uppercase text-slate-500">Sources</p>
                 <ul className="text-xs text-slate-700">
-                  {detail.sources.map((s) => (
-                    <li key={`${s.type}-${s.sourceName}`}>
+                  {detail.sources.map((s, idx) => (
+                    <li key={`${s.type}-${s.sourceName}-${idx}`}>
                       {s.type}: {s.sourceName} → {s.roles.join(', ')}
+                      {s.type === 'GITOPS_OVERRIDE' && s.reasonRef?.startsWith('change-request:') ? (
+                        <>
+                          {' '}
+                          <Link
+                            className="text-primary-700 underline"
+                            to={`/app/admin/enterprise/change-requests?cr=${encodeURIComponent(s.reasonRef.replace(/^change-request:/i, '').trim())}`}
+                          >
+                            View change request
+                          </Link>
+                        </>
+                      ) : null}
                     </li>
                   ))}
                 </ul>

@@ -101,8 +101,18 @@ spec:
             {{- toYaml .Values.services.identity.resources | nindent 12 }}
           volumeMounts:
             {{- include "notebook-platform.volumeMounts" . | nindent 12 }}
+            {{- if and .Values.services.identity.adminRbacOverridesVolume.enabled .Values.services.identity.adminRbacOverridesVolume.configMapName }}
+            - name: admin-rbac-overrides
+              mountPath: {{ .Values.services.identity.adminRbacOverridesVolume.mountPath | quote }}
+              readOnly: true
+            {{- end }}
       volumes:
         - name: tmp
           emptyDir: {}
+        {{- if and .Values.services.identity.adminRbacOverridesVolume.enabled .Values.services.identity.adminRbacOverridesVolume.configMapName }}
+        - name: admin-rbac-overrides
+          configMap:
+            name: {{ .Values.services.identity.adminRbacOverridesVolume.configMapName | quote }}
+        {{- end }}
         {{- include "notebook-platform.secretVolume" . | nindent 8 }}
 {{- end }}

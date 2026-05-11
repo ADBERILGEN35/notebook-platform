@@ -10,8 +10,16 @@ Enterprise deployments need **least privilege** and **separation of duties** on 
 | `ADMIN_RBAC_LEGACY_PLATFORM_ADMIN_IMPLIES_ALL` | identity-service | `true` | `PLATFORM_ADMIN` resolves to the full permission set (compatibility). |
 | `ADMIN_RBAC_GROUP_*` | identity-service | empty | Group name (single key, lowercase match) per role; see below. |
 | `GATEWAY_ADMIN_RBAC_ENFORCE` | api-gateway | `false` | When `true`, admin routes require `platform_permissions` (or `PLATFORM_ADMIN` / legacy admin role in JWT), not email allowlist alone. |
+| `ADMIN_RBAC_OVERRIDES_ENABLED` | identity-service | `false` | **Faz 88:** When `true`, merge assignments from a **mounted** `admin-rbac-overrides.yaml` into effective platform roles (after legacy / SSO / SCIM / allowlist). No Git pull, no IdP mutation. |
+| `ADMIN_RBAC_OVERRIDES_FILE` | identity-service | `/etc/notebook/admin-rbac-overrides/admin-rbac-overrides.yaml` | Path to the mounted manifest copy. |
+| `ADMIN_RBAC_OVERRIDES_FAIL_CLOSED` | identity-service | `false` | If `true`, missing/invalid file can fail process startup (see runtime overrides doc). |
+| `ADMIN_RBAC_OVERRIDES_MAX_ASSIGNMENTS` | identity-service | `500` | Cap on parsed assignment rows. |
 
-**Rollout:** Keep `ADMIN_RBAC_ENABLED=false` and `GATEWAY_ADMIN_RBAC_ENFORCE=false` until IdP/SCIM groups are configured. Then enable identity RBAC first (tokens gain permissions), then flip gateway enforce in a controlled window.
+**Rollout:** Keep `ADMIN_RBAC_ENABLED=false` and `GATEWAY_ADMIN_RBAC_ENFORCE=false` until IdP/SCIM groups are configured. Then enable identity RBAC first (tokens gain permissions), then flip gateway enforce in a controlled window. Keep **`ADMIN_RBAC_OVERRIDES_ENABLED=false`** in production until operations explicitly enable mounted manifests and monitoring.
+
+## GitOps runtime overrides (Faz 88)
+
+Governance PRs may append rows to `deploy/gitops/environments/{env}/admin-rbac-overrides.yaml` (Faz 87). A **ConfigMap- or volume-mounted copy** inside the identity-service pod can be read at startup when overrides are enabled. **REVOKE** in the manifest only removes roles that were granted via the same override source, not IdP/SCIM-mapped roles. Details: [`docs/admin-rbac-runtime-overrides.md`](admin-rbac-runtime-overrides.md), [`docs/admin-rbac-override-manifest.md`](admin-rbac-override-manifest.md).
 
 ## Roles and permissions
 
@@ -88,6 +96,8 @@ Identity internal security status includes `adminRbac`: enabled flag, legacy fla
 
 ## Related documentation
 
+- [`docs/admin-rbac-runtime-overrides.md`](admin-rbac-runtime-overrides.md)
+- [`docs/admin-rbac-gitops-integration.md`](admin-rbac-gitops-integration.md)
 - [`docs/admin-permission-matrix.md`](admin-permission-matrix.md)
 - [`docs/enterprise-sso.md`](enterprise-sso.md)
 - [`docs/scim-group-nesting.md`](scim-group-nesting.md)

@@ -320,6 +320,11 @@ data:
   ADMIN_RBAC_VISIBILITY_ENABLED: {{ .Values.config.adminRbacVisibilityEnabled | quote }}
   ADMIN_RBAC_ROLE_CHANGE_REQUESTS_ENABLED: {{ .Values.config.adminRbacRoleChangeRequestsEnabled | quote }}
   ADMIN_RBAC_VISIBILITY_ALLOWLIST_EMAILS: {{ .Values.config.adminRbacVisibilityAllowlistEmails | quote }}
+  ADMIN_RBAC_OVERRIDES_ENABLED: {{ .Values.config.adminRbacOverridesEnabled | quote }}
+  ADMIN_RBAC_OVERRIDES_FILE: {{ .Values.config.adminRbacOverridesFile | quote }}
+  ADMIN_RBAC_OVERRIDES_FAIL_CLOSED: {{ .Values.config.adminRbacOverridesFailClosed | quote }}
+  ADMIN_RBAC_OVERRIDES_MAX_ASSIGNMENTS: {{ .Values.config.adminRbacOverridesMaxAssignments | quote }}
+  ADMIN_RBAC_OVERRIDES_REQUIRE_APPROVED_STATUS: {{ .Values.config.adminRbacOverridesRequireApprovedStatus | quote }}
   SCIM_GROUP_NESTING_ENABLED: {{ .Values.config.scimGroupNestingEnabled | quote }}
   SCIM_GROUP_NESTING_MAX_DEPTH: {{ .Values.config.scimGroupNestingMaxDepth | quote }}
   SCIM_BULK_ENABLED: {{ .Values.config.scimBulkEnabled | quote }}

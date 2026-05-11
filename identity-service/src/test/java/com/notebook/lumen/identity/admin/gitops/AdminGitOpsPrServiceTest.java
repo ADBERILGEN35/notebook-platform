@@ -163,7 +163,8 @@ class AdminGitOpsPrServiceTest {
         .thenReturn(Optional.of(rbacApprovedCr(id, targetUser, ChangeRequestStatus.APPROVED)));
     AdminGitOpsDtos.DryRunResponse r = service.dryRun(id, new DryRunBody(null), actor, new MockHttpServletRequest());
     assertThat(r.changedFiles().get(0).path()).endsWith("admin-rbac-overrides.yaml");
-    assertThat(r.diffPreview()).contains("adminRbacOverrides");
+    // unifiedDiffPreview omits unchanged lines; the adminRbacOverrides key line may not appear when only assignments[] grows.
+    assertThat(r.diffPreview()).contains("assignments");
     assertThat(r.diffPreview()).contains(targetUser.toString());
     @SuppressWarnings("unchecked")
     ArgumentCaptor<Map<String, Object>> cap = ArgumentCaptor.forClass(Map.class);

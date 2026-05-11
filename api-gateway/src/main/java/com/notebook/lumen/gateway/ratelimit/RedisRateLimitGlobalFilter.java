@@ -157,7 +157,7 @@ public class RedisRateLimitGlobalFilter implements GlobalFilter, Ordered {
 
   private boolean isAdminRbacReadEndpoint(ServerWebExchange exchange) {
     String path = exchange.getRequest().getPath().value();
-    return path.startsWith("/admin/rbac/users");
+    return path.startsWith("/admin/rbac/users") || path.startsWith("/admin/rbac/overrides");
   }
 
   private boolean isAdminNotificationAnalyticsEndpoint(ServerWebExchange exchange) {
