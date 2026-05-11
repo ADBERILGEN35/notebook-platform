@@ -43,7 +43,8 @@ class InternalIdentitySecurityStatusControllerTest {
             new IdentitySecurityStatusResponse.Mfa(false, false),
             new IdentitySecurityStatusResponse.Siem(false, "noop", false, false, false),
             new IdentitySecurityStatusResponse.AdminRbac(false, true, Map.of()),
-            new IdentitySecurityStatusResponse.BreakGlass(false, false, 15, 1, true, true),
+            new IdentitySecurityStatusResponse.BreakGlass(
+                false, "static-token", java.util.List.of(), false, false, 0, false, false, false, null, "disabled", 0, 0, 15, 1, true, true),
             false,
             null);
     when(service.build()).thenReturn(body);

@@ -32,6 +32,12 @@ Runtime Docker/Kubernetes config:
 - `FRONTEND_API_BASE_URL` -> served via `/runtime-config.js`
 - Runtime value overrides `VITE_API_BASE_URL`
 
+## Break-glass review UI (Faz 92)
+
+- Admin review page route: `/app/admin/security/break-glass`
+- Runtime flag: `FRONTEND_BREAK_GLASS_REVIEW_UI_ENABLED=false` (default)
+- UI event list/review surfaces never render token/assertion/credential secrets
+
 ## Implemented MVP Flows
 
 - Login + signup + token-based session state

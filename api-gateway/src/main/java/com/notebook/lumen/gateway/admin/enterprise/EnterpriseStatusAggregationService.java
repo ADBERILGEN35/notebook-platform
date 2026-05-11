@@ -243,12 +243,29 @@ public class EnterpriseStatusAggregationService {
     boolean gwAllowed = breakGlassProperties.adminAllowed();
     boolean writeAllowed = breakGlassProperties.allowAdminWrite();
     if (identity == null || identity.path("breakGlass").isMissingNode()) {
-      return new BreakGlassStatus(false, false, gwAllowed, writeAllowed, 15, 1, true, true);
+      return new BreakGlassStatus(
+          false, "static-token", List.of(), false, false, 0, false, false, false, null, "disabled", 0, 0, gwAllowed, writeAllowed, 15, 1, true, true);
     }
     JsonNode n = identity.path("breakGlass");
+    List<String> modes = new ArrayList<>();
+    JsonNode am = n.path("allowedModes");
+    if (am.isArray()) {
+      am.forEach(v -> modes.add(v.asText("")));
+    }
     return new BreakGlassStatus(
         n.path("enabled").asBoolean(false),
-        n.path("tokenConfigured").asBoolean(false),
+        n.path("credentialMode").asText("static-token"),
+        modes,
+        n.path("staticTokenConfigured").asBoolean(false),
+        n.path("webauthnEnabled").asBoolean(false),
+        n.path("webauthnCredentialCount").asInt(0),
+        n.path("offlineSignedEnabled").asBoolean(false),
+        n.path("offlinePublicKeyConfigured").asBoolean(false),
+        n.path("staticTokenRotationRecommended").asBoolean(false),
+        parseInstantOrNull(n.path("lastStaticTokenUsedAt").asText(null)),
+        n.path("approvalMode").asText("disabled"),
+        n.path("pendingReviewCount").asLong(0),
+        n.path("overdueReviewCount").asLong(0),
         gwAllowed,
         writeAllowed,
         n.path("sessionTtlMinutes").asInt(15),
@@ -385,5 +402,16 @@ public class EnterpriseStatusAggregationService {
       return base.substring(0, base.length() - 1);
     }
     return base;
+  }
+
+  private static Instant parseInstantOrNull(String value) {
+    if (value == null || value.isBlank()) {
+      return null;
+    }
+    try {
+      return Instant.parse(value);
+    } catch (RuntimeException e) {
+      return null;
+    }
   }
 }

@@ -27,6 +27,16 @@ docker compose -f docker-compose.dev.yml up -d
 - Swagger UI: `http://localhost:8081/swagger-ui.html`
 - Sağlık: `http://localhost:8081/actuator/health`
 
+## Break-glass governance (Faz 90-92)
+
+- Break-glass default kapalıdır (`BREAK_GLASS_ENABLED=false`).
+- Faz 91 credential mode foundation: `static-token|webauthn|offline-signed|hybrid`.
+- Faz 92 approval/review foundation:
+  - `BREAK_GLASS_APPROVAL_MODE`
+  - `BREAK_GLASS_EVENT_LOG_ENABLED`
+  - `BREAK_GLASS_REVIEW_API_ENABLED`
+  - internal review API: `/internal/admin/break-glass/events/*`
+
 ## RSA anahtarları (RS256)
 
 JWT imzası için özel/umumi anahtarlar env veya dosya olarak sağlanır.

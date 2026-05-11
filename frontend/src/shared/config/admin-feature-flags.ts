@@ -135,6 +135,14 @@ export const isAdminRbacOverridesReloadUiEnabled = (): boolean =>
     false,
   )
 
+/** Faz 92: break-glass post-use review governance UI. */
+export const isBreakGlassReviewUiEnabled = (): boolean =>
+  parseBool(
+    window.__NOTEBOOK_CONFIG__?.BREAK_GLASS_REVIEW_UI_ENABLED ??
+      import.meta.env.VITE_BREAK_GLASS_REVIEW_UI_ENABLED,
+    false,
+  )
+
 export const getAuditApiMode = (): AuditApiMode => {
   const raw =
     window.__NOTEBOOK_CONFIG__?.AUDIT_API_MODE ?? import.meta.env.VITE_AUDIT_API_MODE ?? 'mock'

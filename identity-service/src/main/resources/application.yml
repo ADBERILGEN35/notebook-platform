@@ -90,17 +90,33 @@ audit:
     issuer: ${AUDIT_ADMIN_SERVICE_JWT_ISSUER:audit-admin}
     audience: ${AUDIT_ADMIN_SERVICE_JWT_AUDIENCE:identity-service}
     clock-skew-seconds: ${AUDIT_ADMIN_SERVICE_JWT_CLOCK_SKEW_SECONDS:5}
-    allowed-scopes: ${AUDIT_ADMIN_SERVICE_JWT_ALLOWED_SCOPES:internal:audit:read,internal:admin:status:read,internal:admin:change-requests:manage,internal:admin:rbac:read,internal:admin:rbac:overrides:reload}
+    allowed-scopes: ${AUDIT_ADMIN_SERVICE_JWT_ALLOWED_SCOPES:internal:audit:read,internal:admin:status:read,internal:admin:change-requests:manage,internal:admin:rbac:read,internal:admin:rbac:overrides:reload,internal:admin:break-glass:events:read,internal:admin:break-glass:events:review}
 
 identity:
   break-glass:
     enabled: ${BREAK_GLASS_ENABLED:false}
+    credential-mode: ${BREAK_GLASS_CREDENTIAL_MODE:static-token}
+    static-token-enabled: ${BREAK_GLASS_STATIC_TOKEN_ENABLED:false}
+    webauthn-enabled: ${BREAK_GLASS_WEBAUTHN_ENABLED:false}
+    offline-signed-enabled: ${BREAK_GLASS_OFFLINE_SIGNED_ENABLED:false}
+    approval-mode: ${BREAK_GLASS_APPROVAL_MODE:disabled}
+    event-log-enabled: ${BREAK_GLASS_EVENT_LOG_ENABLED:true}
+    review-required-within-minutes: ${BREAK_GLASS_REVIEW_REQUIRED_WITHIN_MINUTES:60}
+    notify-security-admins: ${BREAK_GLASS_NOTIFY_SECURITY_ADMINS:true}
+    review-api-enabled: ${BREAK_GLASS_REVIEW_API_ENABLED:false}
     token-hash: ${BREAK_GLASS_TOKEN_HASH:}
+    offline-public-key-path: ${BREAK_GLASS_OFFLINE_PUBLIC_KEY_PATH:}
+    offline-allowed-issuer: ${BREAK_GLASS_OFFLINE_ALLOWED_ISSUER:notebook-break-glass-offline}
+    offline-required-audience: ${BREAK_GLASS_OFFLINE_REQUIRED_AUDIENCE:identity-service}
+    offline-max-assertion-ttl-seconds: ${BREAK_GLASS_OFFLINE_MAX_ASSERTION_TTL_SECONDS:300}
     session-ttl-minutes: ${BREAK_GLASS_SESSION_TTL_MINUTES:15}
     require-mfa: ${BREAK_GLASS_REQUIRE_MFA:true}
     require-reason: ${BREAK_GLASS_REQUIRE_REASON:true}
     max-active-sessions: ${BREAK_GLASS_MAX_ACTIVE_SESSIONS:1}
     notify-on-use: ${BREAK_GLASS_NOTIFY_ON_USE:true}
+    static-token-max-failures-per-window: ${BREAK_GLASS_STATIC_TOKEN_MAX_FAILURES_PER_WINDOW:5}
+    static-token-lockout-minutes: ${BREAK_GLASS_STATIC_TOKEN_LOCKOUT_MINUTES:15}
+    static-token-rotation-recommended-after-use: ${BREAK_GLASS_STATIC_TOKEN_ROTATION_RECOMMENDED_AFTER_USE:true}
   internal:
     admin-status:
       enabled: ${IDENTITY_INTERNAL_ADMIN_STATUS_ENABLED:false}

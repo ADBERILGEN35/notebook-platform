@@ -44,6 +44,7 @@ declare global {
       ADMIN_RBAC_ROLE_REQUESTS_ENABLED?: boolean | string
       ADMIN_RBAC_OVERRIDES_STATUS_ENABLED?: boolean | string
       ADMIN_RBAC_OVERRIDES_RELOAD_ENABLED?: boolean | string
+      BREAK_GLASS_REVIEW_UI_ENABLED?: boolean | string
       NOTIFICATION_ANALYTICS_UI_ENABLED?: boolean | string
       NOTIFICATION_DEAD_LETTER_UI_ENABLED?: boolean | string
       NOTIFICATION_RETENTION_UI_ENABLED?: boolean | string

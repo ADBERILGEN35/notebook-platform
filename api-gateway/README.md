@@ -56,6 +56,11 @@ Compose ile calistirirken tercih edilen yontem `JWT_JWKS_URI=http://identity-ser
 - `GATEWAY_ADMIN_ALLOWED_USER_IDS`, `GATEWAY_ADMIN_ALLOWED_EMAILS`
 - `ADMIN_AUDIT_RATE_LIMIT_REPLENISH_RATE`, `ADMIN_AUDIT_RATE_LIMIT_BURST_CAPACITY`, `ADMIN_AUDIT_RATE_LIMIT_REQUESTED_TOKENS`
 - `GATEWAY_ADMIN_AUDIT_SERVICE_JWT_*` (gateway signer for `/admin/audit-events` proxy calls)
+- Break-glass governance (Faz 92):
+  - `GATEWAY_BREAK_GLASS_ALLOWED_MODES`
+  - `GET /admin/break-glass/events`
+  - `GET /admin/break-glass/events/{id}`
+  - `POST /admin/break-glass/events/{id}/review` (permission + MFA)
 
 ## Routes
 

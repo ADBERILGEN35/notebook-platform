@@ -56,6 +56,7 @@ public class BreakGlassGuardWebFilter implements WebFilter {
               if (bg == null || !bg) {
                 return chain.filter(exchange);
               }
+              String mode = auth.getToken().getClaimAsString("break_glass_mode");
               if (!properties.adminAllowed()) {
                 log.warn(
                     "break_glass_rejected_gateway_disabled path={} sub={}",
@@ -66,6 +67,18 @@ public class BreakGlassGuardWebFilter implements WebFilter {
                     HttpStatus.FORBIDDEN,
                     ErrorCode.BREAK_GLASS_NOT_ALLOWED_AT_GATEWAY,
                     "Break-glass tokens are not allowed at this gateway.");
+              }
+              if (!modeAllowed(mode)) {
+                log.warn(
+                    "break_glass_mode_rejected path={} sub={} mode={}",
+                    exchange.getRequest().getPath().value(),
+                    auth.getToken().getSubject(),
+                    mode);
+                return errorResponseWriter.write(
+                    exchange,
+                    HttpStatus.FORBIDDEN,
+                    ErrorCode.BREAK_GLASS_NOT_ALLOWED_AT_GATEWAY,
+                    "Break-glass mode is not allowed at this gateway.");
               }
 
               if (isWrite(exchange) && !properties.allowAdminWrite()) {
@@ -94,6 +107,14 @@ public class BreakGlassGuardWebFilter implements WebFilter {
     String path = exchange.getRequest().getPath().value();
     // Only apply to admin surface writes.
     return path.startsWith("/admin/");
+  }
+
+  private boolean modeAllowed(String mode) {
+    if (mode == null || mode.isBlank()) {
+      return false;
+    }
+    return properties.allowedModes() != null
+        && properties.allowedModes().stream().anyMatch(m -> mode.equalsIgnoreCase(m));
   }
 }
 

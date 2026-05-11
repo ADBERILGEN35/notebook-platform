@@ -235,6 +235,21 @@ public class AdminAuthorizationService {
     return ensureAdminPermission(jwt, PlatformAdminRbacConstants.PERM_RBAC_READ);
   }
 
+  public Optional<ErrorCode> ensureBreakGlassRead(Jwt jwt) {
+    return ensureAdminPermission(jwt, PlatformAdminRbacConstants.PERM_BREAK_GLASS_READ);
+  }
+
+  public Optional<ErrorCode> ensureBreakGlassReview(Jwt jwt) {
+    Optional<ErrorCode> base = ensureAdminPermission(jwt, PlatformAdminRbacConstants.PERM_BREAK_GLASS_REVIEW);
+    if (base.isPresent()) {
+      return base;
+    }
+    if (adminWriteRequiresMfa() && !hasVerifiedMfa(jwt)) {
+      return Optional.of(ErrorCode.ADMIN_WRITE_MFA_REQUIRED);
+    }
+    return Optional.empty();
+  }
+
   /** Hot-reload mounted GitOps RBAC overrides (identity-service); admin-write MFA gate. */
   public Optional<ErrorCode> ensureAdminRbacOverridesReload(Jwt jwt) {
     if (!rbacProperties.enforce()) {

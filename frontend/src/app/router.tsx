@@ -24,6 +24,7 @@ import { AdminNotificationDeadLetterPage } from '../pages/admin/AdminNotificatio
 import { AdminNotificationRetentionPage } from '../pages/admin/AdminNotificationRetentionPage'
 import { AdminNotificationLegalHoldsPage } from '../pages/admin/AdminNotificationLegalHoldsPage'
 import { AdminRbacPage } from '../pages/admin/AdminRbacPage'
+import { AdminBreakGlassPage } from '../pages/admin/AdminBreakGlassPage'
 import { useAuthStore } from '../features/auth/auth-store'
 import { isCookieMode } from '../shared/config/auth-transport'
 import { isAdminUiEnabled } from '../shared/config/admin-feature-flags'
@@ -93,6 +94,7 @@ export const router = createBrowserRouter([
               { path: 'notifications/retention', element: <AdminNotificationRetentionPage /> },
               { path: 'notifications/legal-holds', element: <AdminNotificationLegalHoldsPage /> },
               { path: 'rbac', element: <AdminRbacPage /> },
+              { path: 'security/break-glass', element: <AdminBreakGlassPage /> },
               {
                 path: 'enterprise',
                 element: <AdminEnterpriseLayout />,

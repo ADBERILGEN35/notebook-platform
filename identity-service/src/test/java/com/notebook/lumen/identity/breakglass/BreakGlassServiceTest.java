@@ -19,9 +19,13 @@ class BreakGlassServiceTest {
 
   @Test
   void disabled_loginRejected() {
-    BreakGlassProperties props =
-        new BreakGlassProperties(false, "", 15, true, true, 1, true);
-    BreakGlassService svc = new BreakGlassService(props, mock(JwtTokenService.class), mock(AuditService.class));
+    BreakGlassProperties props = props(false, "");
+    BreakGlassService svc =
+        new BreakGlassService(
+            props,
+            mock(JwtTokenService.class),
+            mock(AuditService.class),
+            mock(BreakGlassAccessEventService.class));
     assertThatThrownBy(() -> svc.login("t", "reason reason reason reason"))
         .isInstanceOf(BreakGlassException.class)
         .hasMessageContaining("disabled");
@@ -29,11 +33,11 @@ class BreakGlassServiceTest {
 
   @Test
   void invalidTokenRejected_withoutLeakingToken() {
-    BreakGlassProperties props =
-        new BreakGlassProperties(true, "sha256:deadbeef", 15, true, true, 1, true);
+    BreakGlassProperties props = props(true, "sha256:deadbeef");
     AuditService audit = mock(AuditService.class);
     JwtTokenService jwt = mock(JwtTokenService.class);
-    BreakGlassService svc = new BreakGlassService(props, jwt, audit);
+    BreakGlassService svc =
+        new BreakGlassService(props, jwt, audit, mock(BreakGlassAccessEventService.class));
     assertThatThrownBy(() -> svc.login("super-secret-token", "reason reason reason reason"))
         .isInstanceOf(BreakGlassException.class)
         .satisfies(e -> assertThat(((BreakGlassException) e).getErrorCode()).isEqualTo("BREAK_GLASS_INVALID_TOKEN"));
@@ -42,9 +46,13 @@ class BreakGlassServiceTest {
 
   @Test
   void missingReasonRejected() {
-    BreakGlassProperties props =
-        new BreakGlassProperties(true, "sha256:deadbeef", 15, true, true, 1, true);
-    BreakGlassService svc = new BreakGlassService(props, mock(JwtTokenService.class), mock(AuditService.class));
+    BreakGlassProperties props = props(true, "sha256:deadbeef");
+    BreakGlassService svc =
+        new BreakGlassService(
+            props,
+            mock(JwtTokenService.class),
+            mock(AuditService.class),
+            mock(BreakGlassAccessEventService.class));
     assertThatThrownBy(() -> svc.login("x", "short"))
         .isInstanceOf(BreakGlassException.class)
         .satisfies(e -> assertThat(((BreakGlassException) e).getErrorCode()).isEqualTo("BREAK_GLASS_REASON_REQUIRED"));
@@ -54,12 +62,12 @@ class BreakGlassServiceTest {
   void validTokenIssuesShortLivedAccessToken_noRefresh() {
     String token = "offline-token";
     // Pre-computed by BreakGlassService sha256 formatter.
-    BreakGlassProperties props =
-        new BreakGlassProperties(true, sha256(token), 15, true, true, 1, true);
+    BreakGlassProperties props = props(true, sha256(token));
     AuditService audit = mock(AuditService.class);
     JwtTokenService jwt = mock(JwtTokenService.class);
     when(jwt.generateAccessToken(any(), any(), any(Map.class), anyLong())).thenReturn("jwt-access");
-    BreakGlassService svc = new BreakGlassService(props, jwt, audit);
+    BreakGlassService svc =
+        new BreakGlassService(props, jwt, audit, mock(BreakGlassAccessEventService.class));
 
     BreakGlassDtos.BreakGlassLoginResponse resp =
         svc.login(token, "Recover admin access after RBAC override misconfiguration.");
@@ -76,6 +84,33 @@ class BreakGlassServiceTest {
     } catch (Exception e) {
       throw new IllegalStateException(e);
     }
+  }
+
+  private static BreakGlassProperties props(boolean enabled, String tokenHash) {
+    return new BreakGlassProperties(
+        enabled,
+        "static-token",
+        true,
+        false,
+        false,
+        "disabled",
+        true,
+        60,
+        true,
+        false,
+        tokenHash,
+        "",
+        "notebook-break-glass-offline",
+        "identity-service",
+        300,
+        15,
+        true,
+        true,
+        1,
+        true,
+        5,
+        15,
+        true);
   }
 }
 

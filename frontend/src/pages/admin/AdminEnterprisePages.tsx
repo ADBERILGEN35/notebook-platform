@@ -263,7 +263,18 @@ function EnterpriseContent({
           >
             <ul className="list-inside list-disc space-y-0.5">
               <li>Identity enabled: {features.breakGlass.enabled ? 'yes' : 'no'}</li>
-              <li>Token configured (hash only): {features.breakGlass.tokenConfigured ? 'yes' : 'no'}</li>
+              <li>Credential mode: {features.breakGlass.credentialMode}</li>
+              <li>Allowed modes: {features.breakGlass.allowedModes.join(', ') || '—'}</li>
+              <li>Static token configured (hash only): {features.breakGlass.staticTokenConfigured ? 'yes' : 'no'}</li>
+              <li>WebAuthn enabled: {features.breakGlass.webauthnEnabled ? 'yes' : 'no'}</li>
+              <li>WebAuthn credential count: {features.breakGlass.webauthnCredentialCount}</li>
+              <li>Offline signed enabled: {features.breakGlass.offlineSignedEnabled ? 'yes' : 'no'}</li>
+              <li>Offline public key configured: {features.breakGlass.offlinePublicKeyConfigured ? 'yes' : 'no'}</li>
+              <li>Static token rotation recommended: {features.breakGlass.rotationRecommended ? 'yes' : 'no'}</li>
+              <li>Last static token use: {features.breakGlass.lastStaticTokenUsedAt || '—'}</li>
+              <li>Approval mode: {features.breakGlass.approvalMode}</li>
+              <li>Pending reviews: {features.breakGlass.pendingReviewCount}</li>
+              <li>Overdue reviews: {features.breakGlass.overdueReviewCount}</li>
               <li>Gateway allowed: {features.breakGlass.gatewayAllowed ? 'yes' : 'no'}</li>
               <li>Admin write allowed: {features.breakGlass.adminWriteAllowed ? 'yes' : 'no'}</li>
               <li>Session TTL: {features.breakGlass.sessionTtlMinutes} min</li>

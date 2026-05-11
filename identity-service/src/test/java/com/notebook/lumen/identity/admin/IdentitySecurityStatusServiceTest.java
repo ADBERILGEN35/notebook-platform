@@ -70,7 +70,25 @@ class IdentitySecurityStatusServiceTest {
                 false, true, false, false, false, false, false, false, false, false));
     BreakGlassService breakGlass = Mockito.mock(BreakGlassService.class);
     Mockito.when(breakGlass.status())
-        .thenReturn(new BreakGlassDtos.BreakGlassStatusResponse(false, 15, 1, true, true, false));
+        .thenReturn(
+            new BreakGlassDtos.BreakGlassStatusResponse(
+                false,
+                "static-token",
+                List.of(),
+                15,
+                1,
+                true,
+                true,
+                false,
+                false,
+                0,
+                false,
+                false,
+                false,
+                null,
+                "disabled",
+                0,
+                0));
     var service = new IdentitySecurityStatusService(sso, scim, mfa, siem, adminRbac, breakGlass);
     IdentitySecurityStatusResponse body = service.build();
 
@@ -104,7 +122,25 @@ class IdentitySecurityStatusServiceTest {
                 false, true, false, false, false, false, false, false, false, false));
     BreakGlassService breakGlass = Mockito.mock(BreakGlassService.class);
     Mockito.when(breakGlass.status())
-        .thenReturn(new BreakGlassDtos.BreakGlassStatusResponse(false, 15, 1, true, true, false));
+        .thenReturn(
+            new BreakGlassDtos.BreakGlassStatusResponse(
+                false,
+                "static-token",
+                List.of(),
+                15,
+                1,
+                true,
+                true,
+                false,
+                false,
+                0,
+                false,
+                false,
+                false,
+                null,
+                "disabled",
+                0,
+                0));
     var service = new IdentitySecurityStatusService(sso, scim, mfa, siem, adminRbac, breakGlass);
     assertThat(service.build().siem().secretConfigured()).isFalse();
   }

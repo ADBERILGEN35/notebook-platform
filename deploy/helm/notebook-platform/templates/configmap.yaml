@@ -333,14 +333,31 @@ data:
   ADMIN_RBAC_OVERRIDES_WATCH_DEBOUNCE_SECONDS: {{ .Values.config.adminRbacOverridesWatchDebounceSeconds | quote }}
   ADMIN_RBAC_OVERRIDES_REQUIRE_VALID_CHECKSUM: {{ .Values.config.adminRbacOverridesRequireValidChecksum | quote }}
   BREAK_GLASS_ENABLED: {{ .Values.config.breakGlassEnabled | quote }}
+  BREAK_GLASS_CREDENTIAL_MODE: {{ .Values.config.breakGlassCredentialMode | quote }}
+  BREAK_GLASS_STATIC_TOKEN_ENABLED: {{ .Values.config.breakGlassStaticTokenEnabled | quote }}
+  BREAK_GLASS_WEBAUTHN_ENABLED: {{ .Values.config.breakGlassWebauthnEnabled | quote }}
+  BREAK_GLASS_OFFLINE_SIGNED_ENABLED: {{ .Values.config.breakGlassOfflineSignedEnabled | quote }}
   BREAK_GLASS_TOKEN_HASH: {{ .Values.config.breakGlassTokenHash | quote }}
+  BREAK_GLASS_OFFLINE_PUBLIC_KEY_PATH: {{ .Values.config.breakGlassOfflinePublicKeyPath | quote }}
+  BREAK_GLASS_OFFLINE_ALLOWED_ISSUER: {{ .Values.config.breakGlassOfflineAllowedIssuer | quote }}
+  BREAK_GLASS_OFFLINE_REQUIRED_AUDIENCE: {{ .Values.config.breakGlassOfflineRequiredAudience | quote }}
+  BREAK_GLASS_OFFLINE_MAX_ASSERTION_TTL_SECONDS: {{ .Values.config.breakGlassOfflineMaxAssertionTtlSeconds | quote }}
   BREAK_GLASS_SESSION_TTL_MINUTES: {{ .Values.config.breakGlassSessionTtlMinutes | quote }}
   BREAK_GLASS_REQUIRE_MFA: {{ .Values.config.breakGlassRequireMfa | quote }}
   BREAK_GLASS_REQUIRE_REASON: {{ .Values.config.breakGlassRequireReason | quote }}
   BREAK_GLASS_MAX_ACTIVE_SESSIONS: {{ .Values.config.breakGlassMaxActiveSessions | quote }}
   BREAK_GLASS_NOTIFY_ON_USE: {{ .Values.config.breakGlassNotifyOnUse | quote }}
+  BREAK_GLASS_STATIC_TOKEN_MAX_FAILURES_PER_WINDOW: {{ .Values.config.breakGlassStaticTokenMaxFailuresPerWindow | quote }}
+  BREAK_GLASS_STATIC_TOKEN_LOCKOUT_MINUTES: {{ .Values.config.breakGlassStaticTokenLockoutMinutes | quote }}
+  BREAK_GLASS_STATIC_TOKEN_ROTATION_RECOMMENDED_AFTER_USE: {{ .Values.config.breakGlassStaticTokenRotationRecommendedAfterUse | quote }}
+  BREAK_GLASS_APPROVAL_MODE: {{ .Values.config.breakGlassApprovalMode | quote }}
+  BREAK_GLASS_EVENT_LOG_ENABLED: {{ .Values.config.breakGlassEventLogEnabled | quote }}
+  BREAK_GLASS_REVIEW_REQUIRED_WITHIN_MINUTES: {{ .Values.config.breakGlassReviewRequiredWithinMinutes | quote }}
+  BREAK_GLASS_NOTIFY_SECURITY_ADMINS: {{ .Values.config.breakGlassNotifySecurityAdmins | quote }}
+  BREAK_GLASS_REVIEW_API_ENABLED: {{ .Values.config.breakGlassReviewApiEnabled | quote }}
   GATEWAY_BREAK_GLASS_ADMIN_ALLOWED: {{ .Values.config.gatewayBreakGlassAdminAllowed | quote }}
   BREAK_GLASS_ALLOW_ADMIN_WRITE: {{ .Values.config.breakGlassAllowAdminWrite | quote }}
+  GATEWAY_BREAK_GLASS_ALLOWED_MODES: {{ .Values.config.gatewayBreakGlassAllowedModes | quote }}
   SCIM_GROUP_NESTING_ENABLED: {{ .Values.config.scimGroupNestingEnabled | quote }}
   SCIM_GROUP_NESTING_MAX_DEPTH: {{ .Values.config.scimGroupNestingMaxDepth | quote }}
   SCIM_BULK_ENABLED: {{ .Values.config.scimBulkEnabled | quote }}
