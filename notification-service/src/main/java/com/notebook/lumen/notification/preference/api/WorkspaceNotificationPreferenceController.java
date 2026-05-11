@@ -1,8 +1,8 @@
 package com.notebook.lumen.notification.preference.api;
 
-import com.notebook.lumen.notification.preference.application.WorkspaceNotificationPreferenceService;
 import com.notebook.lumen.notification.preference.api.WorkspaceNotificationPreferenceDtos.WorkspaceNotificationPreferencePatchRequest;
 import com.notebook.lumen.notification.preference.api.WorkspaceNotificationPreferenceDtos.WorkspaceNotificationPreferencesResponse;
+import com.notebook.lumen.notification.preference.application.WorkspaceNotificationPreferenceService;
 import com.notebook.lumen.notification.shared.web.UserContextResolver;
 import jakarta.validation.Valid;
 import java.util.UUID;

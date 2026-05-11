@@ -15,12 +15,12 @@ import com.notebook.lumen.notification.audit.AuditService;
 import com.notebook.lumen.notification.shared.config.NotificationProperties;
 import com.notebook.lumen.notification.shared.exception.NotificationException;
 import com.notebook.lumen.notification.user.api.InAppNotificationCreateRequest;
-import com.notebook.lumen.notification.user.fanout.NotificationFanoutOutboxRepository;
-import com.notebook.lumen.notification.user.realtime.NotificationSseEventDispatcher;
 import com.notebook.lumen.notification.user.domain.UserNotification;
 import com.notebook.lumen.notification.user.domain.UserNotificationSeverity;
 import com.notebook.lumen.notification.user.domain.UserNotificationType;
+import com.notebook.lumen.notification.user.fanout.NotificationFanoutOutboxRepository;
 import com.notebook.lumen.notification.user.infrastructure.UserNotificationRepository;
+import com.notebook.lumen.notification.user.realtime.NotificationSseEventDispatcher;
 import com.notebook.lumen.notification.user.realtime.NotificationSseEventEnvelope;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import java.time.Instant;
@@ -33,11 +33,13 @@ import org.junit.jupiter.api.Test;
 class UserNotificationServiceTest {
   private final UserNotificationRepository repository = mock(UserNotificationRepository.class);
   private final AuditService auditService = mock(AuditService.class);
-  private final NotificationSseEventDispatcher sseDispatcher = mock(NotificationSseEventDispatcher.class);
+  private final NotificationSseEventDispatcher sseDispatcher =
+      mock(NotificationSseEventDispatcher.class);
   private final NotificationFanoutOutboxRepository fanoutRepository =
       mock(NotificationFanoutOutboxRepository.class);
   private final NotificationProperties notificationProperties = mock(NotificationProperties.class);
-  private final NotificationAnalyticsRecorder analyticsRecorder = mock(NotificationAnalyticsRecorder.class);
+  private final NotificationAnalyticsRecorder analyticsRecorder =
+      mock(NotificationAnalyticsRecorder.class);
 
   private final UserNotificationService service =
       new UserNotificationService(
@@ -62,11 +64,7 @@ class UserNotificationServiceTest {
                   "test",
                   n.getRecipientUserId(),
                   "notification.created",
-                  Map.of(
-                      "notificationId",
-                      n.getId().toString(),
-                      "unreadCount",
-                      unread),
+                  Map.of("notificationId", n.getId().toString(), "unreadCount", unread),
                   Instant.now());
             });
     when(sseDispatcher.buildReadEnvelope(any(), any(), anyLong()))
@@ -137,7 +135,8 @@ class UserNotificationServiceTest {
   @Test
   void createSanitizesSensitiveMetadata() {
     UUID userId = UUID.randomUUID();
-    when(repository.save(any())).thenAnswer(invocation -> invocation.getArgument(0, UserNotification.class));
+    when(repository.save(any()))
+        .thenAnswer(invocation -> invocation.getArgument(0, UserNotification.class));
 
     UserNotification created =
         service.create(
@@ -161,7 +160,8 @@ class UserNotificationServiceTest {
     when(notificationProperties.fanout())
         .thenReturn(
             new NotificationProperties.Fanout(true, true, true, 5, 100, 10, 5, 300, 60, 24, 30));
-    when(repository.save(any())).thenAnswer(invocation -> invocation.getArgument(0, UserNotification.class));
+    when(repository.save(any()))
+        .thenAnswer(invocation -> invocation.getArgument(0, UserNotification.class));
     UUID userId = UUID.randomUUID();
     service.create(
         new InAppNotificationCreateRequest(
@@ -184,7 +184,8 @@ class UserNotificationServiceTest {
     when(notificationProperties.fanout())
         .thenReturn(
             new NotificationProperties.Fanout(true, true, false, 5, 100, 10, 5, 300, 60, 24, 30));
-    when(repository.save(any())).thenAnswer(invocation -> invocation.getArgument(0, UserNotification.class));
+    when(repository.save(any()))
+        .thenAnswer(invocation -> invocation.getArgument(0, UserNotification.class));
     UUID userId = UUID.randomUUID();
     service.create(
         new InAppNotificationCreateRequest(

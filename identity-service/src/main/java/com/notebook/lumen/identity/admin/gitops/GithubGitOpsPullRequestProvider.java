@@ -6,8 +6,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.notebook.lumen.identity.admin.changerequest.AdminOperationRegistry;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.util.Locale;
 import java.util.Base64;
+import java.util.Locale;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -18,8 +18,8 @@ import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.util.UriComponentsBuilder;
 
 /**
- * GitHub REST foundation: read values file, commit on a new branch, open PR. Token stays server-side only;
- * never logged.
+ * GitHub REST foundation: read values file, commit on a new branch, open PR. Token stays
+ * server-side only; never logged.
  */
 @Component
 public class GithubGitOpsPullRequestProvider implements GitOpsPullRequestProvider {
@@ -30,7 +30,9 @@ public class GithubGitOpsPullRequestProvider implements GitOpsPullRequestProvide
   private final GitOpsYamlPatchService yamlPatchService;
 
   public GithubGitOpsPullRequestProvider(
-      RestClient.Builder restClientBuilder, ObjectMapper objectMapper, GitOpsYamlPatchService yamlPatchService) {
+      RestClient.Builder restClientBuilder,
+      ObjectMapper objectMapper,
+      GitOpsYamlPatchService yamlPatchService) {
     this.restClient = restClientBuilder.baseUrl("https://api.github.com").build();
     this.objectMapper = objectMapper;
     this.yamlPatchService = yamlPatchService;
@@ -63,7 +65,8 @@ public class GithubGitOpsPullRequestProvider implements GitOpsPullRequestProvide
   }
 
   @Override
-  public GitOpsPrProviderResult createPullRequest(GitOpsPrProviderRequest request, AdminGitOpsPrProperties config) {
+  public GitOpsPrProviderResult createPullRequest(
+      GitOpsPrProviderRequest request, AdminGitOpsPrProperties config) {
     requireGithubConfig(config);
     String owner = request.repositoryOwner();
     String repo = request.repositoryName();
@@ -81,7 +84,9 @@ public class GithubGitOpsPullRequestProvider implements GitOpsPullRequestProvide
         sha = null;
       } else {
         throw new AdminGitOpsException(
-            "ADMIN_GITOPS_MAPPING_NOT_FOUND", HttpStatus.BAD_REQUEST, "GitHub file not found at path on base branch");
+            "ADMIN_GITOPS_MAPPING_NOT_FOUND",
+            HttpStatus.BAD_REQUEST,
+            "GitHub file not found at path on base branch");
       }
     } else {
       sha = fileNode.get("sha").asText();
@@ -92,7 +97,9 @@ public class GithubGitOpsPullRequestProvider implements GitOpsPullRequestProvide
     if (AdminOperationRegistry.isRbacRoleOperation(request.operationType())) {
       rbacCtx =
           new GitOpsRbacPatchContext(
-              request.rbacChangeRequestId(), request.rbacRequestedByUserId(), request.rbacApprovedByUserId());
+              request.rbacChangeRequestId(),
+              request.rbacRequestedByUserId(),
+              request.rbacApprovedByUserId());
     }
 
     String newYaml;
@@ -104,14 +111,17 @@ public class GithubGitOpsPullRequestProvider implements GitOpsPullRequestProvide
       throw e;
     } catch (RuntimeException e) {
       throw new AdminGitOpsException(
-          "ADMIN_GITOPS_PATCH_FAILED", HttpStatus.BAD_REQUEST, "Could not apply allow-listed patch to repository file");
+          "ADMIN_GITOPS_PATCH_FAILED",
+          HttpStatus.BAD_REQUEST,
+          "Could not apply allow-listed patch to repository file");
     }
 
     String baseSha = resolveBranchSha(owner, repo, base, config);
     String headBranch = createBranchWithRetry(owner, repo, head, baseSha, config);
     commitFileUpdate(owner, repo, path, headBranch, sha, newYaml, request.commitMessage(), config);
 
-    JsonNode prNode = openPullRequest(owner, repo, headBranch, base, request.prTitle(), request.prBody(), config);
+    JsonNode prNode =
+        openPullRequest(owner, repo, headBranch, base, request.prTitle(), request.prBody(), config);
     String url = prNode.path("html_url").asText("");
     String number = prNode.path("number").asText("");
     return new GitOpsPrProviderResult(url, number, headBranch);
@@ -120,11 +130,15 @@ public class GithubGitOpsPullRequestProvider implements GitOpsPullRequestProvide
   private static void requireGithubConfig(AdminGitOpsPrProperties config) {
     if (config.githubToken() == null || config.githubToken().isBlank()) {
       throw new AdminGitOpsException(
-          "ADMIN_GITOPS_PROVIDER_FAILED", HttpStatus.SERVICE_UNAVAILABLE, "GitHub token is not configured");
+          "ADMIN_GITOPS_PROVIDER_FAILED",
+          HttpStatus.SERVICE_UNAVAILABLE,
+          "GitHub token is not configured");
     }
     if (config.repositoryOwner().isBlank() || config.repositoryName().isBlank()) {
       throw new AdminGitOpsException(
-          "ADMIN_GITOPS_PROVIDER_FAILED", HttpStatus.BAD_REQUEST, "GitHub repository owner/name is not configured");
+          "ADMIN_GITOPS_PROVIDER_FAILED",
+          HttpStatus.BAD_REQUEST,
+          "GitHub repository owner/name is not configured");
     }
   }
 
@@ -159,7 +173,8 @@ public class GithubGitOpsPullRequestProvider implements GitOpsPullRequestProvide
     return b.encode(StandardCharsets.UTF_8).build().toUri();
   }
 
-  private JsonNode fetchContents(String owner, String repo, String path, String ref, AdminGitOpsPrProperties config) {
+  private JsonNode fetchContents(
+      String owner, String repo, String path, String ref, AdminGitOpsPrProperties config) {
     try {
       return restClient
           .get()
@@ -175,7 +190,9 @@ public class GithubGitOpsPullRequestProvider implements GitOpsPullRequestProvide
       }
       log.warn("github_fetch_contents_failed status={}", e.getStatusCode().value());
       throw new AdminGitOpsException(
-          "ADMIN_GITOPS_PROVIDER_FAILED", HttpStatus.BAD_GATEWAY, "GitHub API error while reading file");
+          "ADMIN_GITOPS_PROVIDER_FAILED",
+          HttpStatus.BAD_GATEWAY,
+          "GitHub API error while reading file");
     }
   }
 
@@ -188,7 +205,8 @@ public class GithubGitOpsPullRequestProvider implements GitOpsPullRequestProvide
     return new String(raw, StandardCharsets.UTF_8);
   }
 
-  private String resolveBranchSha(String owner, String repo, String branch, AdminGitOpsPrProperties config) {
+  private String resolveBranchSha(
+      String owner, String repo, String branch, AdminGitOpsPrProperties config) {
     try {
       JsonNode ref =
           restClient
@@ -206,10 +224,13 @@ public class GithubGitOpsPullRequestProvider implements GitOpsPullRequestProvide
       log.warn("github_resolve_branch_failed status={}", e.getStatusCode().value());
     }
     throw new AdminGitOpsException(
-        "ADMIN_GITOPS_PROVIDER_FAILED", HttpStatus.BAD_GATEWAY, "Could not resolve base branch on GitHub");
+        "ADMIN_GITOPS_PROVIDER_FAILED",
+        HttpStatus.BAD_GATEWAY,
+        "Could not resolve base branch on GitHub");
   }
 
-  private String createBranchWithRetry(String owner, String repo, String head, String baseSha, AdminGitOpsPrProperties config) {
+  private String createBranchWithRetry(
+      String owner, String repo, String head, String baseSha, AdminGitOpsPrProperties config) {
     String candidate = head;
     for (int i = 0; i < 8; i++) {
       try {
@@ -239,7 +260,9 @@ public class GithubGitOpsPullRequestProvider implements GitOpsPullRequestProvide
       }
     }
     throw new AdminGitOpsException(
-        "ADMIN_GITOPS_PROVIDER_FAILED", HttpStatus.BAD_GATEWAY, "Could not create Git branch after retries");
+        "ADMIN_GITOPS_PROVIDER_FAILED",
+        HttpStatus.BAD_GATEWAY,
+        "Could not create Git branch after retries");
   }
 
   private static String resolveTargetEnvironment(GitOpsPrProviderRequest request) {
@@ -269,7 +292,9 @@ public class GithubGitOpsPullRequestProvider implements GitOpsPullRequestProvide
     try {
       ObjectNode body = objectMapper.createObjectNode();
       body.put("message", message);
-      body.put("content", Base64.getEncoder().encodeToString(newContent.getBytes(StandardCharsets.UTF_8)));
+      body.put(
+          "content",
+          Base64.getEncoder().encodeToString(newContent.getBytes(StandardCharsets.UTF_8)));
       if (fileShaNullable != null && !fileShaNullable.isBlank()) {
         body.put("sha", fileShaNullable);
       }
@@ -287,12 +312,20 @@ public class GithubGitOpsPullRequestProvider implements GitOpsPullRequestProvide
     } catch (RestClientResponseException e) {
       log.warn("github_commit_failed status={}", e.getStatusCode().value());
       throw new AdminGitOpsException(
-          "ADMIN_GITOPS_PROVIDER_FAILED", HttpStatus.BAD_GATEWAY, "Could not commit patched file to GitHub");
+          "ADMIN_GITOPS_PROVIDER_FAILED",
+          HttpStatus.BAD_GATEWAY,
+          "Could not commit patched file to GitHub");
     }
   }
 
   private JsonNode openPullRequest(
-      String owner, String repo, String head, String base, String title, String prBody, AdminGitOpsPrProperties config) {
+      String owner,
+      String repo,
+      String head,
+      String base,
+      String title,
+      String prBody,
+      AdminGitOpsPrProperties config) {
     try {
       ObjectNode root = objectMapper.createObjectNode();
       root.put("title", title);
@@ -312,7 +345,9 @@ public class GithubGitOpsPullRequestProvider implements GitOpsPullRequestProvide
     } catch (RestClientResponseException e) {
       log.warn("github_open_pr_failed status={}", e.getStatusCode().value());
       throw new AdminGitOpsException(
-          "ADMIN_GITOPS_PROVIDER_FAILED", HttpStatus.BAD_GATEWAY, "Could not open pull request on GitHub");
+          "ADMIN_GITOPS_PROVIDER_FAILED",
+          HttpStatus.BAD_GATEWAY,
+          "Could not open pull request on GitHub");
     }
   }
 }

@@ -4,17 +4,17 @@ import com.notebook.lumen.common.security.sanitization.SensitiveDataSanitizer;
 import com.notebook.lumen.notification.analytics.NotificationAnalyticsEventKind;
 import com.notebook.lumen.notification.analytics.NotificationAnalyticsRecorder;
 import com.notebook.lumen.notification.audit.AuditService;
+import com.notebook.lumen.notification.shared.config.NotificationProperties;
 import com.notebook.lumen.notification.shared.exception.NotificationException;
 import com.notebook.lumen.notification.user.api.InAppNotificationCreateRequest;
-import com.notebook.lumen.notification.shared.config.NotificationProperties;
-import com.notebook.lumen.notification.user.fanout.NotificationFanoutOutbox;
-import com.notebook.lumen.notification.user.fanout.NotificationFanoutOutboxRepository;
-import com.notebook.lumen.notification.user.realtime.NotificationSseEventDispatcher;
-import com.notebook.lumen.notification.user.realtime.NotificationSseEventEnvelope;
 import com.notebook.lumen.notification.user.domain.UserNotification;
 import com.notebook.lumen.notification.user.domain.UserNotificationSeverity;
 import com.notebook.lumen.notification.user.domain.UserNotificationType;
+import com.notebook.lumen.notification.user.fanout.NotificationFanoutOutbox;
+import com.notebook.lumen.notification.user.fanout.NotificationFanoutOutboxRepository;
 import com.notebook.lumen.notification.user.infrastructure.UserNotificationRepository;
+import com.notebook.lumen.notification.user.realtime.NotificationSseEventDispatcher;
+import com.notebook.lumen.notification.user.realtime.NotificationSseEventEnvelope;
 import io.micrometer.core.instrument.MeterRegistry;
 import java.time.Instant;
 import java.util.LinkedHashMap;
@@ -64,7 +64,8 @@ public class UserNotificationService {
     String idempotencyKey = normalizeNullable(request.idempotencyKey());
     if (idempotencyKey != null) {
       var existing =
-          repository.findByRecipientUserIdAndIdempotencyKey(request.recipientUserId(), idempotencyKey);
+          repository.findByRecipientUserIdAndIdempotencyKey(
+              request.recipientUserId(), idempotencyKey);
       if (existing.isPresent()) {
         return existing.get();
       }
@@ -98,7 +99,9 @@ public class UserNotificationService {
         "IN_APP",
         notification.getSeverity().name(),
         1);
-    meterRegistry.counter("user_notifications_unread_count_query_total", "trigger", "create").increment();
+    meterRegistry
+        .counter("user_notifications_unread_count_query_total", "trigger", "create")
+        .increment();
     auditService.record(
         "USER_NOTIFICATION_CREATED",
         "USER_NOTIFICATION",
@@ -111,7 +114,8 @@ public class UserNotificationService {
             "severity",
             notification.getSeverity().name()));
     var envelope =
-        sseDispatcher.buildCreatedEnvelope(notification, unreadCount(notification.getRecipientUserId()));
+        sseDispatcher.buildCreatedEnvelope(
+            notification, unreadCount(notification.getRecipientUserId()));
     publishFanout(envelope);
     return notification;
   }
@@ -130,12 +134,15 @@ public class UserNotificationService {
             Math.max(page, 0),
             Math.min(Math.max(size, 1), 100),
             toSort(sort == null || sort.isBlank() ? "createdAt,desc" : sort));
-    return repository.findVisibleForRecipient(recipientUserId, unreadOnly, type, workspaceId, pageable);
+    return repository.findVisibleForRecipient(
+        recipientUserId, unreadOnly, type, workspaceId, pageable);
   }
 
   @Transactional(readOnly = true)
   public long unreadCount(UUID recipientUserId) {
-    meterRegistry.counter("user_notifications_unread_count_query_total", "trigger", "api").increment();
+    meterRegistry
+        .counter("user_notifications_unread_count_query_total", "trigger", "api")
+        .increment();
     return repository.countUnread(recipientUserId);
   }
 
@@ -143,7 +150,9 @@ public class UserNotificationService {
   public UserNotification markRead(UUID recipientUserId, UUID notificationId) {
     UserNotification notification = owned(notificationId, recipientUserId);
     notification.markRead(Instant.now());
-    meterRegistry.counter("user_notifications_read_total", "type", notification.getType().name()).increment();
+    meterRegistry
+        .counter("user_notifications_read_total", "type", notification.getType().name())
+        .increment();
     auditService.record(
         "USER_NOTIFICATION_READ",
         "USER_NOTIFICATION",
@@ -166,7 +175,8 @@ public class UserNotificationService {
   public int markReadAll(UUID recipientUserId, UUID workspaceId) {
     int changed = 0;
     Instant now = Instant.now();
-    for (UserNotification notification : repository.findVisibleOwnedForReadAll(recipientUserId, workspaceId)) {
+    for (UserNotification notification :
+        repository.findVisibleOwnedForReadAll(recipientUserId, workspaceId)) {
       if (notification.getReadAt() == null) {
         notification.markRead(now);
         changed++;
@@ -313,9 +323,7 @@ public class UserNotificationService {
     String direction = parts[1].trim().toLowerCase(java.util.Locale.ROOT);
     if (!field.equals("createdAt")) {
       throw new NotificationException(
-          HttpStatus.BAD_REQUEST,
-          "INVALID_USER_NOTIFICATION_REQUEST",
-          "Unsupported sort field");
+          HttpStatus.BAD_REQUEST, "INVALID_USER_NOTIFICATION_REQUEST", "Unsupported sort field");
     }
     Sort.Direction dir =
         switch (direction) {

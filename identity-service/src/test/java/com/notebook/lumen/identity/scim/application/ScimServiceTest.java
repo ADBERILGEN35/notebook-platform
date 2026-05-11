@@ -52,7 +52,7 @@ class ScimServiceTest {
             groups,
             encoder,
             mock(AuditService.class),
-            new ScimProperties(true, "token", "", true, "notebook-admins"),
+            new ScimProperties(true, "token", "", true, "notebook-admins", true, 5, false, 100, 10),
             graphValidation);
 
     var result =
@@ -120,7 +120,7 @@ class ScimServiceTest {
             groups,
             mock(PasswordEncoder.class),
             mock(AuditService.class),
-            new ScimProperties(true, "token", "", true, "notebook-admins"),
+            new ScimProperties(true, "token", "", true, "notebook-admins", true, 5, false, 100, 10),
             graphValidation);
 
     var patched =
@@ -128,7 +128,8 @@ class ScimServiceTest {
             user.getId(),
             new ScimPatchRequest(
                 List.of("urn:ietf:params:scim:api:messages:2.0:PatchOp"),
-                List.of(new ScimPatchRequest.Operation("replace", "active", Map.of("active", false)))),
+                List.of(
+                    new ScimPatchRequest.Operation("replace", "active", Map.of("active", false)))),
             mock(HttpServletRequest.class));
 
     assertThat(patched.active()).isFalse();
@@ -144,10 +145,11 @@ class ScimServiceTest {
             mock(ScimGroupRepository.class),
             mock(PasswordEncoder.class),
             mock(AuditService.class),
-            new ScimProperties(true, "token", "", true, "notebook-admins"),
+            new ScimProperties(true, "token", "", true, "notebook-admins", true, 5, false, 100, 10),
             mock(ScimGroupGraphValidation.class));
     assertThatThrownBy(() -> service.listUsers(1, 10, "title co \"x\""))
         .isInstanceOf(ScimException.class)
-        .satisfies(ex -> assertThat(((ScimException) ex).getStatus()).isEqualTo(HttpStatus.BAD_REQUEST));
+        .satisfies(
+            ex -> assertThat(((ScimException) ex).getStatus()).isEqualTo(HttpStatus.BAD_REQUEST));
   }
 }

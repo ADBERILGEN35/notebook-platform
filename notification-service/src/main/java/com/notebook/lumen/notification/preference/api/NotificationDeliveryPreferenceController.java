@@ -78,7 +78,9 @@ public class NotificationDeliveryPreferenceController {
   }
 
   private void ensureEnabled() {
-    if (properties != null && properties.preferences() != null && !properties.preferences().enabled()) {
+    if (properties != null
+        && properties.preferences() != null
+        && !properties.preferences().enabled()) {
       throw new NotificationException(
           HttpStatus.NOT_FOUND,
           "NOTIFICATION_PREFERENCE_NOT_FOUND",

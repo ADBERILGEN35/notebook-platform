@@ -44,13 +44,7 @@ public class SearchIndexService {
       ContentBlockTextExtractor textExtractor,
       SearchAuditService auditService,
       SearchProviderRouter providerRouter) {
-    this(
-        repository,
-        textExtractor,
-        auditService,
-        providerRouter,
-        null,
-        new SimpleMeterRegistry());
+    this(repository, textExtractor, auditService, providerRouter, null, new SimpleMeterRegistry());
   }
 
   @Transactional
@@ -70,7 +64,14 @@ public class SearchIndexService {
     SearchPermissionSnapshotService.PermissionSnapshot permissionSnapshot =
         permissionSnapshotService == null
             ? new SearchPermissionSnapshotService.PermissionSnapshot(
-                request.workspaceId(), request.notebookId(), "WORKSPACE", true, false, null, now, false)
+                request.workspaceId(),
+                request.notebookId(),
+                "WORKSPACE",
+                true,
+                false,
+                null,
+                now,
+                false)
             : permissionSnapshotService.resolve(request.workspaceId(), request.notebookId());
     boolean[] skipped = new boolean[] {false};
     SearchDocument document =

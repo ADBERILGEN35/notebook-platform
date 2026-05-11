@@ -17,7 +17,8 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 class NotificationDeliveryPreferenceServiceTest {
-  private final UserNotificationDeliveryPreferenceRepository repository = mock(UserNotificationDeliveryPreferenceRepository.class);
+  private final UserNotificationDeliveryPreferenceRepository repository =
+      mock(UserNotificationDeliveryPreferenceRepository.class);
   private final AuditService auditService = mock(AuditService.class);
   private final NotificationDeliveryPreferenceService service =
       new NotificationDeliveryPreferenceService(repository, auditService);

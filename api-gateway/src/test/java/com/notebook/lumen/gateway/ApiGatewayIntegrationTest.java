@@ -58,7 +58,8 @@ import org.testcontainers.utility.DockerImageName;
       "gateway.admin.audit.enabled=true",
       "gateway.admin.audit-export.enabled=true",
       "gateway.admin.allowed-emails=ada@example.com",
-      "gateway.admin.enterprise.enabled=false"
+      "gateway.admin.enterprise.enabled=false",
+      "gateway.auth.token-transport=dual"
     })
 class ApiGatewayIntegrationTest {
 
@@ -87,8 +88,11 @@ class ApiGatewayIntegrationTest {
     registry.add("WORKSPACE_SERVICE_URL", WORKSPACE::baseUrl);
     registry.add("CONTENT_SERVICE_URL", CONTENT::baseUrl);
     registry.add("SEARCH_SERVICE_URL", SEARCH::baseUrl);
-    registry.add("gateway.admin.audit-proxy.service-jwt.active-kid", () -> "gateway-admin-audit-key-1");
-    registry.add("gateway.admin.audit-proxy.service-jwt.private-key", ApiGatewayIntegrationTest::privateKeyPem);
+    registry.add(
+        "gateway.admin.audit-proxy.service-jwt.active-kid", () -> "gateway-admin-audit-key-1");
+    registry.add(
+        "gateway.admin.audit-proxy.service-jwt.private-key",
+        ApiGatewayIntegrationTest::privateKeyPem);
   }
 
   @BeforeEach
@@ -173,7 +177,8 @@ class ApiGatewayIntegrationTest {
     webTestClient
         .get()
         .uri("/admin/audit-events?source=identity")
-        .headers(headers -> headers.setBearerAuth(jwt(USER_ID, "member@example.com", "access", 0, 300)))
+        .headers(
+            headers -> headers.setBearerAuth(jwt(USER_ID, "member@example.com", "access", 0, 300)))
         .exchange()
         .expectStatus()
         .isForbidden()
@@ -284,7 +289,8 @@ class ApiGatewayIntegrationTest {
 
   @Test
   void adminAudit_internalAuthFailure_isMappedSafely() {
-    WORKSPACE.respondWithStatus("/internal/audit-events", 403, "{\"errorCode\":\"AUDIT_ACCESS_DENIED\"}");
+    WORKSPACE.respondWithStatus(
+        "/internal/audit-events", 403, "{\"errorCode\":\"AUDIT_ACCESS_DENIED\"}");
     webTestClient
         .get()
         .uri("/admin/audit-events?source=workspace")
@@ -592,14 +598,17 @@ class ApiGatewayIntegrationTest {
     private void handle(HttpExchange exchange) throws IOException {
       lastRequest =
           new TestRequest(
-              exchange.getRequestURI().getPath(), exchange.getRequestURI().getRawQuery(), exchange.getRequestHeaders());
+              exchange.getRequestURI().getPath(),
+              exchange.getRequestURI().getRawQuery(),
+              exchange.getRequestHeaders());
       int status = 200;
       String body =
           """
                 {"status":"OK","service":"%s"}\
                 """
               .formatted(serviceName);
-      if (responsePathPrefix != null && exchange.getRequestURI().getPath().startsWith(responsePathPrefix)) {
+      if (responsePathPrefix != null
+          && exchange.getRequestURI().getPath().startsWith(responsePathPrefix)) {
         status = responseStatus;
         body = responseBody == null ? "{}" : responseBody;
       }

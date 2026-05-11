@@ -11,13 +11,15 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface UserWorkspaceNotificationPreferenceRepository
     extends JpaRepository<UserWorkspaceNotificationPreference, UUID> {
 
-  List<UserWorkspaceNotificationPreference> findByUserIdAndWorkspaceId(UUID userId, UUID workspaceId);
+  List<UserWorkspaceNotificationPreference> findByUserIdAndWorkspaceId(
+      UUID userId, UUID workspaceId);
 
-  Optional<UserWorkspaceNotificationPreference> findByUserIdAndWorkspaceIdAndNotificationTypeAndChannel(
-      UUID userId,
-      UUID workspaceId,
-      UserNotificationType notificationType,
-      NotificationChannel channel);
+  Optional<UserWorkspaceNotificationPreference>
+      findByUserIdAndWorkspaceIdAndNotificationTypeAndChannel(
+          UUID userId,
+          UUID workspaceId,
+          UserNotificationType notificationType,
+          NotificationChannel channel);
 
   void deleteByUserIdAndWorkspaceId(UUID userId, UUID workspaceId);
 }

@@ -3,6 +3,7 @@ package com.notebook.lumen.identity.sso.application;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -25,8 +26,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.security.crypto.password.PasswordEncoder;
-
-import static org.mockito.Mockito.mock;
 
 class SsoServiceTest {
 
@@ -121,7 +120,8 @@ class SsoServiceTest {
             Instant.now(),
             null);
     when(userRepository.findByEmail("admin@example.com")).thenReturn(Optional.of(user));
-    when(identityRepository.findByProviderAndSubject("generic-oidc", "sub-1")).thenReturn(Optional.empty());
+    when(identityRepository.findByProviderAndSubject("generic-oidc", "sub-1"))
+        .thenReturn(Optional.empty());
     when(authService.issueTokensForUser(any(), any(), any()))
         .thenReturn(new AuthResponse("a", "r", "Bearer", 300, null, false, null, List.of()));
 
@@ -161,8 +161,7 @@ class SsoServiceTest {
   }
 
   private static AdminRbacProperties rbacProps(boolean enabled) {
-    return new AdminRbacProperties(
-        enabled, true, "", "", "", "", "", "", "", "", false, false, "");
+    return new AdminRbacProperties(enabled, true, "", "", "", "", "", "", "", "", false, false, "");
   }
 
   private SsoProperties properties(boolean enabled) {

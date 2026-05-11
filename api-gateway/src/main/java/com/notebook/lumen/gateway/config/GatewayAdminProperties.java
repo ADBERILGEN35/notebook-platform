@@ -35,12 +35,19 @@ public record GatewayAdminProperties(
   }
 
   public String effectiveMfaMode() {
-    return (mfaMode == null || mfaMode.isBlank()) ? "off" : mfaMode.trim().toLowerCase(java.util.Locale.ROOT);
+    return (mfaMode == null || mfaMode.isBlank())
+        ? "off"
+        : mfaMode.trim().toLowerCase(java.util.Locale.ROOT);
   }
 
   public Set<String> acceptedMfaMethods() {
-    String raw = (mfaAcceptedMethods == null || mfaAcceptedMethods.isBlank()) ? "webauthn,recovery_code" : mfaAcceptedMethods;
-    return splitCsv(raw).stream().map(v -> v.toLowerCase(java.util.Locale.ROOT)).collect(Collectors.toUnmodifiableSet());
+    String raw =
+        (mfaAcceptedMethods == null || mfaAcceptedMethods.isBlank())
+            ? "webauthn,recovery_code"
+            : mfaAcceptedMethods;
+    return splitCsv(raw).stream()
+        .map(v -> v.toLowerCase(java.util.Locale.ROOT))
+        .collect(Collectors.toUnmodifiableSet());
   }
 
   private static Set<String> splitCsv(String raw) {

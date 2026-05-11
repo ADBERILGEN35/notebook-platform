@@ -10,14 +10,14 @@ import com.notebook.lumen.notification.email.domain.EmailNotification;
 import com.notebook.lumen.notification.email.domain.EmailNotificationStatus;
 import com.notebook.lumen.notification.email.domain.EmailNotificationType;
 import com.notebook.lumen.notification.email.infrastructure.EmailNotificationRepository;
+import com.notebook.lumen.notification.email.provider.EmailMessage;
+import com.notebook.lumen.notification.email.provider.EmailProvider;
+import com.notebook.lumen.notification.email.suppression.EmailSuppressionService;
 import com.notebook.lumen.notification.preference.application.NotificationDeliveryPreferenceService;
 import com.notebook.lumen.notification.preference.application.NotificationPreferenceResolver;
 import com.notebook.lumen.notification.preference.domain.EmailDigestFrequency;
 import com.notebook.lumen.notification.preference.domain.NotificationChannel;
 import com.notebook.lumen.notification.preference.domain.UserNotificationDeliveryPreference;
-import com.notebook.lumen.notification.email.provider.EmailMessage;
-import com.notebook.lumen.notification.email.provider.EmailProvider;
-import com.notebook.lumen.notification.email.suppression.EmailSuppressionService;
 import com.notebook.lumen.notification.shared.config.NotificationProperties;
 import com.notebook.lumen.notification.shared.exception.NotificationException;
 import com.notebook.lumen.notification.template.application.EmailTemplateRenderer;
@@ -110,7 +110,9 @@ public class EmailNotificationService {
             && deliveryPref.getEmailDigestFrequency() != EmailDigestFrequency.NEVER) {
           if (!properties.digest().enabled()) {
             throw new NotificationException(
-                HttpStatus.BAD_REQUEST, "NOTIFICATION_DIGEST_DISABLED", "Notification digest is disabled");
+                HttpStatus.BAD_REQUEST,
+                "NOTIFICATION_DIGEST_DISABLED",
+                "Notification digest is disabled");
           }
           if (mappedType.isPresent()) {
             digestService.queueDigestItem(
@@ -179,8 +181,8 @@ public class EmailNotificationService {
     return new EmailNotificationResponse(notification.getId(), notification.getStatus(), null);
   }
 
-  private Optional<com.notebook.lumen.notification.user.domain.UserNotificationType> toUserNotificationType(
-      EmailNotificationType type) {
+  private Optional<com.notebook.lumen.notification.user.domain.UserNotificationType>
+      toUserNotificationType(EmailNotificationType type) {
     return switch (type) {
       case SECURITY_REFRESH_TOKENS_REVOKED ->
           Optional.of(
@@ -198,7 +200,8 @@ public class EmailNotificationService {
     if (request.recipientUserId() == null || isSecurityCritical(request.type())) {
       return now;
     }
-    UserNotificationDeliveryPreference pref = deliveryPreferenceService.get(request.recipientUserId());
+    UserNotificationDeliveryPreference pref =
+        deliveryPreferenceService.get(request.recipientUserId());
     if (!deliveryPreferenceService.isQuietHoursNow(pref, now)) {
       return now;
     }
@@ -207,7 +210,11 @@ public class EmailNotificationService {
 
   private boolean isSecurityCritical(EmailNotificationType type) {
     return switch (type) {
-      case SECURITY_REFRESH_TOKENS_REVOKED, SECURITY_LOGIN_NEW_DEVICE, SECURITY_PASSWORD_CHANGED, GENERIC_SECURITY_NOTICE -> true;
+      case SECURITY_REFRESH_TOKENS_REVOKED,
+          SECURITY_LOGIN_NEW_DEVICE,
+          SECURITY_PASSWORD_CHANGED,
+          GENERIC_SECURITY_NOTICE ->
+          true;
       default -> false;
     };
   }

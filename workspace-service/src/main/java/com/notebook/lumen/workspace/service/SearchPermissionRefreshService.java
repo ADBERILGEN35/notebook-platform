@@ -18,7 +18,9 @@ public class SearchPermissionRefreshService {
   private final AuditService auditService;
 
   public SearchPermissionRefreshService(
-      SearchPermissionRefreshClient client, WorkspaceProperties properties, AuditService auditService) {
+      SearchPermissionRefreshClient client,
+      WorkspaceProperties properties,
+      AuditService auditService) {
     this.client = client;
     this.properties = properties;
     this.auditService = auditService;
@@ -57,4 +59,3 @@ public class SearchPermissionRefreshService {
     }
   }
 }
-

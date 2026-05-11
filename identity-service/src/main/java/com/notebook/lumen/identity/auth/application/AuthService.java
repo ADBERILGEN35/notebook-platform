@@ -9,8 +9,8 @@ import com.notebook.lumen.identity.admin.rbac.overrides.AdminRbacOverrideEffecti
 import com.notebook.lumen.identity.admin.rbac.overrides.AdminRbacOverrideLoader;
 import com.notebook.lumen.identity.admin.rbac.overrides.AdminRbacOverridesProperties;
 import com.notebook.lumen.identity.audit.AuditService;
-import com.notebook.lumen.identity.auth.api.AuthResponse;
 import com.notebook.lumen.identity.auth.api.AuthMeResponse;
+import com.notebook.lumen.identity.auth.api.AuthResponse;
 import com.notebook.lumen.identity.auth.api.LoginRequest;
 import com.notebook.lumen.identity.auth.api.LogoutRequest;
 import com.notebook.lumen.identity.auth.api.RefreshTokenRequest;
@@ -214,7 +214,8 @@ public class AuthService {
   }
 
   @Transactional
-  public AuthResponse refresh(RefreshTokenRequest request, HttpServletRequest httpRequest, String refreshTokenFallback) {
+  public AuthResponse refresh(
+      RefreshTokenRequest request, HttpServletRequest httpRequest, String refreshTokenFallback) {
     String refreshTokenPlaintext =
         request != null && request.refreshToken() != null && !request.refreshToken().isBlank()
             ? request.refreshToken()
@@ -294,17 +295,28 @@ public class AuthService {
 
     Map<String, Object> accessClaims = buildInitialClaimsForRefresh(user);
     String accessToken =
-        jwtTokenService.generateAccessToken(user.getId(), user.getEmail(), buildFinalAccessClaims(user, accessClaims));
+        jwtTokenService.generateAccessToken(
+            user.getId(), user.getEmail(), buildFinalAccessClaims(user, accessClaims));
     long expiresIn = jwtTokenService.accessTokenTtlSeconds();
 
     UserResponse userResponse = userMapper.toResponse(user);
     return new AuthResponse(
-        accessToken, newRefreshJwt, "Bearer", expiresIn, userResponse, false, null, java.util.List.of());
+        accessToken,
+        newRefreshJwt,
+        "Bearer",
+        expiresIn,
+        userResponse,
+        false,
+        null,
+        java.util.List.of());
   }
 
   @Transactional
   public void logout(
-      LogoutRequest request, Jwt accessToken, HttpServletRequest httpRequest, String refreshTokenFallback) {
+      LogoutRequest request,
+      Jwt accessToken,
+      HttpServletRequest httpRequest,
+      String refreshTokenFallback) {
     UUID authenticatedUserId = authenticatedAccessUserId(accessToken);
     String refreshTokenPlaintext =
         request != null && request.refreshToken() != null && !request.refreshToken().isBlank()
@@ -384,7 +396,13 @@ public class AuthService {
     roles.add("ROLE_USER");
     roles.addAll(platformRoles);
     return new AuthMeResponse(
-        user.getId(), user.getEmail(), user.getName(), user.getAvatarUrl(), roles, platformRoles, platformPermissions);
+        user.getId(),
+        user.getEmail(),
+        user.getName(),
+        user.getAvatarUrl(),
+        roles,
+        platformRoles,
+        platformPermissions);
   }
 
   @Transactional
@@ -424,7 +442,14 @@ public class AuthService {
 
     UserResponse userResponse = userMapper.toResponse(user);
     return new AuthResponse(
-        accessToken, refreshJwt, "Bearer", expiresIn, userResponse, false, null, java.util.List.of());
+        accessToken,
+        refreshJwt,
+        "Bearer",
+        expiresIn,
+        userResponse,
+        false,
+        null,
+        java.util.List.of());
   }
 
   @Transactional
@@ -461,7 +486,10 @@ public class AuthService {
     if (adminRbacOverridesProperties.enabled() && adminRbacOverrideLoader.snapshot().loaded()) {
       LinkedHashSet<String> baseFromIdpAndScim = new LinkedHashSet<>(merged);
       adminRbacOverrideEffectiveApplier.apply(
-          user.getId(), merged, baseFromIdpAndScim, adminRbacOverrideLoader.snapshot().assignments());
+          user.getId(),
+          merged,
+          baseFromIdpAndScim,
+          adminRbacOverrideLoader.snapshot().assignments());
     }
     List<String> roleList = merged.stream().sorted().toList();
     claims.put("platform_roles", roleList);
@@ -477,7 +505,9 @@ public class AuthService {
     if (user.getSource() != UserSource.SSO) {
       return Map.of();
     }
-    var links = externalIdentityRepository.findByUser_IdOrderByLastLoginAtDesc(user.getId(), PageRequest.of(0, 1));
+    var links =
+        externalIdentityRepository.findByUser_IdOrderByLastLoginAtDesc(
+            user.getId(), PageRequest.of(0, 1));
     if (links.isEmpty()) {
       return Map.of();
     }
@@ -507,9 +537,11 @@ public class AuthService {
     if (user.getStatus() != UserStatus.ACTIVE || user.getDeprovisionedAt() != null) {
       return List.of();
     }
-    var keys = scimEffectiveMembershipService.effectiveGroupKeysForUser(user.getId(), scimProperties);
+    var keys =
+        scimEffectiveMembershipService.effectiveGroupKeysForUser(user.getId(), scimProperties);
     if (adminRbacProperties.enabled()) {
-      LinkedHashSet<String> merged = new LinkedHashSet<>(adminRbacService.mapScimGroupKeysToRoles(keys));
+      LinkedHashSet<String> merged =
+          new LinkedHashSet<>(adminRbacService.mapScimGroupKeysToRoles(keys));
       if (scimEffectiveMembershipService.userEffectiveMatchesAdminGroup(user, scimProperties)) {
         merged.add(PlatformAdminRbacConstants.ROLE_PLATFORM_ADMIN);
       }
@@ -531,7 +563,10 @@ public class AuthService {
   }
 
   private List<String> parseGroupsFromStoredClaims(String claimsJson, String groupsClaim) {
-    if (claimsJson == null || claimsJson.isBlank() || groupsClaim == null || groupsClaim.isBlank()) {
+    if (claimsJson == null
+        || claimsJson.isBlank()
+        || groupsClaim == null
+        || groupsClaim.isBlank()) {
       return List.of();
     }
     try {

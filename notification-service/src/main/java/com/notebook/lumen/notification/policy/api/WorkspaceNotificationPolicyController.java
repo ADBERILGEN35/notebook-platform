@@ -1,8 +1,8 @@
 package com.notebook.lumen.notification.policy.api;
 
-import com.notebook.lumen.notification.policy.application.WorkspaceNotificationPolicyService;
 import com.notebook.lumen.notification.policy.api.WorkspaceNotificationPolicyDtos.WorkspaceNotificationPoliciesResponse;
 import com.notebook.lumen.notification.policy.api.WorkspaceNotificationPolicyDtos.WorkspaceNotificationPolicyPatchRequest;
+import com.notebook.lumen.notification.policy.application.WorkspaceNotificationPolicyService;
 import com.notebook.lumen.notification.shared.web.UserContextResolver;
 import jakarta.validation.Valid;
 import java.util.UUID;

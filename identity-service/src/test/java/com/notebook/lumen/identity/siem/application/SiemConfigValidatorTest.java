@@ -13,7 +13,23 @@ class SiemConfigValidatorTest {
     SiemConfigValidator validator =
         new SiemConfigValidator(
             new SiemProperties(
-                true, "generic-http", "", "none", "", "", "", 10, 100, 10, 30, 3600, false, 30, 30, 90, false),
+                true,
+                "generic-http",
+                "",
+                "none",
+                "",
+                "",
+                "",
+                10,
+                100,
+                10,
+                30,
+                3600,
+                false,
+                30,
+                30,
+                90,
+                false),
             "test");
     assertThatThrownBy(validator::validate).hasMessageContaining("INVALID_SIEM_CONFIG");
   }
@@ -23,7 +39,8 @@ class SiemConfigValidatorTest {
     SiemConfigValidator validator =
         new SiemConfigValidator(
             new SiemProperties(
-                true, "noop", "", "none", "", "", "", 10, 100, 10, 30, 3600, false, 30, 30, 90, false),
+                true, "noop", "", "none", "", "", "", 10, 100, 10, 30, 3600, false, 30, 30, 90,
+                false),
             "test");
     assertThatCode(validator::validate).doesNotThrowAnyException();
   }

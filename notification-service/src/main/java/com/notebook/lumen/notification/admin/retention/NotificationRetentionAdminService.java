@@ -41,9 +41,13 @@ public class NotificationRetentionAdminService {
   public RetentionAdminDtos.RetentionPlanResponse plan(Instant now, boolean dryRun) {
     var body = planner.plan(now, dryRun);
     long eligible =
-        body.targets().stream().mapToLong(RetentionAdminDtos.RetentionPlanTarget::eligibleCount).sum();
+        body.targets().stream()
+            .mapToLong(RetentionAdminDtos.RetentionPlanTarget::eligibleCount)
+            .sum();
     long blockedTargets =
-        body.targets().stream().filter(RetentionAdminDtos.RetentionPlanTarget::blockedByLegalHold).count();
+        body.targets().stream()
+            .filter(RetentionAdminDtos.RetentionPlanTarget::blockedByLegalHold)
+            .count();
     auditService.record(
         RetentionAuditEventType.PLAN_VIEWED,
         AGGREGATE,
@@ -74,7 +78,8 @@ public class NotificationRetentionAdminService {
             UUID.randomUUID(),
             Map.of("code", "BAD_TARGET", "actorUserId", actorUserId));
       }
-      throw new NotificationException(HttpStatus.BAD_REQUEST, "RETENTION_BAD_TARGET", ex.getMessage());
+      throw new NotificationException(
+          HttpStatus.BAD_REQUEST, "RETENTION_BAD_TARGET", ex.getMessage());
     }
 
     var planBefore = planner.plan(now, dryRun);
@@ -153,7 +158,8 @@ public class NotificationRetentionAdminService {
               String.join(",", legalHoldKeysBlocking),
               "perTarget",
               deleted.entrySet().stream()
-                  .collect(Collectors.toMap(Map.Entry::getKey, e -> String.valueOf(e.getValue())))));
+                  .collect(
+                      Collectors.toMap(Map.Entry::getKey, e -> String.valueOf(e.getValue())))));
       var afterPlan = planner.plan(Instant.now(), false);
       return new RetentionAdminDtos.RetentionRunResponse(
           false,

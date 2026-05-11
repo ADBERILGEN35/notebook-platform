@@ -11,4 +11,3 @@ public interface SearchPermissionRefreshClient {
   @PostExchange("/internal/search/permissions/notebooks/{notebookId}/refresh")
   void refreshNotebookPermissionSnapshot(@PathVariable UUID notebookId);
 }
-

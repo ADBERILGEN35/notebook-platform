@@ -14,6 +14,7 @@ public record AdminRbacOverrideSnapshot(
     int ignoredRowCount) {
 
   public static AdminRbacOverrideSnapshot emptyDisabled() {
-    return new AdminRbacOverrideSnapshot(false, false, null, "", List.of(), List.of(), List.of(), 0);
+    return new AdminRbacOverrideSnapshot(
+        false, false, null, "", List.of(), List.of(), List.of(), 0);
   }
 }

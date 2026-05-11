@@ -78,14 +78,22 @@ public class NotificationLegalHoldAdminService {
           UUID.randomUUID(),
           Map.of("code", "EXPIRES_AT_INVALID", "actorUserId", actorUserId.toString()));
       throw new NotificationException(
-          HttpStatus.BAD_REQUEST, "LEGAL_HOLD_EXPIRES_AT", "expiresAt must be in the future when set.");
+          HttpStatus.BAD_REQUEST,
+          "LEGAL_HOLD_EXPIRES_AT",
+          "expiresAt must be in the future when set.");
     }
     if (repository.existsByHoldKey(holdKey)) {
       auditService.record(
           LegalHoldAuditEventType.CREATE_DENIED,
           AGGREGATE,
           UUID.randomUUID(),
-          Map.of("code", "DUPLICATE_HOLD_KEY", "holdKey", holdKey, "actorUserId", actorUserId.toString()));
+          Map.of(
+              "code",
+              "DUPLICATE_HOLD_KEY",
+              "holdKey",
+              holdKey,
+              "actorUserId",
+              actorUserId.toString()));
       throw new NotificationException(
           HttpStatus.CONFLICT, "LEGAL_HOLD_DUPLICATE_KEY", "holdKey already exists.");
     }
@@ -206,11 +214,13 @@ public class NotificationLegalHoldAdminService {
 
   private static String validateHoldKey(String raw) {
     if (raw == null || raw.isBlank()) {
-      throw new NotificationException(HttpStatus.BAD_REQUEST, "LEGAL_HOLD_KEY", "holdKey is required.");
+      throw new NotificationException(
+          HttpStatus.BAD_REQUEST, "LEGAL_HOLD_KEY", "holdKey is required.");
     }
     String k = raw.trim();
     if (k.length() > 200) {
-      throw new NotificationException(HttpStatus.BAD_REQUEST, "LEGAL_HOLD_KEY", "holdKey too long.");
+      throw new NotificationException(
+          HttpStatus.BAD_REQUEST, "LEGAL_HOLD_KEY", "holdKey too long.");
     }
     return k;
   }
@@ -218,7 +228,9 @@ public class NotificationLegalHoldAdminService {
   private static String validateReason(String raw, int minLen, String label) {
     if (raw == null || raw.trim().length() < minLen) {
       throw new NotificationException(
-          HttpStatus.BAD_REQUEST, "LEGAL_HOLD_REASON", label + " must be at least " + minLen + " characters.");
+          HttpStatus.BAD_REQUEST,
+          "LEGAL_HOLD_REASON",
+          label + " must be at least " + minLen + " characters.");
     }
     return raw.trim();
   }

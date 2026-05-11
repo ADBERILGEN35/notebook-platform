@@ -54,12 +54,11 @@ public class ScimBulkService {
           HttpStatus.BAD_REQUEST, "invalidValue", "SCIM_BULK_OPERATION_FAILED: no operations");
     }
     if (ops.size() > properties.bulkMaxOperations()) {
-      throw new ScimException(HttpStatus.BAD_REQUEST, "invalidValue", "SCIM_BULK_TOO_MANY_OPERATIONS");
+      throw new ScimException(
+          HttpStatus.BAD_REQUEST, "invalidValue", "SCIM_BULK_TOO_MANY_OPERATIONS");
     }
     int failCap =
-        request.failOnErrors() == null
-            ? properties.bulkFailOnErrorsMax()
-            : request.failOnErrors();
+        request.failOnErrors() == null ? properties.bulkFailOnErrorsMax() : request.failOnErrors();
     if (failCap <= 0) {
       failCap = 1;
     }
@@ -133,7 +132,9 @@ public class ScimBulkService {
   }
 
   private void indexBulkResult(
-      ScimBulkRequest.Operation op, ScimBulkResponse.OperationResult result, Map<String, String> bulkRef) {
+      ScimBulkRequest.Operation op,
+      ScimBulkResponse.OperationResult result,
+      Map<String, String> bulkRef) {
     if (op.bulkId() == null || op.bulkId().isBlank() || result.location() == null) {
       return;
     }
@@ -154,7 +155,8 @@ public class ScimBulkService {
     return location.substring(i + 1);
   }
 
-  private ScimBulkResponse.OperationResult toBulkError(ScimBulkRequest.Operation op, ScimException e) {
+  private ScimBulkResponse.OperationResult toBulkError(
+      ScimBulkRequest.Operation op, ScimException e) {
     var err = ScimErrorResponse.of(e.getStatus().value(), e.getScimType(), e.getMessage());
     return new ScimBulkResponse.OperationResult(
         op.method(),
@@ -205,7 +207,8 @@ public class ScimBulkService {
     if ("DELETE".equals(method) && umDel.matches()) {
       UUID id = UUID.fromString(umDel.group(1));
       scimService.deleteUser(id, httpRequest);
-      return new ScimBulkResponse.OperationResult(method, op.bulkId(), "/scim/v2/Users/" + id, "204", null, null);
+      return new ScimBulkResponse.OperationResult(
+          method, op.bulkId(), "/scim/v2/Users/" + id, "204", null, null);
     }
 
     if ("POST".equals(method) && "/Groups".equals(path)) {
@@ -227,7 +230,12 @@ public class ScimBulkService {
       ScimGroupRequest g = objectMapper.convertValue(data, ScimGroupRequest.class);
       var body = scimService.upsertGroup(id.toString(), g, httpRequest, bulkRef);
       return new ScimBulkResponse.OperationResult(
-          method, op.bulkId(), "/scim/v2/Groups/" + id, "200", objectMapper.valueToTree(body), null);
+          method,
+          op.bulkId(),
+          "/scim/v2/Groups/" + id,
+          "200",
+          objectMapper.valueToTree(body),
+          null);
     }
     Matcher gmPatch = GROUPS_ID.matcher(path);
     if ("PATCH".equals(method) && gmPatch.matches()) {
@@ -236,7 +244,12 @@ public class ScimBulkService {
       ScimPatchRequest p = objectMapper.convertValue(data, ScimPatchRequest.class);
       var body = scimService.patchGroup(id, p, httpRequest, bulkRef);
       return new ScimBulkResponse.OperationResult(
-          method, op.bulkId(), "/scim/v2/Groups/" + id, "200", objectMapper.valueToTree(body), null);
+          method,
+          op.bulkId(),
+          "/scim/v2/Groups/" + id,
+          "200",
+          objectMapper.valueToTree(body),
+          null);
     }
     Matcher gmDel = GROUPS_ID.matcher(path);
     if ("DELETE".equals(method) && gmDel.matches()) {
@@ -247,13 +260,17 @@ public class ScimBulkService {
     }
 
     throw new ScimException(
-        HttpStatus.BAD_REQUEST, "invalidValue", "SCIM_BULK_OPERATION_UNSUPPORTED: " + method + " " + path);
+        HttpStatus.BAD_REQUEST,
+        "invalidValue",
+        "SCIM_BULK_OPERATION_UNSUPPORTED: " + method + " " + path);
   }
 
   private static void requireBody(JsonNode data, String path) {
     if (data == null || data.isNull()) {
       throw new ScimException(
-          HttpStatus.BAD_REQUEST, "invalidValue", "SCIM_BULK_OPERATION_FAILED: missing data for " + path);
+          HttpStatus.BAD_REQUEST,
+          "invalidValue",
+          "SCIM_BULK_OPERATION_FAILED: missing data for " + path);
     }
   }
 

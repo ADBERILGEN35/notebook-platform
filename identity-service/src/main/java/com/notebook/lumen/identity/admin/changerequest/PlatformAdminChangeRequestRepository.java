@@ -10,7 +10,8 @@ public interface PlatformAdminChangeRequestRepository
 
   List<PlatformAdminChangeRequest> findTop100ByOrderByCreatedAtDesc();
 
-  List<PlatformAdminChangeRequest> findTop100ByStatusOrderByCreatedAtDesc(ChangeRequestStatus status);
+  List<PlatformAdminChangeRequest> findTop100ByStatusOrderByCreatedAtDesc(
+      ChangeRequestStatus status);
 
   Optional<PlatformAdminChangeRequest> findByIdAndRequestedByUserId(UUID id, UUID userId);
 

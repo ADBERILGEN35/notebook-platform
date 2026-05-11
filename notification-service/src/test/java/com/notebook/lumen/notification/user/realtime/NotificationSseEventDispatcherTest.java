@@ -8,7 +8,6 @@ import static org.mockito.Mockito.when;
 import com.notebook.lumen.notification.analytics.NotificationAnalyticsRecorder;
 import com.notebook.lumen.notification.shared.config.NotificationSseProperties;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
-import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
@@ -28,11 +27,20 @@ class NotificationSseEventDispatcherTest {
     NotificationAnalyticsRecorder analyticsRecorder = mock(NotificationAnalyticsRecorder.class);
     NotificationSseEventDispatcher dispatcher =
         new NotificationSseEventDispatcher(
-            broker, publisher, properties, instanceIdProvider, new SimpleMeterRegistry(), analyticsRecorder);
+            broker,
+            publisher,
+            properties,
+            instanceIdProvider,
+            new SimpleMeterRegistry(),
+            analyticsRecorder);
 
     dispatcher.publishUnreadCount(UUID.randomUUID(), 3);
 
-    verify(broker).deliverToUser(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.eq("notification.unread_count"), org.mockito.ArgumentMatchers.anyMap());
+    verify(broker)
+        .deliverToUser(
+            org.mockito.ArgumentMatchers.any(),
+            org.mockito.ArgumentMatchers.eq("notification.unread_count"),
+            org.mockito.ArgumentMatchers.anyMap());
     verify(publisher).publish(org.mockito.ArgumentMatchers.any());
   }
 
@@ -49,11 +57,20 @@ class NotificationSseEventDispatcherTest {
     NotificationAnalyticsRecorder analyticsRecorder = mock(NotificationAnalyticsRecorder.class);
     NotificationSseEventDispatcher dispatcher =
         new NotificationSseEventDispatcher(
-            broker, publisher, properties, instanceIdProvider, new SimpleMeterRegistry(), analyticsRecorder);
+            broker,
+            publisher,
+            properties,
+            instanceIdProvider,
+            new SimpleMeterRegistry(),
+            analyticsRecorder);
 
     dispatcher.publishUnreadCount(UUID.randomUUID(), 2);
 
-    verify(broker).deliverToUser(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.eq("notification.unread_count"), org.mockito.ArgumentMatchers.anyMap());
+    verify(broker)
+        .deliverToUser(
+            org.mockito.ArgumentMatchers.any(),
+            org.mockito.ArgumentMatchers.eq("notification.unread_count"),
+            org.mockito.ArgumentMatchers.anyMap());
     verifyNoInteractions(publisher);
   }
 }

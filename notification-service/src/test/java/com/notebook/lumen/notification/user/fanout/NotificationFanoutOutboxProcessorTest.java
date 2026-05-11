@@ -27,14 +27,17 @@ import org.mockito.ArgumentCaptor;
 
 class NotificationFanoutOutboxProcessorTest {
 
-  private final NotificationFanoutOutboxRepository repository = mock(NotificationFanoutOutboxRepository.class);
+  private final NotificationFanoutOutboxRepository repository =
+      mock(NotificationFanoutOutboxRepository.class);
   private final NotificationProperties properties = mock(NotificationProperties.class);
   private final NotificationSseBroker broker = mock(NotificationSseBroker.class);
   private final NotificationSseDistributedPublisher distributedPublisher =
       mock(NotificationSseDistributedPublisher.class);
-  private final NotificationInstanceIdProvider instanceIdProvider = mock(NotificationInstanceIdProvider.class);
+  private final NotificationInstanceIdProvider instanceIdProvider =
+      mock(NotificationInstanceIdProvider.class);
   private final SimpleMeterRegistry meterRegistry = new SimpleMeterRegistry();
-  private final NotificationAnalyticsRecorder analyticsRecorder = mock(NotificationAnalyticsRecorder.class);
+  private final NotificationAnalyticsRecorder analyticsRecorder =
+      mock(NotificationAnalyticsRecorder.class);
   private NotificationSseEventDispatcher sseDispatcher;
   private NotificationFanoutOutboxProcessor processor;
 
@@ -46,14 +49,20 @@ class NotificationFanoutOutboxProcessorTest {
     sseProperties.getDistributed().setPublishLocalFirst(false);
     sseDispatcher =
         new NotificationSseEventDispatcher(
-            broker, distributedPublisher, sseProperties, instanceIdProvider, meterRegistry, analyticsRecorder);
+            broker,
+            distributedPublisher,
+            sseProperties,
+            instanceIdProvider,
+            meterRegistry,
+            analyticsRecorder);
     processor =
         new NotificationFanoutOutboxProcessor(
             repository, properties, sseDispatcher, meterRegistry, analyticsRecorder);
     when(properties.fanout())
         .thenReturn(
             new NotificationProperties.Fanout(true, true, true, 5, 100, 10, 5, 300, 60, 24, 30));
-    when(repository.findExpiredSendingForUpdate(anyString(), any(), anyInt())).thenReturn(List.of());
+    when(repository.findExpiredSendingForUpdate(anyString(), any(), anyInt()))
+        .thenReturn(List.of());
   }
 
   @Test
@@ -62,7 +71,12 @@ class NotificationFanoutOutboxProcessorTest {
     UUID userId = UUID.randomUUID();
     NotificationFanoutOutbox row =
         new NotificationFanoutOutbox(
-            UUID.randomUUID(), eventId, userId, "notification.created", Map.of("a", 1), Instant.now());
+            UUID.randomUUID(),
+            eventId,
+            userId,
+            "notification.created",
+            Map.of("a", 1),
+            Instant.now());
     when(repository.findDuePendingForUpdate(anyString(), any(), anyInt())).thenReturn(List.of(row));
 
     processor.processDue();
@@ -118,9 +132,15 @@ class NotificationFanoutOutboxProcessorTest {
     Instant created = Instant.parse("2024-01-01T00:00:00Z");
     NotificationFanoutOutbox row =
         new NotificationFanoutOutbox(
-            UUID.randomUUID(), eventId, userId, "notification.read", Map.of("unreadCount", 2L), created);
+            UUID.randomUUID(),
+            eventId,
+            userId,
+            "notification.read",
+            Map.of("unreadCount", 2L),
+            created);
     when(repository.findDuePendingForUpdate(anyString(), any(), anyInt())).thenReturn(List.of(row));
-    ArgumentCaptor<NotificationSseEventEnvelope> cap = ArgumentCaptor.forClass(NotificationSseEventEnvelope.class);
+    ArgumentCaptor<NotificationSseEventEnvelope> cap =
+        ArgumentCaptor.forClass(NotificationSseEventEnvelope.class);
 
     processor.processDue();
 

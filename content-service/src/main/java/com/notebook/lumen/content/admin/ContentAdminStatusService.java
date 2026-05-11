@@ -47,7 +47,8 @@ public class ContentAdminStatusService {
         new OfflineSyncRelatedStatus(mergeAnalysisEnabled || mergeApplyEnabled));
   }
 
-  public record ContentAdminStatusResponse(MergeStatus merge, OfflineSyncRelatedStatus offlineSyncRelated) {}
+  public record ContentAdminStatusResponse(
+      MergeStatus merge, OfflineSyncRelatedStatus offlineSyncRelated) {}
 
   public record MergeStatus(
       boolean analysisEnabled,

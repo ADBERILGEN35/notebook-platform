@@ -26,7 +26,8 @@ import reactor.core.publisher.Mono;
 
 @Service
 public class EnterpriseStatusAggregationService {
-  private static final Logger log = LoggerFactory.getLogger(EnterpriseStatusAggregationService.class);
+  private static final Logger log =
+      LoggerFactory.getLogger(EnterpriseStatusAggregationService.class);
   static final String STATUS_SCOPE = "internal:admin:status:read";
   private static final String IDENTITY_AUDIENCE = "identity-service";
   private static final String NOTIFICATION_AUDIENCE = "notification-service";
@@ -80,7 +81,8 @@ public class EnterpriseStatusAggregationService {
               boolean notificationUnavailable = notification.isEmpty();
               boolean contentUnavailable = content.isEmpty();
               EnterpriseStatusFeatures features =
-                  mergeFeatures(identity.orElse(null), notification.orElse(null), content.orElse(null));
+                  mergeFeatures(
+                      identity.orElse(null), notification.orElse(null), content.orElse(null));
               List<EnterpriseWarning> warnings =
                   warningEngine.build(
                       features, identityUnavailable, notificationUnavailable, contentUnavailable);
@@ -220,7 +222,15 @@ public class EnterpriseStatusAggregationService {
     GatewaySecurityStatus gatewaySecurity = mapGatewaySecurity();
     MergeResolutionStatus mergeResolution = mapMerge(content);
     return new EnterpriseStatusFeatures(
-        sso, scim, mfa, siem, adminRbac, auditExport, notifications, gatewaySecurity, mergeResolution);
+        sso,
+        scim,
+        mfa,
+        siem,
+        adminRbac,
+        auditExport,
+        notifications,
+        gatewaySecurity,
+        mergeResolution);
   }
 
   private AdminRbacStatus mapAdminRbac(JsonNode identity) {
@@ -231,8 +241,7 @@ public class EnterpriseStatusAggregationService {
     Map<String, Boolean> roles = new LinkedHashMap<>();
     JsonNode rc = n.path("rolesConfigured");
     if (rc.isObject()) {
-      rc.fields()
-          .forEachRemaining(e -> roles.put(e.getKey(), e.getValue().asBoolean(false)));
+      rc.fields().forEachRemaining(e -> roles.put(e.getKey(), e.getValue().asBoolean(false)));
     }
     return new AdminRbacStatus(
         n.path("enabled").asBoolean(false),

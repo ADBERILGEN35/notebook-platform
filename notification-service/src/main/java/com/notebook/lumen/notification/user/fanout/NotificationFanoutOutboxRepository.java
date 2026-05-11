@@ -12,7 +12,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface NotificationFanoutOutboxRepository
-    extends JpaRepository<NotificationFanoutOutbox, UUID>, JpaSpecificationExecutor<NotificationFanoutOutbox> {
+    extends JpaRepository<NotificationFanoutOutbox, UUID>,
+        JpaSpecificationExecutor<NotificationFanoutOutbox> {
   boolean existsByEventId(UUID eventId);
 
   long countByStatus(NotificationFanoutOutboxStatus status);

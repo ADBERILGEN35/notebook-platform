@@ -1,6 +1,7 @@
 package com.notebook.lumen.search.index.application;
 
 import com.notebook.lumen.search.query.application.WorkspaceClient;
+import com.notebook.lumen.search.shared.config.SearchProperties;
 import io.micrometer.core.instrument.MeterRegistry;
 import java.time.Instant;
 import java.util.Map;
@@ -8,7 +9,6 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import com.notebook.lumen.search.shared.config.SearchProperties;
 
 @Service
 public class SearchPermissionSnapshotService {
@@ -36,12 +36,15 @@ public class SearchPermissionSnapshotService {
           workspaceId, null, "WORKSPACE", true, false, null, Instant.now(), false);
     }
     if (properties != null && !properties.permissionSnapshotEnabled()) {
-      return new PermissionSnapshot(workspaceId, notebookId, "RESTRICTED", false, true, null, null, false);
+      return new PermissionSnapshot(
+          workspaceId, notebookId, "RESTRICTED", false, true, null, null, false);
     }
     try {
       WorkspaceClient.SearchPermissionSnapshotResponse response =
           workspaceClient.searchPermissionSnapshot(notebookId);
-      meterRegistry.counter("search_permission_snapshot_fetch_total", "status", "success").increment();
+      meterRegistry
+          .counter("search_permission_snapshot_fetch_total", "status", "success")
+          .increment();
       auditService.record(
           "SEARCH_PERMISSION_SNAPSHOT_INDEXED",
           response.workspaceId(),
@@ -63,7 +66,9 @@ public class SearchPermissionSnapshotService {
           response.updatedAt(),
           true);
     } catch (Exception ex) {
-      meterRegistry.counter("search_permission_snapshot_fetch_total", "status", "failure").increment();
+      meterRegistry
+          .counter("search_permission_snapshot_fetch_total", "status", "failure")
+          .increment();
       meterRegistry.counter("search_permission_snapshot_fetch_failure_total").increment();
       log.warn(
           "Failed to fetch permission snapshot workspaceId={} notebookId={}",
@@ -76,7 +81,8 @@ public class SearchPermissionSnapshotService {
           notebookId,
           Map.of("notebookId", notebookId.toString()));
       // fail-closed fallback
-      return new PermissionSnapshot(workspaceId, notebookId, "RESTRICTED", false, true, null, null, false);
+      return new PermissionSnapshot(
+          workspaceId, notebookId, "RESTRICTED", false, true, null, null, false);
     }
   }
 
@@ -90,4 +96,3 @@ public class SearchPermissionSnapshotService {
       Instant permissionIndexedAt,
       boolean fromSource) {}
 }
-

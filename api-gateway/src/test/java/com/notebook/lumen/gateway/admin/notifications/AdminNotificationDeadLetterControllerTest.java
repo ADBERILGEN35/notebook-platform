@@ -9,7 +9,6 @@ import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.notebook.lumen.common.security.admin.PlatformAdminRbacConstants;
 import com.notebook.lumen.gateway.admin.AdminAuthorizationService;
 import com.notebook.lumen.gateway.error.ErrorCode;
 import com.notebook.lumen.gateway.error.ErrorResponse;
@@ -35,17 +34,7 @@ class AdminNotificationDeadLetterControllerTest {
     when(adminAuthorizationService.enterpriseFeatureEnabled()).thenReturn(false);
     var c = new AdminNotificationDeadLetterController(adminAuthorizationService, proxyService);
     StepVerifier.create(
-            c.list(
-                mock(Jwt.class),
-                "fanout",
-                "DEAD",
-                null,
-                null,
-                null,
-                0,
-                50,
-                null,
-                "r1"))
+            c.list(mock(Jwt.class), "fanout", "DEAD", null, null, null, 0, 50, null, "r1"))
         .assertNext(
             resp -> {
               assertThat(resp.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
@@ -77,7 +66,8 @@ class AdminNotificationDeadLetterControllerTest {
   @Test
   void requeue_ok_proxies() throws Exception {
     when(adminAuthorizationService.enterpriseFeatureEnabled()).thenReturn(true);
-    when(adminAuthorizationService.ensureNotificationDeadLetterRequeue(any())).thenReturn(Optional.empty());
+    when(adminAuthorizationService.ensureNotificationDeadLetterRequeue(any()))
+        .thenReturn(Optional.empty());
     JsonNode body = new ObjectMapper().createObjectNode().put("status", "PENDING");
     when(proxyService.requeue(any(), eq("k"), eq("reason"), eq("subj")))
         .thenReturn(Mono.just(body));

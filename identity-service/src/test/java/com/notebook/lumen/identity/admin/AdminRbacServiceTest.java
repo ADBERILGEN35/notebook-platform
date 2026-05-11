@@ -1,12 +1,12 @@
 package com.notebook.lumen.identity.admin;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.notebook.lumen.common.security.admin.PlatformAdminRbacConstants;
 import com.notebook.lumen.identity.sso.SsoProperties;
 import java.util.List;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 class AdminRbacServiceTest {
 
@@ -14,19 +14,7 @@ class AdminRbacServiceTest {
   void mapIdpGroupsToRolesEmptyWhenRbacDisabled() {
     var props =
         new AdminRbacProperties(
-            false,
-            true,
-            "admins",
-            "audit-view",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            false,
-            false,
-            "");
+            false, true, "admins", "audit-view", "", "", "", "", "", "", false, false, "");
     var svc = new AdminRbacService(props);
     assertThat(svc.mapIdpGroupsToRoles(null, List.of("audit-view"))).isEmpty();
   }
@@ -35,19 +23,7 @@ class AdminRbacServiceTest {
   void mapIdpGroupsToRolesMatchesConfiguredGroup() {
     var props =
         new AdminRbacProperties(
-            true,
-            true,
-            "",
-            "notebook-audit-viewers",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            false,
-            false,
-            "");
+            true, true, "", "notebook-audit-viewers", "", "", "", "", "", "", false, false, "");
     var svc = new AdminRbacService(props);
     assertThat(svc.mapIdpGroupsToRoles(null, List.of("Notebook-Audit-Viewers")))
         .containsExactly(PlatformAdminRbacConstants.ROLE_PLATFORM_AUDIT_VIEWER);
@@ -57,19 +33,7 @@ class AdminRbacServiceTest {
   void mapScimGroupKeysToRoles() {
     var props =
         new AdminRbacProperties(
-            true,
-            true,
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "notebook-change-approvers",
-            "",
-            false,
-            false,
-            "");
+            true, true, "", "", "", "", "", "", "notebook-change-approvers", "", false, false, "");
     var svc = new AdminRbacService(props);
     assertThat(svc.mapScimGroupKeysToRoles(Set.of("notebook-change-approvers")))
         .containsExactly(PlatformAdminRbacConstants.ROLE_PLATFORM_CHANGE_REQUEST_APPROVER);
@@ -89,7 +53,8 @@ class AdminRbacServiceTest {
     var svc =
         new AdminRbacService(
             new AdminRbacProperties(true, true, "", "", "", "", "", "", "", "", false, false, ""));
-    assertThat(svc.resolvePermissions(List.of(PlatformAdminRbacConstants.ROLE_PLATFORM_AUDIT_VIEWER)))
+    assertThat(
+            svc.resolvePermissions(List.of(PlatformAdminRbacConstants.ROLE_PLATFORM_AUDIT_VIEWER)))
         .containsExactly(PlatformAdminRbacConstants.PERM_AUDIT_READ);
   }
 
@@ -98,26 +63,16 @@ class AdminRbacServiceTest {
     var off =
         new AdminRbacService(
             new AdminRbacProperties(false, true, "", "", "", "", "", "", "", "", false, false, ""));
-    assertThat(off.resolvePermissions(List.of(PlatformAdminRbacConstants.ROLE_PLATFORM_AUDIT_VIEWER))).isEmpty();
+    assertThat(
+            off.resolvePermissions(List.of(PlatformAdminRbacConstants.ROLE_PLATFORM_AUDIT_VIEWER)))
+        .isEmpty();
   }
 
   @Test
   void statusSnapshotReflectsConfiguredGroups() {
     var props =
         new AdminRbacProperties(
-            true,
-            false,
-            "g-admin",
-            "g-audit",
-            "",
-            "g-sec",
-            "",
-            "",
-            "",
-            "",
-            false,
-            false,
-            "");
+            true, false, "g-admin", "g-audit", "", "g-sec", "", "", "", "", false, false, "");
     var s = new AdminRbacService(props).statusSnapshot();
     assertThat(s.enabled()).isTrue();
     assertThat(s.legacyPlatformAdminImpliesAll()).isFalse();
@@ -130,20 +85,7 @@ class AdminRbacServiceTest {
   @Test
   void legacySsoAdminGroupStillGrantsPlatformAdminWhenRbacEnabled() {
     var props =
-        new AdminRbacProperties(
-            true,
-            true,
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            false,
-            false,
-            "");
+        new AdminRbacProperties(true, true, "", "", "", "", "", "", "", "", false, false, "");
     var provider =
         new SsoProperties.Provider(
             "oidc",

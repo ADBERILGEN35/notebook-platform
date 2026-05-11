@@ -40,7 +40,23 @@ class SiemOutboxWorkerTest {
             null,
             null,
             "req-1",
-            Map.of("id", UUID.randomUUID(), "timestamp", Instant.now(), "sourceService", "identity-service", "environment", "test", "eventType", "USER_LOGIN_FAILED", "category", "AUTH_SECURITY", "severity", "HIGH", "schemaVersion", 1),
+            Map.of(
+                "id",
+                UUID.randomUUID(),
+                "timestamp",
+                Instant.now(),
+                "sourceService",
+                "identity-service",
+                "environment",
+                "test",
+                "eventType",
+                "USER_LOGIN_FAILED",
+                "category",
+                "AUTH_SECURITY",
+                "severity",
+                "HIGH",
+                "schemaVersion",
+                1),
             SiemOutboxStatus.SENDING,
             0,
             Instant.now(),
@@ -49,7 +65,8 @@ class SiemOutboxWorkerTest {
             null,
             Instant.now(),
             null);
-    when(outboxService.claimDueEvents(org.mockito.ArgumentMatchers.anyString())).thenReturn(List.of(item));
+    when(outboxService.claimDueEvents(org.mockito.ArgumentMatchers.anyString()))
+        .thenReturn(List.of(item));
     when(repository.saveAll(org.mockito.ArgumentMatchers.anyList())).thenReturn(List.of(item));
 
     SiemOutboxWorker worker = new SiemOutboxWorker(properties, outboxService, resolver, repository);

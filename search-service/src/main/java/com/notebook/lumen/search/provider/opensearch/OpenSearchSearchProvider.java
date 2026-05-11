@@ -56,8 +56,7 @@ public class OpenSearchSearchProvider implements SearchProvider {
         SearchOperation.UPSERT,
         () -> {
           client.put(
-              "/" + index() + "/_doc/" + document.noteId(),
-              queryBuilder.upsertBody(document));
+              "/" + index() + "/_doc/" + document.noteId(), queryBuilder.upsertBody(document));
           meterRegistry.counter("opensearch_index_upserts_total").increment();
           return new SearchIndexResult(document.noteId(), document.indexedAt(), false);
         });
@@ -71,8 +70,7 @@ public class OpenSearchSearchProvider implements SearchProvider {
         SearchOperation.ARCHIVE,
         () -> {
           client.post(
-              "/" + index() + "/_update/" + noteId,
-              queryBuilder.archiveBody(effectiveArchivedAt));
+              "/" + index() + "/_update/" + noteId, queryBuilder.archiveBody(effectiveArchivedAt));
           return new SearchArchiveResult(noteId, effectiveArchivedAt, true);
         });
   }

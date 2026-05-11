@@ -13,8 +13,10 @@ public class NoteMergeIdempotencyKey {
   private UUID noteId;
   private String idempotencyKey;
   private String requestHash;
+
   @Enumerated(EnumType.STRING)
   private Status status;
+
   private String resultEtag;
   private Integer resultVersion;
   private UUID resultNoteId;

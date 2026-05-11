@@ -42,13 +42,16 @@ class ScimGroupGraphValidationTest {
   void rejectsCycleWhenChildIsAncestorOfParent() {
     UUID parent = UUID.randomUUID();
     UUID child = UUID.randomUUID();
-    when(membershipRepository.findParentGroupIdsContainingChild(eq(ScimMemberType.GROUP), eq(parent)))
+    when(membershipRepository.findParentGroupIdsContainingChild(
+            eq(ScimMemberType.GROUP), eq(parent)))
         .thenReturn(List.of(child));
 
     assertThatThrownBy(() -> validation.validateNewNestedMembership(parent, child, 5))
         .isInstanceOf(ScimException.class)
         .satisfies(
-            ex -> assertThat(((ScimException) ex).getMessage()).contains("SCIM_GROUP_CYCLE_DETECTED"));
+            ex ->
+                assertThat(((ScimException) ex).getMessage())
+                    .contains("SCIM_GROUP_CYCLE_DETECTED"));
   }
 
   @Test
@@ -56,7 +59,8 @@ class ScimGroupGraphValidationTest {
     UUID parent = UUID.randomUUID();
     UUID child = UUID.randomUUID();
     UUID root = UUID.randomUUID();
-    when(membershipRepository.findParentGroupIdsContainingChild(eq(ScimMemberType.GROUP), eq(parent)))
+    when(membershipRepository.findParentGroupIdsContainingChild(
+            eq(ScimMemberType.GROUP), eq(parent)))
         .thenReturn(List.of(root));
     when(membershipRepository.findParentGroupIdsContainingChild(eq(ScimMemberType.GROUP), eq(root)))
         .thenReturn(List.of());
@@ -75,11 +79,13 @@ class ScimGroupGraphValidationTest {
   void allowsShallowNestedLink() {
     UUID parent = UUID.randomUUID();
     UUID child = UUID.randomUUID();
-    when(membershipRepository.findParentGroupIdsContainingChild(eq(ScimMemberType.GROUP), eq(parent)))
+    when(membershipRepository.findParentGroupIdsContainingChild(
+            eq(ScimMemberType.GROUP), eq(parent)))
         .thenReturn(List.of());
     when(membershipRepository.findNestedChildGroupIds(eq(ScimMemberType.GROUP), eq(child)))
         .thenReturn(List.of());
 
-    assertThatCode(() -> validation.validateNewNestedMembership(parent, child, 5)).doesNotThrowAnyException();
+    assertThatCode(() -> validation.validateNewNestedMembership(parent, child, 5))
+        .doesNotThrowAnyException();
   }
 }

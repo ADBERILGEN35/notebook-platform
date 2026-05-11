@@ -47,6 +47,7 @@ class SearchIndexSourceAuthorizerTest {
     return new ContentProperties(
         "",
         null,
+        new ContentProperties.Concurrency(false),
         null,
         null,
         new ContentProperties.Search(

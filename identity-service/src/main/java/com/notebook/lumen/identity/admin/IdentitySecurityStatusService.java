@@ -67,9 +67,13 @@ public class IdentitySecurityStatusService {
     roles.put(PlatformAdminRbacConstants.ROLE_PLATFORM_AUDIT_EXPORTER, s.auditExporter());
     roles.put(PlatformAdminRbacConstants.ROLE_PLATFORM_SECURITY_ADMIN, s.securityAdmin());
     roles.put(PlatformAdminRbacConstants.ROLE_PLATFORM_IDENTITY_ADMIN, s.identityAdmin());
-    roles.put(PlatformAdminRbacConstants.ROLE_PLATFORM_CHANGE_REQUEST_AUTHOR, s.changeRequestAuthor());
-    roles.put(PlatformAdminRbacConstants.ROLE_PLATFORM_CHANGE_REQUEST_APPROVER, s.changeRequestApprover());
-    roles.put(PlatformAdminRbacConstants.ROLE_PLATFORM_OBSERVABILITY_VIEWER, s.observabilityViewer());
+    roles.put(
+        PlatformAdminRbacConstants.ROLE_PLATFORM_CHANGE_REQUEST_AUTHOR, s.changeRequestAuthor());
+    roles.put(
+        PlatformAdminRbacConstants.ROLE_PLATFORM_CHANGE_REQUEST_APPROVER,
+        s.changeRequestApprover());
+    roles.put(
+        PlatformAdminRbacConstants.ROLE_PLATFORM_OBSERVABILITY_VIEWER, s.observabilityViewer());
     return new IdentitySecurityStatusResponse.AdminRbac(
         s.enabled(), s.legacyPlatformAdminImpliesAll(), roles);
   }
@@ -94,8 +98,7 @@ public class IdentitySecurityStatusService {
     return switch (p.effectiveAuthMode()) {
       case "none" -> true;
       case "bearer" -> p.bearerToken() != null && !p.bearerToken().isBlank();
-      case "header" ->
-          p.customHeaderValue() != null && !p.customHeaderValue().isBlank();
+      case "header" -> p.customHeaderValue() != null && !p.customHeaderValue().isBlank();
       default -> false;
     };
   }

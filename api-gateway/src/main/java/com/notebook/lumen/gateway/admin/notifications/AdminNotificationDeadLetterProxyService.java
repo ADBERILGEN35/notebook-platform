@@ -18,9 +18,11 @@ import reactor.core.publisher.Mono;
 
 @Service
 public class AdminNotificationDeadLetterProxyService {
-  private static final Logger log = LoggerFactory.getLogger(AdminNotificationDeadLetterProxyService.class);
+  private static final Logger log =
+      LoggerFactory.getLogger(AdminNotificationDeadLetterProxyService.class);
   static final String DEAD_LETTER_READ_SCOPE = "internal:admin:notifications:dead-letter:read";
-  static final String DEAD_LETTER_REQUEUE_SCOPE = "internal:admin:notifications:dead-letter:requeue";
+  static final String DEAD_LETTER_REQUEUE_SCOPE =
+      "internal:admin:notifications:dead-letter:requeue";
   private static final String NOTIFICATION_AUDIENCE = "notification-service";
   public static final String ADMIN_ACTOR_HEADER = "X-Admin-Actor-User-Id";
 
@@ -42,7 +44,10 @@ public class AdminNotificationDeadLetterProxyService {
 
   public Mono<JsonNode> list(String queryString) {
     String jwt = serviceJwtSigner.sign(NOTIFICATION_AUDIENCE, DEAD_LETTER_READ_SCOPE);
-    String uri = trimTrailingSlash(enterpriseProperties.effectiveNotificationServiceUrl()) + enterpriseProperties.effectiveNotificationDeadLetterPath() + (queryString.isBlank() ? "" : "?" + queryString);
+    String uri =
+        trimTrailingSlash(enterpriseProperties.effectiveNotificationServiceUrl())
+            + enterpriseProperties.effectiveNotificationDeadLetterPath()
+            + (queryString.isBlank() ? "" : "?" + queryString);
     return getJson(uri, jwt);
   }
 

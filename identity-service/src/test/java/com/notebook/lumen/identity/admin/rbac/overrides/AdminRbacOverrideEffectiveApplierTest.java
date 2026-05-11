@@ -32,7 +32,8 @@ class AdminRbacOverrideEffectiveApplierTest {
             Instant.now(),
             "gitops");
     var out = applier.apply(u, merged, base, List.of(row));
-    assertThat(out.effectiveRoles()).containsExactly(PlatformAdminRbacConstants.ROLE_PLATFORM_AUDIT_VIEWER);
+    assertThat(out.effectiveRoles())
+        .containsExactly(PlatformAdminRbacConstants.ROLE_PLATFORM_AUDIT_VIEWER);
   }
 
   @Test
@@ -73,7 +74,8 @@ class AdminRbacOverrideEffectiveApplierTest {
   @Test
   void revokeDoesNotStripIdpRoleAndWarns() {
     UUID u = UUID.randomUUID();
-    LinkedHashSet<String> merged = new LinkedHashSet<>(List.of(PlatformAdminRbacConstants.ROLE_PLATFORM_AUDIT_VIEWER));
+    LinkedHashSet<String> merged =
+        new LinkedHashSet<>(List.of(PlatformAdminRbacConstants.ROLE_PLATFORM_AUDIT_VIEWER));
     LinkedHashSet<String> base = new LinkedHashSet<>(merged);
     var revoke =
         new AdminRbacOverrideAssignmentRow(

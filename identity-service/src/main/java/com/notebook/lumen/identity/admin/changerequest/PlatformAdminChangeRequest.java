@@ -210,11 +210,7 @@ public class PlatformAdminChangeRequest {
     this.decidedByUserId = actorUserId;
   }
 
-  public void approve(
-      UUID approverUserId,
-      Instant now,
-      String reason,
-      String policySnapshot) {
+  public void approve(UUID approverUserId, Instant now, String reason, String policySnapshot) {
     this.status = ChangeRequestStatus.APPROVED;
     this.decidedAt = now;
     this.decidedByUserId = approverUserId;

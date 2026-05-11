@@ -17,7 +17,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class NotificationFanoutOutboxProcessor {
-  private static final Logger log = LoggerFactory.getLogger(NotificationFanoutOutboxProcessor.class);
+  private static final Logger log =
+      LoggerFactory.getLogger(NotificationFanoutOutboxProcessor.class);
 
   private final NotificationFanoutOutboxRepository repository;
   private final NotificationProperties properties;
@@ -61,21 +62,24 @@ public class NotificationFanoutOutboxProcessor {
       meterRegistry.counter("notifications_fanout_outbox_claimed_total").increment(due.size());
     }
     for (NotificationFanoutOutbox row : due) {
-      row.markSending(
-          workerInstanceId, now, now.plusSeconds(Math.max(1, fanout.lockTtlSeconds())));
+      row.markSending(workerInstanceId, now, now.plusSeconds(Math.max(1, fanout.lockTtlSeconds())));
     }
     for (NotificationFanoutOutbox row : due) {
       Timer.Sample sample = Timer.start(meterRegistry);
       try {
-        NotificationSseEventEnvelope envelope = sseDispatcher.envelopeFromOutbox(row, workerInstanceId);
+        NotificationSseEventEnvelope envelope =
+            sseDispatcher.envelopeFromOutbox(row, workerInstanceId);
         sseDispatcher.dispatchStrictDistributed(envelope);
         row.markSent(now);
         analyticsRecorder.record(NotificationAnalyticsEventKind.FANOUT_SENT, "", "", "", 1);
-        meterRegistry.counter("notifications_fanout_outbox_published_total", "result", "sent").increment();
+        meterRegistry
+            .counter("notifications_fanout_outbox_published_total", "result", "sent")
+            .increment();
         sample.stop(processTimer);
       } catch (RuntimeException e) {
         sample.stop(processTimer);
-        log.debug("Fanout outbox publish failed id={} eventId={}", row.getId(), row.getEventId(), e);
+        log.debug(
+            "Fanout outbox publish failed id={} eventId={}", row.getId(), row.getEventId(), e);
         handleFailure(row, e, Instant.now());
       }
     }
@@ -103,12 +107,16 @@ public class NotificationFanoutOutboxProcessor {
       row.markDead(err, now);
       analyticsRecorder.record(NotificationAnalyticsEventKind.FANOUT_DEAD, "", "", "", 1);
       meterRegistry.counter("notifications_fanout_outbox_dead_total").increment();
-      meterRegistry.counter("notifications_fanout_outbox_published_total", "result", "dead").increment();
+      meterRegistry
+          .counter("notifications_fanout_outbox_published_total", "result", "dead")
+          .increment();
       return;
     }
     row.markRetry(err, nextAttemptAt(failures, now, fanout), now, failures);
     meterRegistry.counter("notifications_fanout_outbox_retry_total").increment();
-    meterRegistry.counter("notifications_fanout_outbox_published_total", "result", "retry_scheduled").increment();
+    meterRegistry
+        .counter("notifications_fanout_outbox_published_total", "result", "retry_scheduled")
+        .increment();
   }
 
   private int effectiveBatchSize() {
@@ -121,7 +129,8 @@ public class NotificationFanoutOutboxProcessor {
     return m <= 0 ? 10 : m;
   }
 
-  private Instant nextAttemptAt(int failureCount, Instant now, NotificationProperties.Fanout fanout) {
+  private Instant nextAttemptAt(
+      int failureCount, Instant now, NotificationProperties.Fanout fanout) {
     long initialDelay = Math.max(1, fanout.backoffBaseSeconds());
     long maxDelay = Math.max(initialDelay, fanout.backoffMaxSeconds());
     long multiplier = 1L << Math.min(failureCount - 1, 10);

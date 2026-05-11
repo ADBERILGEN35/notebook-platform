@@ -64,7 +64,8 @@ public class AdminRbacOverrideLoader {
         bumpLoadedCounter("failure");
         bumpWarnings(w);
         throw new IllegalStateException(
-            "ADMIN_RBAC_OVERRIDES_FAIL_CLOSED is true but override file is missing: " + props.filePath());
+            "ADMIN_RBAC_OVERRIDES_FAIL_CLOSED is true but override file is missing: "
+                + props.filePath());
       }
       snapshot.set(
           new AdminRbacOverrideSnapshot(
@@ -122,7 +123,8 @@ public class AdminRbacOverrideLoader {
       w.add("OVERRIDE_FILE_UNAVAILABLE");
       if (props.failClosed()) {
         bumpLoadedCounter("failure");
-        throw new IllegalStateException("Failed to read admin RBAC overrides: " + e.getMessage(), e);
+        throw new IllegalStateException(
+            "Failed to read admin RBAC overrides: " + e.getMessage(), e);
       }
       log.warn("admin_rbac_overrides_read_failed", e);
       snapshot.set(
@@ -134,7 +136,8 @@ public class AdminRbacOverrideLoader {
     }
   }
 
-  private void addDuplicateWarnings(List<AdminRbacOverrideAssignmentRow> rows, List<String> warnings) {
+  private void addDuplicateWarnings(
+      List<AdminRbacOverrideAssignmentRow> rows, List<String> warnings) {
     Set<String> seen = new HashSet<>();
     for (AdminRbacOverrideAssignmentRow r : rows) {
       String key =
@@ -177,7 +180,12 @@ public class AdminRbacOverrideLoader {
     boolean ok = pr.errors().isEmpty() && !limit;
     int total = pr.validAssignmentCount() + pr.ignoredAssignmentCount();
     return new AdminRbacOverridesDtos.OverridesValidateResponse(
-        ok, total, pr.validAssignmentCount(), pr.ignoredAssignmentCount(), pr.warnings(), pr.errors());
+        ok,
+        total,
+        pr.validAssignmentCount(),
+        pr.ignoredAssignmentCount(),
+        pr.warnings(),
+        pr.errors());
   }
 
   private void auditLoaded(UUID actor, AdminRbacOverrideParseResult pr) {
@@ -224,7 +232,10 @@ public class AdminRbacOverrideLoader {
     if (meterRegistry == null) {
       return;
     }
-    Counter.builder("admin_rbac_overrides_loaded_total").tag("result", result).register(meterRegistry).increment();
+    Counter.builder("admin_rbac_overrides_loaded_total")
+        .tag("result", result)
+        .register(meterRegistry)
+        .increment();
   }
 
   private void bumpWarnings(List<String> warnings) {
@@ -232,7 +243,10 @@ public class AdminRbacOverrideLoader {
       return;
     }
     for (String w : warnings) {
-      Counter.builder("admin_rbac_overrides_warnings_total").tag("type", w).register(meterRegistry).increment();
+      Counter.builder("admin_rbac_overrides_warnings_total")
+          .tag("type", w)
+          .register(meterRegistry)
+          .increment();
     }
   }
 

@@ -16,9 +16,7 @@ public record NotificationAdminStatusResponse(
   public record InApp(boolean enabled) {}
 
   public record Sse(
-      boolean enabled,
-      boolean distributedFanoutEnabled,
-      boolean redisChannelConfigured) {}
+      boolean enabled, boolean distributedFanoutEnabled, boolean redisChannelConfigured) {}
 
   public record Digest(boolean enabled, boolean workerEnabled) {}
 

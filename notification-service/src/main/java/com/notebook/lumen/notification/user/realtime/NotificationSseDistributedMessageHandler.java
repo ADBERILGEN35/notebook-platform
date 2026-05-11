@@ -11,7 +11,8 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class NotificationSseDistributedMessageHandler {
-  private static final Logger log = LoggerFactory.getLogger(NotificationSseDistributedMessageHandler.class);
+  private static final Logger log =
+      LoggerFactory.getLogger(NotificationSseDistributedMessageHandler.class);
 
   private final ObjectMapper objectMapper;
   private final NotificationSseEventDispatcher dispatcher;
@@ -40,7 +41,8 @@ public class NotificationSseDistributedMessageHandler {
       NotificationSseEventEnvelope envelope =
           objectMapper.readValue(payload, NotificationSseEventEnvelope.class);
       meterRegistry.counter("notifications_sse_distributed_received_total").increment();
-      analyticsRecorder.record(NotificationAnalyticsEventKind.REDIS_FANOUT_SUBSCRIBER_RECEIVED, "", "", "", 1);
+      analyticsRecorder.record(
+          NotificationAnalyticsEventKind.REDIS_FANOUT_SUBSCRIBER_RECEIVED, "", "", "", 1);
       if (sseProperties.getDistributed().isPublishLocalFirst()
           && instanceIdProvider.instanceId().equals(envelope.originInstanceId())) {
         meterRegistry.counter("notifications_sse_distributed_skipped_self_total").increment();

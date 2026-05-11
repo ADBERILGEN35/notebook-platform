@@ -58,7 +58,8 @@ public class NoteMergeAnalyzeService {
   public NoteMergeAnalyzeResponse analyze(
       UserContext user, UUID noteId, NoteMergeAnalyzeRequest request) {
     long startedAt = System.nanoTime();
-    int mergeVersion = request == null || request.clientMergeVersion() == null ? 0 : request.clientMergeVersion();
+    int mergeVersion =
+        request == null || request.clientMergeVersion() == null ? 0 : request.clientMergeVersion();
     String result = "error";
     int conflictCount = 0;
     List<String> conflictTypes = List.of();
@@ -108,8 +109,10 @@ public class NoteMergeAnalyzeService {
       List<String> localChanges = new ArrayList<>();
       List<String> remoteChanges = new ArrayList<>();
 
-      Snapshot base = new Snapshot(request.base().title(), deepCopyArray(request.base().contentBlocks()));
-      Snapshot local = new Snapshot(request.local().title(), deepCopyArray(request.local().contentBlocks()));
+      Snapshot base =
+          new Snapshot(request.base().title(), deepCopyArray(request.base().contentBlocks()));
+      Snapshot local =
+          new Snapshot(request.local().title(), deepCopyArray(request.local().contentBlocks()));
       Snapshot remote = new Snapshot(note.getTitle(), deepCopyArray(remoteBlocks));
 
       analyze(base, local, remote, localChanges, remoteChanges, conflicts);
@@ -136,7 +139,9 @@ public class NoteMergeAnalyzeService {
           suggestion != null,
           !conflicts.isEmpty(),
           new NoteMergeSummary(
-              localChanges, remoteChanges, conflicts.stream().map(NoteMergeConflict::message).toList()),
+              localChanges,
+              remoteChanges,
+              conflicts.stream().map(NoteMergeConflict::message).toList()),
           suggestion,
           conflicts);
     } catch (ContentException ex) {
@@ -174,7 +179,9 @@ public class NoteMergeAnalyzeService {
       conflicts.add(conflict("MISSING_BLOCK_ID", null, "Missing block id detected"));
       return;
     }
-    if (!baseIdx.duplicateIds.isEmpty() || !localIdx.duplicateIds.isEmpty() || !remoteIdx.duplicateIds.isEmpty()) {
+    if (!baseIdx.duplicateIds.isEmpty()
+        || !localIdx.duplicateIds.isEmpty()
+        || !remoteIdx.duplicateIds.isEmpty()) {
       conflicts.add(conflict("DUPLICATE_BLOCK_ID", null, "Duplicate block id detected"));
       return;
     }
@@ -187,7 +194,8 @@ public class NoteMergeAnalyzeService {
       conflicts.add(conflict("TITLE_DIVERGENT", null, "Both sides changed title differently"));
     }
 
-    if (!Objects.equals(baseIdx.order, localIdx.order) || !Objects.equals(baseIdx.order, remoteIdx.order)) {
+    if (!Objects.equals(baseIdx.order, localIdx.order)
+        || !Objects.equals(baseIdx.order, remoteIdx.order)) {
       conflicts.add(conflict("MOVE_OR_STRUCTURE", null, "Block reordering/move detected"));
     }
 
@@ -267,7 +275,9 @@ public class NoteMergeAnalyzeService {
         return true;
       }
       JsonNode children = block.get("children");
-      if (children != null && children.isArray() && replaceById((ArrayNode) children, id, replacement)) {
+      if (children != null
+          && children.isArray()
+          && replaceById((ArrayNode) children, id, replacement)) {
         return true;
       }
     }
@@ -282,7 +292,8 @@ public class NoteMergeAnalyzeService {
         return true;
       }
       JsonNode children = block.get("children");
-      if (children != null && children.isArray() && removeById((ArrayNode) children, id)) return true;
+      if (children != null && children.isArray() && removeById((ArrayNode) children, id))
+        return true;
     }
     return false;
   }
@@ -387,7 +398,10 @@ public class NoteMergeAnalyzeService {
   private void incrementSafeSuggestion(int mergeVersion) {
     if (!metricsEnabled) return;
     meterRegistry
-        .counter("note_merge_analyze_safe_suggestions_total", "mergeVersion", String.valueOf(mergeVersion))
+        .counter(
+            "note_merge_analyze_safe_suggestions_total",
+            "mergeVersion",
+            String.valueOf(mergeVersion))
         .increment();
   }
 

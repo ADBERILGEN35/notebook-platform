@@ -11,8 +11,10 @@ import org.springframework.stereotype.Component;
 
 @Component
 @ConditionalOnProperty(name = "notification.sse.distributed.enabled", havingValue = "true")
-public class RedisNotificationSseDistributedPublisher implements NotificationSseDistributedPublisher {
-  private static final Logger log = LoggerFactory.getLogger(RedisNotificationSseDistributedPublisher.class);
+public class RedisNotificationSseDistributedPublisher
+    implements NotificationSseDistributedPublisher {
+  private static final Logger log =
+      LoggerFactory.getLogger(RedisNotificationSseDistributedPublisher.class);
 
   private final StringRedisTemplate redisTemplate;
   private final ObjectMapper objectMapper;

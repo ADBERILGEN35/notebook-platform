@@ -34,11 +34,11 @@ public class AuthCookieProductionValidator implements ApplicationRunner {
 
     if ((accessCookie.startsWith("__Host-") || refreshCookie.startsWith("__Host-"))
         && !"/".equals(authTransportProperties.effectiveCookiePath())) {
-      throw new AuthCookieConfigurationInvalidException(
-          "__Host- cookies require cookie path '/'");
+      throw new AuthCookieConfigurationInvalidException("__Host- cookies require cookie path '/'");
     }
 
-    if (environment.acceptsProfiles(Profiles.of("prod")) && !authTransportProperties.cookieSecure()) {
+    if (environment.acceptsProfiles(Profiles.of("prod"))
+        && !authTransportProperties.cookieSecure()) {
       throw new AuthCookieConfigurationInvalidException(
           "Cookie transport requires AUTH_COOKIE_SECURE=true in prod");
     }

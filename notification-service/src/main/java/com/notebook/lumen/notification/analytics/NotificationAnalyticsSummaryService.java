@@ -53,7 +53,8 @@ public class NotificationAnalyticsSummaryService {
 
   public NotificationAnalyticsSummaryResponse build(Instant from, Instant to) {
     String bucket = analyticsProperties.defaultBucket();
-    Map<NotificationAnalyticsEventKind, Long> kindTotals = new EnumMap<>(NotificationAnalyticsEventKind.class);
+    Map<NotificationAnalyticsEventKind, Long> kindTotals =
+        new EnumMap<>(NotificationAnalyticsEventKind.class);
     for (var row : hourlyRepository.sumByEventKind(from, to)) {
       kindTotals.put(row.getEventKind(), row.getTotal());
     }
@@ -63,14 +64,16 @@ public class NotificationAnalyticsSummaryService {
     long sent = kindTotals.getOrDefault(NotificationAnalyticsEventKind.SENT, 0L);
     long failed = kindTotals.getOrDefault(NotificationAnalyticsEventKind.FAILED, 0L);
     long dead = kindTotals.getOrDefault(NotificationAnalyticsEventKind.DEAD, 0L);
-    long skippedPref = kindTotals.getOrDefault(NotificationAnalyticsEventKind.SKIPPED_PREFERENCE, 0L);
+    long skippedPref =
+        kindTotals.getOrDefault(NotificationAnalyticsEventKind.SKIPPED_PREFERENCE, 0L);
     long skippedWs =
         kindTotals.getOrDefault(NotificationAnalyticsEventKind.SKIPPED_WORKSPACE_PREFERENCE, 0L);
     long skippedWsAdmin =
         kindTotals.getOrDefault(NotificationAnalyticsEventKind.SKIPPED_WORKSPACE_ADMIN_POLICY, 0L);
     long digestQueued = kindTotals.getOrDefault(NotificationAnalyticsEventKind.DIGEST_QUEUED, 0L);
     long digestSent = kindTotals.getOrDefault(NotificationAnalyticsEventKind.DIGEST_SENT, 0L);
-    long quietHours = kindTotals.getOrDefault(NotificationAnalyticsEventKind.QUIET_HOURS_DELAYED, 0L);
+    long quietHours =
+        kindTotals.getOrDefault(NotificationAnalyticsEventKind.QUIET_HOURS_DELAYED, 0L);
 
     Map<String, ChannelAgg> channelMap = new HashMap<>();
     for (var row : hourlyRepository.sumByChannelAndEventKind(from, to)) {
@@ -85,7 +88,8 @@ public class NotificationAnalyticsSummaryService {
           new NotificationAnalyticsSummaryResponse.ChannelBreakdownRow(
               e.getKey(), a.created, a.queued, a.sent, a.failed));
     }
-    byChannel.sort(Comparator.comparing(NotificationAnalyticsSummaryResponse.ChannelBreakdownRow::channel));
+    byChannel.sort(
+        Comparator.comparing(NotificationAnalyticsSummaryResponse.ChannelBreakdownRow::channel));
 
     Map<String, Long> typeCreated = new HashMap<>();
     for (var row : hourlyRepository.sumByTypeAndEventKind(from, to)) {
@@ -95,13 +99,17 @@ public class NotificationAnalyticsSummaryService {
     }
     List<NotificationAnalyticsSummaryResponse.TypeBreakdownRow> byType = new ArrayList<>();
     for (var e : typeCreated.entrySet()) {
-      byType.add(new NotificationAnalyticsSummaryResponse.TypeBreakdownRow(e.getKey(), e.getValue()));
+      byType.add(
+          new NotificationAnalyticsSummaryResponse.TypeBreakdownRow(e.getKey(), e.getValue()));
     }
     byType.sort(
-        Comparator.comparing(NotificationAnalyticsSummaryResponse.TypeBreakdownRow::notificationType));
+        Comparator.comparing(
+            NotificationAnalyticsSummaryResponse.TypeBreakdownRow::notificationType));
 
-    long fanoutPending = fanoutOutboxRepository.countByStatus(NotificationFanoutOutboxStatus.PENDING);
-    long fanoutRetrying = fanoutOutboxRepository.countByStatus(NotificationFanoutOutboxStatus.SENDING);
+    long fanoutPending =
+        fanoutOutboxRepository.countByStatus(NotificationFanoutOutboxStatus.PENDING);
+    long fanoutRetrying =
+        fanoutOutboxRepository.countByStatus(NotificationFanoutOutboxStatus.SENDING);
     long fanoutDead = fanoutOutboxRepository.countByStatus(NotificationFanoutOutboxStatus.DEAD);
 
     long sseFailuresInRange =
@@ -113,7 +121,8 @@ public class NotificationAnalyticsSummaryService {
     long redisFail =
         kindTotals.getOrDefault(NotificationAnalyticsEventKind.REDIS_FANOUT_PUBLISH_FAILURE, 0L);
     long redisRecv =
-        kindTotals.getOrDefault(NotificationAnalyticsEventKind.REDIS_FANOUT_SUBSCRIBER_RECEIVED, 0L);
+        kindTotals.getOrDefault(
+            NotificationAnalyticsEventKind.REDIS_FANOUT_SUBSCRIBER_RECEIVED, 0L);
 
     long digestPending = digestItemRepository.countByStatus(NotificationDigestItemStatus.PENDING);
 
@@ -135,7 +144,8 @@ public class NotificationAnalyticsSummaryService {
         totals,
         byChannel,
         byType,
-        new NotificationAnalyticsSummaryResponse.FanoutSnapshot(fanoutPending, fanoutRetrying, fanoutDead),
+        new NotificationAnalyticsSummaryResponse.FanoutSnapshot(
+            fanoutPending, fanoutRetrying, fanoutDead),
         new NotificationAnalyticsSummaryResponse.SseSnapshot(
             sseBroker.activeConnectionCount(), sseFailuresInRange, sseEventsTotal),
         new NotificationAnalyticsSummaryResponse.RedisFanoutSnapshot(redisOk, redisFail, redisRecv),

@@ -123,6 +123,7 @@ class SearchIndexingServiceTest {
     return new ContentProperties(
         "",
         null,
+        new ContentProperties.Concurrency(false),
         null,
         null,
         new ContentProperties.Search("", 1000, enabled, null, null, outbox()));

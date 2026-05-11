@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -52,7 +51,12 @@ class FanoutDeadLetterAdminServiceTest {
     UUID uid = UUID.randomUUID();
     var row =
         new NotificationFanoutOutbox(
-            UUID.randomUUID(), UUID.randomUUID(), uid, "notification.created", Map.of("secret", "x"), Instant.now());
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            uid,
+            "notification.created",
+            Map.of("secret", "x"),
+            Instant.now());
     row.markDead("REDIS_PUBLISH_FAILED: redis down", Instant.parse("2026-05-10T12:00:00Z"));
     when(outboxRepository.findAll(any(Specification.class), any(Pageable.class)))
         .thenReturn(new PageImpl<>(List.of(row)));
@@ -71,14 +75,21 @@ class FanoutDeadLetterAdminServiceTest {
     UUID id = UUID.randomUUID();
     var row =
         new NotificationFanoutOutbox(
-            id, UUID.randomUUID(), UUID.randomUUID(), "notification.created", Map.of(), Instant.now());
+            id,
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            "notification.created",
+            Map.of(),
+            Instant.now());
     row.markDead("x", Instant.now());
     when(outboxRepository.findById(id)).thenReturn(Optional.of(row));
 
     var r = service.dryRun(id);
 
     assertThat(r.canRequeue()).isTrue();
-    assertThat(r.checks()).extracting(DeadLetterAdminDtos.RequeueDryRunCheck::passed).containsExactly(true, true);
+    assertThat(r.checks())
+        .extracting(DeadLetterAdminDtos.RequeueDryRunCheck::passed)
+        .containsExactly(true, true);
   }
 
   @Test
@@ -86,7 +97,12 @@ class FanoutDeadLetterAdminServiceTest {
     UUID id = UUID.randomUUID();
     var row =
         new NotificationFanoutOutbox(
-            id, UUID.randomUUID(), UUID.randomUUID(), "notification.created", Map.of(), Instant.now());
+            id,
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            "notification.created",
+            Map.of(),
+            Instant.now());
     row.markDead("err", Instant.now());
     when(outboxRepository.findByIdForUpdate(id)).thenReturn(Optional.of(row));
     when(requeueRequestRepository.findBySourceAndDeadLetterIdAndIdempotencyKey(
@@ -110,7 +126,12 @@ class FanoutDeadLetterAdminServiceTest {
     UUID id = UUID.randomUUID();
     var row =
         new NotificationFanoutOutbox(
-            id, UUID.randomUUID(), UUID.randomUUID(), "notification.created", Map.of(), Instant.now());
+            id,
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            "notification.created",
+            Map.of(),
+            Instant.now());
     when(outboxRepository.findByIdForUpdate(id)).thenReturn(Optional.of(row));
     when(requeueRequestRepository.findBySourceAndDeadLetterIdAndIdempotencyKey(
             eq("FANOUT_OUTBOX"), eq(id), eq("k")))
@@ -126,7 +147,12 @@ class FanoutDeadLetterAdminServiceTest {
     UUID id = UUID.randomUUID();
     var row =
         new NotificationFanoutOutbox(
-            id, UUID.randomUUID(), UUID.randomUUID(), "notification.created", Map.of(), Instant.now());
+            id,
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            "notification.created",
+            Map.of(),
+            Instant.now());
     row.markDead("e", Instant.now());
     row.requeueFromDead(Instant.now(), "admin");
     when(outboxRepository.findByIdForUpdate(id)).thenReturn(Optional.of(row));

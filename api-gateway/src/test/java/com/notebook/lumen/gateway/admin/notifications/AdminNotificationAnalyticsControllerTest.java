@@ -48,14 +48,12 @@ class AdminNotificationAnalyticsControllerTest {
   @Test
   void permissionDenied_returns403() {
     when(adminAuthorizationService.enterpriseFeatureEnabled()).thenReturn(true);
-    when(
-            adminAuthorizationService.ensureAdminPermission(
-                any(), eq(PlatformAdminRbacConstants.PERM_NOTIFICATIONS_ANALYTICS_READ)))
+    when(adminAuthorizationService.ensureAdminPermission(
+            any(), eq(PlatformAdminRbacConstants.PERM_NOTIFICATIONS_ANALYTICS_READ)))
         .thenReturn(Optional.of(ErrorCode.ADMIN_PERMISSION_REQUIRED));
     var c = new AdminNotificationAnalyticsController(adminAuthorizationService, proxyService);
     Jwt jwt = mock(Jwt.class);
-    StepVerifier.create(
-            c.summary(jwt, Instant.now(), Instant.now().plusSeconds(60), null, "r1"))
+    StepVerifier.create(c.summary(jwt, Instant.now(), Instant.now().plusSeconds(60), null, "r1"))
         .assertNext(resp -> assertThat(resp.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN))
         .verifyComplete();
     verifyNoInteractions(proxyService);
@@ -64,9 +62,8 @@ class AdminNotificationAnalyticsControllerTest {
   @Test
   void ok_proxiesSummary() throws Exception {
     when(adminAuthorizationService.enterpriseFeatureEnabled()).thenReturn(true);
-    when(
-            adminAuthorizationService.ensureAdminPermission(
-                any(), eq(PlatformAdminRbacConstants.PERM_NOTIFICATIONS_ANALYTICS_READ)))
+    when(adminAuthorizationService.ensureAdminPermission(
+            any(), eq(PlatformAdminRbacConstants.PERM_NOTIFICATIONS_ANALYTICS_READ)))
         .thenReturn(Optional.empty());
     JsonNode body = new ObjectMapper().createObjectNode().put("bucket", "hour");
     when(proxyService.fetchSummary(any(), any(), any())).thenReturn(Mono.just(body));

@@ -28,6 +28,8 @@ public class GitOpsPullRequestProviderRegistry {
       return mockGitOpsPullRequestProvider;
     }
     throw new AdminGitOpsException(
-        "ADMIN_GITOPS_PROVIDER_FAILED", HttpStatus.BAD_REQUEST, "Unsupported GitOps provider: " + p);
+        "ADMIN_GITOPS_PROVIDER_FAILED",
+        HttpStatus.BAD_REQUEST,
+        "Unsupported GitOps provider: " + p);
   }
 }

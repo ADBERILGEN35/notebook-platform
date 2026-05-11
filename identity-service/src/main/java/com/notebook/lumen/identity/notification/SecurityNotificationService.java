@@ -27,7 +27,10 @@ public class SecurityNotificationService {
   }
 
   public void refreshTokensRevoked(User user, int revokedCount, HttpServletRequest request) {
-    if (!properties.enabled() || user == null || user.getEmail() == null || user.getEmail().isBlank()) {
+    if (!properties.enabled()
+        || user == null
+        || user.getEmail() == null
+        || user.getEmail().isBlank()) {
       return;
     }
     try {

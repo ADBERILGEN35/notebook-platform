@@ -25,7 +25,8 @@ import reactor.core.publisher.Mono;
 
 @RestController
 public class AdminNotificationRetentionController {
-  private static final Logger log = LoggerFactory.getLogger(AdminNotificationRetentionController.class);
+  private static final Logger log =
+      LoggerFactory.getLogger(AdminNotificationRetentionController.class);
 
   private final AdminAuthorizationService adminAuthorizationService;
   private final AdminNotificationRetentionProxyService proxyService;
@@ -37,7 +38,9 @@ public class AdminNotificationRetentionController {
     this.proxyService = proxyService;
   }
 
-  @GetMapping(path = "/admin/notifications/retention/plan", produces = MediaType.APPLICATION_JSON_VALUE)
+  @GetMapping(
+      path = "/admin/notifications/retention/plan",
+      produces = MediaType.APPLICATION_JSON_VALUE)
   public Mono<ResponseEntity<Object>> plan(
       @AuthenticationPrincipal Jwt jwt,
       @RequestParam(defaultValue = "true") boolean dryRun,
@@ -52,10 +55,10 @@ public class AdminNotificationRetentionController {
               "/admin/notifications/retention/plan",
               null));
     }
-    Optional<ErrorCode> denial =
-        adminAuthorizationService.ensureNotificationRetentionRead(jwt);
+    Optional<ErrorCode> denial = adminAuthorizationService.ensureNotificationRetentionRead(jwt);
     if (denial.isPresent()) {
-      return Mono.just(forbidden(jwt, denial.get(), requestId, "/admin/notifications/retention/plan"));
+      return Mono.just(
+          forbidden(jwt, denial.get(), requestId, "/admin/notifications/retention/plan"));
     }
     return proxyService
         .plan(dryRun)
@@ -105,7 +108,8 @@ public class AdminNotificationRetentionController {
             ? adminAuthorizationService.ensureNotificationRetentionRead(jwt)
             : adminAuthorizationService.ensureNotificationRetentionRun(jwt);
     if (denial.isPresent()) {
-      return Mono.just(forbidden(jwt, denial.get(), requestId, "/admin/notifications/retention/run"));
+      return Mono.just(
+          forbidden(jwt, denial.get(), requestId, "/admin/notifications/retention/run"));
     }
     String actorUserId = jwt == null ? null : jwt.getSubject();
     if (!dryRun && (actorUserId == null || actorUserId.isBlank())) {

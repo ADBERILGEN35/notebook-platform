@@ -5,19 +5,19 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.notebook.lumen.common.security.admin.PlatformAdminRbacConstants;
 import com.notebook.lumen.identity.admin.AdminRbacProperties;
 import com.notebook.lumen.identity.admin.AdminRbacService;
+import com.notebook.lumen.identity.admin.changerequest.PlatformAdminChangeRequestRepository;
+import com.notebook.lumen.identity.admin.rbac.api.AdminRbacVisibilityDtos;
 import com.notebook.lumen.identity.admin.rbac.overrides.AdminRbacOverrideEffectiveApplier;
 import com.notebook.lumen.identity.admin.rbac.overrides.AdminRbacOverrideLoader;
 import com.notebook.lumen.identity.admin.rbac.overrides.AdminRbacOverridesProperties;
-import com.notebook.lumen.identity.admin.changerequest.PlatformAdminChangeRequestRepository;
-import com.notebook.lumen.identity.admin.rbac.api.AdminRbacVisibilityDtos;
 import com.notebook.lumen.identity.scim.ScimProperties;
 import com.notebook.lumen.identity.scim.application.ScimEffectiveMembershipService;
 import com.notebook.lumen.identity.scim.domain.ScimGroup;
 import com.notebook.lumen.identity.scim.infrastructure.ScimGroupRepository;
+import com.notebook.lumen.identity.shared.exception.UserNotFoundException;
 import com.notebook.lumen.identity.sso.SsoProperties;
 import com.notebook.lumen.identity.sso.domain.ExternalIdentity;
 import com.notebook.lumen.identity.sso.infrastructure.ExternalIdentityRepository;
-import com.notebook.lumen.identity.shared.exception.UserNotFoundException;
 import com.notebook.lumen.identity.user.domain.User;
 import com.notebook.lumen.identity.user.domain.UserStatus;
 import com.notebook.lumen.identity.user.infrastructure.UserRepository;
@@ -123,8 +123,7 @@ public class AdminRbacVisibilityService {
   @Transactional(readOnly = true)
   public AdminRbacVisibilityDtos.UserDetailResponse userDetail(UUID userId) {
     ensureEnabled();
-    User u =
-        userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(userId));
+    User u = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(userId));
     AdminRbacVisibilityDtos.UserListItem row = toRow(u);
     long pendingCr = changeRequestRepository.countByRequestedByUserId(userId);
     return new AdminRbacVisibilityDtos.UserDetailResponse(row, pendingCr);
@@ -159,7 +158,10 @@ public class AdminRbacVisibilityService {
       LinkedHashSet<String> merged = new LinkedHashSet<>(roles);
       AdminRbacOverrideEffectiveApplier.ApplyOutcome ov =
           adminRbacOverrideEffectiveApplier.apply(
-              user.getId(), merged, baseFromIdpAndScim, adminRbacOverrideLoader.snapshot().assignments());
+              user.getId(),
+              merged,
+              baseFromIdpAndScim,
+              adminRbacOverrideLoader.snapshot().assignments());
       roles.clear();
       roles.addAll(merged);
       sources.addAll(ov.overrideSources());
@@ -170,9 +172,7 @@ public class AdminRbacVisibilityService {
 
     List<String> roleList = roles.stream().sorted().toList();
     List<String> perms =
-        adminRbacProperties.enabled()
-            ? adminRbacService.resolvePermissions(roleList)
-            : List.of();
+        adminRbacProperties.enabled() ? adminRbacService.resolvePermissions(roleList) : List.of();
 
     if (roles.contains(PlatformAdminRbacConstants.ROLE_PLATFORM_ADMIN)) {
       warnings.add("BROAD_PLATFORM_ADMIN");
@@ -201,7 +201,9 @@ public class AdminRbacVisibilityService {
       return;
     }
     if (adminRbacProperties.visibilityAllowlistEmailSet().contains(emailKey(user.getEmail()))) {
-      sources.add(new AdminRbacVisibilityDtos.RoleSource(SRC_ALLOWLIST, "gateway-allowlist-mirror", List.of()));
+      sources.add(
+          new AdminRbacVisibilityDtos.RoleSource(
+              SRC_ALLOWLIST, "gateway-allowlist-mirror", List.of()));
     }
   }
 
@@ -209,9 +211,11 @@ public class AdminRbacVisibilityService {
     return email == null ? "" : email.toLowerCase(Locale.ROOT).trim();
   }
 
-  private void appendSsoSources(User user, List<AdminRbacVisibilityDtos.RoleSource> sources, LinkedHashSet<String> roles) {
+  private void appendSsoSources(
+      User user, List<AdminRbacVisibilityDtos.RoleSource> sources, LinkedHashSet<String> roles) {
     List<ExternalIdentity> links =
-        externalIdentityRepository.findByUser_IdOrderByLastLoginAtDesc(user.getId(), PageRequest.of(0, 1));
+        externalIdentityRepository.findByUser_IdOrderByLastLoginAtDesc(
+            user.getId(), PageRequest.of(0, 1));
     if (links.isEmpty()) {
       return;
     }
@@ -230,8 +234,7 @@ public class AdminRbacVisibilityService {
         continue;
       }
       String gl = g.toLowerCase(Locale.ROOT).trim();
-      boolean legacy =
-          !provider.adminGroupSet().isEmpty() && provider.adminGroupSet().contains(gl);
+      boolean legacy = !provider.adminGroupSet().isEmpty() && provider.adminGroupSet().contains(gl);
       if (legacy) {
         sources.add(
             new AdminRbacVisibilityDtos.RoleSource(
@@ -245,7 +248,8 @@ public class AdminRbacVisibilityService {
         List<String> mapped = adminRbacService.mapIdpGroupsToRoles(provider, List.of(g));
         if (!mapped.isEmpty()) {
           String label = configuredIdpGroupLabel(gl);
-          sources.add(new AdminRbacVisibilityDtos.RoleSource(SRC_SSO_GROUP, label, List.copyOf(mapped)));
+          sources.add(
+              new AdminRbacVisibilityDtos.RoleSource(SRC_SSO_GROUP, label, List.copyOf(mapped)));
           roles.addAll(mapped);
         }
       }
@@ -284,7 +288,8 @@ public class AdminRbacVisibilityService {
     return s == null || s.isBlank() ? "" : s.toLowerCase(Locale.ROOT).trim();
   }
 
-  private void appendScimSources(User user, List<AdminRbacVisibilityDtos.RoleSource> sources, LinkedHashSet<String> roles) {
+  private void appendScimSources(
+      User user, List<AdminRbacVisibilityDtos.RoleSource> sources, LinkedHashSet<String> roles) {
     if (user.getStatus() != UserStatus.ACTIVE || user.getDeprovisionedAt() != null) {
       return;
     }
@@ -299,7 +304,8 @@ public class AdminRbacVisibilityService {
     if (!scimProperties.groupsEnabled()) {
       return;
     }
-    Set<UUID> effective = scimEffectiveMembershipService.effectiveActiveGroupIdsForUser(user.getId());
+    Set<UUID> effective =
+        scimEffectiveMembershipService.effectiveActiveGroupIdsForUser(user.getId());
     for (UUID gid : effective) {
       Optional<ScimGroup> og = scimGroupRepository.findByIdAndActiveIsTrue(gid);
       if (og.isEmpty()) {
@@ -323,7 +329,8 @@ public class AdminRbacVisibilityService {
               group.getDisplayName() != null && !group.getDisplayName().isBlank()
                   ? group.getDisplayName()
                   : group.getExternalId();
-          sources.add(new AdminRbacVisibilityDtos.RoleSource(SRC_SCIM_GROUP, name, List.copyOf(mapped)));
+          sources.add(
+              new AdminRbacVisibilityDtos.RoleSource(SRC_SCIM_GROUP, name, List.copyOf(mapped)));
           roles.addAll(mapped);
         }
       }
@@ -331,7 +338,10 @@ public class AdminRbacVisibilityService {
   }
 
   private List<String> parseGroupsFromStoredClaims(String claimsJson, String groupsClaim) {
-    if (claimsJson == null || claimsJson.isBlank() || groupsClaim == null || groupsClaim.isBlank()) {
+    if (claimsJson == null
+        || claimsJson.isBlank()
+        || groupsClaim == null
+        || groupsClaim.isBlank()) {
       return List.of();
     }
     try {

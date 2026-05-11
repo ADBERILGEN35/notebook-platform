@@ -30,7 +30,8 @@ import org.testcontainers.junit.jupiter.Testcontainers;
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
     properties = {
       "workspace.identity.service-url=http://127.0.0.1:1",
-      "workspace.invitations.expose-token-in-response=true"
+      "workspace.invitations.expose-token-in-response=true",
+      "workspace.notification.enabled=false"
     })
 class WorkspaceIntegrationTest {
 

@@ -23,7 +23,8 @@ public final class AdminRbacVisibilityDtos {
       boolean mfaVerifiedRecently,
       List<String> warnings) {}
 
-  public record UserListResponse(List<UserListItem> items, int page, int size, long totalElements) {}
+  public record UserListResponse(
+      List<UserListItem> items, int page, int size, long totalElements) {}
 
   public record UserDetailResponse(UserListItem user, long pendingChangeRequestCount) {}
 }

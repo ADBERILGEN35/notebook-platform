@@ -47,7 +47,8 @@ public class AdminChangeRequestService {
     this.auditService = auditService;
   }
 
-  public AdminChangeRequestDtos.ValidateResponse validate(AdminChangeRequestDtos.ValidateBody body) {
+  public AdminChangeRequestDtos.ValidateResponse validate(
+      AdminChangeRequestDtos.ValidateBody body) {
     ensureEnabled();
     AdminOperationDefinition def = resolveOperation(body.operationType());
     if (AdminOperationRegistry.isRbacRoleOperation(body.operationType())) {
@@ -75,7 +76,8 @@ public class AdminChangeRequestService {
     Map<String, Object> validation = new HashMap<>(registry.validationResult(true, def));
     validation.put("normalizedRequestedValue", normalized);
     validation.put("targetEnvironment", targetEnv.toLowerCase(Locale.ROOT));
-    return new AdminChangeRequestDtos.ValidateResponse(true, def.requiresApproval(), impact, validation);
+    return new AdminChangeRequestDtos.ValidateResponse(
+        true, def.requiresApproval(), impact, validation);
   }
 
   @Transactional
@@ -92,7 +94,8 @@ public class AdminChangeRequestService {
     }
     AdminOperationDefinition def = resolveOperation(body.operationType());
     if (AdminOperationRegistry.isRbacRoleOperation(body.operationType())) {
-      return rbacRoleChangeRequestValidator.create(actorUserId, actorEmail, body, def, externalRequestId, request);
+      return rbacRoleChangeRequestValidator.create(
+          actorUserId, actorEmail, body, def, externalRequestId, request);
     }
     if (body.targetEnvironment() == null || body.targetEnvironment().isBlank()) {
       throw new AdminChangeRequestException(
@@ -159,7 +162,10 @@ public class AdminChangeRequestService {
           request,
           decisionMetadata(entity, actorUserId, false, false));
       return new AdminChangeRequestDtos.CreateResponse(
-          entity.getId(), entity.getStatus().name(), entity.getOperationType(), entity.getCreatedAt());
+          entity.getId(),
+          entity.getStatus().name(),
+          entity.getOperationType(),
+          entity.getCreatedAt());
     }
 
     repository.save(entity);
@@ -186,7 +192,10 @@ public class AdminChangeRequestService {
             "externalRequestId",
             externalRequestId == null ? "" : externalRequestId));
     return new AdminChangeRequestDtos.CreateResponse(
-        entity.getId(), entity.getStatus().name(), entity.getOperationType(), entity.getCreatedAt());
+        entity.getId(),
+        entity.getStatus().name(),
+        entity.getOperationType(),
+        entity.getCreatedAt());
   }
 
   @Transactional(readOnly = true)
@@ -236,7 +245,11 @@ public class AdminChangeRequestService {
         "ADMIN_CHANGE_REQUEST",
         entity.getId(),
         request,
-        Map.of("operationType", entity.getOperationType(), "targetService", entity.getTargetService()));
+        Map.of(
+            "operationType",
+            entity.getOperationType(),
+            "targetService",
+            entity.getTargetService()));
   }
 
   @Transactional
@@ -298,7 +311,11 @@ public class AdminChangeRequestService {
         "ADMIN_CHANGE_REQUEST",
         entity.getId(),
         request,
-        decisionMetadata(entity, approverUserId, true, body != null && body.reason() != null && !body.reason().isBlank()));
+        decisionMetadata(
+            entity,
+            approverUserId,
+            true,
+            body != null && body.reason() != null && !body.reason().isBlank()));
     return new AdminChangeRequestDtos.ApproveResponse(
         entity.getId(),
         entity.getStatus().name(),
@@ -381,7 +398,10 @@ public class AdminChangeRequestService {
         request,
         decisionMetadata(entity, approverUserId, true, reason != null && !reason.isBlank()));
     return new AdminChangeRequestDtos.RejectResponse(
-        entity.getId(), entity.getStatus().name(), entity.getDecisionReason(), entity.getDecidedAt());
+        entity.getId(),
+        entity.getStatus().name(),
+        entity.getDecisionReason(),
+        entity.getDecidedAt());
   }
 
   public void recordValidatedAudit(
@@ -433,7 +453,9 @@ public class AdminChangeRequestService {
     m.put("targetService", entity.getTargetService());
     m.put("targetKey", entity.getTargetKey());
     m.put("requestedValue", entity.getRequestedValue());
-    m.put("targetEnvironment", entity.getTargetEnvironment() == null ? "" : entity.getTargetEnvironment());
+    m.put(
+        "targetEnvironment",
+        entity.getTargetEnvironment() == null ? "" : entity.getTargetEnvironment());
     m.put("severity", entity.getSeverity() == null ? "" : entity.getSeverity());
     m.put("requestedByUserId", entity.getRequestedByUserId().toString());
     m.put("decidedByUserId", decidedByUserId.toString());

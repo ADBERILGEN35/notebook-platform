@@ -9,7 +9,8 @@ import org.springframework.stereotype.Component;
 public class NotificationInstanceIdProvider {
   private final String instanceId;
 
-  public NotificationInstanceIdProvider(@Value("${notification.instance-id:}") String configuredInstanceId) {
+  public NotificationInstanceIdProvider(
+      @Value("${notification.instance-id:}") String configuredInstanceId) {
     if (configuredInstanceId != null && !configuredInstanceId.isBlank()) {
       this.instanceId = configuredInstanceId.trim();
       return;

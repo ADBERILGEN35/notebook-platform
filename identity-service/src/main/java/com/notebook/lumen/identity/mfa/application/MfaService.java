@@ -13,15 +13,12 @@ import com.notebook.lumen.identity.mfa.infrastructure.UserWebAuthnCredentialRepo
 import com.notebook.lumen.identity.shared.exception.MfaException;
 import com.notebook.lumen.identity.user.domain.User;
 import com.notebook.lumen.identity.user.mapper.UserMapper;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Base64;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.UUID;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpStatus;
@@ -67,7 +64,9 @@ public class MfaService {
     UserMfaSettings settings =
         settingsRepository
             .findById(user.getId())
-            .orElse(new UserMfaSettings(user.getId(), false, false, false, Instant.now(), Instant.now()));
+            .orElse(
+                new UserMfaSettings(
+                    user.getId(), false, false, false, Instant.now(), Instant.now()));
     return settings.isWebauthnEnabled() || settings.isMfaRequired();
   }
 
@@ -75,9 +74,17 @@ public class MfaService {
     String sessionId = UUID.randomUUID().toString();
     saveRedis(
         mfaSessionKey(sessionId),
-        new MfaSessionPayload(user.getId().toString(), Instant.now().plusSeconds(ttlSeconds()).toString()));
+        new MfaSessionPayload(
+            user.getId().toString(), Instant.now().plusSeconds(ttlSeconds()).toString()));
     return new AuthResponse(
-        null, null, "MFA", 0, userMapper.toResponse(user), true, sessionId, List.of("WEBAUTHN", "RECOVERY_CODE"));
+        null,
+        null,
+        "MFA",
+        0,
+        userMapper.toResponse(user),
+        true,
+        sessionId,
+        List.of("WEBAUTHN", "RECOVERY_CODE"));
   }
 
   public int recoveryCodesRemaining(UUID userId) {
@@ -90,7 +97,8 @@ public class MfaService {
   public UUID requireMfaSessionUser(String mfaSessionId) {
     MfaSessionPayload payload = readRedis(mfaSessionKey(mfaSessionId), MfaSessionPayload.class);
     if (payload == null) {
-      throw new MfaException("MFA_SESSION_INVALID", HttpStatus.UNAUTHORIZED, "MFA session is invalid");
+      throw new MfaException(
+          "MFA_SESSION_INVALID", HttpStatus.UNAUTHORIZED, "MFA session is invalid");
     }
     return UUID.fromString(payload.userId());
   }
@@ -101,7 +109,9 @@ public class MfaService {
 
   public String createChallenge(String keyPrefix, String refId) {
     String challenge = randomToken();
-    saveRedis(keyPrefix + refId, new ChallengePayload(challenge, Instant.now().plusSeconds(ttlSeconds()).toString()));
+    saveRedis(
+        keyPrefix + refId,
+        new ChallengePayload(challenge, Instant.now().plusSeconds(ttlSeconds()).toString()));
     return challenge;
   }
 
@@ -109,11 +119,13 @@ public class MfaService {
     String key = keyPrefix + refId;
     ChallengePayload payload = readRedis(key, ChallengePayload.class);
     if (payload == null) {
-      throw new MfaException("MFA_CHALLENGE_EXPIRED", HttpStatus.UNAUTHORIZED, "MFA challenge expired");
+      throw new MfaException(
+          "MFA_CHALLENGE_EXPIRED", HttpStatus.UNAUTHORIZED, "MFA challenge expired");
     }
     redisTemplate.delete(key);
     if (!payload.challenge().equals(challenge)) {
-      throw new MfaException("MFA_CHALLENGE_INVALID", HttpStatus.UNAUTHORIZED, "MFA challenge invalid");
+      throw new MfaException(
+          "MFA_CHALLENGE_INVALID", HttpStatus.UNAUTHORIZED, "MFA challenge invalid");
     }
   }
 
@@ -130,7 +142,12 @@ public class MfaService {
             .map(
                 code ->
                     new UserMfaRecoveryCode(
-                        UUID.randomUUID(), userId, passwordEncoder.encode(code), null, null, Instant.now()))
+                        UUID.randomUUID(),
+                        userId,
+                        passwordEncoder.encode(code),
+                        null,
+                        null,
+                        Instant.now()))
             .toList());
     UserMfaSettings settings =
         settingsRepository
@@ -157,10 +174,13 @@ public class MfaService {
         return;
       }
     }
-    if (codes.stream().anyMatch(c -> c.getUsedAt() != null && passwordEncoder.matches(code, c.getCodeHash()))) {
-      throw new MfaException("MFA_RECOVERY_CODE_USED", HttpStatus.UNAUTHORIZED, "Recovery code already used");
+    if (codes.stream()
+        .anyMatch(c -> c.getUsedAt() != null && passwordEncoder.matches(code, c.getCodeHash()))) {
+      throw new MfaException(
+          "MFA_RECOVERY_CODE_USED", HttpStatus.UNAUTHORIZED, "Recovery code already used");
     }
-    throw new MfaException("MFA_RECOVERY_CODE_INVALID", HttpStatus.UNAUTHORIZED, "Invalid recovery code");
+    throw new MfaException(
+        "MFA_RECOVERY_CODE_INVALID", HttpStatus.UNAUTHORIZED, "Invalid recovery code");
   }
 
   @Transactional
@@ -212,9 +232,12 @@ public class MfaService {
             .orElseThrow(
                 () ->
                     new MfaException(
-                        "WEBAUTHN_CREDENTIAL_NOT_FOUND", HttpStatus.NOT_FOUND, "Credential not found"));
+                        "WEBAUTHN_CREDENTIAL_NOT_FOUND",
+                        HttpStatus.NOT_FOUND,
+                        "Credential not found"));
     if (!credential.getUserId().equals(userId) || credential.getRevokedAt() != null) {
-      throw new MfaException("WEBAUTHN_CREDENTIAL_NOT_FOUND", HttpStatus.NOT_FOUND, "Credential not found");
+      throw new MfaException(
+          "WEBAUTHN_CREDENTIAL_NOT_FOUND", HttpStatus.NOT_FOUND, "Credential not found");
     }
     credential.setName(name);
     credentialRepository.save(credential);
@@ -228,9 +251,12 @@ public class MfaService {
             .orElseThrow(
                 () ->
                     new MfaException(
-                        "WEBAUTHN_CREDENTIAL_NOT_FOUND", HttpStatus.NOT_FOUND, "Credential not found"));
+                        "WEBAUTHN_CREDENTIAL_NOT_FOUND",
+                        HttpStatus.NOT_FOUND,
+                        "Credential not found"));
     if (!credential.getUserId().equals(userId) || credential.getRevokedAt() != null) {
-      throw new MfaException("WEBAUTHN_CREDENTIAL_NOT_FOUND", HttpStatus.NOT_FOUND, "Credential not found");
+      throw new MfaException(
+          "WEBAUTHN_CREDENTIAL_NOT_FOUND", HttpStatus.NOT_FOUND, "Credential not found");
     }
     if (activeCredentials(userId).size() <= 1) {
       throw new MfaException(
@@ -251,7 +277,8 @@ public class MfaService {
   public void requireWebauthnEnabled() {
     requireEnabled();
     if (!properties.webauthnEnabled()) {
-      throw new MfaException("MFA_NOT_ENABLED", HttpStatus.NOT_IMPLEMENTED, "WebAuthn is not enabled");
+      throw new MfaException(
+          "MFA_NOT_ENABLED", HttpStatus.NOT_IMPLEMENTED, "WebAuthn is not enabled");
     }
   }
 
@@ -277,7 +304,8 @@ public class MfaService {
   private String formatRecoveryCode() {
     byte[] bytes = new byte[9];
     secureRandom.nextBytes(bytes);
-    String token = Base64.getUrlEncoder().withoutPadding().encodeToString(bytes).toUpperCase(Locale.ROOT);
+    String token =
+        Base64.getUrlEncoder().withoutPadding().encodeToString(bytes).toUpperCase(Locale.ROOT);
     token = token.replaceAll("[^A-Z0-9]", "");
     String raw = (token + "AAAAAAAAAAAA").substring(0, 12);
     return raw.substring(0, 4) + "-" + raw.substring(4, 8) + "-" + raw.substring(8, 12);
@@ -301,7 +329,8 @@ public class MfaService {
           .opsForValue()
           .set(key, objectMapper.writeValueAsString(payload), Duration.ofSeconds(ttlSeconds()));
     } catch (JsonProcessingException e) {
-      throw new MfaException("MFA_SESSION_INVALID", HttpStatus.UNAUTHORIZED, "Failed to store MFA state");
+      throw new MfaException(
+          "MFA_SESSION_INVALID", HttpStatus.UNAUTHORIZED, "Failed to store MFA state");
     }
   }
 

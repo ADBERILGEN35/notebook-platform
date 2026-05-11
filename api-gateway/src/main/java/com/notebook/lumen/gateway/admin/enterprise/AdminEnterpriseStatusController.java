@@ -75,7 +75,8 @@ public class AdminEnterpriseStatusController {
 
     return aggregationService
         .loadStatus()
-        .map(body -> ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).<Object>body(body));
+        .map(
+            body -> ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).<Object>body(body));
   }
 
   private ResponseEntity<Object> error(

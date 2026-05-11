@@ -40,10 +40,12 @@ class EnterpriseStatusWarningEngineTest {
             new AdminRbacStatus(false, true, Map.of()),
             new AuditExportStatus(false, false, false, false, "", false),
             new NotificationsStatus(true, false, true, true),
-            new GatewaySecurityStatus(true, true, "enforce", List.of(), true, false, "bearer", false),
+            new GatewaySecurityStatus(
+                true, true, "enforce", List.of(), true, false, "bearer", false),
             new MergeResolutionStatus(false, false, List.of(1), true, true, false));
 
     var warnings = engine.build(features, false, false, false);
-    assertThat(warnings.stream().map(EnterpriseWarning::code)).contains("SSO_ADMIN_MAPPING_MISSING");
+    assertThat(warnings.stream().map(EnterpriseWarning::code))
+        .contains("SSO_ADMIN_MAPPING_MISSING");
   }
 }

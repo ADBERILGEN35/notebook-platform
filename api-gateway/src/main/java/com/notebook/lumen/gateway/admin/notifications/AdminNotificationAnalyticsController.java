@@ -24,7 +24,8 @@ import reactor.core.publisher.Mono;
 
 @RestController
 public class AdminNotificationAnalyticsController {
-  private static final Logger log = LoggerFactory.getLogger(AdminNotificationAnalyticsController.class);
+  private static final Logger log =
+      LoggerFactory.getLogger(AdminNotificationAnalyticsController.class);
 
   private final AdminAuthorizationService adminAuthorizationService;
   private final AdminNotificationAnalyticsProxyService proxyService;
@@ -36,7 +37,9 @@ public class AdminNotificationAnalyticsController {
     this.proxyService = proxyService;
   }
 
-  @GetMapping(path = "/admin/notifications/analytics/summary", produces = MediaType.APPLICATION_JSON_VALUE)
+  @GetMapping(
+      path = "/admin/notifications/analytics/summary",
+      produces = MediaType.APPLICATION_JSON_VALUE)
   public Mono<ResponseEntity<Object>> summary(
       @AuthenticationPrincipal Jwt jwt,
       @RequestParam Instant from,
@@ -104,7 +107,13 @@ public class AdminNotificationAnalyticsController {
         code == ErrorCode.ADMIN_PERMISSION_REQUIRED
             ? Map.of("permission", PlatformAdminRbacConstants.PERM_NOTIFICATIONS_ANALYTICS_READ)
             : null;
-    return error(HttpStatus.FORBIDDEN, code, message, requestId, "/admin/notifications/analytics/summary", details);
+    return error(
+        HttpStatus.FORBIDDEN,
+        code,
+        message,
+        requestId,
+        "/admin/notifications/analytics/summary",
+        details);
   }
 
   private ResponseEntity<Object> error(

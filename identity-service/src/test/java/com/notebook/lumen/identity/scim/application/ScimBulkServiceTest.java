@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
@@ -41,7 +40,9 @@ class ScimBulkServiceTest {
   void bulkDisabledThrows() {
     var props = new ScimProperties(true, "t", "", true, "g", true, 5, false, 100, 10);
     var svc = newService(props);
-    JsonNode data = objectMapper.valueToTree(new ScimUserRequest("a@b.com", null, "n", List.of(), true, null, List.of()));
+    JsonNode data =
+        objectMapper.valueToTree(
+            new ScimUserRequest("a@b.com", null, "n", List.of(), true, null, List.of()));
     var req =
         new ScimBulkRequest(
             List.of("urn:ietf:params:scim:api:messages:2.0:BulkRequest"),
@@ -68,8 +69,7 @@ class ScimBulkServiceTest {
             new ScimBulkRequest.Operation("POST", "/Users", "2", data),
             new ScimBulkRequest.Operation("POST", "/Users", "3", data));
     var req =
-        new ScimBulkRequest(
-            List.of("urn:ietf:params:scim:api:messages:2.0:BulkRequest"), 10, ops);
+        new ScimBulkRequest(List.of("urn:ietf:params:scim:api:messages:2.0:BulkRequest"), 10, ops);
     assertThatThrownBy(() -> svc.execute(req, httpRequest))
         .isInstanceOf(ScimException.class)
         .satisfies(ex -> assertThat(ex.getMessage()).contains("SCIM_BULK_TOO_MANY_OPERATIONS"));
@@ -81,14 +81,15 @@ class ScimBulkServiceTest {
     var svc = newService(props);
     when(scimService.createUser(any(), any(), any()))
         .thenThrow(new ScimException(HttpStatus.BAD_REQUEST, "invalidValue", "bad"));
-    JsonNode data = objectMapper.valueToTree(new ScimUserRequest("a@b.com", null, "n", List.of(), true, null, List.of()));
+    JsonNode data =
+        objectMapper.valueToTree(
+            new ScimUserRequest("a@b.com", null, "n", List.of(), true, null, List.of()));
     var ops =
         List.of(
             new ScimBulkRequest.Operation("POST", "/Users", "1", data),
             new ScimBulkRequest.Operation("POST", "/Users", "2", data));
     var req =
-        new ScimBulkRequest(
-            List.of("urn:ietf:params:scim:api:messages:2.0:BulkRequest"), 1, ops);
+        new ScimBulkRequest(List.of("urn:ietf:params:scim:api:messages:2.0:BulkRequest"), 1, ops);
     var resp = svc.execute(req, httpRequest);
     assertThat(resp.operations()).hasSize(1);
     verify(scimService).createUser(any(), any(), any());
@@ -115,7 +116,9 @@ class ScimBulkServiceTest {
                   List.of(),
                   new ScimUserResponse.Meta("User", null, null));
             });
-    JsonNode data = objectMapper.valueToTree(new ScimUserRequest("a@b.com", null, "n", List.of(), true, null, List.of()));
+    JsonNode data =
+        objectMapper.valueToTree(
+            new ScimUserRequest("a@b.com", null, "n", List.of(), true, null, List.of()));
     var req =
         new ScimBulkRequest(
             List.of("urn:ietf:params:scim:api:messages:2.0:BulkRequest"),

@@ -39,7 +39,8 @@ public class NotificationAnalyticsUpsertRepository {
             """)
         .setParameter("id", UUID.randomUUID())
         .setParameter("bucketStart", bucketStart)
-        .setParameter("sourceService", sourceService == null ? "notification-service" : sourceService)
+        .setParameter(
+            "sourceService", sourceService == null ? "notification-service" : sourceService)
         .setParameter("notificationType", nt)
         .setParameter("channel", ch)
         .setParameter("severity", sev)

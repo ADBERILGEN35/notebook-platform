@@ -65,7 +65,8 @@ public class SiemOutboxWorker {
         long backoff =
             Math.min(
                 properties.backoffMaxSeconds(),
-                (long) properties.backoffBaseSeconds() * (1L << Math.max(0, item.getAttemptCount())));
+                (long) properties.backoffBaseSeconds()
+                    * (1L << Math.max(0, item.getAttemptCount())));
         item.markRetry(now.plusSeconds(backoff), result.message());
       }
     }
@@ -84,7 +85,9 @@ public class SiemOutboxWorker {
         String.valueOf(p.get("category")),
         String.valueOf(p.get("severity")),
         p.get("actorUserId") == null ? null : UUID.fromString(String.valueOf(p.get("actorUserId"))),
-        p.get("subjectUserId") == null ? null : UUID.fromString(String.valueOf(p.get("subjectUserId"))),
+        p.get("subjectUserId") == null
+            ? null
+            : UUID.fromString(String.valueOf(p.get("subjectUserId"))),
         p.get("workspaceId") == null ? null : UUID.fromString(String.valueOf(p.get("workspaceId"))),
         p.get("requestId") == null ? null : String.valueOf(p.get("requestId")),
         p.get("ipAddress") == null ? null : String.valueOf(p.get("ipAddress")),

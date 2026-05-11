@@ -101,7 +101,10 @@ public class NotificationDeliveryPreferenceService {
     ZoneId zone = parseZone(pref.getTimezone());
     ZonedDateTime localNow = ZonedDateTime.ofInstant(now, zone);
     if (pref.getEmailDigestFrequency() == EmailDigestFrequency.WEEKLY) {
-      ZonedDateTime next = localNow.with(java.time.temporal.TemporalAdjusters.nextOrSame(weeklyDay)).with(weeklyTime);
+      ZonedDateTime next =
+          localNow
+              .with(java.time.temporal.TemporalAdjusters.nextOrSame(weeklyDay))
+              .with(weeklyTime);
       if (!next.isAfter(localNow)) {
         next = next.plusWeeks(1);
       }
@@ -118,7 +121,10 @@ public class NotificationDeliveryPreferenceService {
     return repository
         .findByUserId(userId)
         .orElseGet(
-            () -> repository.save(new UserNotificationDeliveryPreference(UUID.randomUUID(), userId, Instant.now())));
+            () ->
+                repository.save(
+                    new UserNotificationDeliveryPreference(
+                        UUID.randomUUID(), userId, Instant.now())));
   }
 
   private ZoneId parseZone(String timezone) {
@@ -142,7 +148,9 @@ public class NotificationDeliveryPreferenceService {
     }
     if (start.equals(end)) {
       throw new NotificationException(
-          HttpStatus.BAD_REQUEST, "INVALID_QUIET_HOURS_RANGE", "Quiet hours start and end cannot match");
+          HttpStatus.BAD_REQUEST,
+          "INVALID_QUIET_HOURS_RANGE",
+          "Quiet hours start and end cannot match");
     }
   }
 }

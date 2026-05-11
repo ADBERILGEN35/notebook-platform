@@ -19,7 +19,8 @@ class NotificationSseBrokerTest {
     properties.setHeartbeatSeconds(60);
 
     NotificationSseBroker broker =
-        new NotificationSseBroker(properties, new SimpleMeterRegistry(), mock(NotificationAnalyticsRecorder.class));
+        new NotificationSseBroker(
+            properties, new SimpleMeterRegistry(), mock(NotificationAnalyticsRecorder.class));
     UUID userId = UUID.randomUUID();
     broker.connect(userId);
 

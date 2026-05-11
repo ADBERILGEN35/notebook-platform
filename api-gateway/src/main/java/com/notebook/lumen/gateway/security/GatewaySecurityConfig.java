@@ -1,7 +1,7 @@
 package com.notebook.lumen.gateway.security;
 
-import com.notebook.lumen.gateway.config.GatewayJwtProperties;
 import com.notebook.lumen.gateway.config.GatewayAuthProperties;
+import com.notebook.lumen.gateway.config.GatewayJwtProperties;
 import com.notebook.lumen.gateway.error.ErrorCode;
 import com.notebook.lumen.gateway.error.GatewayErrorResponseWriter;
 import org.springframework.context.annotation.Bean;
@@ -105,8 +105,13 @@ public class GatewaySecurityConfig {
       if (authorization == null || authorization.isBlank()) {
         if ("cookie".equals(authProperties.effectiveTransport())) {
           var accessCookie =
-              exchange.getRequest().getCookies().getFirst(authProperties.effectiveAccessCookieName());
-          if (accessCookie == null || accessCookie.getValue() == null || accessCookie.getValue().isBlank()) {
+              exchange
+                  .getRequest()
+                  .getCookies()
+                  .getFirst(authProperties.effectiveAccessCookieName());
+          if (accessCookie == null
+              || accessCookie.getValue() == null
+              || accessCookie.getValue().isBlank()) {
             return errorResponseWriter.write(
                 exchange,
                 HttpStatus.UNAUTHORIZED,
@@ -146,5 +151,4 @@ public class GatewaySecurityConfig {
         new JwtAuthenticationToken(
             jwt, java.util.List.of(new SimpleGrantedAuthority("ROLE_USER")), jwt.getSubject()));
   }
-
 }

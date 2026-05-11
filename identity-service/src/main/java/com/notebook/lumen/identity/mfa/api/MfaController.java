@@ -1,13 +1,12 @@
 package com.notebook.lumen.identity.mfa.api;
 
+import com.notebook.lumen.identity.audit.AuditService;
 import com.notebook.lumen.identity.auth.api.AuthResponse;
 import com.notebook.lumen.identity.auth.application.AuthCookieService;
 import com.notebook.lumen.identity.auth.application.AuthService;
-import com.notebook.lumen.identity.audit.AuditService;
 import com.notebook.lumen.identity.mfa.MfaProperties;
-import com.notebook.lumen.identity.mfa.application.MfaService;
-import com.notebook.lumen.identity.mfa.api.MfaDtos.MfaCredentialResponse;
 import com.notebook.lumen.identity.mfa.api.MfaDtos.CredentialRenameRequest;
+import com.notebook.lumen.identity.mfa.api.MfaDtos.MfaCredentialResponse;
 import com.notebook.lumen.identity.mfa.api.MfaDtos.MfaSettingsResponse;
 import com.notebook.lumen.identity.mfa.api.MfaDtos.RecoveryCodeGenerateRequest;
 import com.notebook.lumen.identity.mfa.api.MfaDtos.RecoveryCodeGenerateResponse;
@@ -17,12 +16,13 @@ import com.notebook.lumen.identity.mfa.api.MfaDtos.WebAuthnAuthenticationOptions
 import com.notebook.lumen.identity.mfa.api.MfaDtos.WebAuthnAuthenticationVerifyRequest;
 import com.notebook.lumen.identity.mfa.api.MfaDtos.WebAuthnRegistrationOptionsResponse;
 import com.notebook.lumen.identity.mfa.api.MfaDtos.WebAuthnRegistrationVerifyRequest;
+import com.notebook.lumen.identity.mfa.application.MfaService;
 import com.notebook.lumen.identity.shared.exception.MfaException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -46,7 +46,8 @@ public class MfaController {
   private final AuthService authService;
   private final AuthCookieService authCookieService;
   private final AuditService auditService;
-  private final com.notebook.lumen.identity.shared.config.AuthTransportProperties authTransportProperties;
+  private final com.notebook.lumen.identity.shared.config.AuthTransportProperties
+      authTransportProperties;
 
   public MfaController(
       MfaProperties properties,
@@ -83,7 +84,8 @@ public class MfaController {
   }
 
   @PostMapping("/webauthn/registration/options")
-  public WebAuthnRegistrationOptionsResponse registrationOptions(@AuthenticationPrincipal Jwt accessToken) {
+  public WebAuthnRegistrationOptionsResponse registrationOptions(
+      @AuthenticationPrincipal Jwt accessToken) {
     UUID userId = requireUserId(accessToken);
     mfaService.requireWebauthnEnabled();
     String challenge = mfaService.createChallenge("webauthn:registration:", userId.toString());
@@ -95,7 +97,9 @@ public class MfaController {
         challenge,
         properties.webauthn().rpId(),
         properties.webauthn().rpName(),
-        Base64.getUrlEncoder().withoutPadding().encodeToString(userId.toString().getBytes(StandardCharsets.UTF_8)),
+        Base64.getUrlEncoder()
+            .withoutPadding()
+            .encodeToString(userId.toString().getBytes(StandardCharsets.UTF_8)),
         accessToken.getClaimAsString("email"),
         accessToken.getClaimAsString("email"),
         excludes,
@@ -109,7 +113,8 @@ public class MfaController {
     UUID userId = requireUserId(accessToken);
     mfaService.requireWebauthnEnabled();
     validateOrigin(request.origin());
-    mfaService.verifyAndConsumeChallenge("webauthn:registration:", userId.toString(), request.challenge());
+    mfaService.verifyAndConsumeChallenge(
+        "webauthn:registration:", userId.toString(), request.challenge());
     var credential =
         mfaService.storeCredential(
             userId,
@@ -130,7 +135,8 @@ public class MfaController {
       @Valid @RequestBody WebAuthnAuthenticationOptionsRequest request) {
     mfaService.requireWebauthnEnabled();
     UUID userId = mfaService.requireMfaSessionUser(request.mfaSessionId());
-    String challenge = mfaService.createChallenge("webauthn:authentication:", request.mfaSessionId());
+    String challenge =
+        mfaService.createChallenge("webauthn:authentication:", request.mfaSessionId());
     return new WebAuthnAuthenticationOptionsResponse(
         request.mfaSessionId(),
         challenge,
@@ -159,7 +165,8 @@ public class MfaController {
                         "WEBAUTHN_CREDENTIAL_NOT_FOUND",
                         org.springframework.http.HttpStatus.NOT_FOUND,
                         "Credential not found"));
-    credential.markUsed(request.signCount() == null ? credential.getSignCount() : request.signCount());
+    credential.markUsed(
+        request.signCount() == null ? credential.getSignCount() : request.signCount());
     AuthResponse response = authService.completeMfaLogin(request.mfaSessionId(), httpRequest);
     return withCookieIfNeeded(response, httpRequest, httpResponse);
   }
@@ -171,8 +178,7 @@ public class MfaController {
       @RequestBody(required = false) RecoveryCodeGenerateRequest request) {
     UUID userId = requireUserId(accessToken);
     boolean hadActiveCodes = mfaService.hasRecoveryCodes(userId);
-    if (mfaService.hasRecoveryCodes(userId)
-        && (request == null || !request.acknowledgeReplace())) {
+    if (mfaService.hasRecoveryCodes(userId) && (request == null || !request.acknowledgeReplace())) {
       throw new MfaException(
           "MFA_RECOVERY_REGEN_ACK_REQUIRED",
           org.springframework.http.HttpStatus.BAD_REQUEST,
@@ -253,7 +259,9 @@ public class MfaController {
   private UUID requireUserId(Jwt accessToken) {
     if (accessToken == null) {
       throw new MfaException(
-          "MFA_REQUIRED", org.springframework.http.HttpStatus.UNAUTHORIZED, "MFA authentication required");
+          "MFA_REQUIRED",
+          org.springframework.http.HttpStatus.UNAUTHORIZED,
+          "MFA authentication required");
     }
     return UUID.fromString(accessToken.getSubject());
   }

@@ -14,7 +14,13 @@ public record ErrorResponse(
     String requestId,
     Map<String, Object> details) {
 
-  public ErrorResponse(Instant timestamp, int status, String errorCode, String message, String path, String requestId) {
+  public ErrorResponse(
+      Instant timestamp,
+      int status,
+      String errorCode,
+      String message,
+      String path,
+      String requestId) {
     this(timestamp, status, errorCode, message, path, requestId, null);
   }
 }

@@ -27,7 +27,8 @@ class AdminEnterpriseChangeRequestControllerDirectTest {
     AdminAuthorizationService auth = mock(AdminAuthorizationService.class);
     when(auth.adminWriteFeatureEnabled()).thenReturn(false);
     var controller =
-        new AdminEnterpriseChangeRequestController(auth, mock(EnterpriseChangeRequestProxyService.class));
+        new AdminEnterpriseChangeRequestController(
+            auth, mock(EnterpriseChangeRequestProxyService.class));
 
     StepVerifier.create(controller.list(jwtPlatformAdmin(), null, null))
         .assertNext(
@@ -43,9 +44,11 @@ class AdminEnterpriseChangeRequestControllerDirectTest {
   void nonPlatformAdmin_returns403() {
     AdminAuthorizationService auth = mock(AdminAuthorizationService.class);
     when(auth.adminWriteFeatureEnabled()).thenReturn(true);
-    when(auth.ensureChangeRequestList(any())).thenReturn(Optional.of(ErrorCode.ADMIN_ACCESS_DENIED));
+    when(auth.ensureChangeRequestList(any()))
+        .thenReturn(Optional.of(ErrorCode.ADMIN_ACCESS_DENIED));
     var controller =
-        new AdminEnterpriseChangeRequestController(auth, mock(EnterpriseChangeRequestProxyService.class));
+        new AdminEnterpriseChangeRequestController(
+            auth, mock(EnterpriseChangeRequestProxyService.class));
 
     StepVerifier.create(controller.list(jwtMember(), null, null))
         .assertNext(
@@ -63,9 +66,16 @@ class AdminEnterpriseChangeRequestControllerDirectTest {
     when(auth.adminWriteFeatureEnabled()).thenReturn(true);
     when(auth.ensureChangeRequestList(any())).thenReturn(Optional.empty());
     EnterpriseChangeRequestProxyService proxy = mock(EnterpriseChangeRequestProxyService.class);
-    when(proxy.list(eq(null), eq("sub-1"), eq("a@b.com"), eq("rid"), eq(AdminEnterpriseChangeRequestController.PATH_PREFIX)))
+    when(proxy.list(
+            eq(null),
+            eq("sub-1"),
+            eq("a@b.com"),
+            eq("rid"),
+            eq(AdminEnterpriseChangeRequestController.PATH_PREFIX)))
         .thenReturn(
-            Mono.just(ResponseEntity.ok().body(Map.of("items", java.util.List.of(Map.of("id", UUID.randomUUID()))))));
+            Mono.just(
+                ResponseEntity.ok()
+                    .body(Map.of("items", java.util.List.of(Map.of("id", UUID.randomUUID()))))));
     var controller = new AdminEnterpriseChangeRequestController(auth, proxy);
 
     StepVerifier.create(controller.list(jwtPlatformAdmin(), null, "rid"))
@@ -77,9 +87,11 @@ class AdminEnterpriseChangeRequestControllerDirectTest {
   void approve_whenMfaRequired_returns403() {
     AdminAuthorizationService auth = mock(AdminAuthorizationService.class);
     when(auth.adminWriteFeatureEnabled()).thenReturn(true);
-    when(auth.ensureChangeRequestApprove(any())).thenReturn(Optional.of(ErrorCode.ADMIN_WRITE_MFA_REQUIRED));
+    when(auth.ensureChangeRequestApprove(any()))
+        .thenReturn(Optional.of(ErrorCode.ADMIN_WRITE_MFA_REQUIRED));
     var controller =
-        new AdminEnterpriseChangeRequestController(auth, mock(EnterpriseChangeRequestProxyService.class));
+        new AdminEnterpriseChangeRequestController(
+            auth, mock(EnterpriseChangeRequestProxyService.class));
     UUID id = UUID.randomUUID();
 
     StepVerifier.create(controller.approve(jwtPlatformAdmin(), id, Map.of("reason", "ok"), null))
@@ -106,10 +118,12 @@ class AdminEnterpriseChangeRequestControllerDirectTest {
             eq("a@b.com"),
             eq("rid"),
             eq(AdminEnterpriseChangeRequestController.PATH_PREFIX + "/" + id + "/approve")))
-        .thenReturn(Mono.just(ResponseEntity.ok().body(Map.of("id", id.toString(), "status", "APPROVED"))));
+        .thenReturn(
+            Mono.just(ResponseEntity.ok().body(Map.of("id", id.toString(), "status", "APPROVED"))));
     var controller = new AdminEnterpriseChangeRequestController(auth, proxy);
 
-    StepVerifier.create(controller.approve(jwtPlatformAdmin(), id, Map.of("reason", "reviewed"), "rid"))
+    StepVerifier.create(
+            controller.approve(jwtPlatformAdmin(), id, Map.of("reason", "reviewed"), "rid"))
         .assertNext(r -> assertThat(r.getStatusCode()).isEqualTo(HttpStatus.OK))
         .verifyComplete();
   }

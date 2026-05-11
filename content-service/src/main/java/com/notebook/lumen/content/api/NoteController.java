@@ -96,7 +96,8 @@ public class NoteController {
       @PathVariable UUID noteId,
       @Valid @RequestBody NoteMergeDtos.NoteMergeApplyRequest request,
       HttpServletRequest http) {
-    NoteMergeApplyService.ApplyResult result = noteMergeApplyService.apply(user(http), noteId, request);
+    NoteMergeApplyService.ApplyResult result =
+        noteMergeApplyService.apply(user(http), noteId, request);
     if (result instanceof NoteMergeApplyService.ApplyResult.Success success) {
       return ResponseEntity.ok(success.response());
     }

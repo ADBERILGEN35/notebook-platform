@@ -59,6 +59,7 @@ public record SearchProperties(
         internal,
         reindex);
   }
+
   public record Workspace(String serviceUrl, long timeoutMs, int retryMaxAttempts) {}
 
   public record ContentSource(String serviceUrl, long timeoutMs, String audience) {}

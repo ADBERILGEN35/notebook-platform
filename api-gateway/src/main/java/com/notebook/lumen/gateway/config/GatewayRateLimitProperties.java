@@ -20,9 +20,7 @@ public record GatewayRateLimitProperties(
   }
 
   public Bucket effectiveAdminAuditExportMachine() {
-    return adminAuditExportMachine == null
-        ? new Bucket(1, 1, 1)
-        : adminAuditExportMachine;
+    return adminAuditExportMachine == null ? new Bucket(1, 1, 1) : adminAuditExportMachine;
   }
 
   public Bucket effectiveAdminWrite() {

@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 
 class SearchQueryServiceTest {
   private final SearchQueryService service =
-          new SearchQueryService(
+      new SearchQueryService(
           mock(SearchProviderRouter.class),
           mock(SearchPermissionService.class),
           properties(),

@@ -386,7 +386,7 @@ public class SearchReindexService {
             job.getId(), job.getWorkspaceId(), job.getNotebookId(), 500);
     int archived =
         documentRepository.archiveActiveOrphansForReindex(
-        job.getId(), job.getWorkspaceId(), job.getNotebookId(), now);
+            job.getId(), job.getWorkspaceId(), job.getNotebookId(), now);
     candidates.stream()
         .limit(archived)
         .forEach(candidate -> providerRouter.projectArchive(candidate.getNoteId(), now));

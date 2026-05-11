@@ -47,8 +47,10 @@ public class ScimEffectiveMembershipService {
         continue;
       }
       ScimGroup group = g.get();
-      String d = group.getDisplayName() == null ? "" : group.getDisplayName().toLowerCase(Locale.ROOT);
-      String e = group.getExternalId() == null ? "" : group.getExternalId().toLowerCase(Locale.ROOT);
+      String d =
+          group.getDisplayName() == null ? "" : group.getDisplayName().toLowerCase(Locale.ROOT);
+      String e =
+          group.getExternalId() == null ? "" : group.getExternalId().toLowerCase(Locale.ROOT);
       if (admin.stream().anyMatch(x -> x.equals(d) || x.equals(e))) {
         return true;
       }
@@ -60,7 +62,9 @@ public class ScimEffectiveMembershipService {
   public Set<UUID> effectiveActiveGroupIdsForUser(UUID userId) {
     Set<UUID> direct =
         new HashSet<>(
-            membershipRepository.findByMemberTypeAndMemberUser_Id(ScimMemberType.USER, userId).stream()
+            membershipRepository
+                .findByMemberTypeAndMemberUser_Id(ScimMemberType.USER, userId)
+                .stream()
                 .map(m -> m.getGroup().getId())
                 .toList());
     Set<UUID> effective = new HashSet<>();

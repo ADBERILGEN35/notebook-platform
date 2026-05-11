@@ -16,7 +16,8 @@ import reactor.core.publisher.Mono;
 
 @Service
 public class AdminNotificationAnalyticsProxyService {
-  private static final Logger log = LoggerFactory.getLogger(AdminNotificationAnalyticsProxyService.class);
+  private static final Logger log =
+      LoggerFactory.getLogger(AdminNotificationAnalyticsProxyService.class);
   static final String ANALYTICS_SCOPE = "internal:admin:notifications:analytics:read";
   private static final String NOTIFICATION_AUDIENCE = "notification-service";
 

@@ -28,6 +28,7 @@ public class Note {
   private Instant createdAt;
   private Instant updatedAt;
   private Instant archivedAt;
+
   @Column(name = "note_revision")
   private long noteRevision;
 

@@ -2,7 +2,6 @@ package com.notebook.lumen.identity.admin;
 
 import com.notebook.lumen.common.security.admin.PlatformAdminRbacConstants;
 import com.notebook.lumen.identity.sso.SsoProperties;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -37,9 +36,15 @@ public class AdminRbacService {
     Set<String> normalizedInput = normalizeGroups(idpGroups);
     LinkedHashSet<String> roles = new LinkedHashSet<>();
     addRoleIfGroupMatches(
-        normalizedInput, properties.groupPlatformAdmin(), PlatformAdminRbacConstants.ROLE_PLATFORM_ADMIN, roles);
+        normalizedInput,
+        properties.groupPlatformAdmin(),
+        PlatformAdminRbacConstants.ROLE_PLATFORM_ADMIN,
+        roles);
     addRoleIfGroupMatches(
-        normalizedInput, properties.groupAuditViewer(), PlatformAdminRbacConstants.ROLE_PLATFORM_AUDIT_VIEWER, roles);
+        normalizedInput,
+        properties.groupAuditViewer(),
+        PlatformAdminRbacConstants.ROLE_PLATFORM_AUDIT_VIEWER,
+        roles);
     addRoleIfGroupMatches(
         normalizedInput,
         properties.groupAuditExporter(),
@@ -132,7 +137,9 @@ public class AdminRbacService {
   }
 
   public List<String> resolvePermissions(List<String> normalizedPlatformRoles) {
-    if (!properties.enabled() || normalizedPlatformRoles == null || normalizedPlatformRoles.isEmpty()) {
+    if (!properties.enabled()
+        || normalizedPlatformRoles == null
+        || normalizedPlatformRoles.isEmpty()) {
       return List.of();
     }
     LinkedHashSet<String> perms = new LinkedHashSet<>();
@@ -214,18 +221,28 @@ public class AdminRbacService {
     return new AdminRbacStatusSnapshot(
         properties.enabled(),
         properties.legacyPlatformAdminImpliesAll(),
-        roleConfigured(properties.groupPlatformAdmin(), PlatformAdminRbacConstants.ROLE_PLATFORM_ADMIN),
-        roleConfigured(properties.groupAuditViewer(), PlatformAdminRbacConstants.ROLE_PLATFORM_AUDIT_VIEWER),
-        roleConfigured(properties.groupAuditExporter(), PlatformAdminRbacConstants.ROLE_PLATFORM_AUDIT_EXPORTER),
-        roleConfigured(properties.groupSecurityAdmin(), PlatformAdminRbacConstants.ROLE_PLATFORM_SECURITY_ADMIN),
-        roleConfigured(properties.groupIdentityAdmin(), PlatformAdminRbacConstants.ROLE_PLATFORM_IDENTITY_ADMIN),
         roleConfigured(
-            properties.groupChangeRequestAuthor(), PlatformAdminRbacConstants.ROLE_PLATFORM_CHANGE_REQUEST_AUTHOR),
+            properties.groupPlatformAdmin(), PlatformAdminRbacConstants.ROLE_PLATFORM_ADMIN),
+        roleConfigured(
+            properties.groupAuditViewer(), PlatformAdminRbacConstants.ROLE_PLATFORM_AUDIT_VIEWER),
+        roleConfigured(
+            properties.groupAuditExporter(),
+            PlatformAdminRbacConstants.ROLE_PLATFORM_AUDIT_EXPORTER),
+        roleConfigured(
+            properties.groupSecurityAdmin(),
+            PlatformAdminRbacConstants.ROLE_PLATFORM_SECURITY_ADMIN),
+        roleConfigured(
+            properties.groupIdentityAdmin(),
+            PlatformAdminRbacConstants.ROLE_PLATFORM_IDENTITY_ADMIN),
+        roleConfigured(
+            properties.groupChangeRequestAuthor(),
+            PlatformAdminRbacConstants.ROLE_PLATFORM_CHANGE_REQUEST_AUTHOR),
         roleConfigured(
             properties.groupChangeRequestApprover(),
             PlatformAdminRbacConstants.ROLE_PLATFORM_CHANGE_REQUEST_APPROVER),
         roleConfigured(
-            properties.groupObservabilityViewer(), PlatformAdminRbacConstants.ROLE_PLATFORM_OBSERVABILITY_VIEWER));
+            properties.groupObservabilityViewer(),
+            PlatformAdminRbacConstants.ROLE_PLATFORM_OBSERVABILITY_VIEWER));
   }
 
   private static boolean roleConfigured(String groupPattern, String roleName) {

@@ -1,11 +1,11 @@
 package com.notebook.lumen.gateway.admin.audit;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import com.notebook.lumen.gateway.error.ErrorCode;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class AuditProxyServiceValidationTest {
 
@@ -29,7 +29,8 @@ class AuditProxyServiceValidationTest {
 
   @Test
   void rejectsInvalidUuidFilter() {
-    assertThatThrownBy(() -> AuditProxyService.validateAndNormalize(Map.of("actorUserId", "bad-uuid")))
+    assertThatThrownBy(
+            () -> AuditProxyService.validateAndNormalize(Map.of("actorUserId", "bad-uuid")))
         .isInstanceOf(AuditProxyException.class)
         .satisfies(
             throwable ->

@@ -1,19 +1,19 @@
 package com.notebook.lumen.gateway.admin;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import com.notebook.lumen.common.security.admin.PlatformAdminRbacConstants;
 import com.notebook.lumen.gateway.config.GatewayAdminProperties;
 import com.notebook.lumen.gateway.config.GatewayAdminProperties.Audit;
 import com.notebook.lumen.gateway.config.GatewayAdminProperties.Enterprise;
 import com.notebook.lumen.gateway.config.GatewayAdminRbacProperties;
 import com.notebook.lumen.gateway.config.GatewayAdminWriteProperties;
-import com.notebook.lumen.common.security.admin.PlatformAdminRbacConstants;
 import com.notebook.lumen.gateway.error.ErrorCode;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.oauth2.jwt.Jwt;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 class AdminAuthorizationServiceTest {
 
@@ -34,7 +34,14 @@ class AdminAuthorizationServiceTest {
     AdminAuthorizationService service =
         new AdminAuthorizationService(
             new GatewayAdminProperties(
-                true, false, "off", "webauthn,recovery_code", "", "", new Audit(true), new Enterprise(false)),
+                true,
+                false,
+                "off",
+                "webauthn,recovery_code",
+                "",
+                "",
+                new Audit(true),
+                new Enterprise(false)),
             writeOff(),
             rbacOff());
     Jwt jwt = jwt("user-1", "member@example.com", List.of("PLATFORM_ADMIN"));
@@ -46,7 +53,14 @@ class AdminAuthorizationServiceTest {
     AdminAuthorizationService service =
         new AdminAuthorizationService(
             new GatewayAdminProperties(
-                true, false, "off", "webauthn,recovery_code", "", "", new Audit(true), new Enterprise(false)),
+                true,
+                false,
+                "off",
+                "webauthn,recovery_code",
+                "",
+                "",
+                new Audit(true),
+                new Enterprise(false)),
             writeOff(),
             rbacOff());
     Instant now = Instant.now();
@@ -144,12 +158,18 @@ class AdminAuthorizationServiceTest {
             now.plusSeconds(300),
             Map.of("alg", "RS256"),
             Map.of(
-                "sub", "user-1",
-                "email", "member@example.com",
-                "roles", List.of("PLATFORM_ADMIN"),
-                "token_type", "access",
-                "mfa_verified", true,
-                "amr", List.of("pwd", "webauthn")));
+                "sub",
+                "user-1",
+                "email",
+                "member@example.com",
+                "roles",
+                List.of("PLATFORM_ADMIN"),
+                "token_type",
+                "access",
+                "mfa_verified",
+                true,
+                "amr",
+                List.of("pwd", "webauthn")));
     assertThat(service.isAdmin(jwt)).isTrue();
   }
 
@@ -170,7 +190,8 @@ class AdminAuthorizationServiceTest {
             rbacOff());
     Jwt jwt = jwt("user-2", "ops@example.com", List.of("ROLE_USER"));
     assertThat(service.adminWriteFeatureEnabled()).isTrue();
-    assertThat(service.enterpriseAdminWriteDenialReason(jwt)).contains(ErrorCode.ADMIN_ACCESS_DENIED);
+    assertThat(service.enterpriseAdminWriteDenialReason(jwt))
+        .contains(ErrorCode.ADMIN_ACCESS_DENIED);
   }
 
   @Test
@@ -178,11 +199,19 @@ class AdminAuthorizationServiceTest {
     AdminAuthorizationService service =
         new AdminAuthorizationService(
             new GatewayAdminProperties(
-                true, false, "warn", "webauthn,recovery_code", "", "", new Audit(true), new Enterprise(true)),
+                true,
+                false,
+                "warn",
+                "webauthn,recovery_code",
+                "",
+                "",
+                new Audit(true),
+                new Enterprise(true)),
             new GatewayAdminWriteProperties(true, ""),
             rbacOff());
     Jwt jwt = jwt("user-1", "member@example.com", List.of("PLATFORM_ADMIN"));
-    assertThat(service.enterpriseAdminWriteDenialReason(jwt)).contains(ErrorCode.ADMIN_WRITE_MFA_REQUIRED);
+    assertThat(service.enterpriseAdminWriteDenialReason(jwt))
+        .contains(ErrorCode.ADMIN_WRITE_MFA_REQUIRED);
   }
 
   @Test
@@ -190,7 +219,14 @@ class AdminAuthorizationServiceTest {
     AdminAuthorizationService service =
         new AdminAuthorizationService(
             new GatewayAdminProperties(
-                true, false, "off", "webauthn,recovery_code", "", "", new Audit(true), new Enterprise(true)),
+                true,
+                false,
+                "off",
+                "webauthn,recovery_code",
+                "",
+                "",
+                new Audit(true),
+                new Enterprise(true)),
             new GatewayAdminWriteProperties(true, ""),
             rbacOff());
     Jwt jwt = jwt("user-1", "member@example.com", List.of("PLATFORM_ADMIN"));
@@ -222,7 +258,14 @@ class AdminAuthorizationServiceTest {
     AdminAuthorizationService service =
         new AdminAuthorizationService(
             new GatewayAdminProperties(
-                true, false, "off", "webauthn,recovery_code", "", "", new Audit(true), new Enterprise(false)),
+                true,
+                false,
+                "off",
+                "webauthn,recovery_code",
+                "",
+                "",
+                new Audit(true),
+                new Enterprise(false)),
             writeOff(),
             rbacOn());
     Instant now = Instant.now();
@@ -243,7 +286,8 @@ class AdminAuthorizationServiceTest {
                 List.of(PlatformAdminRbacConstants.PERM_AUDIT_READ),
                 "token_type",
                 "access"));
-    assertThat(service.ensureAdminPermission(jwt, PlatformAdminRbacConstants.PERM_AUDIT_READ)).isEmpty();
+    assertThat(service.ensureAdminPermission(jwt, PlatformAdminRbacConstants.PERM_AUDIT_READ))
+        .isEmpty();
   }
 
   @Test
@@ -251,7 +295,14 @@ class AdminAuthorizationServiceTest {
     AdminAuthorizationService service =
         new AdminAuthorizationService(
             new GatewayAdminProperties(
-                true, false, "off", "webauthn,recovery_code", "", "", new Audit(true), new Enterprise(true)),
+                true,
+                false,
+                "off",
+                "webauthn,recovery_code",
+                "",
+                "",
+                new Audit(true),
+                new Enterprise(true)),
             new GatewayAdminWriteProperties(true, ""),
             rbacOn());
     Instant now = Instant.now();
@@ -283,7 +334,14 @@ class AdminAuthorizationServiceTest {
     AdminAuthorizationService service =
         new AdminAuthorizationService(
             new GatewayAdminProperties(
-                true, false, "off", "webauthn,recovery_code", "", "", new Audit(true), new Enterprise(true)),
+                true,
+                false,
+                "off",
+                "webauthn,recovery_code",
+                "",
+                "",
+                new Audit(true),
+                new Enterprise(true)),
             writeOff(),
             rbacOn());
     Instant now = Instant.now();
@@ -310,7 +368,14 @@ class AdminAuthorizationServiceTest {
     AdminAuthorizationService service =
         new AdminAuthorizationService(
             new GatewayAdminProperties(
-                true, false, "off", "webauthn,recovery_code", "", "", new Audit(true), new Enterprise(true)),
+                true,
+                false,
+                "off",
+                "webauthn,recovery_code",
+                "",
+                "",
+                new Audit(true),
+                new Enterprise(true)),
             writeOff(),
             rbacOn());
     Instant now = Instant.now();

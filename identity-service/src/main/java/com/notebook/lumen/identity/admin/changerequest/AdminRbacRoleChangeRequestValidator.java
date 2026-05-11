@@ -46,7 +46,8 @@ public class AdminRbacRoleChangeRequestValidator {
   public AdminChangeRequestDtos.ValidateResponse validate(
       AdminChangeRequestDtos.ValidateBody body, AdminOperationDefinition def) {
     ensureRbacRequestsEnabled();
-    ParsedRbac parsed = parse(body.operationType(), body.requestedValue(), body.structuredPayload(), false);
+    ParsedRbac parsed =
+        parse(body.operationType(), body.requestedValue(), body.structuredPayload(), false);
     User target = loadActiveTarget(parsed.targetUserId());
     validateRole(parsed.role());
     String severity = effectiveSeverity(parsed.role());
@@ -60,7 +61,9 @@ public class AdminRbacRoleChangeRequestValidator {
     String normalized = parsed.normalizedRequestedValue();
     if (!def.isValueAllowed(normalized)) {
       throw new AdminChangeRequestException(
-          "ADMIN_CHANGE_REQUEST_INVALID", HttpStatus.BAD_REQUEST, "Invalid requestedValue encoding");
+          "ADMIN_CHANGE_REQUEST_INVALID",
+          HttpStatus.BAD_REQUEST,
+          "Invalid requestedValue encoding");
     }
 
     Map<String, Object> impact = new HashMap<>(registry.toImpactSummary(def));
@@ -83,7 +86,8 @@ public class AdminRbacRoleChangeRequestValidator {
     validation.put("requestedRole", parsed.role());
     validation.put("rbacAction", parsed.action());
     validation.put("effectiveSeverity", severity);
-    return new AdminChangeRequestDtos.ValidateResponse(true, def.requiresApproval(), impact, validation);
+    return new AdminChangeRequestDtos.ValidateResponse(
+        true, def.requiresApproval(), impact, validation);
   }
 
   public AdminChangeRequestDtos.CreateResponse create(
@@ -94,7 +98,8 @@ public class AdminRbacRoleChangeRequestValidator {
       String externalRequestId,
       HttpServletRequest request) {
     ensureRbacRequestsEnabled();
-    ParsedRbac parsed = parse(body.operationType(), body.requestedValue(), body.structuredPayload(), true);
+    ParsedRbac parsed =
+        parse(body.operationType(), body.requestedValue(), body.structuredPayload(), true);
     User target = loadActiveTarget(parsed.targetUserId());
     validateRole(parsed.role());
     String severity = effectiveSeverity(parsed.role());
@@ -118,7 +123,9 @@ public class AdminRbacRoleChangeRequestValidator {
     String normalized = parsed.normalizedRequestedValue();
     if (!def.isValueAllowed(normalized)) {
       throw new AdminChangeRequestException(
-          "ADMIN_CHANGE_REQUEST_INVALID", HttpStatus.BAD_REQUEST, "Invalid requestedValue encoding");
+          "ADMIN_CHANGE_REQUEST_INVALID",
+          HttpStatus.BAD_REQUEST,
+          "Invalid requestedValue encoding");
     }
 
     Map<String, Object> impact = new HashMap<>(registry.toImpactSummary(def));
@@ -182,7 +189,10 @@ public class AdminRbacRoleChangeRequestValidator {
             storedEnv));
 
     return new AdminChangeRequestDtos.CreateResponse(
-        entity.getId(), entity.getStatus().name(), entity.getOperationType(), entity.getCreatedAt());
+        entity.getId(),
+        entity.getStatus().name(),
+        entity.getOperationType(),
+        entity.getCreatedAt());
   }
 
   private void ensureRbacRequestsEnabled() {
@@ -201,7 +211,9 @@ public class AdminRbacRoleChangeRequestValidator {
             .orElseThrow(
                 () ->
                     new AdminChangeRequestException(
-                        "ADMIN_RBAC_TARGET_USER_INVALID", HttpStatus.BAD_REQUEST, "Unknown target user"));
+                        "ADMIN_RBAC_TARGET_USER_INVALID",
+                        HttpStatus.BAD_REQUEST,
+                        "Unknown target user"));
     if (u.getDeletedAt() != null || u.getStatus() == UserStatus.DELETED) {
       throw new AdminChangeRequestException(
           "ADMIN_RBAC_TARGET_USER_INVALID", HttpStatus.BAD_REQUEST, "Target user is deleted");
@@ -214,9 +226,7 @@ public class AdminRbacRoleChangeRequestValidator {
     }
     if (u.getStatus() != UserStatus.ACTIVE) {
       throw new AdminChangeRequestException(
-          "ADMIN_RBAC_TARGET_USER_INACTIVE",
-          HttpStatus.BAD_REQUEST,
-          "Target user must be ACTIVE");
+          "ADMIN_RBAC_TARGET_USER_INACTIVE", HttpStatus.BAD_REQUEST, "Target user must be ACTIVE");
     }
     return u;
   }
@@ -225,12 +235,15 @@ public class AdminRbacRoleChangeRequestValidator {
     String r = role.trim().toUpperCase(Locale.ROOT);
     if (!PlatformAdminRbacConstants.assignableAdminRoles().contains(r)) {
       throw new AdminChangeRequestException(
-          "ADMIN_RBAC_ROLE_INVALID", HttpStatus.BAD_REQUEST, "Unknown or non-assignable platform role");
+          "ADMIN_RBAC_ROLE_INVALID",
+          HttpStatus.BAD_REQUEST,
+          "Unknown or non-assignable platform role");
     }
   }
 
   private static String effectiveSeverity(String role) {
-    if (PlatformAdminRbacConstants.ROLE_PLATFORM_ADMIN.equals(role.trim().toUpperCase(Locale.ROOT))) {
+    if (PlatformAdminRbacConstants.ROLE_PLATFORM_ADMIN.equals(
+        role.trim().toUpperCase(Locale.ROOT))) {
       return "HIGH";
     }
     return "MEDIUM";
@@ -249,8 +262,12 @@ public class AdminRbacRoleChangeRequestValidator {
           "lastPlatformAdminRevokeWarning",
           "Revoking PLATFORM_ADMIN may lock out operators; confirm another break-glass path exists.");
     }
-    if (actorUserId != null && actorUserId.equals(parsed.targetUserId()) && "REVOKE".equals(parsed.action())) {
-      m.put("selfRevokeWarning", "You are requesting revocation for your own user id; confirm intent.");
+    if (actorUserId != null
+        && actorUserId.equals(parsed.targetUserId())
+        && "REVOKE".equals(parsed.action())) {
+      m.put(
+          "selfRevokeWarning",
+          "You are requesting revocation for your own user id; confirm intent.");
     }
     m.put("targetEmailDomain", safeEmailDomain(target.getEmail()));
     return m;
@@ -264,7 +281,10 @@ public class AdminRbacRoleChangeRequestValidator {
   }
 
   private ParsedRbac parse(
-      String operationType, String requestedValue, Map<String, Object> structuredPayload, boolean requireReason) {
+      String operationType,
+      String requestedValue,
+      Map<String, Object> structuredPayload,
+      boolean requireReason) {
     String op = operationType == null ? "" : operationType.trim();
     String action;
     if (AdminOperationRegistry.OP_ADMIN_RBAC_ROLE_GRANT_REQUEST.equals(op)) {
@@ -297,7 +317,9 @@ public class AdminRbacRoleChangeRequestValidator {
       }
       if (!action.equalsIgnoreCase(parts[0].trim())) {
         throw new AdminChangeRequestException(
-            "ADMIN_CHANGE_REQUEST_INVALID", HttpStatus.BAD_REQUEST, "requestedValue action does not match operationType");
+            "ADMIN_CHANGE_REQUEST_INVALID",
+            HttpStatus.BAD_REQUEST,
+            "requestedValue action does not match operationType");
       }
       role = parts[1].trim().toUpperCase(Locale.ROOT);
       userId = UUID.fromString(parts[2].trim());
@@ -310,27 +332,34 @@ public class AdminRbacRoleChangeRequestValidator {
           "structuredPayload.reason is required for RBAC role change requests");
     }
 
-    String normalized = action.toLowerCase(Locale.ROOT) + ":" + role.toLowerCase(Locale.ROOT) + ":" + userId;
+    String normalized =
+        action.toLowerCase(Locale.ROOT) + ":" + role.toLowerCase(Locale.ROOT) + ":" + userId;
     return new ParsedRbac(action, role, userId, reason, normalized);
   }
 
   private static UUID readUuid(Object raw, String field) {
     if (raw == null) {
       throw new AdminChangeRequestException(
-          "ADMIN_CHANGE_REQUEST_INVALID", HttpStatus.BAD_REQUEST, "structuredPayload." + field + " is required");
+          "ADMIN_CHANGE_REQUEST_INVALID",
+          HttpStatus.BAD_REQUEST,
+          "structuredPayload." + field + " is required");
     }
     try {
       return UUID.fromString(String.valueOf(raw).trim());
     } catch (IllegalArgumentException e) {
       throw new AdminChangeRequestException(
-          "ADMIN_CHANGE_REQUEST_INVALID", HttpStatus.BAD_REQUEST, "structuredPayload." + field + " must be a UUID");
+          "ADMIN_CHANGE_REQUEST_INVALID",
+          HttpStatus.BAD_REQUEST,
+          "structuredPayload." + field + " must be a UUID");
     }
   }
 
   private static String readString(Object raw, String field) {
     if (raw == null || String.valueOf(raw).isBlank()) {
       throw new AdminChangeRequestException(
-          "ADMIN_CHANGE_REQUEST_INVALID", HttpStatus.BAD_REQUEST, "structuredPayload." + field + " is required");
+          "ADMIN_CHANGE_REQUEST_INVALID",
+          HttpStatus.BAD_REQUEST,
+          "structuredPayload." + field + " is required");
     }
     return String.valueOf(raw).trim();
   }
@@ -339,5 +368,10 @@ public class AdminRbacRoleChangeRequestValidator {
     return s == null || s.isBlank() ? null : s;
   }
 
-  private record ParsedRbac(String action, String role, UUID targetUserId, String reason, String normalizedRequestedValue) {}
+  private record ParsedRbac(
+      String action,
+      String role,
+      UUID targetUserId,
+      String reason,
+      String normalizedRequestedValue) {}
 }

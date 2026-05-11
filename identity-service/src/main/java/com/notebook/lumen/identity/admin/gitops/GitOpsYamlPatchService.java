@@ -1,7 +1,6 @@
 package com.notebook.lumen.identity.admin.gitops;
 
 import com.notebook.lumen.common.security.admin.PlatformAdminRbacConstants;
-import com.notebook.lumen.identity.admin.changerequest.AdminOperationRegistry;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
@@ -37,7 +36,15 @@ public class GitOpsYamlPatchService {
         String yamlBefore,
         String yamlAfter,
         String diffPreview) {
-      this(relativePath, yamlDotPath, oldValue, newValue, yamlBefore, yamlAfter, diffPreview, List.of());
+      this(
+          relativePath,
+          yamlDotPath,
+          oldValue,
+          newValue,
+          yamlBefore,
+          yamlAfter,
+          diffPreview,
+          List.of());
     }
   }
 
@@ -62,7 +69,8 @@ public class GitOpsYamlPatchService {
             HttpStatus.BAD_REQUEST,
             "RBAC GitOps patch requires change request context");
       }
-      return buildAdminRbacOverridesPatchPlan(mapping, normalizedRequestedValue, environment, rbacContext);
+      return buildAdminRbacOverridesPatchPlan(
+          mapping, normalizedRequestedValue, environment, rbacContext);
     }
 
     String rel = mapping.relativePath(environment);
@@ -100,7 +108,9 @@ public class GitOpsYamlPatchService {
     RbacTriple triple = parseRbacNormalized(normalizedRequestedValue);
     if (!PlatformAdminRbacConstants.assignableAdminRoles().contains(triple.role())) {
       throw new AdminGitOpsException(
-          "ADMIN_GITOPS_PATCH_FAILED", HttpStatus.BAD_REQUEST, "Role is not allow-listed for GitOps RBAC proposals");
+          "ADMIN_GITOPS_PATCH_FAILED",
+          HttpStatus.BAD_REQUEST,
+          "Role is not allow-listed for GitOps RBAC proposals");
     }
 
     Map<String, Object> root = loadAdminRbacBaselineMap(environment);
@@ -149,8 +159,8 @@ public class GitOpsYamlPatchService {
   }
 
   /**
-   * Apply allow-listed patch to YAML text (e.g. from GitHub). For RBAC operations {@code rbacContext} must be
-   * non-null with change request id and actor ids.
+   * Apply allow-listed patch to YAML text (e.g. from GitHub). For RBAC operations {@code
+   * rbacContext} must be non-null with change request id and actor ids.
    */
   public String applyPatchToContent(
       String yamlContent,
@@ -169,17 +179,22 @@ public class GitOpsYamlPatchService {
     if (mapping.isAdminRbacOverridesFile()) {
       if (rbacContext == null || rbacContext.changeRequestId() == null) {
         throw new AdminGitOpsException(
-            "ADMIN_GITOPS_PATCH_FAILED", HttpStatus.BAD_REQUEST, "RBAC GitOps patch requires change request context");
+            "ADMIN_GITOPS_PATCH_FAILED",
+            HttpStatus.BAD_REQUEST,
+            "RBAC GitOps patch requires change request context");
       }
       Yaml yaml = yaml();
-      Map<String, Object> root = yaml.load(yamlContent == null || yamlContent.isBlank() ? "{}" : yamlContent);
+      Map<String, Object> root =
+          yaml.load(yamlContent == null || yamlContent.isBlank() ? "{}" : yamlContent);
       if (root == null) {
         root = new LinkedHashMap<>();
       }
       RbacTriple triple = parseRbacNormalized(normalizedRequestedValue);
       if (!PlatformAdminRbacConstants.assignableAdminRoles().contains(triple.role())) {
         throw new AdminGitOpsException(
-            "ADMIN_GITOPS_PATCH_FAILED", HttpStatus.BAD_REQUEST, "Role is not allow-listed for GitOps RBAC proposals");
+            "ADMIN_GITOPS_PATCH_FAILED",
+            HttpStatus.BAD_REQUEST,
+            "Role is not allow-listed for GitOps RBAC proposals");
       }
       Map<String, Object> assignment =
           buildAssignmentMap(
@@ -209,7 +224,9 @@ public class GitOpsYamlPatchService {
   private static RbacTriple parseRbacNormalized(String normalized) {
     if (normalized == null || normalized.isBlank()) {
       throw new AdminGitOpsException(
-          "ADMIN_GITOPS_PATCH_FAILED", HttpStatus.BAD_REQUEST, "RBAC normalized requestedValue is empty");
+          "ADMIN_GITOPS_PATCH_FAILED",
+          HttpStatus.BAD_REQUEST,
+          "RBAC normalized requestedValue is empty");
     }
     String[] parts = normalized.trim().split(":");
     if (parts.length != 3) {
@@ -223,7 +240,9 @@ public class GitOpsYamlPatchService {
     String userId = parts[2].trim();
     if (!"GRANT".equals(action) && !"REVOKE".equals(action)) {
       throw new AdminGitOpsException(
-          "ADMIN_GITOPS_PATCH_FAILED", HttpStatus.BAD_REQUEST, "RBAC action must be GRANT or REVOKE");
+          "ADMIN_GITOPS_PATCH_FAILED",
+          HttpStatus.BAD_REQUEST,
+          "RBAC action must be GRANT or REVOKE");
     }
     try {
       UUID.fromString(userId);
@@ -278,7 +297,8 @@ public class GitOpsYamlPatchService {
   }
 
   @SuppressWarnings("unchecked")
-  private static boolean hasDuplicateAssignment(Map<String, Object> root, String userId, String role, String action) {
+  private static boolean hasDuplicateAssignment(
+      Map<String, Object> root, String userId, String role, String action) {
     Object o = root.get("adminRbacOverrides");
     if (!(o instanceof Map)) {
       return false;
@@ -306,7 +326,8 @@ public class GitOpsYamlPatchService {
   private static Map<String, Object> loadValuesBaselineMap(String environment) {
     String env = environment.trim().toLowerCase(Locale.ROOT);
     String resource = "gitops-baselines/" + env + "/values.yaml";
-    try (InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream(resource)) {
+    try (InputStream in =
+        Thread.currentThread().getContextClassLoader().getResourceAsStream(resource)) {
       if (in == null) {
         throw new AdminGitOpsException(
             "ADMIN_GITOPS_MAPPING_NOT_FOUND",
@@ -325,7 +346,9 @@ public class GitOpsYamlPatchService {
       throw e;
     } catch (Exception e) {
       throw new AdminGitOpsException(
-          "ADMIN_GITOPS_PATCH_FAILED", HttpStatus.INTERNAL_SERVER_ERROR, "Failed to load baseline: " + e.getMessage());
+          "ADMIN_GITOPS_PATCH_FAILED",
+          HttpStatus.INTERNAL_SERVER_ERROR,
+          "Failed to load baseline: " + e.getMessage());
     }
   }
 
@@ -333,7 +356,8 @@ public class GitOpsYamlPatchService {
   private static Map<String, Object> loadAdminRbacBaselineMap(String environment) {
     String env = environment.trim().toLowerCase(Locale.ROOT);
     String resource = "gitops-baselines/" + env + "/admin-rbac-overrides.yaml";
-    try (InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream(resource)) {
+    try (InputStream in =
+        Thread.currentThread().getContextClassLoader().getResourceAsStream(resource)) {
       if (in == null) {
         throw new AdminGitOpsException(
             "ADMIN_GITOPS_MAPPING_NOT_FOUND",
@@ -345,14 +369,18 @@ public class GitOpsYamlPatchService {
       Map<String, Object> m = yaml.load(raw);
       if (m == null) {
         throw new AdminGitOpsException(
-            "ADMIN_GITOPS_PATCH_FAILED", HttpStatus.INTERNAL_SERVER_ERROR, "Invalid admin RBAC baseline YAML");
+            "ADMIN_GITOPS_PATCH_FAILED",
+            HttpStatus.INTERNAL_SERVER_ERROR,
+            "Invalid admin RBAC baseline YAML");
       }
       return m;
     } catch (AdminGitOpsException e) {
       throw e;
     } catch (Exception e) {
       throw new AdminGitOpsException(
-          "ADMIN_GITOPS_PATCH_FAILED", HttpStatus.INTERNAL_SERVER_ERROR, "Failed to load baseline: " + e.getMessage());
+          "ADMIN_GITOPS_PATCH_FAILED",
+          HttpStatus.INTERNAL_SERVER_ERROR,
+          "Failed to load baseline: " + e.getMessage());
     }
   }
 

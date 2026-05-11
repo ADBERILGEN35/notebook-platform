@@ -41,7 +41,8 @@ class SecurityNotificationServiceTest {
         .sendInApp(
             org.mockito.ArgumentMatchers.argThat(
                 request ->
-                    request.type() == NotificationClient.InAppNotificationType.SECURITY_SESSIONS_REVOKED
+                    request.type()
+                            == NotificationClient.InAppNotificationType.SECURITY_SESSIONS_REVOKED
                         && request.recipientUserId().equals(user.getId())
                         && "/app/settings/security".equals(request.actionUrl())));
   }

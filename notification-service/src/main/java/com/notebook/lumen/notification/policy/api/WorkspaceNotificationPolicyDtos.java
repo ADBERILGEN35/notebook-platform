@@ -15,9 +15,7 @@ public final class WorkspaceNotificationPolicyDtos {
   private WorkspaceNotificationPolicyDtos() {}
 
   public record WorkspaceNotificationPoliciesResponse(
-      UUID workspaceId,
-      boolean canManagePolicies,
-      List<WorkspaceNotificationPolicyRow> policies) {}
+      UUID workspaceId, boolean canManagePolicies, List<WorkspaceNotificationPolicyRow> policies) {}
 
   public record WorkspaceNotificationPolicyRow(
       UserNotificationType notificationType,
@@ -26,9 +24,7 @@ public final class WorkspaceNotificationPolicyDtos {
 
   @JsonInclude(JsonInclude.Include.NON_NULL)
   public record WorkspaceChannelPolicyState(
-      WorkspaceNotificationPolicyMode policyMode,
-      String reason,
-      boolean manageable) {}
+      WorkspaceNotificationPolicyMode policyMode, String reason, boolean manageable) {}
 
   public record WorkspaceNotificationPolicyPatchRequest(
       @NotNull @NotEmpty List<@Valid WorkspaceNotificationPolicyPatchItem> updates) {}

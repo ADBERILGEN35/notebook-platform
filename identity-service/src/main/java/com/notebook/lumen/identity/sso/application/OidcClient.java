@@ -16,10 +16,10 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.stereotype.Component;
-import org.springframework.web.util.UriUtils;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.util.UriUtils;
 
 @Component
 public class OidcClient {
@@ -42,7 +42,9 @@ public class OidcClient {
               .body(JsonNode.class);
       if (config == null) {
         throw new SsoException(
-            "SSO_PROVIDER_NOT_FOUND", HttpStatus.BAD_REQUEST, "OIDC provider metadata is unavailable");
+            "SSO_PROVIDER_NOT_FOUND",
+            HttpStatus.BAD_REQUEST,
+            "OIDC provider metadata is unavailable");
       }
       return new OidcProviderMetadata(
           text(config, "authorization_endpoint"),
@@ -53,12 +55,17 @@ public class OidcClient {
       throw ex;
     } catch (Exception ex) {
       throw new SsoException(
-          "SSO_PROVIDER_NOT_FOUND", HttpStatus.BAD_REQUEST, "OIDC provider metadata discovery failed");
+          "SSO_PROVIDER_NOT_FOUND",
+          HttpStatus.BAD_REQUEST,
+          "OIDC provider metadata discovery failed");
     }
   }
 
   public OidcIdTokenProfile exchangeAndValidate(
-      SsoProperties.Provider provider, OidcProviderMetadata metadata, String code, String redirectUri) {
+      SsoProperties.Provider provider,
+      OidcProviderMetadata metadata,
+      String code,
+      String redirectUri) {
     try {
       MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
       body.add("grant_type", "authorization_code");
@@ -93,11 +100,13 @@ public class OidcClient {
       String nonce = claimAsString(claims, "nonce");
       String sanitized = sanitizeClaims(claims);
 
-      return new OidcIdTokenProfile(subject, email, emailVerified, groups, amr, acr, nonce, sanitized);
+      return new OidcIdTokenProfile(
+          subject, email, emailVerified, groups, amr, acr, nonce, sanitized);
     } catch (SsoException ex) {
       throw ex;
     } catch (JwtException ex) {
-      throw new SsoException("SSO_ID_TOKEN_INVALID", HttpStatus.UNAUTHORIZED, "OIDC id_token is invalid");
+      throw new SsoException(
+          "SSO_ID_TOKEN_INVALID", HttpStatus.UNAUTHORIZED, "OIDC id_token is invalid");
     } catch (Exception ex) {
       throw new SsoException(
           "SSO_TOKEN_EXCHANGE_FAILED", HttpStatus.UNAUTHORIZED, "OIDC token exchange failed");
@@ -108,11 +117,13 @@ public class OidcClient {
     if (jwt.getIssuer() == null
         || expectedIssuer == null
         || !expectedIssuer.equals(jwt.getIssuer().toString())) {
-      throw new SsoException("SSO_ID_TOKEN_INVALID", HttpStatus.UNAUTHORIZED, "OIDC issuer mismatch");
+      throw new SsoException(
+          "SSO_ID_TOKEN_INVALID", HttpStatus.UNAUTHORIZED, "OIDC issuer mismatch");
     }
     List<String> audience = jwt.getAudience();
     if (audience == null || !audience.contains(expectedAudience)) {
-      throw new SsoException("SSO_ID_TOKEN_INVALID", HttpStatus.UNAUTHORIZED, "OIDC audience mismatch");
+      throw new SsoException(
+          "SSO_ID_TOKEN_INVALID", HttpStatus.UNAUTHORIZED, "OIDC audience mismatch");
     }
     if (jwt.getExpiresAt() == null || jwt.getExpiresAt().isBefore(Instant.now())) {
       throw new SsoException("SSO_ID_TOKEN_INVALID", HttpStatus.UNAUTHORIZED, "OIDC token expired");

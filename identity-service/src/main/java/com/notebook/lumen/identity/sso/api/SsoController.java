@@ -1,8 +1,8 @@
 package com.notebook.lumen.identity.sso.api;
 
+import com.notebook.lumen.identity.audit.AuditService;
 import com.notebook.lumen.identity.auth.api.AuthResponse;
 import com.notebook.lumen.identity.auth.application.AuthCookieService;
-import com.notebook.lumen.identity.audit.AuditService;
 import com.notebook.lumen.identity.shared.config.AuthTransportProperties;
 import com.notebook.lumen.identity.shared.exception.SsoException;
 import com.notebook.lumen.identity.sso.application.SsoCallbackResult;
@@ -76,7 +76,12 @@ public class SsoController {
       return ResponseEntity.status(302).headers(errorHeaders).build();
     }
     auditService.record(
-        "SSO_LOGIN_SUCCESS", result.authResponse().user().id(), "USER", result.authResponse().user().id(), request, java.util.Map.of("provider", providerId));
+        "SSO_LOGIN_SUCCESS",
+        result.authResponse().user().id(),
+        "USER",
+        result.authResponse().user().id(),
+        request,
+        java.util.Map.of("provider", providerId));
     if (authTransportProperties.cookieTransportEnabled()) {
       authCookieService.writeAuthCookies(response, request, result.authResponse());
     }

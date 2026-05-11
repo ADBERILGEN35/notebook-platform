@@ -71,7 +71,8 @@ public class WorkspaceNotificationPreferenceService {
 
     List<WorkspacePreferenceRow> rows = new ArrayList<>();
     for (UserNotificationType type : NotificationWorkspacePreferenceRules.overridableTypes()) {
-      EnumMap<NotificationChannel, WorkspaceChannelState> channels = new EnumMap<>(NotificationChannel.class);
+      EnumMap<NotificationChannel, WorkspaceChannelState> channels =
+          new EnumMap<>(NotificationChannel.class);
       for (NotificationChannel channel : NotificationChannel.values()) {
         UserNotificationPreference globalPref = globalMap.getOrDefault(type, Map.of()).get(channel);
         if (globalPref == null) {
@@ -90,11 +91,9 @@ public class WorkspaceNotificationPreferenceService {
                 ? new WorkspacePolicyState(polMode.name(), pol.getReason())
                 : null;
         boolean inherited = ov == null;
-        boolean effective =
-            preferenceResolver.isChannelEnabled(userId, workspaceId, type, channel);
+        boolean effective = preferenceResolver.isChannelEnabled(userId, workspaceId, type, channel);
         boolean mandatory = globalPref.isMandatory();
-        Boolean enabledForUi =
-            inherited ? globalPref.isEnabled() : ov.isEnabled();
+        Boolean enabledForUi = inherited ? globalPref.isEnabled() : ov.isEnabled();
         channels.put(
             channel,
             new WorkspaceChannelState(
@@ -232,7 +231,8 @@ public class WorkspaceNotificationPreferenceService {
     Map<UserNotificationType, Map<NotificationChannel, UserNotificationPreference>> map =
         new EnumMap<>(UserNotificationType.class);
     for (UserNotificationPreference p : globals) {
-      map.computeIfAbsent(p.getNotificationType(), ignored -> new EnumMap<>(NotificationChannel.class))
+      map.computeIfAbsent(
+              p.getNotificationType(), ignored -> new EnumMap<>(NotificationChannel.class))
           .put(p.getChannel(), p);
     }
     return map;

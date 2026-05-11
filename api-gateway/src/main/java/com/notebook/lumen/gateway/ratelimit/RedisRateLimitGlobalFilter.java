@@ -32,7 +32,8 @@ public class RedisRateLimitGlobalFilter implements GlobalFilter, Ordered {
       @Qualifier("authRedisRateLimiter") RedisRateLimiter authRedisRateLimiter,
       @Qualifier("protectedRedisRateLimiter") RedisRateLimiter protectedRedisRateLimiter,
       @Qualifier("adminAuditRedisRateLimiter") RedisRateLimiter adminAuditRedisRateLimiter,
-      @Qualifier("adminAuditExportRedisRateLimiter") RedisRateLimiter adminAuditExportRedisRateLimiter,
+      @Qualifier("adminAuditExportRedisRateLimiter")
+          RedisRateLimiter adminAuditExportRedisRateLimiter,
       @Qualifier("adminAuditExportMachineRedisRateLimiter")
           RedisRateLimiter adminAuditExportMachineRedisRateLimiter,
       @Qualifier("scimRedisRateLimiter") RedisRateLimiter scimRedisRateLimiter,
@@ -63,9 +64,12 @@ public class RedisRateLimitGlobalFilter implements GlobalFilter, Ordered {
               authOpt -> {
                 JwtAuthenticationToken auth = authOpt.orElse(null);
                 boolean machine =
-                    auth != null && "machine".equals(auth.getToken().getClaimAsString("token_type"));
+                    auth != null
+                        && "machine".equals(auth.getToken().getClaimAsString("token_type"));
                 RedisRateLimiter limiter =
-                    machine ? adminAuditExportMachineRedisRateLimiter : adminAuditExportRedisRateLimiter;
+                    machine
+                        ? adminAuditExportMachineRedisRateLimiter
+                        : adminAuditExportRedisRateLimiter;
                 Mono<String> rateKey =
                     machine
                         ? Mono.just(
@@ -78,7 +82,8 @@ public class RedisRateLimitGlobalFilter implements GlobalFilter, Ordered {
               });
     }
     if (isScimEndpoint(exchange)) {
-      return checkAllowed(exchange, chain, scimRedisRateLimiter, routeId, Mono.just(clientIp(exchange)));
+      return checkAllowed(
+          exchange, chain, scimRedisRateLimiter, routeId, Mono.just(clientIp(exchange)));
     }
     if (isAdminEnterpriseChangeRequestsEndpoint(exchange)) {
       return checkAllowed(exchange, chain, adminWriteRedisRateLimiter, routeId, userId(exchange));
@@ -173,7 +178,8 @@ public class RedisRateLimitGlobalFilter implements GlobalFilter, Ordered {
     if (org.springframework.http.HttpMethod.GET.equals(method)) {
       return true;
     }
-    return org.springframework.http.HttpMethod.POST.equals(method) && path.endsWith("/requeue/dry-run");
+    return org.springframework.http.HttpMethod.POST.equals(method)
+        && path.endsWith("/requeue/dry-run");
   }
 
   /** POST .../requeue only (not dry-run): stricter admin-write rate limit. */
@@ -192,10 +198,17 @@ public class RedisRateLimitGlobalFilter implements GlobalFilter, Ordered {
   }
 
   private boolean isAdminNotificationRetentionReadEndpoint(ServerWebExchange exchange) {
-    return exchange.getRequest().getPath().value().startsWith("/admin/notifications/retention/plan");
+    return exchange
+        .getRequest()
+        .getPath()
+        .value()
+        .startsWith("/admin/notifications/retention/plan");
   }
 
-  /** POST .../retention/run with dryRun false is still the same path — body parsed in controller; use write bucket for all POST /run. */
+  /**
+   * POST .../retention/run with dryRun false is still the same path — body parsed in controller;
+   * use write bucket for all POST /run.
+   */
   private boolean isAdminNotificationRetentionDestructiveEndpoint(ServerWebExchange exchange) {
     if (!org.springframework.http.HttpMethod.POST.equals(exchange.getRequest().getMethod())) {
       return false;

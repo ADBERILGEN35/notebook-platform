@@ -54,23 +54,23 @@ public class InternalDeadLetterController {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Only status=DEAD is supported");
     }
     authorizer.authorize(
-        serviceAuthorization, InternalNotificationAuthorizer.ADMIN_NOTIFICATIONS_DEAD_LETTER_READ_SCOPE);
+        serviceAuthorization,
+        InternalNotificationAuthorizer.ADMIN_NOTIFICATIONS_DEAD_LETTER_READ_SCOPE);
     var body =
         fanoutDeadLetterAdminService.list(eventType, createdFrom, createdTo, page, size, sort);
     fanoutDeadLetterAdminService.auditListViewed(body.items().size());
     return body;
   }
 
-  @PostMapping(
-      path = "/{id}/requeue/dry-run",
-      produces = MediaType.APPLICATION_JSON_VALUE)
+  @PostMapping(path = "/{id}/requeue/dry-run", produces = MediaType.APPLICATION_JSON_VALUE)
   public DeadLetterAdminDtos.RequeueDryRunResponse dryRun(
       @RequestHeader(value = InternalNotificationAuthorizer.HEADER_NAME, required = false)
           String serviceAuthorization,
       @PathVariable UUID id) {
     ensureEnabled();
     authorizer.authorize(
-        serviceAuthorization, InternalNotificationAuthorizer.ADMIN_NOTIFICATIONS_DEAD_LETTER_READ_SCOPE);
+        serviceAuthorization,
+        InternalNotificationAuthorizer.ADMIN_NOTIFICATIONS_DEAD_LETTER_READ_SCOPE);
     return fanoutDeadLetterAdminService.dryRun(id);
   }
 
@@ -83,7 +83,8 @@ public class InternalDeadLetterController {
       @RequestBody DeadLetterAdminDtos.FanoutRequeueHttpRequest body) {
     ensureEnabled();
     authorizer.authorize(
-        serviceAuthorization, InternalNotificationAuthorizer.ADMIN_NOTIFICATIONS_DEAD_LETTER_REQUEUE_SCOPE);
+        serviceAuthorization,
+        InternalNotificationAuthorizer.ADMIN_NOTIFICATIONS_DEAD_LETTER_REQUEUE_SCOPE);
     return fanoutDeadLetterAdminService.requeue(
         id, body.idempotencyKey(), body.reason(), actorUserId);
   }

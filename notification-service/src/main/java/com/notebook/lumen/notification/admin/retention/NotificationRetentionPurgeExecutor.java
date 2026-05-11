@@ -60,7 +60,9 @@ public class NotificationRetentionPurgeExecutor {
    * deleted counts.
    */
   public Map<String, Long> purge(Set<RetentionPurgeKind> kinds, Instant now, int maxTotal) {
-    var cutoffs = RetentionCutoffs.compute(analyticsProperties, retentionProperties, notificationProperties, now);
+    var cutoffs =
+        RetentionCutoffs.compute(
+            analyticsProperties, retentionProperties, notificationProperties, now);
     Map<String, Long> out = new LinkedHashMap<>();
     int remaining = maxTotal;
     var activeHolds = legalHoldBlockEvaluator.loadActiveHolds();

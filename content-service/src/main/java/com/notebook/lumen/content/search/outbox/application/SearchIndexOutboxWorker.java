@@ -38,7 +38,7 @@ public class SearchIndexOutboxWorker {
     this.meterRegistry = meterRegistry;
   }
 
-  @Scheduled(fixedDelayString = "#{@searchIndexOutboxWorker.pollIntervalMillis()}")
+  @Scheduled(fixedDelayString = "#{@searchIndexOutboxService.schedulePollIntervalMillis()}")
   public void poll() {
     if (!acceptingClaims.get() || !workerEnabled()) {
       return;
@@ -47,10 +47,6 @@ public class SearchIndexOutboxWorker {
     for (SearchIndexOutboxEvent event : events) {
       process(event);
     }
-  }
-
-  public String pollIntervalMillis() {
-    return String.valueOf(outbox().effectivePollIntervalSeconds() * 1000);
   }
 
   @jakarta.annotation.PreDestroy

@@ -60,20 +60,19 @@ class NotificationAnalyticsSummaryServiceTest {
     var email =
         new NotificationProperties.Email(
             "log", "f", "r", true, 5, 60, 3600, 1000L, 25, 300L, null, null, null);
-    var ts =
-        new NotificationProperties.TrustedService("k", null, "/p", "iss", "aud", 5, "scope");
+    var ts = new NotificationProperties.TrustedService("k", null, "/p", "iss", "aud", 5, "scope");
     var internal = new NotificationProperties.Internal(ts, ts, ts);
     var digest =
         new NotificationProperties.Digest(
             true, true, 60, 100, 50, "09:00", DayOfWeek.MONDAY, "09:00");
     var fanout =
-        new NotificationProperties.Fanout(
-            true, true, true, 5, 100, 10, 5, 300, 60, 24, 30);
+        new NotificationProperties.Fanout(true, true, true, 5, 100, 10, 5, 300, 60, 24, 30);
     var outbound =
         new NotificationProperties.OutboundServiceJwt(
             "k", "", "/p", "iss", "sub", "svc", 60, "aud");
     var workspace =
-        new NotificationProperties.WorkspaceClient(false, false, false, "http://localhost", 3000, outbound);
+        new NotificationProperties.WorkspaceClient(
+            false, false, false, "http://localhost", 3000, outbound);
     return new NotificationProperties(
         "w1",
         email,
@@ -95,15 +94,16 @@ class NotificationAnalyticsSummaryServiceTest {
 
   private static NotificationDeliveryAnalyticsHourlyRepository.ChannelEventKindTotalProjection
       channelKind(String channel, NotificationAnalyticsEventKind kind, long total) {
-    var m = mock(NotificationDeliveryAnalyticsHourlyRepository.ChannelEventKindTotalProjection.class);
+    var m =
+        mock(NotificationDeliveryAnalyticsHourlyRepository.ChannelEventKindTotalProjection.class);
     when(m.getChannel()).thenReturn(channel);
     when(m.getEventKind()).thenReturn(kind);
     when(m.getTotal()).thenReturn(total);
     return m;
   }
 
-  private static NotificationDeliveryAnalyticsHourlyRepository.TypeEventKindTotalProjection typeKind(
-      String type, NotificationAnalyticsEventKind kind, long total) {
+  private static NotificationDeliveryAnalyticsHourlyRepository.TypeEventKindTotalProjection
+      typeKind(String type, NotificationAnalyticsEventKind kind, long total) {
     var m = mock(NotificationDeliveryAnalyticsHourlyRepository.TypeEventKindTotalProjection.class);
     when(m.getNotificationType()).thenReturn(type);
     when(m.getEventKind()).thenReturn(kind);
@@ -128,8 +128,7 @@ class NotificationAnalyticsSummaryServiceTest {
         List.of(
             channelKind("IN_APP", NotificationAnalyticsEventKind.CREATED, 2),
             channelKind("EMAIL", NotificationAnalyticsEventKind.QUEUED, 1));
-    var typeRows =
-        List.of(typeKind("COMMENT_ADDED", NotificationAnalyticsEventKind.CREATED, 2));
+    var typeRows = List.of(typeKind("COMMENT_ADDED", NotificationAnalyticsEventKind.CREATED, 2));
     when(hourlyRepository.sumByEventKind(from, to)).thenReturn(kindRows);
     when(hourlyRepository.sumByChannelAndEventKind(from, to)).thenReturn(channelRows);
     when(hourlyRepository.sumByTypeAndEventKind(from, to)).thenReturn(typeRows);
@@ -137,8 +136,7 @@ class NotificationAnalyticsSummaryServiceTest {
         .thenReturn(5L);
     when(fanoutOutboxRepository.countByStatus(NotificationFanoutOutboxStatus.SENDING))
         .thenReturn(1L);
-    when(fanoutOutboxRepository.countByStatus(NotificationFanoutOutboxStatus.DEAD))
-        .thenReturn(2L);
+    when(fanoutOutboxRepository.countByStatus(NotificationFanoutOutboxStatus.DEAD)).thenReturn(2L);
     when(digestItemRepository.countByStatus(NotificationDigestItemStatus.PENDING)).thenReturn(7L);
     when(sseBroker.activeConnectionCount()).thenReturn(11);
     when(workerRunTimestamps.fanoutLastRun()).thenReturn(from);

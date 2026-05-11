@@ -12,14 +12,14 @@ import com.notebook.lumen.content.shared.UserContext;
 import com.notebook.lumen.content.shared.exception.ContentException;
 import com.notebook.lumen.content.tenant.StrictWorkspaceHeaderValidator;
 import com.notebook.lumen.content.tenant.TenantDatabaseSession;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
 import java.time.Instant;
-import java.util.List;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import io.micrometer.core.instrument.Counter;
-import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -189,11 +189,16 @@ public class NoteService {
             note.getContentSchemaVersion(),
             "NOTE_MERGE_APPLIED",
             Map.of(
-                "notebookId", note.getNotebookId().toString(),
-                "mergeVersion", mergeVersion,
-                "baseEtag", baseEtag == null ? "" : baseEtag,
-                "expectedRemoteEtag", ifMatchHeader,
-                "idempotencyKeyPresent", idempotencyKey != null && !idempotencyKey.isBlank()));
+                "notebookId",
+                note.getNotebookId().toString(),
+                "mergeVersion",
+                mergeVersion,
+                "baseEtag",
+                baseEtag == null ? "" : baseEtag,
+                "expectedRemoteEtag",
+                ifMatchHeader,
+                "idempotencyKeyPresent",
+                idempotencyKey != null && !idempotencyKey.isBlank()));
     int versionNumber = versionRepository.countByNoteId(noteId);
     return new MergeApplyResult(response, versionNumber);
   }
@@ -231,7 +236,8 @@ public class NoteService {
   }
 
   @Transactional
-  public NoteResponse restore(UserContext user, UUID noteId, int versionNumber, String ifMatchHeader) {
+  public NoteResponse restore(
+      UserContext user, UUID noteId, int versionNumber, String ifMatchHeader) {
     Note note = load(noteId);
     tenantDatabaseSession.applyWorkspace(note.getWorkspaceId());
     assertAggregateWorkspaceHeader(user, note.getWorkspaceId());
@@ -359,12 +365,7 @@ public class NoteService {
       Map<String, Object> auditMetadata) {
     Instant now = Instant.now();
     int versionNumber = nextVersion(note.getId());
-    note.update(
-        title,
-        mapper.write(contentBlocks),
-        contentSchemaVersion,
-        actorUserId,
-        now);
+    note.update(title, mapper.write(contentBlocks), contentSchemaVersion, actorUserId, now);
     createVersion(note, versionNumber, actorUserId, now);
     replaceLinks(note, contentBlocks, now);
     Map<String, Object> finalAuditMetadata = new LinkedHashMap<>(auditMetadata);
@@ -400,9 +401,11 @@ public class NoteService {
     return new ContentException(HttpStatus.BAD_REQUEST, code, message);
   }
 
-  private void enforceIfMatch(Note note, String ifMatchHeader, UserContext user, String missingEventType) {
-    boolean requiresIfMatch = contentProperties.concurrency() != null
-        && contentProperties.concurrency().requireIfMatchForNoteUpdate();
+  private void enforceIfMatch(
+      Note note, String ifMatchHeader, UserContext user, String missingEventType) {
+    boolean requiresIfMatch =
+        contentProperties.concurrency() != null
+            && contentProperties.concurrency().requireIfMatchForNoteUpdate();
     if (ifMatchHeader == null || ifMatchHeader.isBlank()) {
       if (requiresIfMatch) {
         notePreconditionRequiredCounter.increment();

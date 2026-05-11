@@ -1,7 +1,7 @@
 package com.notebook.lumen.notification.shared.config;
 
-import java.time.Duration;
 import java.time.DayOfWeek;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;

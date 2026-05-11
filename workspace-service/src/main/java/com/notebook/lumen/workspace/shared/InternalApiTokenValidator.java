@@ -10,6 +10,9 @@ import com.notebook.lumen.workspace.shared.exception.Exceptions;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.time.Duration;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Stream;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -68,12 +71,15 @@ public class InternalApiTokenValidator {
       throw Exceptions.unauthorized("INVALID_SERVICE_JWT", "Trusted service key is not configured");
     }
     RuntimeException lastFailure = null;
-    for (WorkspaceProperties.TrustedService trusted :
-        java.util.List.of(
-            internal.trustedContentService(),
-            internal.trustedSearchService(),
-            internal.trustedNotificationService())) {
-      if (trusted == null || !trusted.configured()) {
+    List<WorkspaceProperties.TrustedService> trustedServices =
+        Stream.of(
+                internal.trustedContentService(),
+                internal.trustedSearchService(),
+                internal.trustedNotificationService())
+            .filter(Objects::nonNull)
+            .toList();
+    for (WorkspaceProperties.TrustedService trusted : trustedServices) {
+      if (!trusted.configured()) {
         continue;
       }
       try {

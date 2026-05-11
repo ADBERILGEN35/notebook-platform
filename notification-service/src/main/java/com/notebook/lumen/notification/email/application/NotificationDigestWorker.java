@@ -11,7 +11,8 @@ public class NotificationDigestWorker {
   private final NotificationWorkerRunTimestamps workerRunTimestamps;
 
   public NotificationDigestWorker(
-      NotificationDigestService digestService, NotificationWorkerRunTimestamps workerRunTimestamps) {
+      NotificationDigestService digestService,
+      NotificationWorkerRunTimestamps workerRunTimestamps) {
     this.digestService = digestService;
     this.workerRunTimestamps = workerRunTimestamps;
   }

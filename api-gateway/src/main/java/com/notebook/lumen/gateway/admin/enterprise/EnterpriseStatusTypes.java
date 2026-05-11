@@ -29,9 +29,7 @@ record EnterpriseStatusFeatures(
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 record AdminRbacStatus(
-    boolean enabled,
-    boolean legacyPlatformAdminImpliesAll,
-    Map<String, Boolean> rolesConfigured) {}
+    boolean enabled, boolean legacyPlatformAdminImpliesAll, Map<String, Boolean> rolesConfigured) {}
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 record MergeResolutionStatus(

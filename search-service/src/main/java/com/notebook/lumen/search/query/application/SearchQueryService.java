@@ -67,10 +67,14 @@ public class SearchQueryService {
     }
 
     var candidatePage =
-        providerRouter.search(new SearchQuery(workspaceId, notebookId, query, safePage, safeSize, true));
+        providerRouter.search(
+            new SearchQuery(workspaceId, notebookId, query, safePage, safeSize, true));
 
-    long restrictedCandidates = candidatePage.items().stream().filter(SearchNoteResult::restricted).count();
-    meterRegistry.counter("search_permission_restricted_candidates_total").increment(restrictedCandidates);
+    long restrictedCandidates =
+        candidatePage.items().stream().filter(SearchNoteResult::restricted).count();
+    meterRegistry
+        .counter("search_permission_restricted_candidates_total")
+        .increment(restrictedCandidates);
     long staleCandidates =
         candidatePage.items().stream()
             .filter(item -> item.permissionVersion() == null || item.visibilityMode() == null)
@@ -120,5 +124,4 @@ public class SearchQueryService {
     }
     return trimmed;
   }
-
 }

@@ -39,11 +39,15 @@ public class InternalRetentionController {
       @RequestParam(defaultValue = "true") boolean dryRun) {
     ensureEnabled();
     authorizer.authorize(
-        serviceAuthorization, InternalNotificationAuthorizer.ADMIN_NOTIFICATIONS_RETENTION_READ_SCOPE);
+        serviceAuthorization,
+        InternalNotificationAuthorizer.ADMIN_NOTIFICATIONS_RETENTION_READ_SCOPE);
     return retentionAdminService.plan(Instant.now(), dryRun);
   }
 
-  @PostMapping(path = "/run", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+  @PostMapping(
+      path = "/run",
+      consumes = MediaType.APPLICATION_JSON_VALUE,
+      produces = MediaType.APPLICATION_JSON_VALUE)
   public RetentionAdminDtos.RetentionRunResponse run(
       @RequestHeader(value = InternalNotificationAuthorizer.HEADER_NAME, required = false)
           String serviceAuthorization,
@@ -53,10 +57,12 @@ public class InternalRetentionController {
     boolean dryRun = body == null || body.effectiveDryRun();
     if (dryRun) {
       authorizer.authorize(
-          serviceAuthorization, InternalNotificationAuthorizer.ADMIN_NOTIFICATIONS_RETENTION_READ_SCOPE);
+          serviceAuthorization,
+          InternalNotificationAuthorizer.ADMIN_NOTIFICATIONS_RETENTION_READ_SCOPE);
     } else {
       authorizer.authorize(
-          serviceAuthorization, InternalNotificationAuthorizer.ADMIN_NOTIFICATIONS_RETENTION_RUN_SCOPE);
+          serviceAuthorization,
+          InternalNotificationAuthorizer.ADMIN_NOTIFICATIONS_RETENTION_RUN_SCOPE);
     }
     String target = body == null ? "ALL" : body.target();
     String reason = body == null ? null : body.reason();

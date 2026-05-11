@@ -65,8 +65,11 @@ class InternalIdentitySecurityStatusControllerTest {
 
     var controller =
         new InternalIdentitySecurityStatusController(
-            new InternalAdminStatusProperties(true), authorizer, mock(IdentitySecurityStatusService.class));
+            new InternalAdminStatusProperties(true),
+            authorizer,
+            mock(IdentitySecurityStatusService.class));
 
-    assertThatThrownBy(() -> controller.identitySecurity(null)).isInstanceOf(AuditAccessException.class);
+    assertThatThrownBy(() -> controller.identitySecurity(null))
+        .isInstanceOf(AuditAccessException.class);
   }
 }

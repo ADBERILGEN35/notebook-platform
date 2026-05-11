@@ -26,8 +26,7 @@ class OpenSearchQueryBuilderTest {
     UUID notebookId = UUID.randomUUID();
 
     String body =
-        builder.searchBody(
-            new SearchQuery(UUID.randomUUID(), notebookId, "roadmap", 0, 20, true));
+        builder.searchBody(new SearchQuery(UUID.randomUUID(), notebookId, "roadmap", 0, 20, true));
 
     assertThat(body).contains("\"notebookId\":\"" + notebookId + "\"");
   }

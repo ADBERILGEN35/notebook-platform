@@ -38,7 +38,8 @@ public class NotificationLegalHoldBlockEvaluator {
     return activeHolds.stream().anyMatch(h -> h.getScope().blocks(kind));
   }
 
-  public HoldBlockResult evaluate(RetentionPurgeKind kind, List<NotificationLegalHoldEntity> activeHolds, Instant now) {
+  public HoldBlockResult evaluate(
+      RetentionPurgeKind kind, List<NotificationLegalHoldEntity> activeHolds, Instant now) {
     List<String> keys = new ArrayList<>();
     List<String> warnings = new ArrayList<>();
     if (!properties.enabled() || activeHolds.isEmpty()) {
@@ -59,11 +60,13 @@ public class NotificationLegalHoldBlockEvaluator {
     if (!keys.isEmpty()) {
       warnings.add(0, "Target is blocked by active legal hold.");
     }
-    return new HoldBlockResult(!keys.isEmpty(), keys.stream().sorted().distinct().toList(), warnings);
+    return new HoldBlockResult(
+        !keys.isEmpty(), keys.stream().sorted().distinct().toList(), warnings);
   }
 
   /** Distinct hold keys that block any of the given purge kinds. */
-  public List<String> blockingKeysForKinds(Set<RetentionPurgeKind> kinds, List<NotificationLegalHoldEntity> holds) {
+  public List<String> blockingKeysForKinds(
+      Set<RetentionPurgeKind> kinds, List<NotificationLegalHoldEntity> holds) {
     if (!properties.enabled() || holds.isEmpty()) {
       return List.of();
     }
@@ -78,5 +81,6 @@ public class NotificationLegalHoldBlockEvaluator {
     return out.stream().sorted().toList();
   }
 
-  public record HoldBlockResult(boolean blocked, List<String> activeHoldKeys, List<String> warnings) {}
+  public record HoldBlockResult(
+      boolean blocked, List<String> activeHoldKeys, List<String> warnings) {}
 }

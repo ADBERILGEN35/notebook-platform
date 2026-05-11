@@ -8,7 +8,8 @@ public final class AdminGitOpsDtos {
 
   public record DryRunBody(String targetEnvironment) {}
 
-  public record CreatePrBody(String targetEnvironment, String idempotencyKey, String confirmation) {}
+  public record CreatePrBody(
+      String targetEnvironment, String idempotencyKey, String confirmation) {}
 
   public record PathChange(String yamlPath, String oldValue, String newValue) {}
 

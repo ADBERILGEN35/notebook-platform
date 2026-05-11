@@ -59,4 +59,3 @@ public class InternalPermissionRefreshAuthorizer {
     return value.substring("Bearer ".length()).trim();
   }
 }
-

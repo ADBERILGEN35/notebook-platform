@@ -46,7 +46,9 @@ public class NotificationRetentionPlanner {
       warnings.add("Analytics retention under 7 days may make dashboards sparse.");
     }
 
-    var cutoffs = RetentionCutoffs.compute(analyticsProperties, retentionProperties, notificationProperties, now);
+    var cutoffs =
+        RetentionCutoffs.compute(
+            analyticsProperties, retentionProperties, notificationProperties, now);
     var analytics = jdbc.countAnalyticsHourlyEligible(cutoffs.analyticsHourly());
     targets.add(
         buildTarget(
@@ -115,7 +117,8 @@ public class NotificationRetentionPlanner {
             now));
 
     targets.sort(Comparator.comparing(RetentionAdminDtos.RetentionPlanTarget::target));
-    return new RetentionAdminDtos.RetentionPlanResponse(now, dryRun, List.copyOf(targets), List.copyOf(warnings));
+    return new RetentionAdminDtos.RetentionPlanResponse(
+        now, dryRun, List.copyOf(targets), List.copyOf(warnings));
   }
 
   private RetentionAdminDtos.RetentionPlanTarget buildTarget(

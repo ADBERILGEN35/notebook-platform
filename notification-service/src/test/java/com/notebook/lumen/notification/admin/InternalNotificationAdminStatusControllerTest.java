@@ -25,7 +25,9 @@ class InternalNotificationAdminStatusControllerTest {
   void whenEnabled_authorizesWithScope() {
     InternalNotificationAuthorizer auth = mock(InternalNotificationAuthorizer.class);
     NotificationAdminStatusService svc = mock(NotificationAdminStatusService.class);
-    var c = new InternalNotificationAdminStatusController(new InternalAdminStatusProperties(true), auth, svc);
+    var c =
+        new InternalNotificationAdminStatusController(
+            new InternalAdminStatusProperties(true), auth, svc);
     c.notification("Bearer t");
     verify(auth).authorize("Bearer t", InternalNotificationAuthorizer.ADMIN_STATUS_SCOPE);
   }

@@ -74,7 +74,8 @@ public class NotificationAnalyticsRecorder {
                 tag(emptyToBlank(channel)))
             .increment(delta);
       }
-      if (eventKind == NotificationAnalyticsEventKind.FAILED || eventKind == NotificationAnalyticsEventKind.DEAD) {
+      if (eventKind == NotificationAnalyticsEventKind.FAILED
+          || eventKind == NotificationAnalyticsEventKind.DEAD) {
         meterRegistry
             .counter(
                 "notification_delivery_failed_total",

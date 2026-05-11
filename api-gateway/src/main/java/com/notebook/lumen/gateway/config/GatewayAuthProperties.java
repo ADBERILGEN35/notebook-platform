@@ -4,10 +4,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties(prefix = "gateway.auth")
 public record GatewayAuthProperties(
-    String tokenTransport,
-    String accessCookieName,
-    String csrfCookieName,
-    String csrfHeaderName) {
+    String tokenTransport, String accessCookieName, String csrfCookieName, String csrfHeaderName) {
   public String effectiveTransport() {
     if (tokenTransport == null || tokenTransport.isBlank()) {
       return "bearer";

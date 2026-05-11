@@ -40,4 +40,3 @@ final class SearchServiceAuthHeaders {
             Duration.ofSeconds(jwt.ttlSeconds() <= 0 ? 60 : jwt.ttlSeconds())));
   }
 }
-

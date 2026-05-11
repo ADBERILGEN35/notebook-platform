@@ -9,6 +9,8 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.notebook.lumen.notification.NotificationTestFanout;
+import com.notebook.lumen.notification.NotificationTestWorkspace;
 import com.notebook.lumen.notification.analytics.NotificationAnalyticsRecorder;
 import com.notebook.lumen.notification.audit.AuditService;
 import com.notebook.lumen.notification.email.api.EmailNotificationRequest;
@@ -16,15 +18,13 @@ import com.notebook.lumen.notification.email.domain.EmailNotification;
 import com.notebook.lumen.notification.email.domain.EmailNotificationStatus;
 import com.notebook.lumen.notification.email.domain.EmailNotificationType;
 import com.notebook.lumen.notification.email.infrastructure.EmailNotificationRepository;
-import com.notebook.lumen.notification.preference.application.NotificationDeliveryPreferenceService;
-import com.notebook.lumen.notification.preference.application.NotificationPreferenceResolver;
-import com.notebook.lumen.notification.preference.domain.NotificationChannel;
 import com.notebook.lumen.notification.email.provider.EmailProvider;
 import com.notebook.lumen.notification.email.provider.EmailProviderException;
 import com.notebook.lumen.notification.email.provider.EmailSendResult;
 import com.notebook.lumen.notification.email.suppression.EmailSuppressionService;
-import com.notebook.lumen.notification.NotificationTestFanout;
-import com.notebook.lumen.notification.NotificationTestWorkspace;
+import com.notebook.lumen.notification.preference.application.NotificationDeliveryPreferenceService;
+import com.notebook.lumen.notification.preference.application.NotificationPreferenceResolver;
+import com.notebook.lumen.notification.preference.domain.NotificationChannel;
 import com.notebook.lumen.notification.shared.config.NotificationProperties;
 import com.notebook.lumen.notification.shared.exception.NotificationException;
 import com.notebook.lumen.notification.template.application.EmailTemplateRenderer;
@@ -42,11 +42,13 @@ class EmailNotificationServiceTest {
   private final EmailProvider provider = mock(EmailProvider.class);
   private final EmailSuppressionService suppressionService = mock(EmailSuppressionService.class);
   private final AuditService auditService = mock(AuditService.class);
-  private final NotificationPreferenceResolver preferenceResolver = mock(NotificationPreferenceResolver.class);
+  private final NotificationPreferenceResolver preferenceResolver =
+      mock(NotificationPreferenceResolver.class);
   private final NotificationDeliveryPreferenceService deliveryPreferenceService =
       mock(NotificationDeliveryPreferenceService.class);
   private final NotificationDigestService digestService = mock(NotificationDigestService.class);
-  private final NotificationAnalyticsRecorder analyticsRecorder = mock(NotificationAnalyticsRecorder.class);
+  private final NotificationAnalyticsRecorder analyticsRecorder =
+      mock(NotificationAnalyticsRecorder.class);
 
   {
     when(preferenceResolver.isChannelEnabled(any(), any(), any(), eq(NotificationChannel.EMAIL)))
@@ -273,7 +275,8 @@ class EmailNotificationServiceTest {
             null),
         new NotificationProperties.InApp(true),
         new NotificationProperties.Preferences(true),
-        new NotificationProperties.Digest(true, true, 60, 100, 50, "09:00", java.time.DayOfWeek.MONDAY, "09:00"),
+        new NotificationProperties.Digest(
+            true, true, 60, 100, 50, "09:00", java.time.DayOfWeek.MONDAY, "09:00"),
         NotificationTestFanout.disabled(),
         NotificationTestWorkspace.disabled());
   }
@@ -310,7 +313,8 @@ class EmailNotificationServiceTest {
             null),
         new NotificationProperties.InApp(true),
         new NotificationProperties.Preferences(true),
-        new NotificationProperties.Digest(true, true, 60, 100, 50, "09:00", java.time.DayOfWeek.MONDAY, "09:00"),
+        new NotificationProperties.Digest(
+            true, true, 60, 100, 50, "09:00", java.time.DayOfWeek.MONDAY, "09:00"),
         NotificationTestFanout.disabled(),
         NotificationTestWorkspace.disabled());
   }

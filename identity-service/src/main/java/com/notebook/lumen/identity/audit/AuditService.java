@@ -37,17 +37,17 @@ public class AuditService {
       AuditEvent saved =
           repository.save(
               new AuditEvent(
-              UUID.randomUUID(),
-              eventType,
-              actorUserId,
-              null,
-              aggregateType,
-              aggregateId,
-              requestId(request),
-              ip(request),
-              request == null ? null : request.getHeader("User-Agent"),
-              SensitiveDataSanitizer.sanitizeMetadata(metadata),
-              Instant.now()));
+                  UUID.randomUUID(),
+                  eventType,
+                  actorUserId,
+                  null,
+                  aggregateType,
+                  aggregateId,
+                  requestId(request),
+                  ip(request),
+                  request == null ? null : request.getHeader("User-Agent"),
+                  SensitiveDataSanitizer.sanitizeMetadata(metadata),
+                  Instant.now()));
       siemOutboxService.enqueueFromAuditEvent(saved, request);
     } catch (RuntimeException e) {
       log.error(

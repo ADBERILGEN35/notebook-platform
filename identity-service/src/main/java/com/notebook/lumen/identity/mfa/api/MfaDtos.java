@@ -1,7 +1,6 @@
 package com.notebook.lumen.identity.mfa.api;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import java.util.List;
 import java.util.Map;
 
@@ -36,7 +35,11 @@ public class MfaDtos {
   public record WebAuthnAuthenticationOptionsRequest(@NotBlank String mfaSessionId) {}
 
   public record WebAuthnAuthenticationOptionsResponse(
-      String mfaSessionId, String challenge, String rpId, List<String> allowCredentialIds, String userVerification) {}
+      String mfaSessionId,
+      String challenge,
+      String rpId,
+      List<String> allowCredentialIds,
+      String userVerification) {}
 
   public record WebAuthnAuthenticationVerifyRequest(
       @NotBlank String mfaSessionId,
@@ -49,7 +52,8 @@ public class MfaDtos {
 
   public record RecoveryCodeGenerateRequest(boolean acknowledgeReplace) {}
 
-  public record RecoveryCodeVerifyRequest(@NotBlank String mfaSessionId, @NotBlank String recoveryCode) {}
+  public record RecoveryCodeVerifyRequest(
+      @NotBlank String mfaSessionId, @NotBlank String recoveryCode) {}
 
   public record MfaCredentialResponse(
       String credentialId, String name, String createdAt, String lastUsedAt, String revokedAt) {}

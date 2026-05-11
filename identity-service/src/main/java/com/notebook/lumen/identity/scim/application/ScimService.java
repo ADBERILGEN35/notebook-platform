@@ -94,7 +94,9 @@ public class ScimService {
 
   @Transactional
   public ScimUserResponse createUser(
-      ScimUserRequest request, HttpServletRequest httpRequest, Map<String, String> bulkIdToResourceId) {
+      ScimUserRequest request,
+      HttpServletRequest httpRequest,
+      Map<String, String> bulkIdToResourceId) {
     String email = extractPrimaryEmail(request);
     String normalizedEmail = EmailNormalizer.normalize(email);
     if (userRepository.findByEmail(normalizedEmail).isPresent()) {
@@ -131,17 +133,25 @@ public class ScimService {
         "USER",
         created.getId(),
         httpRequest,
-        Map.of("email", created.getEmail(), "externalId", Objects.toString(created.getScimExternalId(), "")));
+        Map.of(
+            "email",
+            created.getEmail(),
+            "externalId",
+            Objects.toString(created.getScimExternalId(), "")));
     return toScimUser(created);
   }
 
-  public ScimUserResponse putUser(UUID id, ScimUserRequest request, HttpServletRequest httpRequest) {
+  public ScimUserResponse putUser(
+      UUID id, ScimUserRequest request, HttpServletRequest httpRequest) {
     return putUser(id, request, httpRequest, Map.of());
   }
 
   @Transactional
   public ScimUserResponse putUser(
-      UUID id, ScimUserRequest request, HttpServletRequest httpRequest, Map<String, String> bulkIdToResourceId) {
+      UUID id,
+      ScimUserRequest request,
+      HttpServletRequest httpRequest,
+      Map<String, String> bulkIdToResourceId) {
     User user = requireUser(id);
     updateUserFields(user, request);
     userRepository.save(user);
@@ -156,17 +166,22 @@ public class ScimService {
     return toScimUser(user);
   }
 
-  public ScimUserResponse patchUser(UUID id, ScimPatchRequest request, HttpServletRequest httpRequest) {
+  public ScimUserResponse patchUser(
+      UUID id, ScimPatchRequest request, HttpServletRequest httpRequest) {
     return patchUser(id, request, httpRequest, Map.of());
   }
 
   @Transactional
   public ScimUserResponse patchUser(
-      UUID id, ScimPatchRequest request, HttpServletRequest httpRequest, Map<String, String> bulkIdToResourceId) {
+      UUID id,
+      ScimPatchRequest request,
+      HttpServletRequest httpRequest,
+      Map<String, String> bulkIdToResourceId) {
     User user = requireUser(id);
     for (ScimPatchRequest.Operation op : request.operations()) {
       if (!"replace".equalsIgnoreCase(op.op())) {
-        throw new ScimException(HttpStatus.BAD_REQUEST, "invalidSyntax", "Only replace is supported");
+        throw new ScimException(
+            HttpStatus.BAD_REQUEST, "invalidSyntax", "Only replace is supported");
       }
       String path = op.path() == null ? "" : op.path();
       if ("active".equalsIgnoreCase(path) || path.isBlank()) {
@@ -181,7 +196,10 @@ public class ScimService {
         user.setEmail(EmailNormalizer.normalize(emails.get(0).value()));
       } else if ("groups".equalsIgnoreCase(path)) {
         replaceUserMemberships(
-            user, ScimPatchRequest.readGroups(op.value().get("groups")), httpRequest, bulkIdToResourceId);
+            user,
+            ScimPatchRequest.readGroups(op.value().get("groups")),
+            httpRequest,
+            bulkIdToResourceId);
         auditService.record(
             "SCIM_USER_GROUPS_UPDATED",
             null,
@@ -190,9 +208,12 @@ public class ScimService {
             httpRequest,
             Map.of(
                 "groupsCount",
-                membershipRepository.findByMemberTypeAndMemberUser_Id(ScimMemberType.USER, user.getId()).size()));
+                membershipRepository
+                    .findByMemberTypeAndMemberUser_Id(ScimMemberType.USER, user.getId())
+                    .size()));
       } else {
-        throw new ScimException(HttpStatus.BAD_REQUEST, "invalidPath", "Unsupported patch path: " + path);
+        throw new ScimException(
+            HttpStatus.BAD_REQUEST, "invalidPath", "Unsupported patch path: " + path);
       }
     }
     userRepository.save(user);
@@ -214,16 +235,11 @@ public class ScimService {
     }
     int page = Math.max(0, (startIndex - 1) / Math.max(1, count));
     List<ScimGroupResponse> groups =
-        scimGroupRepository
-            .findAllByActiveIsTrue(PageRequest.of(page, Math.max(1, count)))
-            .stream()
+        scimGroupRepository.findAllByActiveIsTrue(PageRequest.of(page, Math.max(1, count))).stream()
             .map(
                 g ->
                     ScimGroupResponse.summary(
-                        g.getId().toString(),
-                        g.getExternalId(),
-                        g.getDisplayName(),
-                        g.isActive()))
+                        g.getId().toString(), g.getExternalId(), g.getDisplayName(), g.isActive()))
             .toList();
     return ScimListResponse.of(groups.size(), startIndex, count, groups);
   }
@@ -287,7 +303,8 @@ public class ScimService {
               .findById(gid)
               .filter(ScimGroup::isActive)
               .orElseThrow(
-                  () -> new ScimException(HttpStatus.NOT_FOUND, "notFound", "SCIM_GROUP_NOT_FOUND"));
+                  () ->
+                      new ScimException(HttpStatus.NOT_FOUND, "notFound", "SCIM_GROUP_NOT_FOUND"));
       created = false;
     }
     group.update(
@@ -302,24 +319,33 @@ public class ScimService {
         "SCIM_GROUP",
         group.getId(),
         request,
-        Map.of("externalId", Objects.toString(group.getExternalId(), ""), "displayName", group.getDisplayName()));
+        Map.of(
+            "externalId",
+            Objects.toString(group.getExternalId(), ""),
+            "displayName",
+            group.getDisplayName()));
     if (req.members() != null) {
       replaceGroupMemberships(group, req.members(), request, bulkIdToResourceId);
     }
     return toGroupResponse(group);
   }
 
-  public ScimGroupResponse upsertGroup(String idOrNull, ScimGroupRequest req, HttpServletRequest request) {
+  public ScimGroupResponse upsertGroup(
+      String idOrNull, ScimGroupRequest req, HttpServletRequest request) {
     return upsertGroup(idOrNull, req, request, Map.of());
   }
 
-  public ScimGroupResponse patchGroup(UUID id, ScimPatchRequest request, HttpServletRequest httpRequest) {
+  public ScimGroupResponse patchGroup(
+      UUID id, ScimPatchRequest request, HttpServletRequest httpRequest) {
     return patchGroup(id, request, httpRequest, Map.of());
   }
 
   @Transactional
   public ScimGroupResponse patchGroup(
-      UUID id, ScimPatchRequest request, HttpServletRequest httpRequest, Map<String, String> bulkIdToResourceId) {
+      UUID id,
+      ScimPatchRequest request,
+      HttpServletRequest httpRequest,
+      Map<String, String> bulkIdToResourceId) {
     if (!properties.groupsEnabled()) {
       throw new ScimException(HttpStatus.NOT_IMPLEMENTED, "invalidTarget", "SCIM groups disabled");
     }
@@ -331,13 +357,15 @@ public class ScimService {
                 () -> new ScimException(HttpStatus.NOT_FOUND, "notFound", "SCIM_GROUP_NOT_FOUND"));
     for (ScimPatchRequest.Operation op : request.operations()) {
       if (!"replace".equalsIgnoreCase(op.op())) {
-        throw new ScimException(HttpStatus.BAD_REQUEST, "invalidSyntax", "Only replace is supported");
+        throw new ScimException(
+            HttpStatus.BAD_REQUEST, "invalidSyntax", "Only replace is supported");
       }
       String path = op.path() == null ? "" : op.path();
       if ("displayName".equalsIgnoreCase(path)) {
         String dn = asString(op.value().get("displayName"));
         if (dn.isBlank()) {
-          throw new ScimException(HttpStatus.BAD_REQUEST, "invalidValue", "displayName is required");
+          throw new ScimException(
+              HttpStatus.BAD_REQUEST, "invalidValue", "displayName is required");
         }
         group.update(
             dn,
@@ -353,9 +381,13 @@ public class ScimService {
             group.getProvider());
       } else if ("members".equalsIgnoreCase(path)) {
         replaceGroupMemberships(
-            group, ScimPatchRequest.readGroupMembers(op.value().get("members")), httpRequest, bulkIdToResourceId);
+            group,
+            ScimPatchRequest.readGroupMembers(op.value().get("members")),
+            httpRequest,
+            bulkIdToResourceId);
       } else {
-        throw new ScimException(HttpStatus.BAD_REQUEST, "invalidPath", "Unsupported patch path: " + path);
+        throw new ScimException(
+            HttpStatus.BAD_REQUEST, "invalidPath", "Unsupported patch path: " + path);
       }
     }
     scimGroupRepository.save(group);
@@ -407,18 +439,12 @@ public class ScimService {
         User u = m.getMemberUser();
         out.add(
             new ScimGroupResponse.Member(
-                u.getId().toString(),
-                "/scim/v2/Users/" + u.getId(),
-                u.getEmail(),
-                "User"));
+                u.getId().toString(), "/scim/v2/Users/" + u.getId(), u.getEmail(), "User"));
       } else if (m.getMemberType() == ScimMemberType.GROUP && m.getMemberGroup() != null) {
         ScimGroup g = m.getMemberGroup();
         out.add(
             new ScimGroupResponse.Member(
-                g.getId().toString(),
-                "/scim/v2/Groups/" + g.getId(),
-                g.getDisplayName(),
-                "Group"));
+                g.getId().toString(), "/scim/v2/Groups/" + g.getId(), g.getDisplayName(), "Group"));
       }
     }
     return out;
@@ -454,9 +480,7 @@ public class ScimService {
             appendGroupMemberEdge(group, raw, bulkIdToResourceId, toSave, dedupe, now);
           } else {
             throw new ScimException(
-                HttpStatus.NOT_FOUND,
-                "notFound",
-                "SCIM_GROUP_MEMBER_NOT_FOUND: user not found");
+                HttpStatus.NOT_FOUND, "notFound", "SCIM_GROUP_MEMBER_NOT_FOUND: user not found");
           }
         } else if (properties.groupNestingEnabled()) {
           appendGroupMemberEdge(group, raw, bulkIdToResourceId, toSave, dedupe, now);
@@ -468,7 +492,9 @@ public class ScimService {
         }
       } else {
         throw new ScimException(
-            HttpStatus.BAD_REQUEST, "invalidValue", "SCIM_INVALID_GROUP_MEMBER: unsupported member type");
+            HttpStatus.BAD_REQUEST,
+            "invalidValue",
+            "SCIM_INVALID_GROUP_MEMBER: unsupported member type");
       }
     }
     membershipRepository.deleteByGroup_Id(group.getId());
@@ -544,17 +570,22 @@ public class ScimService {
     UUID uid = tryParseUuid(v);
     if (uid == null) {
       throw new ScimException(
-          HttpStatus.BAD_REQUEST, "invalidValue", "SCIM_GROUP_MEMBER_NOT_FOUND: user value must be a UUID");
+          HttpStatus.BAD_REQUEST,
+          "invalidValue",
+          "SCIM_GROUP_MEMBER_NOT_FOUND: user value must be a UUID");
     }
     return userRepository
         .findById(uid)
         .orElseThrow(
             () ->
                 new ScimException(
-                    HttpStatus.NOT_FOUND, "notFound", "SCIM_GROUP_MEMBER_NOT_FOUND: user not found"));
+                    HttpStatus.NOT_FOUND,
+                    "notFound",
+                    "SCIM_GROUP_MEMBER_NOT_FOUND: user not found"));
   }
 
-  private ScimGroup resolveGroupRef(String value, String display, Map<String, String> bulkIdToResourceId) {
+  private ScimGroup resolveGroupRef(
+      String value, String display, Map<String, String> bulkIdToResourceId) {
     String v = resolveBulkValue(value, bulkIdToResourceId);
     UUID gid = tryParseUuid(v);
     if (gid != null) {
@@ -562,7 +593,8 @@ public class ScimService {
           .findById(gid)
           .orElseThrow(
               () ->
-                  new ScimException(HttpStatus.NOT_FOUND, "notFound", "SCIM_GROUP_MEMBER_NOT_FOUND"));
+                  new ScimException(
+                      HttpStatus.NOT_FOUND, "notFound", "SCIM_GROUP_MEMBER_NOT_FOUND"));
     }
     return scimGroupRepository
         .findByExternalId(v)
@@ -601,7 +633,8 @@ public class ScimService {
       if (group.value() == null || group.value().isBlank()) {
         continue;
       }
-      ScimGroup g = resolveOrCreateGroupForUserRef(group.value(), group.display(), bulkIdToResourceId);
+      ScimGroup g =
+          resolveOrCreateGroupForUserRef(group.value(), group.display(), bulkIdToResourceId);
       if (!g.isActive()) {
         throw new ScimException(HttpStatus.BAD_REQUEST, "invalidValue", "SCIM_GROUP_NOT_FOUND");
       }
@@ -707,7 +740,8 @@ public class ScimService {
     }
     user.deactivateByScim(Instant.now());
     List<RefreshToken> activeTokens =
-        refreshTokenRepository.findByUserIdAndRevokedAtIsNullAndExpiresAtAfter(user.getId(), Instant.now());
+        refreshTokenRepository.findByUserIdAndRevokedAtIsNullAndExpiresAtAfter(
+            user.getId(), Instant.now());
     Instant now = Instant.now();
     for (RefreshToken token : activeTokens) {
       token.revoke(now, null, "SCIM_DEPROVISION", null);
@@ -755,7 +789,8 @@ public class ScimService {
     if (request.userName() != null && !request.userName().isBlank()) {
       return request.userName();
     }
-    throw new ScimException(HttpStatus.BAD_REQUEST, "invalidValue", "Email or userName is required");
+    throw new ScimException(
+        HttpStatus.BAD_REQUEST, "invalidValue", "Email or userName is required");
   }
 
   private String mapPlatformRole(String displayName, String externalId) {
@@ -764,14 +799,15 @@ public class ScimService {
     }
     String d = Optional.ofNullable(displayName).orElse("").toLowerCase(Locale.ROOT);
     String e = Optional.ofNullable(externalId).orElse("").toLowerCase(Locale.ROOT);
-    boolean admin =
-        properties.adminGroupSet().stream().anyMatch(g -> g.equals(d) || g.equals(e));
+    boolean admin = properties.adminGroupSet().stream().anyMatch(g -> g.equals(d) || g.equals(e));
     return admin ? "PLATFORM_ADMIN" : null;
   }
 
   private ScimUserResponse toScimUser(User user) {
     List<ScimUserResponse.GroupRef> groups =
-        membershipRepository.findByMemberTypeAndMemberUser_Id(ScimMemberType.USER, user.getId()).stream()
+        membershipRepository
+            .findByMemberTypeAndMemberUser_Id(ScimMemberType.USER, user.getId())
+            .stream()
             .map(ScimGroupMembership::getGroup)
             .filter(ScimGroup::isActive)
             .map(

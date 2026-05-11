@@ -109,7 +109,13 @@ class SearchProviderRouterTest {
       }
       SearchNoteResult result =
           new SearchNoteResult(
-              UUID.randomUUID(), query.workspaceId(), query.notebookId(), "Title", "Title", 1.0d, Instant.now());
+              UUID.randomUUID(),
+              query.workspaceId(),
+              query.notebookId(),
+              "Title",
+              "Title",
+              1.0d,
+              Instant.now());
       return new PageResponse<>(List.of(result), query.page(), query.size(), 1, 1, true);
     }
 

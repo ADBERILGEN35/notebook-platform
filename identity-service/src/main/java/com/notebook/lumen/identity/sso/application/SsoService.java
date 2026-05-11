@@ -76,7 +76,8 @@ public class SsoService {
     return properties.enabledProviders().stream()
         .map(
             provider ->
-                new SsoProviderView(provider.registrationId(), "Continue with " + provider.registrationId()))
+                new SsoProviderView(
+                    provider.registrationId(), "Continue with " + provider.registrationId()))
         .toList();
   }
 
@@ -93,7 +94,11 @@ public class SsoService {
     saveState(
         state,
         new StatePayload(
-            provider.registrationId(), nonce, sanitizedReturnUrl, metadata.issuer(), Instant.now().toString()));
+            provider.registrationId(),
+            nonce,
+            sanitizedReturnUrl,
+            metadata.issuer(),
+            Instant.now().toString()));
     return oidcClient.buildAuthorizeUri(metadata, provider, state, nonce, redirectUri);
   }
 
@@ -116,7 +121,8 @@ public class SsoService {
 
     OidcProviderMetadata metadata = oidcClient.discover(provider);
     String redirectUri = callbackUrl(request, provider.registrationId());
-    OidcIdTokenProfile profile = oidcClient.exchangeAndValidate(provider, metadata, code, redirectUri);
+    OidcIdTokenProfile profile =
+        oidcClient.exchangeAndValidate(provider, metadata, code, redirectUri);
     if (!payload.nonce().equals(profile.nonce())) {
       throw new SsoException("SSO_STATE_INVALID", HttpStatus.UNAUTHORIZED, "SSO nonce mismatch");
     }
@@ -145,24 +151,33 @@ public class SsoService {
       return Map.of("mfa_verified", false, "amr", List.of("sso"), "mfa_verified_at", "");
     }
     Set<String> requiredAmr = properties.requiredAmrSet();
-    boolean amrSatisfied = requiredAmr.isEmpty() || profile.amr().stream().map(v -> v.toLowerCase(Locale.ROOT)).anyMatch(requiredAmr::contains);
+    boolean amrSatisfied =
+        requiredAmr.isEmpty()
+            || profile.amr().stream()
+                .map(v -> v.toLowerCase(Locale.ROOT))
+                .anyMatch(requiredAmr::contains);
     String requiredAcr = properties.effectiveRequiredAcr();
     boolean acrSatisfied = requiredAcr.isBlank() || requiredAcr.equals(profile.acr());
     if (amrSatisfied && acrSatisfied) {
       return Map.of(
-          "mfa_verified", true,
-          "amr", profile.amr().isEmpty() ? List.of("sso") : profile.amr(),
-          "mfa_verified_at", Instant.now().toString());
+          "mfa_verified",
+          true,
+          "amr",
+          profile.amr().isEmpty() ? List.of("sso") : profile.amr(),
+          "mfa_verified_at",
+          Instant.now().toString());
     }
     return Map.of("mfa_verified", false, "amr", List.of("sso"), "mfa_verified_at", "");
   }
 
   private User upsertUser(SsoProperties.Provider provider, OidcIdTokenProfile profile) {
     Optional<ExternalIdentity> existing =
-        externalIdentityRepository.findByProviderAndSubject(provider.registrationId(), profile.subject());
+        externalIdentityRepository.findByProviderAndSubject(
+            provider.registrationId(), profile.subject());
     if (existing.isPresent()) {
       ExternalIdentity identity = existing.get();
-      identity.markLogin(Instant.now(), profile.email(), profile.emailVerified(), profile.sanitizedClaims());
+      identity.markLogin(
+          Instant.now(), profile.email(), profile.emailVerified(), profile.sanitizedClaims());
       externalIdentityRepository.save(identity);
       return identity.getUser();
     }
@@ -209,9 +224,11 @@ public class SsoService {
     return userRepository.save(created);
   }
 
-  private void validateExternalProfile(SsoProperties.Provider provider, OidcIdTokenProfile profile) {
+  private void validateExternalProfile(
+      SsoProperties.Provider provider, OidcIdTokenProfile profile) {
     if (profile.subject() == null || profile.subject().isBlank()) {
-      throw new SsoException("SSO_ID_TOKEN_INVALID", HttpStatus.UNAUTHORIZED, "Missing OIDC subject");
+      throw new SsoException(
+          "SSO_ID_TOKEN_INVALID", HttpStatus.UNAUTHORIZED, "Missing OIDC subject");
     }
     if (profile.email() == null || profile.email().isBlank()) {
       throw new SsoException("SSO_ID_TOKEN_INVALID", HttpStatus.UNAUTHORIZED, "Missing OIDC email");
@@ -220,7 +237,8 @@ public class SsoService {
       throw new SsoException(
           "SSO_EMAIL_NOT_VERIFIED", HttpStatus.UNAUTHORIZED, "SSO email is not verified");
     }
-    String domain = profile.email().substring(profile.email().lastIndexOf('@') + 1).toLowerCase(Locale.ROOT);
+    String domain =
+        profile.email().substring(profile.email().lastIndexOf('@') + 1).toLowerCase(Locale.ROOT);
     Set<String> allowedDomains = provider.allowedDomainSet();
     if (!allowedDomains.isEmpty() && !allowedDomains.contains(domain)) {
       throw new SsoException(
@@ -276,7 +294,8 @@ public class SsoService {
               objectMapper.writeValueAsString(payload),
               Duration.ofSeconds(properties.effectiveStateTtlSeconds()));
     } catch (JsonProcessingException ex) {
-      throw new SsoException("SSO_STATE_INVALID", HttpStatus.UNAUTHORIZED, "SSO state creation failed");
+      throw new SsoException(
+          "SSO_STATE_INVALID", HttpStatus.UNAUTHORIZED, "SSO state creation failed");
     }
   }
 

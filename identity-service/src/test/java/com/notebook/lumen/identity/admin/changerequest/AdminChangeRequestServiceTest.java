@@ -71,7 +71,8 @@ class AdminChangeRequestServiceTest {
     assertThatThrownBy(
             () ->
                 service.validate(
-                    new AdminChangeRequestDtos.ValidateBody("NOT_ALLOWED", "true", null, null, null)))
+                    new AdminChangeRequestDtos.ValidateBody(
+                        "NOT_ALLOWED", "true", null, null, null)))
         .isInstanceOf(AdminChangeRequestException.class)
         .hasFieldOrPropertyWithValue("errorCode", "ADMIN_OPERATION_NOT_ALLOWED");
   }
@@ -120,7 +121,12 @@ class AdminChangeRequestServiceTest {
         uid,
         "a@b.com",
         new AdminChangeRequestDtos.CreateBody(
-            AdminOperationRegistry.OP_MERGE_ANALYSIS_ROLLOUT_REQUEST, "false", null, null, "staging", null),
+            AdminOperationRegistry.OP_MERGE_ANALYSIS_ROLLOUT_REQUEST,
+            "false",
+            null,
+            null,
+            "staging",
+            null),
         "rid",
         req);
     verify(changeRequestRepository).save(any());
@@ -143,11 +149,16 @@ class AdminChangeRequestServiceTest {
     when(changeRequestRepository.findById(rid)).thenReturn(Optional.of(row));
     when(userRepository.existsById(approver)).thenReturn(true);
     AdminChangeRequestDtos.ApproveResponse r =
-        service.approve(rid, approver, new AdminChangeRequestDtos.DecisionBody("ok"), new MockHttpServletRequest());
+        service.approve(
+            rid,
+            approver,
+            new AdminChangeRequestDtos.DecisionBody("ok"),
+            new MockHttpServletRequest());
     assertThat(r.status()).isEqualTo("APPROVED");
     assertThat(r.nextStep().get("type")).isEqualTo("GITOPS_OR_MANUAL_APPLY");
     verify(changeRequestRepository).save(any());
-    verify(auditService).record(eq("ADMIN_CHANGE_REQUEST_APPROVED"), eq(approver), any(), any(), any(), any());
+    verify(auditService)
+        .record(eq("ADMIN_CHANGE_REQUEST_APPROVED"), eq(approver), any(), any(), any(), any());
   }
 
   @Test
@@ -158,10 +169,16 @@ class AdminChangeRequestServiceTest {
     when(changeRequestRepository.findById(rid)).thenReturn(Optional.of(row));
     when(userRepository.existsById(uid)).thenReturn(true);
     assertThatThrownBy(
-            () -> service.approve(rid, uid, new AdminChangeRequestDtos.DecisionBody("x"), new MockHttpServletRequest()))
+            () ->
+                service.approve(
+                    rid,
+                    uid,
+                    new AdminChangeRequestDtos.DecisionBody("x"),
+                    new MockHttpServletRequest()))
         .isInstanceOf(AdminChangeRequestException.class)
         .hasFieldOrPropertyWithValue("errorCode", "ADMIN_CHANGE_REQUEST_SELF_APPROVAL_NOT_ALLOWED");
-    verify(auditService).record(eq("ADMIN_CHANGE_REQUEST_APPROVAL_DENIED"), eq(uid), any(), any(), any(), any());
+    verify(auditService)
+        .record(eq("ADMIN_CHANGE_REQUEST_APPROVAL_DENIED"), eq(uid), any(), any(), any(), any());
   }
 
   @Test
@@ -199,7 +216,11 @@ class AdminChangeRequestServiceTest {
     when(userRepository.existsById(approver)).thenReturn(true);
     assertThatThrownBy(
             () ->
-                service.reject(rid, approver, new AdminChangeRequestDtos.DecisionBody(""), new MockHttpServletRequest()))
+                service.reject(
+                    rid,
+                    approver,
+                    new AdminChangeRequestDtos.DecisionBody(""),
+                    new MockHttpServletRequest()))
         .isInstanceOf(AdminChangeRequestException.class)
         .hasFieldOrPropertyWithValue("errorCode", "ADMIN_CHANGE_REQUEST_REJECT_REASON_REQUIRED");
   }
@@ -214,7 +235,10 @@ class AdminChangeRequestServiceTest {
     when(userRepository.existsById(approver)).thenReturn(true);
     AdminChangeRequestDtos.RejectResponse r =
         service.reject(
-            rid, approver, new AdminChangeRequestDtos.DecisionBody("not yet"), new MockHttpServletRequest());
+            rid,
+            approver,
+            new AdminChangeRequestDtos.DecisionBody("not yet"),
+            new MockHttpServletRequest());
     assertThat(r.status()).isEqualTo("REJECTED");
     verify(changeRequestRepository).save(any());
   }
@@ -263,7 +287,8 @@ class AdminChangeRequestServiceTest {
             null,
             java.time.Instant.now(),
             "MEDIUM");
-    when(changeRequestRepository.findByIdAndRequestedByUserId(rid, uid)).thenReturn(Optional.of(row));
+    when(changeRequestRepository.findByIdAndRequestedByUserId(rid, uid))
+        .thenReturn(Optional.of(row));
     assertThatThrownBy(() -> service.cancel(rid, uid, false, new MockHttpServletRequest()))
         .isInstanceOf(AdminChangeRequestException.class)
         .hasFieldOrPropertyWithValue("errorCode", "ADMIN_CHANGE_REQUEST_NOT_CANCELLABLE");
@@ -290,9 +315,11 @@ class AdminChangeRequestServiceTest {
             null,
             java.time.Instant.now(),
             "MEDIUM");
-    when(changeRequestRepository.findByIdAndRequestedByUserId(rid, uid)).thenReturn(Optional.of(row));
+    when(changeRequestRepository.findByIdAndRequestedByUserId(rid, uid))
+        .thenReturn(Optional.of(row));
     service.cancel(rid, uid, false, new MockHttpServletRequest());
-    ArgumentCaptor<PlatformAdminChangeRequest> cap = ArgumentCaptor.forClass(PlatformAdminChangeRequest.class);
+    ArgumentCaptor<PlatformAdminChangeRequest> cap =
+        ArgumentCaptor.forClass(PlatformAdminChangeRequest.class);
     verify(changeRequestRepository).save(cap.capture());
     assertThat(cap.getValue().getStatus()).isEqualTo(ChangeRequestStatus.CANCELLED);
     verify(auditService)
@@ -307,7 +334,9 @@ class AdminChangeRequestServiceTest {
 
   @Test
   void whenDisabled_validateThrows() {
-    properties = new AdminChangeRequestProperties(false, 180, AdminChangeRequestProperties.Approvals.defaults());
+    properties =
+        new AdminChangeRequestProperties(
+            false, 180, AdminChangeRequestProperties.Approvals.defaults());
     service =
         new AdminChangeRequestService(
             properties,
@@ -321,7 +350,11 @@ class AdminChangeRequestServiceTest {
             () ->
                 service.validate(
                     new AdminChangeRequestDtos.ValidateBody(
-                        AdminOperationRegistry.OP_MERGE_ANALYSIS_ROLLOUT_REQUEST, "true", null, null, null)))
+                        AdminOperationRegistry.OP_MERGE_ANALYSIS_ROLLOUT_REQUEST,
+                        "true",
+                        null,
+                        null,
+                        null)))
         .isInstanceOf(AdminChangeRequestException.class)
         .hasFieldOrPropertyWithValue("errorCode", "ADMIN_WRITE_DISABLED");
     verify(changeRequestRepository, never()).save(any());

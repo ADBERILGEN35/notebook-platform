@@ -22,7 +22,8 @@ public class SearchPermissionRefreshClientConfig {
     }
 
     JdkClientHttpRequestFactory requestFactory = new JdkClientHttpRequestFactory();
-    requestFactory.setReadTimeout(Duration.ofMillis(search.timeoutMs() <= 0 ? 1000 : search.timeoutMs()));
+    requestFactory.setReadTimeout(
+        Duration.ofMillis(search.timeoutMs() <= 0 ? 1000 : search.timeoutMs()));
     SearchServiceAuthHeaders authHeaders = new SearchServiceAuthHeaders(properties);
 
     RestClient restClient =
@@ -41,4 +42,3 @@ public class SearchPermissionRefreshClientConfig {
         .createClient(SearchPermissionRefreshClient.class);
   }
 }
-

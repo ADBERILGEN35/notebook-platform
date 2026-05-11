@@ -78,15 +78,15 @@ public class AdminRbacProxyService {
           if (requestId != null && !requestId.isBlank()) {
             spec = spec.header("X-Request-Id", requestId);
           }
-          return spec
-              .retrieve()
+          return spec.retrieve()
               .bodyToMono(Object.class)
               .map(body -> ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(body))
               .onErrorResume(e -> Mono.just(mapException(e, gatewayPath, requestId)));
         });
   }
 
-  public Mono<ResponseEntity<Object>> overridesStatus(String adminUserId, String requestId, String gatewayPath) {
+  public Mono<ResponseEntity<Object>> overridesStatus(
+      String adminUserId, String requestId, String gatewayPath) {
     return Mono.defer(
         () -> {
           final String jwt;
@@ -106,8 +106,7 @@ public class AdminRbacProxyService {
           if (requestId != null && !requestId.isBlank()) {
             spec = spec.header("X-Request-Id", requestId);
           }
-          return spec
-              .retrieve()
+          return spec.retrieve()
               .bodyToMono(Object.class)
               .map(body -> ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(body))
               .onErrorResume(e -> Mono.just(mapException(e, gatewayPath, requestId)));
@@ -136,8 +135,7 @@ public class AdminRbacProxyService {
           if (requestId != null && !requestId.isBlank()) {
             spec = spec.header("X-Request-Id", requestId);
           }
-          return spec
-              .bodyValue(body == null ? Map.of() : body)
+          return spec.bodyValue(body == null ? Map.of() : body)
               .retrieve()
               .bodyToMono(Object.class)
               .map(resp -> ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(resp))
@@ -166,8 +164,7 @@ public class AdminRbacProxyService {
           if (requestId != null && !requestId.isBlank()) {
             spec = spec.header("X-Request-Id", requestId);
           }
-          return spec
-              .retrieve()
+          return spec.retrieve()
               .bodyToMono(Object.class)
               .map(body -> ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(body))
               .onErrorResume(e -> Mono.just(mapException(e, gatewayPath, requestId)));
@@ -188,7 +185,8 @@ public class AdminRbacProxyService {
                 null));
   }
 
-  private static ResponseEntity<Object> mapException(Throwable e, String gatewayPath, String requestId) {
+  private static ResponseEntity<Object> mapException(
+      Throwable e, String gatewayPath, String requestId) {
     if (e instanceof WebClientResponseException w) {
       return ResponseEntity.status(w.getStatusCode())
           .contentType(MediaType.APPLICATION_JSON)

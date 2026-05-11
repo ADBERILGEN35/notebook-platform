@@ -23,16 +23,21 @@ public record AdminGitOpsPrProperties(
     @DefaultValue("false") boolean rbacRoleRequestsEnabled) {
 
   public AdminGitOpsPrProperties {
-    provider = provider == null || provider.isBlank() ? "mock" : provider.trim().toLowerCase(Locale.ROOT);
+    provider =
+        provider == null || provider.isBlank() ? "mock" : provider.trim().toLowerCase(Locale.ROOT);
     allowedEnvironments =
         allowedEnvironments == null || allowedEnvironments.isBlank()
             ? "dev,staging,prod"
             : allowedEnvironments;
     defaultEnvironment =
-        defaultEnvironment == null || defaultEnvironment.isBlank() ? "staging" : defaultEnvironment.trim();
+        defaultEnvironment == null || defaultEnvironment.isBlank()
+            ? "staging"
+            : defaultEnvironment.trim();
     baseBranch = baseBranch == null || baseBranch.isBlank() ? "main" : baseBranch.trim();
     branchPrefix =
-        branchPrefix == null || branchPrefix.isBlank() ? "admin-change" : branchPrefix.trim().toLowerCase(Locale.ROOT);
+        branchPrefix == null || branchPrefix.isBlank()
+            ? "admin-change"
+            : branchPrefix.trim().toLowerCase(Locale.ROOT);
     repositoryOwner = repositoryOwner == null ? "" : repositoryOwner.trim();
     repositoryName = repositoryName == null ? "" : repositoryName.trim();
     githubToken = githubToken == null ? "" : githubToken.trim();
@@ -48,7 +53,9 @@ public record AdminGitOpsPrProperties(
   public void validateEnvironment(String env) {
     if (env == null || env.isBlank()) {
       throw new AdminGitOpsException(
-          "ADMIN_GITOPS_ENVIRONMENT_NOT_ALLOWED", HttpStatus.BAD_REQUEST, "targetEnvironment is required");
+          "ADMIN_GITOPS_ENVIRONMENT_NOT_ALLOWED",
+          HttpStatus.BAD_REQUEST,
+          "targetEnvironment is required");
     }
     String n = env.trim().toLowerCase(Locale.ROOT);
     if (!allowedEnvironmentSet().contains(n)) {

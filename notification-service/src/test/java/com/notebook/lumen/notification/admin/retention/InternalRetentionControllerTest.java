@@ -34,7 +34,9 @@ class InternalRetentionControllerTest {
     Mockito.when(svc.plan(Mockito.any(), eq(true))).thenReturn(plan);
     var c = new InternalRetentionController(new InternalRetentionAdminProperties(true), auth, svc);
     c.plan("Bearer t", true);
-    verify(auth).authorize("Bearer t", InternalNotificationAuthorizer.ADMIN_NOTIFICATIONS_RETENTION_READ_SCOPE);
+    verify(auth)
+        .authorize(
+            "Bearer t", InternalNotificationAuthorizer.ADMIN_NOTIFICATIONS_RETENTION_READ_SCOPE);
     verify(svc).plan(Mockito.any(), eq(true));
   }
 
@@ -51,7 +53,9 @@ class InternalRetentionControllerTest {
                 true, "ALL", 0, java.util.Map.of(), 0L, java.util.List.of(), snap));
     var c = new InternalRetentionController(new InternalRetentionAdminProperties(true), auth, svc);
     c.run("Bearer t", null, new RetentionAdminDtos.RetentionRunRequest(true, "ALL", null));
-    verify(auth).authorize("Bearer t", InternalNotificationAuthorizer.ADMIN_NOTIFICATIONS_RETENTION_READ_SCOPE);
+    verify(auth)
+        .authorize(
+            "Bearer t", InternalNotificationAuthorizer.ADMIN_NOTIFICATIONS_RETENTION_READ_SCOPE);
   }
 
   @Test
@@ -70,6 +74,8 @@ class InternalRetentionControllerTest {
         "Bearer t",
         "actor",
         new RetentionAdminDtos.RetentionRunRequest(false, "ALL", "reason reason reason"));
-    verify(auth).authorize("Bearer t", InternalNotificationAuthorizer.ADMIN_NOTIFICATIONS_RETENTION_RUN_SCOPE);
+    verify(auth)
+        .authorize(
+            "Bearer t", InternalNotificationAuthorizer.ADMIN_NOTIFICATIONS_RETENTION_RUN_SCOPE);
   }
 }

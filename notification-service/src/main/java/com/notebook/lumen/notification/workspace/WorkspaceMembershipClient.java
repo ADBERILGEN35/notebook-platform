@@ -139,7 +139,8 @@ public class WorkspaceMembershipClient {
       return payload;
     } catch (RestClientResponseException ex) {
       if (ex.getStatusCode().value() == 403) {
-        throw new NotificationException(HttpStatus.FORBIDDEN, accessDeniedCode, "Workspace access denied");
+        throw new NotificationException(
+            HttpStatus.FORBIDDEN, accessDeniedCode, "Workspace access denied");
       }
       throw new NotificationException(
           HttpStatus.SERVICE_UNAVAILABLE,

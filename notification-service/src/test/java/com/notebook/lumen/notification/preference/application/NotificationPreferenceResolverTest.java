@@ -33,7 +33,8 @@ class NotificationPreferenceResolverTest {
     return resolver(workspacePrefsEnabled, false);
   }
 
-  private NotificationPreferenceResolver resolver(boolean workspacePrefsEnabled, boolean policiesEnabled) {
+  private NotificationPreferenceResolver resolver(
+      boolean workspacePrefsEnabled, boolean policiesEnabled) {
     NotificationProperties.WorkspaceClient workspace =
         workspacePrefsEnabled
             ? new NotificationProperties.WorkspaceClient(
@@ -119,7 +120,10 @@ class NotificationPreferenceResolverTest {
             eq(user), eq(UserNotificationType.COMMENT_ADDED), eq(NotificationChannel.EMAIL)))
         .thenReturn(true);
     when(workspaceRepo.findByUserIdAndWorkspaceIdAndNotificationTypeAndChannel(
-            eq(user), eq(ws), eq(UserNotificationType.COMMENT_ADDED), eq(NotificationChannel.EMAIL)))
+            eq(user),
+            eq(ws),
+            eq(UserNotificationType.COMMENT_ADDED),
+            eq(NotificationChannel.EMAIL)))
         .thenReturn(
             Optional.of(
                 new UserWorkspaceNotificationPreference(
@@ -167,7 +171,10 @@ class NotificationPreferenceResolverTest {
             eq(user), eq(UserNotificationType.COMMENT_ADDED), eq(NotificationChannel.EMAIL)))
         .thenReturn(true);
     when(workspaceRepo.findByUserIdAndWorkspaceIdAndNotificationTypeAndChannel(
-            eq(user), eq(ws), eq(UserNotificationType.COMMENT_ADDED), eq(NotificationChannel.EMAIL)))
+            eq(user),
+            eq(ws),
+            eq(UserNotificationType.COMMENT_ADDED),
+            eq(NotificationChannel.EMAIL)))
         .thenReturn(
             Optional.of(
                 new UserWorkspaceNotificationPreference(
@@ -206,7 +213,10 @@ class NotificationPreferenceResolverTest {
             eq(user), eq(UserNotificationType.COMMENT_ADDED), eq(NotificationChannel.IN_APP)))
         .thenReturn(true);
     when(workspaceRepo.findByUserIdAndWorkspaceIdAndNotificationTypeAndChannel(
-            eq(user), eq(ws), eq(UserNotificationType.COMMENT_ADDED), eq(NotificationChannel.IN_APP)))
+            eq(user),
+            eq(ws),
+            eq(UserNotificationType.COMMENT_ADDED),
+            eq(NotificationChannel.IN_APP)))
         .thenReturn(
             Optional.of(
                 new UserWorkspaceNotificationPreference(
@@ -247,7 +257,10 @@ class NotificationPreferenceResolverTest {
             eq(user), eq(UserNotificationType.COMMENT_ADDED), eq(NotificationChannel.EMAIL)))
         .thenReturn(true);
     when(workspaceRepo.findByUserIdAndWorkspaceIdAndNotificationTypeAndChannel(
-            eq(user), eq(ws), eq(UserNotificationType.COMMENT_ADDED), eq(NotificationChannel.EMAIL)))
+            eq(user),
+            eq(ws),
+            eq(UserNotificationType.COMMENT_ADDED),
+            eq(NotificationChannel.EMAIL)))
         .thenReturn(Optional.empty());
     when(policyRepo.findByWorkspaceIdAndNotificationTypeAndChannel(
             eq(ws), eq(UserNotificationType.COMMENT_ADDED), eq(NotificationChannel.EMAIL)))
@@ -283,7 +296,10 @@ class NotificationPreferenceResolverTest {
             eq(user), eq(UserNotificationType.COMMENT_ADDED), eq(NotificationChannel.IN_APP)))
         .thenReturn(true);
     when(workspaceRepo.findByUserIdAndWorkspaceIdAndNotificationTypeAndChannel(
-            eq(user), eq(ws), eq(UserNotificationType.COMMENT_ADDED), eq(NotificationChannel.IN_APP)))
+            eq(user),
+            eq(ws),
+            eq(UserNotificationType.COMMENT_ADDED),
+            eq(NotificationChannel.IN_APP)))
         .thenReturn(
             Optional.of(
                 new UserWorkspaceNotificationPreference(

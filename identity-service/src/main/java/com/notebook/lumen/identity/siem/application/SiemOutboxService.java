@@ -53,7 +53,10 @@ public class SiemOutboxService {
             classified.get().category(),
             classified.get().severity(),
             sourceService,
-            auditEvent.getAggregateType() != null && "USER".equalsIgnoreCase(auditEvent.getAggregateType()) ? auditEvent.getAggregateId() : null,
+            auditEvent.getAggregateType() != null
+                    && "USER".equalsIgnoreCase(auditEvent.getAggregateType())
+                ? auditEvent.getAggregateId()
+                : null,
             auditEvent.getActorUserId(),
             auditEvent.getWorkspaceId(),
             auditEvent.getRequestId(),
@@ -72,7 +75,8 @@ public class SiemOutboxService {
   @Transactional
   public List<SiemEventOutbox> claimDueEvents(String instanceId) {
     List<SiemEventOutbox> due =
-        repository.lockDueEvents(SiemOutboxStatus.PENDING.name(), Instant.now(), properties.batchSize());
+        repository.lockDueEvents(
+            SiemOutboxStatus.PENDING.name(), Instant.now(), properties.batchSize());
     Instant now = Instant.now();
     for (SiemEventOutbox item : due) {
       item.markSending(instanceId, now);
@@ -81,7 +85,9 @@ public class SiemOutboxService {
   }
 
   private Map<String, Object> payload(
-      AuditEvent event, SiemEventClassifier.ClassifiedEvent classified, HttpServletRequest request) {
+      AuditEvent event,
+      SiemEventClassifier.ClassifiedEvent classified,
+      HttpServletRequest request) {
     Map<String, Object> metadata = event.getMetadata() == null ? Map.of() : event.getMetadata();
     Map<String, Object> payload = new LinkedHashMap<>();
     payload.put("id", event.getId());
@@ -92,7 +98,9 @@ public class SiemOutboxService {
     payload.put("category", classified.category());
     payload.put("severity", classified.severity());
     payload.put("actorUserId", event.getActorUserId());
-    payload.put("subjectUserId", "USER".equalsIgnoreCase(event.getAggregateType()) ? event.getAggregateId() : null);
+    payload.put(
+        "subjectUserId",
+        "USER".equalsIgnoreCase(event.getAggregateType()) ? event.getAggregateId() : null);
     payload.put("workspaceId", event.getWorkspaceId());
     payload.put("requestId", event.getRequestId());
     payload.put("ipAddress", event.getIpAddress());

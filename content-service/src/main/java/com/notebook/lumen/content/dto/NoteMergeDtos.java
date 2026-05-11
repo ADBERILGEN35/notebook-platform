@@ -21,8 +21,7 @@ public final class NoteMergeDtos {
       @NotNull JsonNode contentBlocks) {}
 
   public record NoteMergeLocalSnapshot(
-      @NotBlank @Size(max = 255) String title,
-      @NotNull JsonNode contentBlocks) {}
+      @NotBlank @Size(max = 255) String title, @NotNull JsonNode contentBlocks) {}
 
   public record NoteMergeAnalyzeResponse(
       UUID noteId,

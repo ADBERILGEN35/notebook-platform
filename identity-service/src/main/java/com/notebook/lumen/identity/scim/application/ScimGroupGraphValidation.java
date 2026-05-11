@@ -19,7 +19,8 @@ public class ScimGroupGraphValidation {
     this.membershipRepository = membershipRepository;
   }
 
-  public void validateNewNestedMembership(UUID parentGroupId, UUID childGroupId, int maxDepthEdges) {
+  public void validateNewNestedMembership(
+      UUID parentGroupId, UUID childGroupId, int maxDepthEdges) {
     int maxAllowed = Math.max(1, maxDepthEdges);
     if (parentGroupId.equals(childGroupId)) {
       throw new ScimException(
@@ -68,7 +69,8 @@ public class ScimGroupGraphValidation {
     if (cached != null) {
       return cached;
     }
-    var parents = membershipRepository.findParentGroupIdsContainingChild(ScimMemberType.GROUP, groupId);
+    var parents =
+        membershipRepository.findParentGroupIdsContainingChild(ScimMemberType.GROUP, groupId);
     if (parents.isEmpty()) {
       memo.put(groupId, 0);
       return 0;

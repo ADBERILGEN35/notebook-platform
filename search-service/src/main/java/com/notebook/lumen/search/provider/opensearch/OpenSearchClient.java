@@ -20,8 +20,7 @@ public class OpenSearchClient {
     this.properties = properties;
     this.httpClient =
         HttpClient.newBuilder()
-            .connectTimeout(
-                Duration.ofMillis(properties.opensearch().effectiveConnectTimeoutMs()))
+            .connectTimeout(Duration.ofMillis(properties.opensearch().effectiveConnectTimeoutMs()))
             .build();
   }
 
@@ -39,7 +38,8 @@ public class OpenSearchClient {
 
   private String send(String method, String path, String body) {
     if (!properties.opensearch().configured()) {
-      throw new SearchProviderException("SEARCH_PROVIDER_MISCONFIGURED", "OpenSearch URL is not configured");
+      throw new SearchProviderException(
+          "SEARCH_PROVIDER_MISCONFIGURED", "OpenSearch URL is not configured");
     }
     try {
       HttpRequest.Builder builder =
@@ -48,18 +48,20 @@ public class OpenSearchClient {
               .header("Content-Type", "application/json");
       if (hasText(properties.opensearch().username())) {
         String credentials =
-            properties.opensearch().username() + ":" + nullToEmpty(properties.opensearch().password());
+            properties.opensearch().username()
+                + ":"
+                + nullToEmpty(properties.opensearch().password());
         builder.header(
             "Authorization",
             "Basic "
-                + Base64.getEncoder()
-                    .encodeToString(credentials.getBytes(StandardCharsets.UTF_8)));
+                + Base64.getEncoder().encodeToString(credentials.getBytes(StandardCharsets.UTF_8)));
       }
       HttpRequest request =
           body == null
               ? builder.method(method, HttpRequest.BodyPublishers.noBody()).build()
               : builder.method(method, HttpRequest.BodyPublishers.ofString(body)).build();
-      HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+      HttpResponse<String> response =
+          httpClient.send(request, HttpResponse.BodyHandlers.ofString());
       if (response.statusCode() >= 200 && response.statusCode() < 300) {
         return response.body();
       }
@@ -76,7 +78,8 @@ public class OpenSearchClient {
     } catch (RuntimeException e) {
       throw new SearchProviderException("OPENSEARCH_UNAVAILABLE", "OpenSearch request failed", e);
     } catch (Exception e) {
-      throw new SearchProviderException("OPENSEARCH_UNAVAILABLE", "OpenSearch request failed", new RuntimeException(e));
+      throw new SearchProviderException(
+          "OPENSEARCH_UNAVAILABLE", "OpenSearch request failed", new RuntimeException(e));
     }
   }
 

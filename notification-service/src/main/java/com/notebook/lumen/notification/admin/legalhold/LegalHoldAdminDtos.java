@@ -8,7 +8,8 @@ public final class LegalHoldAdminDtos {
 
   private LegalHoldAdminDtos() {}
 
-  public record LegalHoldCreateRequest(String holdKey, String scope, String reason, Instant expiresAt) {}
+  public record LegalHoldCreateRequest(
+      String holdKey, String scope, String reason, Instant expiresAt) {}
 
   public record LegalHoldReleaseRequest(String reason) {}
 

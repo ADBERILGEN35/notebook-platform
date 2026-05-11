@@ -187,7 +187,8 @@ class ContentIntegrationTest {
     JsonNode note = createNote(OWNER, "ETag", blocks("paragraph", ""));
     String noteId = note.get("id").asText();
 
-    HttpResponse<String> getResponse = sendResponse("GET", "/notes/" + noteId, OWNER, WORKSPACE_ID, null);
+    HttpResponse<String> getResponse =
+        sendResponse("GET", "/notes/" + noteId, OWNER, WORKSPACE_ID, null);
     assertThat(getResponse.statusCode()).isEqualTo(200);
     String etag = getResponse.headers().firstValue("etag").orElse(null);
     assertThat(etag).isNotBlank();
@@ -225,10 +226,11 @@ class ContentIntegrationTest {
     JsonNode created = createNote(OWNER, "Base", blocks("paragraph", ",\"props\":{\"v\":1}"));
     String noteId = created.get("id").asText();
     String baseEtag =
-        sendResponse("GET", "/notes/" + noteId, OWNER, WORKSPACE_ID, null)
-            .headers()
-            .firstValue("etag")
-            .orElseThrow();
+        normalizeWeakEtagHeader(
+            sendResponse("GET", "/notes/" + noteId, OWNER, WORKSPACE_ID, null)
+                .headers()
+                .firstValue("etag")
+                .orElseThrow());
 
     patch(
         "/notes/" + noteId,
@@ -240,14 +242,11 @@ class ContentIntegrationTest {
         post(
             "/notes/" + noteId + "/merge/analyze",
             OWNER,
-            """
-            {
-              "base":{"etag":"%s","title":"Base","contentBlocks":[{"id":"b1","type":"paragraph","props":{"v":1}}]},
-              "local":{"title":"Local title","contentBlocks":[{"id":"b1","type":"paragraph","props":{"v":1}}]},
-              "clientMergeVersion":1
-            }
-            """
-                .formatted(baseEtag),
+            mergeAnalyzeJson(
+                baseEtag,
+                "Local title",
+                "[{\"id\":\"b1\",\"type\":\"paragraph\",\"props\":{\"v\":1}}]",
+                "[{\"id\":\"b1\",\"type\":\"paragraph\",\"props\":{\"v\":1}}]"),
             200);
 
     assertThat(analysis.get("canAutoMerge").asBoolean()).isTrue();
@@ -263,15 +262,13 @@ class ContentIntegrationTest {
         post(
             "/notes/" + noteId + "/merge/analyze",
             COMMENTER,
-            """
-            {
-              "base":{"etag":"\\"note-rev-0\\"","title":"Base","contentBlocks":[{"id":"b1","type":"paragraph"}]},
-              "local":{"title":"Local","contentBlocks":[{"id":"b1","type":"paragraph"}]},
-              "clientMergeVersion":1
-            }
-            """,
+            mergeAnalyzeJson(
+                "note-rev-0",
+                "Local",
+                "[{\"id\":\"b1\",\"type\":\"paragraph\"}]",
+                "[{\"id\":\"b1\",\"type\":\"paragraph\"}]"),
             403);
-    assertThat(denied.get("errorCode").asText()).isEqualTo("NOTE_UPDATE_FORBIDDEN");
+    assertThat(denied.get("errorCode").asText()).isEqualTo("NOTEBOOK_ACCESS_DENIED");
   }
 
   @Test
@@ -279,10 +276,11 @@ class ContentIntegrationTest {
     JsonNode created = createNote(OWNER, "Base", blocks("paragraph", ",\"props\":{\"v\":1}"));
     String noteId = created.get("id").asText();
     String baseEtag =
-        sendResponse("GET", "/notes/" + noteId, OWNER, WORKSPACE_ID, null)
-            .headers()
-            .firstValue("etag")
-            .orElseThrow();
+        normalizeWeakEtagHeader(
+            sendResponse("GET", "/notes/" + noteId, OWNER, WORKSPACE_ID, null)
+                .headers()
+                .firstValue("etag")
+                .orElseThrow());
 
     patch(
         "/notes/" + noteId,
@@ -290,26 +288,14 @@ class ContentIntegrationTest {
         "{\"title\":\"Base\",\"contentBlocks\":[{\"id\":\"b1\",\"type\":\"paragraph\",\"props\":{\"v\":2}}]}",
         200);
     String remoteEtag =
-        sendResponse("GET", "/notes/" + noteId, OWNER, WORKSPACE_ID, null)
-            .headers()
-            .firstValue("etag")
-            .orElseThrow();
+        normalizeWeakEtagHeader(
+            sendResponse("GET", "/notes/" + noteId, OWNER, WORKSPACE_ID, null)
+                .headers()
+                .firstValue("etag")
+                .orElseThrow());
 
     JsonNode applied =
-        post(
-            "/notes/" + noteId + "/merge/apply",
-            OWNER,
-            """
-            {
-              "base":{"etag":"%s","title":"Base","contentBlocks":[{"id":"b1","type":"paragraph","props":{"v":1}}]},
-              "local":{"title":"Local title","contentBlocks":[{"id":"b1","type":"paragraph","props":{"v":1}}]},
-              "expectedRemoteEtag":"%s",
-              "mergeVersion":1,
-              "idempotencyKey":"merge-apply-idem-1"
-            }
-            """
-                .formatted(baseEtag, remoteEtag),
-            200);
+        post("/notes/" + noteId + "/merge/apply", OWNER, mergeApplyJson(baseEtag, remoteEtag), 200);
     assertThat(applied.get("merged").asBoolean()).isTrue();
     assertThat(applied.get("title").asText()).isEqualTo("Local title");
     assertThat(items(get("/notes/" + noteId + "/versions", OWNER, 200))).hasSize(3);
@@ -333,6 +319,59 @@ class ContentIntegrationTest {
 
   private String blocks(String type, String extra) {
     return "[{\"id\":\"b1\",\"type\":\"%s\"%s}]".formatted(type, extra);
+  }
+
+  /** HTTP ETag may be weak and/or quoted; merge APIs compare to raw {@code note-rev-n} tokens. */
+  private static String normalizeWeakEtagHeader(String headerValue) {
+    if (headerValue == null) {
+      return "";
+    }
+    String v = headerValue.trim();
+    if (v.regionMatches(true, 0, "W/", 0, 2)) {
+      v = v.substring(2).trim();
+    }
+    if (v.length() >= 2 && v.startsWith("\"") && v.endsWith("\"")) {
+      v = v.substring(1, v.length() - 1);
+    }
+    return v;
+  }
+
+  private String mergeAnalyzeJson(
+      String baseEtag, String localTitle, String baseBlocksJson, String localBlocksJson)
+      throws Exception {
+    var root = objectMapper.createObjectNode();
+    var base = objectMapper.createObjectNode();
+    base.put("etag", baseEtag);
+    base.put("title", "Base");
+    base.set("contentBlocks", objectMapper.readTree(baseBlocksJson));
+    var local = objectMapper.createObjectNode();
+    local.put("title", localTitle);
+    local.set("contentBlocks", objectMapper.readTree(localBlocksJson));
+    root.set("base", base);
+    root.set("local", local);
+    root.put("clientMergeVersion", 1);
+    return objectMapper.writeValueAsString(root);
+  }
+
+  private String mergeApplyJson(String baseEtag, String remoteEtag) throws Exception {
+    var root = objectMapper.createObjectNode();
+    var base = objectMapper.createObjectNode();
+    base.put("etag", baseEtag);
+    base.put("title", "Base");
+    base.set(
+        "contentBlocks",
+        objectMapper.readTree("[{\"id\":\"b1\",\"type\":\"paragraph\",\"props\":{\"v\":1}}]"));
+    var local = objectMapper.createObjectNode();
+    local.put("title", "Local title");
+    local.set(
+        "contentBlocks",
+        objectMapper.readTree("[{\"id\":\"b1\",\"type\":\"paragraph\",\"props\":{\"v\":1}}]"));
+    root.set("base", base);
+    root.set("local", local);
+    root.put("expectedRemoteEtag", remoteEtag);
+    root.put("mergeVersion", 1);
+    root.put("idempotencyKey", "merge-apply-idem-1");
+    return objectMapper.writeValueAsString(root);
   }
 
   private JsonNode get(String path, User user, int status) throws Exception {
@@ -360,8 +399,8 @@ class ContentIntegrationTest {
     return send("PATCH", path, user, WORKSPACE_ID, body, status);
   }
 
-  private JsonNode patchWithIfMatch(
-      String path, User user, String body, String ifMatch, int status) throws Exception {
+  private JsonNode patchWithIfMatch(String path, User user, String body, String ifMatch, int status)
+      throws Exception {
     return send("PATCH", path, user, WORKSPACE_ID, body, status, ifMatch);
   }
 

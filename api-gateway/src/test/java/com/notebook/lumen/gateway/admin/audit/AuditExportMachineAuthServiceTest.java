@@ -15,7 +15,12 @@ class AuditExportMachineAuthServiceTest {
     AuditExportMachineAuthService service = new AuditExportMachineAuthService(props(true));
     var result =
         service.validate(
-            jwt("machine", "https://audit-exporter.internal", "admin:audit:export", 600, "api-gateway"));
+            jwt(
+                "machine",
+                "https://audit-exporter.internal",
+                "admin:audit:export",
+                600,
+                "api-gateway"));
     assertThat(result.success()).isTrue();
     assertThat(result.principalId()).isEqualTo("audit-exporter");
   }
@@ -25,7 +30,12 @@ class AuditExportMachineAuthServiceTest {
     AuditExportMachineAuthService service = new AuditExportMachineAuthService(props(true));
     var result =
         service.validate(
-            jwt("machine", "https://bad-issuer.internal", "admin:audit:export", 600, "api-gateway"));
+            jwt(
+                "machine",
+                "https://bad-issuer.internal",
+                "admin:audit:export",
+                600,
+                "api-gateway"));
     assertThat(result.success()).isFalse();
     assertThat(result.errorCode().name()).isEqualTo("INVALID_AUDIT_EXPORT_MACHINE_ISSUER");
   }
@@ -35,7 +45,12 @@ class AuditExportMachineAuthServiceTest {
     AuditExportMachineAuthService service = new AuditExportMachineAuthService(props(true));
     var result =
         service.validate(
-            jwt("machine", "https://audit-exporter.internal", "admin:audit:read", 600, "api-gateway"));
+            jwt(
+                "machine",
+                "https://audit-exporter.internal",
+                "admin:audit:read",
+                600,
+                "api-gateway"));
     assertThat(result.success()).isFalse();
     assertThat(result.errorCode().name()).isEqualTo("INSUFFICIENT_AUDIT_EXPORT_MACHINE_SCOPE");
   }
@@ -45,7 +60,12 @@ class AuditExportMachineAuthServiceTest {
     AuditExportMachineAuthService service = new AuditExportMachineAuthService(props(true));
     var result =
         service.validate(
-            jwt("machine", "https://audit-exporter.internal", "admin:audit:export", 2000, "api-gateway"));
+            jwt(
+                "machine",
+                "https://audit-exporter.internal",
+                "admin:audit:export",
+                2000,
+                "api-gateway"));
     assertThat(result.success()).isFalse();
     assertThat(result.errorCode().name()).isEqualTo("AUDIT_EXPORT_MACHINE_TOKEN_TTL_TOO_LONG");
   }

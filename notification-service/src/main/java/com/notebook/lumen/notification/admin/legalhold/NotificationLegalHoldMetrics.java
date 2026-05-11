@@ -17,9 +17,11 @@ public class NotificationLegalHoldMetrics {
   private final NotificationLegalHoldRepository holdRepository;
   private final Map<LegalHoldScope, Counter> createdByScope = new EnumMap<>(LegalHoldScope.class);
   private final Map<LegalHoldScope, Counter> releasedByScope = new EnumMap<>(LegalHoldScope.class);
-  private final Map<RetentionPurgeKind, Counter> retentionBlockedByTarget = new EnumMap<>(RetentionPurgeKind.class);
+  private final Map<RetentionPurgeKind, Counter> retentionBlockedByTarget =
+      new EnumMap<>(RetentionPurgeKind.class);
 
-  public NotificationLegalHoldMetrics(MeterRegistry registry, NotificationLegalHoldRepository holdRepository) {
+  public NotificationLegalHoldMetrics(
+      MeterRegistry registry, NotificationLegalHoldRepository holdRepository) {
     this.registry = registry;
     this.holdRepository = holdRepository;
   }

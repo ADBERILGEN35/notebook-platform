@@ -5,9 +5,9 @@ import com.notebook.lumen.notification.shared.config.NotificationSseProperties;
 import com.notebook.lumen.notification.shared.exception.NotificationException;
 import com.notebook.lumen.notification.shared.web.UserContextResolver;
 import com.notebook.lumen.notification.user.application.UserNotificationService;
+import com.notebook.lumen.notification.user.domain.UserNotificationType;
 import com.notebook.lumen.notification.user.realtime.NotificationSseBroker;
 import jakarta.servlet.http.HttpServletResponse;
-import com.notebook.lumen.notification.user.domain.UserNotificationType;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -101,7 +101,8 @@ public class UserNotificationController {
       @RequestBody(required = false) ReadAllNotificationsRequest request) {
     ensureEnabled();
     UUID userId = userContextResolver.requireUserId(userIdHeader);
-    int changed = notificationService.markReadAll(userId, request == null ? null : request.workspaceId());
+    int changed =
+        notificationService.markReadAll(userId, request == null ? null : request.workspaceId());
     return java.util.Map.of("updatedCount", changed);
   }
 
@@ -117,7 +118,9 @@ public class UserNotificationController {
   private void ensureEnabled() {
     if (properties.inApp() == null || !properties.inApp().enabled()) {
       throw new NotificationException(
-          HttpStatus.NOT_FOUND, "IN_APP_NOTIFICATIONS_DISABLED", "In-app notifications are disabled");
+          HttpStatus.NOT_FOUND,
+          "IN_APP_NOTIFICATIONS_DISABLED",
+          "In-app notifications are disabled");
     }
   }
 

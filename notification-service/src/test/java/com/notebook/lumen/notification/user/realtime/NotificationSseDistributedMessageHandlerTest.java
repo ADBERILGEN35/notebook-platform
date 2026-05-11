@@ -38,13 +38,13 @@ class NotificationSseDistributedMessageHandlerTest {
 
     String payload =
         objectMapper.writeValueAsString(
-                new NotificationSseEventEnvelope(
-                    UUID.randomUUID(),
-                    "instance-a",
-                    UUID.randomUUID(),
-                    "notification.unread_count",
-                    Map.of("unreadCount", 1),
-                    Instant.now()));
+            new NotificationSseEventEnvelope(
+                UUID.randomUUID(),
+                "instance-a",
+                UUID.randomUUID(),
+                "notification.unread_count",
+                Map.of("unreadCount", 1),
+                Instant.now()));
     handler.handleMessage(payload);
     verifyNoInteractions(dispatcher);
   }
@@ -70,13 +70,13 @@ class NotificationSseDistributedMessageHandlerTest {
 
     String payload =
         objectMapper.writeValueAsString(
-                new NotificationSseEventEnvelope(
-                    UUID.randomUUID(),
-                    "instance-b",
-                    UUID.randomUUID(),
-                    "notification.created",
-                    Map.of("unreadCount", 2),
-                    Instant.now()));
+            new NotificationSseEventEnvelope(
+                UUID.randomUUID(),
+                "instance-b",
+                UUID.randomUUID(),
+                "notification.created",
+                Map.of("unreadCount", 2),
+                Instant.now()));
     handler.handleMessage(payload);
     verify(dispatcher).deliverFromDistributed(org.mockito.ArgumentMatchers.any());
   }

@@ -26,7 +26,8 @@ import reactor.core.publisher.Mono;
 
 @RestController
 public class AdminNotificationLegalHoldController {
-  private static final Logger log = LoggerFactory.getLogger(AdminNotificationLegalHoldController.class);
+  private static final Logger log =
+      LoggerFactory.getLogger(AdminNotificationLegalHoldController.class);
 
   private final AdminAuthorizationService adminAuthorizationService;
   private final AdminNotificationLegalHoldProxyService proxyService;
@@ -38,7 +39,9 @@ public class AdminNotificationLegalHoldController {
     this.proxyService = proxyService;
   }
 
-  @GetMapping(path = "/admin/notifications/legal-holds", produces = MediaType.APPLICATION_JSON_VALUE)
+  @GetMapping(
+      path = "/admin/notifications/legal-holds",
+      produces = MediaType.APPLICATION_JSON_VALUE)
   public Mono<ResponseEntity<Object>> list(
       @AuthenticationPrincipal Jwt jwt,
       @RequestParam(required = false) String status,
@@ -106,7 +109,8 @@ public class AdminNotificationLegalHoldController {
               null));
     }
     String email = jwt.getClaimAsString("email");
-    log.info("admin_notification_legal_hold_create adminUserId={} requestId={}", actorUserId, requestId);
+    log.info(
+        "admin_notification_legal_hold_create adminUserId={} requestId={}", actorUserId, requestId);
     return proxyService
         .create(body, actorUserId, email)
         .map(b -> ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).<Object>body(b))
@@ -173,7 +177,8 @@ public class AdminNotificationLegalHoldController {
     return java.net.URLEncoder.encode(v, java.nio.charset.StandardCharsets.UTF_8);
   }
 
-  private ResponseEntity<Object> forbidden(Jwt jwt, ErrorCode code, String requestId, boolean write) {
+  private ResponseEntity<Object> forbidden(
+      Jwt jwt, ErrorCode code, String requestId, boolean write) {
     if (code == ErrorCode.ADMIN_WRITE_MFA_REQUIRED || code == ErrorCode.ADMIN_MFA_REQUIRED) {
       log.warn(
           "admin_mfa_required_blocked adminUserId={} endpoint=legal-holds requestId={}",
@@ -204,12 +209,19 @@ public class AdminNotificationLegalHoldController {
   }
 
   private ResponseEntity<Object> notFound(ErrorCode code, String message, String requestId) {
-    return error(HttpStatus.NOT_FOUND, code, message, requestId, "/admin/notifications/legal-holds", null);
+    return error(
+        HttpStatus.NOT_FOUND, code, message, requestId, "/admin/notifications/legal-holds", null);
   }
 
-  private ResponseEntity<Object> badGateway(String message, String requestId, Map<String, Object> details) {
+  private ResponseEntity<Object> badGateway(
+      String message, String requestId, Map<String, Object> details) {
     return error(
-        HttpStatus.BAD_GATEWAY, ErrorCode.AUDIT_PROXY_REQUEST_FAILED, message, requestId, null, details);
+        HttpStatus.BAD_GATEWAY,
+        ErrorCode.AUDIT_PROXY_REQUEST_FAILED,
+        message,
+        requestId,
+        null,
+        details);
   }
 
   private ResponseEntity<Object> error(

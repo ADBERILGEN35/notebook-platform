@@ -59,7 +59,6 @@ public class ScimAuthService {
   }
 
   private void recordFailedAuth(HttpServletRequest request, String reason) {
-    auditService.record(
-        "SCIM_AUTH_FAILED", null, "SCIM", null, request, Map.of("reason", reason));
+    auditService.record("SCIM_AUTH_FAILED", null, "SCIM", null, request, Map.of("reason", reason));
   }
 }

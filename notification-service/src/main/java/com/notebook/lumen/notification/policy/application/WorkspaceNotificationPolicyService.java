@@ -49,7 +49,8 @@ public class WorkspaceNotificationPolicyService {
   @Transactional(readOnly = true)
   public WorkspaceNotificationPoliciesResponse get(UUID actorUserId, UUID workspaceId) {
     ensurePoliciesEnabled();
-    var membership = workspaceMembershipClient.requireWorkspaceMemberForPoliciesRead(actorUserId, workspaceId);
+    var membership =
+        workspaceMembershipClient.requireWorkspaceMemberForPoliciesRead(actorUserId, workspaceId);
     boolean canManage = WorkspaceRoleRules.isOwnerOrAdmin(membership.role());
     List<WorkspaceNotificationPolicy> stored = policyRepository.findByWorkspaceId(workspaceId);
     Map<String, WorkspaceNotificationPolicy> index = indexPolicies(stored);
@@ -62,9 +63,7 @@ public class WorkspaceNotificationPolicyService {
         WorkspaceNotificationPolicyMode mode =
             row == null ? WorkspaceNotificationPolicyMode.USER_CONTROLLED : row.getPolicyMode();
         String reason = row == null ? null : row.getReason();
-        channels.put(
-            channel,
-            new WorkspaceChannelPolicyState(mode, reason, canManage));
+        channels.put(channel, new WorkspaceChannelPolicyState(mode, reason, canManage));
       }
       rows.add(
           new WorkspaceNotificationPolicyRow(

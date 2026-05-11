@@ -14,7 +14,8 @@ public class SiemConfigValidator {
   private final String activeProfiles;
 
   public SiemConfigValidator(
-      SiemProperties properties, @Value("${spring.profiles.active:default}") String activeProfiles) {
+      SiemProperties properties,
+      @Value("${spring.profiles.active:default}") String activeProfiles) {
     this.properties = properties;
     this.activeProfiles = activeProfiles;
   }
@@ -26,13 +27,15 @@ public class SiemConfigValidator {
     }
     if ("generic-http".equals(properties.effectiveProvider())
         && (properties.endpointUrl() == null || properties.endpointUrl().isBlank())) {
-      throw new IllegalStateException("INVALID_SIEM_CONFIG: endpoint required for generic-http provider");
+      throw new IllegalStateException(
+          "INVALID_SIEM_CONFIG: endpoint required for generic-http provider");
     }
     if ("generic-http".equals(properties.effectiveProvider())
         && properties.endpointUrl() != null
         && properties.endpointUrl().startsWith("http://")) {
       if (activeProfiles.contains("prod")) {
-        throw new IllegalStateException("INVALID_SIEM_CONFIG: non-TLS SIEM endpoint is not allowed in prod");
+        throw new IllegalStateException(
+            "INVALID_SIEM_CONFIG: non-TLS SIEM endpoint is not allowed in prod");
       }
       log.warn("siem_non_tls_endpoint_configured endpoint={}", properties.endpointUrl());
     }

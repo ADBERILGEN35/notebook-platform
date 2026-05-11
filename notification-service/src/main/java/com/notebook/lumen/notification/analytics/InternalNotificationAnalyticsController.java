@@ -39,7 +39,8 @@ public class InternalNotificationAnalyticsController {
       @RequestParam Instant to,
       @RequestParam(name = "bucket", required = false) String ignoredBucket) {
     if (!adminProperties.enabled()) {
-      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Internal notification analytics is disabled");
+      throw new ResponseStatusException(
+          HttpStatus.NOT_FOUND, "Internal notification analytics is disabled");
     }
     if (!analyticsProperties.enabled()) {
       throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Notification analytics is disabled");

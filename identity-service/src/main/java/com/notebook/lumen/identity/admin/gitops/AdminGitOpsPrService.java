@@ -5,13 +5,13 @@ import com.notebook.lumen.identity.admin.changerequest.AdminOperationRegistry;
 import com.notebook.lumen.identity.admin.changerequest.ChangeRequestStatus;
 import com.notebook.lumen.identity.admin.changerequest.PlatformAdminChangeRequest;
 import com.notebook.lumen.identity.admin.changerequest.PlatformAdminChangeRequestRepository;
+import com.notebook.lumen.identity.admin.gitops.GitOpsYamlPatchService.PatchPlan;
 import com.notebook.lumen.identity.admin.gitops.api.AdminGitOpsDtos.CreatePrBody;
 import com.notebook.lumen.identity.admin.gitops.api.AdminGitOpsDtos.CreatePrResponse;
 import com.notebook.lumen.identity.admin.gitops.api.AdminGitOpsDtos.DryRunBody;
 import com.notebook.lumen.identity.admin.gitops.api.AdminGitOpsDtos.DryRunResponse;
 import com.notebook.lumen.identity.admin.gitops.api.AdminGitOpsDtos.FileChangePreview;
 import com.notebook.lumen.identity.admin.gitops.api.AdminGitOpsDtos.PathChange;
-import com.notebook.lumen.identity.admin.gitops.GitOpsYamlPatchService.PatchPlan;
 import com.notebook.lumen.identity.audit.AuditService;
 import jakarta.servlet.http.HttpServletRequest;
 import java.time.Instant;
@@ -86,12 +86,7 @@ public class AdminGitOpsPrService {
         dryRunAudit(cr, env, plan.relativePath()));
 
     return new DryRunResponse(
-        changeRequestId,
-        env,
-        gitopsProps.provider(),
-        files,
-        plan.diffPreview(),
-        plan.warnings());
+        changeRequestId, env, gitopsProps.provider(), files, plan.diffPreview(), plan.warnings());
   }
 
   @Transactional
@@ -100,7 +95,9 @@ public class AdminGitOpsPrService {
     ensureGitOpsEnabled();
     if (body == null || body.targetEnvironment() == null || body.targetEnvironment().isBlank()) {
       throw new AdminGitOpsException(
-          "ADMIN_GITOPS_ENVIRONMENT_NOT_ALLOWED", HttpStatus.BAD_REQUEST, "targetEnvironment is required");
+          "ADMIN_GITOPS_ENVIRONMENT_NOT_ALLOWED",
+          HttpStatus.BAD_REQUEST,
+          "targetEnvironment is required");
     }
     PlatformAdminChangeRequest cr = loadChangeRequest(changeRequestId);
     ensureApprovedIfRequired(cr);
@@ -155,7 +152,8 @@ public class AdminGitOpsPrService {
 
     AdminOperationDefinition def = resolveOperation(cr.getOperationType());
     String normalized = operationRegistry.normalizeValue(def, cr.getRequestedValue());
-    PatchPlan plan = patchService.buildPatchPlan(def.operationType(), normalized, env, rbacPatchContext(cr));
+    PatchPlan plan =
+        patchService.buildPatchPlan(def.operationType(), normalized, env, rbacPatchContext(cr));
 
     String headBranch =
         sanitizeBranchName(
@@ -199,7 +197,9 @@ public class AdminGitOpsPrService {
             null,
             null,
             actorUserId,
-            body.idempotencyKey() == null || body.idempotencyKey().isBlank() ? null : body.idempotencyKey().trim(),
+            body.idempotencyKey() == null || body.idempotencyKey().isBlank()
+                ? null
+                : body.idempotencyKey().trim(),
             now,
             null);
 
@@ -245,7 +245,13 @@ public class AdminGitOpsPrService {
           "ADMIN_GITOPS_PR_PROPOSAL",
           proposal.getId(),
           request,
-          prAudit(cr, env, providerName, plan.relativePath(), result.headBranch(), result.providerPrUrl()));
+          prAudit(
+              cr,
+              env,
+              providerName,
+              plan.relativePath(),
+              result.headBranch(),
+              result.providerPrUrl()));
       if (AdminOperationRegistry.isRbacRoleOperation(cr.getOperationType())) {
         auditService.record(
             "ADMIN_RBAC_GITOPS_PROPOSAL_CREATED",
@@ -253,7 +259,13 @@ public class AdminGitOpsPrService {
             "ADMIN_GITOPS_PR_PROPOSAL",
             proposal.getId(),
             request,
-            prAudit(cr, env, providerName, plan.relativePath(), result.headBranch(), result.providerPrUrl()));
+            prAudit(
+                cr,
+                env,
+                providerName,
+                plan.relativePath(),
+                result.headBranch(),
+                result.providerPrUrl()));
       }
       return toCreatePrResponse(proposal);
     } catch (AdminGitOpsException e) {
@@ -331,7 +343,9 @@ public class AdminGitOpsPrService {
         .orElseThrow(
             () ->
                 new AdminGitOpsException(
-                    "ADMIN_CHANGE_REQUEST_NOT_FOUND", HttpStatus.NOT_FOUND, "Change request not found"));
+                    "ADMIN_CHANGE_REQUEST_NOT_FOUND",
+                    HttpStatus.NOT_FOUND,
+                    "Change request not found"));
   }
 
   private AdminOperationDefinition resolveOperation(String operationType) {
@@ -355,7 +369,8 @@ public class AdminGitOpsPrService {
     return fromCr;
   }
 
-  private static String buildPrBody(PlatformAdminChangeRequest cr, String env, String normalizedValue) {
+  private static String buildPrBody(
+      PlatformAdminChangeRequest cr, String env, String normalizedValue) {
     StringBuilder sb =
         new StringBuilder()
             .append("Approved admin change request — GitOps patch (no secrets).\n\n")
@@ -380,7 +395,8 @@ public class AdminGitOpsPrService {
       sb.append("\n## Admin RBAC override proposal (`admin-rbac-overrides.yaml`)\n")
           .append(
               "This PR appends a governance assignment row only. **It does not apply roles at runtime** unless admin RBAC override ingestion is enabled in a future phase.\n")
-          .append("Review IdP/SCIM mappings separately; merge after governance sign-off. Rollback: revert the assignment entry.\n");
+          .append(
+              "Review IdP/SCIM mappings separately; merge after governance sign-off. Rollback: revert the assignment entry.\n");
     }
     return sb.toString();
   }
@@ -401,7 +417,8 @@ public class AdminGitOpsPrService {
     if (!AdminOperationRegistry.isRbacRoleOperation(cr.getOperationType())) {
       return null;
     }
-    return new GitOpsRbacPatchContext(cr.getId(), cr.getRequestedByUserId(), cr.getDecidedByUserId());
+    return new GitOpsRbacPatchContext(
+        cr.getId(), cr.getRequestedByUserId(), cr.getDecidedByUserId());
   }
 
   private static UUID rbacPrChangeRequestId(PlatformAdminChangeRequest cr) {
@@ -409,14 +426,19 @@ public class AdminGitOpsPrService {
   }
 
   private static UUID rbacPrRequestedBy(PlatformAdminChangeRequest cr) {
-    return AdminOperationRegistry.isRbacRoleOperation(cr.getOperationType()) ? cr.getRequestedByUserId() : null;
+    return AdminOperationRegistry.isRbacRoleOperation(cr.getOperationType())
+        ? cr.getRequestedByUserId()
+        : null;
   }
 
   private static UUID rbacPrApprovedBy(PlatformAdminChangeRequest cr) {
-    return AdminOperationRegistry.isRbacRoleOperation(cr.getOperationType()) ? cr.getDecidedByUserId() : null;
+    return AdminOperationRegistry.isRbacRoleOperation(cr.getOperationType())
+        ? cr.getDecidedByUserId()
+        : null;
   }
 
-  private static Map<String, Object> dryRunAudit(PlatformAdminChangeRequest cr, String env, String path) {
+  private static Map<String, Object> dryRunAudit(
+      PlatformAdminChangeRequest cr, String env, String path) {
     Map<String, Object> m = new HashMap<>();
     m.put("changeRequestId", cr.getId().toString());
     m.put("operationType", cr.getOperationType());

@@ -36,7 +36,8 @@ public class ProductionSecurityValidator implements ApplicationRunner {
           "JWT_JWKS_URI, JWT_PUBLIC_KEY_PATH or JWT_PUBLIC_KEY is required when api-gateway runs with the prod profile.");
     }
     if (corsProperties.allowCredentials()
-        && (corsProperties.allowedOrigins() == null || corsProperties.allowedOrigins().contains("*"))) {
+        && (corsProperties.allowedOrigins() == null
+            || corsProperties.allowedOrigins().contains("*"))) {
       throw new IllegalStateException(
           "CORS wildcard origins are not allowed when CORS_ALLOW_CREDENTIALS=true.");
     }

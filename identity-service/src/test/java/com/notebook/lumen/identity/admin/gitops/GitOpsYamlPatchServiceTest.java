@@ -19,11 +19,9 @@ class GitOpsYamlPatchServiceTest {
     GitOpsRbacPatchContext ctx = new GitOpsRbacPatchContext(cr, req, appr);
     GitOpsYamlPatchService.PatchPlan plan =
         svc.buildPatchPlan(
-            "ADMIN_RBAC_ROLE_GRANT_REQUEST",
-            "grant:platform_audit_viewer:" + target,
-            "dev",
-            ctx);
-    assertThat(plan.relativePath()).isEqualTo("deploy/gitops/environments/dev/admin-rbac-overrides.yaml");
+            "ADMIN_RBAC_ROLE_GRANT_REQUEST", "grant:platform_audit_viewer:" + target, "dev", ctx);
+    assertThat(plan.relativePath())
+        .isEqualTo("deploy/gitops/environments/dev/admin-rbac-overrides.yaml");
     assertThat(plan.newValue()).contains("PLATFORM_AUDIT_VIEWER");
     assertThat(plan.newValue()).contains("change-request:" + cr);
     assertThat(plan.newValue()).contains(req.toString());
@@ -34,10 +32,10 @@ class GitOpsYamlPatchServiceTest {
   @Test
   void rbacApplyToContent_idempotentAppend() {
     UUID cr = UUID.randomUUID();
-    GitOpsRbacPatchContext ctx = new GitOpsRbacPatchContext(cr, UUID.randomUUID(), UUID.randomUUID());
+    GitOpsRbacPatchContext ctx =
+        new GitOpsRbacPatchContext(cr, UUID.randomUUID(), UUID.randomUUID());
     UUID target = UUID.randomUUID();
-    String yaml =
-        "adminRbacOverrides:\n  version: 1\n  assignments: []\n";
+    String yaml = "adminRbacOverrides:\n  version: 1\n  assignments: []\n";
     String patched =
         svc.applyPatchToContent(
             yaml, "ADMIN_RBAC_ROLE_REVOKE_REQUEST", "revoke:platform_audit_viewer:" + target, ctx);
@@ -48,14 +46,12 @@ class GitOpsYamlPatchServiceTest {
   @Test
   void rbac_unknownRole_rejected() {
     UUID target = UUID.randomUUID();
-    GitOpsRbacPatchContext ctx = new GitOpsRbacPatchContext(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID());
+    GitOpsRbacPatchContext ctx =
+        new GitOpsRbacPatchContext(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID());
     assertThatThrownBy(
             () ->
                 svc.buildPatchPlan(
-                    "ADMIN_RBAC_ROLE_GRANT_REQUEST",
-                    "grant:not_a_real_role:" + target,
-                    "dev",
-                    ctx))
+                    "ADMIN_RBAC_ROLE_GRANT_REQUEST", "grant:not_a_real_role:" + target, "dev", ctx))
         .isInstanceOf(AdminGitOpsException.class)
         .hasFieldOrPropertyWithValue("errorCode", "ADMIN_GITOPS_PATCH_FAILED");
   }

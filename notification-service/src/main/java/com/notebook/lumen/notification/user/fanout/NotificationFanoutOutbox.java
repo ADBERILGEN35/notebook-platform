@@ -129,8 +129,8 @@ public class NotificationFanoutOutbox {
   }
 
   /**
-   * Admin requeue: move DEAD row back to PENDING for worker pickup. Does not clear {@link #lastError}
-   * (operational history).
+   * Admin requeue: move DEAD row back to PENDING for worker pickup. Does not clear {@link
+   * #lastError} (operational history).
    */
   public void requeueFromDead(Instant now, String actorUserId) {
     if (this.status != NotificationFanoutOutboxStatus.DEAD) {

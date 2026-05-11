@@ -4,10 +4,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties(prefix = "notification.analytics")
 public record NotificationAnalyticsProperties(
-    boolean enabled,
-    int retentionDays,
-    int maxRangeDays,
-    String defaultBucket) {
+    boolean enabled, int retentionDays, int maxRangeDays, String defaultBucket) {
 
   public NotificationAnalyticsProperties {
     if (retentionDays <= 0) {

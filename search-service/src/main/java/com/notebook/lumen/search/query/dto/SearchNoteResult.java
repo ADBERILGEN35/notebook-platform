@@ -23,6 +23,17 @@ public record SearchNoteResult(
       String snippet,
       double rank,
       Instant noteUpdatedAt) {
-    this(noteId, workspaceId, notebookId, title, snippet, rank, noteUpdatedAt, null, null, true, false);
+    this(
+        noteId,
+        workspaceId,
+        notebookId,
+        title,
+        snippet,
+        rank,
+        noteUpdatedAt,
+        null,
+        null,
+        true,
+        false);
   }
 }

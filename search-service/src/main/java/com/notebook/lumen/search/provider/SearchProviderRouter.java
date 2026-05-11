@@ -64,7 +64,9 @@ public class SearchProviderRouter {
       }
       metrics.fallback(SearchOperation.SEARCH);
       return metrics.record(
-          SearchProviderType.POSTGRES, SearchOperation.SEARCH, () -> postgresProvider.search(query));
+          SearchProviderType.POSTGRES,
+          SearchOperation.SEARCH,
+          () -> postgresProvider.search(query));
     }
   }
 

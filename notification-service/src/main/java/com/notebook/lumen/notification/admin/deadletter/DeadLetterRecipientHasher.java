@@ -12,10 +12,7 @@ final class DeadLetterRecipientHasher {
 
   static String hash(UUID recipientUserId, String pepper) {
     String material =
-        "v1|"
-            + (pepper == null || pepper.isBlank() ? "no-pepper" : pepper)
-            + "|"
-            + recipientUserId;
+        "v1|" + (pepper == null || pepper.isBlank() ? "no-pepper" : pepper) + "|" + recipientUserId;
     try {
       MessageDigest md = MessageDigest.getInstance("SHA-256");
       byte[] digest = md.digest(material.getBytes(StandardCharsets.UTF_8));

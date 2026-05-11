@@ -28,7 +28,9 @@ public class AuditProxyService {
   private final WebClient webClient;
 
   public AuditProxyService(
-      GatewayAuditProxyProperties properties, ServiceJwtSigner signer, WebClient.Builder webClientBuilder) {
+      GatewayAuditProxyProperties properties,
+      ServiceJwtSigner signer,
+      WebClient.Builder webClientBuilder) {
     this.properties = properties;
     this.signer = signer;
     this.webClient = webClientBuilder.build();
@@ -76,7 +78,8 @@ public class AuditProxyService {
     putIfNotBlank(normalized, "aggregateType", input.get("aggregateType"));
     putIfNotBlank(normalized, "aggregateId", validateUuid(input.get("aggregateId"), "aggregateId"));
     putIfNotBlank(normalized, "requestId", input.get("requestId"));
-    putIfNotBlank(normalized, "createdFrom", validateInstant(input.get("createdFrom"), "createdFrom"));
+    putIfNotBlank(
+        normalized, "createdFrom", validateInstant(input.get("createdFrom"), "createdFrom"));
     putIfNotBlank(normalized, "createdTo", validateInstant(input.get("createdTo"), "createdTo"));
     normalized.put("page", validatePositiveInt(input.getOrDefault("page", "0"), 0, "page"));
     normalized.put("size", validatePositiveInt(input.getOrDefault("size", "50"), 200, "size"));

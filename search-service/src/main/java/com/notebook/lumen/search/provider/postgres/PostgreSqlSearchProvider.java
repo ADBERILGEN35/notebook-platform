@@ -52,7 +52,8 @@ public class PostgreSqlSearchProvider implements SearchProvider {
               repository.save(document);
               return new SearchArchiveResult(noteId, document.getArchivedAt(), true);
             })
-        .orElseGet(() -> new SearchArchiveResult(noteId, archivedAt == null ? now : archivedAt, false));
+        .orElseGet(
+            () -> new SearchArchiveResult(noteId, archivedAt == null ? now : archivedAt, false));
   }
 
   @Override

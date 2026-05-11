@@ -57,24 +57,28 @@ public class NotificationPreferenceController {
             .map(
                 item ->
                     new PreferenceUpdate(
-                        item.notificationType(), item.channel(), Boolean.TRUE.equals(item.enabled())))
+                        item.notificationType(),
+                        item.channel(),
+                        Boolean.TRUE.equals(item.enabled())))
             .toList();
     return toResponse(service.update(userId, updates));
   }
 
   private List<NotificationPreferenceResponse> toResponse(List<UserNotificationPreference> prefs) {
-    Map<UserNotificationType, Map<NotificationChannel, NotificationPreferenceChannelState>> grouped =
-        new EnumMap<>(UserNotificationType.class);
+    Map<UserNotificationType, Map<NotificationChannel, NotificationPreferenceChannelState>>
+        grouped = new EnumMap<>(UserNotificationType.class);
     for (UserNotificationPreference pref : prefs) {
       grouped
-          .computeIfAbsent(pref.getNotificationType(), ignored -> new EnumMap<>(NotificationChannel.class))
+          .computeIfAbsent(
+              pref.getNotificationType(), ignored -> new EnumMap<>(NotificationChannel.class))
           .put(
               pref.getChannel(),
               new NotificationPreferenceChannelState(pref.isEnabled(), pref.isMandatory()));
     }
     List<NotificationPreferenceResponse> response = new ArrayList<>();
-    for (Map.Entry<UserNotificationType, Map<NotificationChannel, NotificationPreferenceChannelState>> entry :
-        grouped.entrySet()) {
+    for (Map.Entry<
+            UserNotificationType, Map<NotificationChannel, NotificationPreferenceChannelState>>
+        entry : grouped.entrySet()) {
       response.add(
           new NotificationPreferenceResponse(
               entry.getKey(),
@@ -86,7 +90,9 @@ public class NotificationPreferenceController {
   }
 
   private void ensureEnabled() {
-    if (properties != null && properties.preferences() != null && !properties.preferences().enabled()) {
+    if (properties != null
+        && properties.preferences() != null
+        && !properties.preferences().enabled()) {
       throw new NotificationException(
           HttpStatus.NOT_FOUND,
           "NOTIFICATION_PREFERENCE_NOT_FOUND",

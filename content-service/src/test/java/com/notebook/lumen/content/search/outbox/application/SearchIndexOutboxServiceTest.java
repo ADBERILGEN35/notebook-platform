@@ -129,7 +129,12 @@ class SearchIndexOutboxServiceTest {
 
   private ContentProperties properties() {
     return new ContentProperties(
-        "", null, null, null, new ContentProperties.Search("", 1000, true, null, null, outbox()));
+        "",
+        null,
+        new ContentProperties.Concurrency(false),
+        null,
+        null,
+        new ContentProperties.Search("", 1000, true, null, null, outbox()));
   }
 
   private ContentProperties.SearchOutbox outbox() {

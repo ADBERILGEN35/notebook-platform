@@ -1,5 +1,7 @@
 package com.notebook.lumen.notification.email.application;
 
+import com.notebook.lumen.notification.analytics.NotificationAnalyticsEventKind;
+import com.notebook.lumen.notification.analytics.NotificationAnalyticsRecorder;
 import com.notebook.lumen.notification.email.domain.EmailNotification;
 import com.notebook.lumen.notification.email.domain.EmailNotificationType;
 import com.notebook.lumen.notification.email.domain.NotificationDigestItem;
@@ -8,8 +10,6 @@ import com.notebook.lumen.notification.email.infrastructure.EmailNotificationRep
 import com.notebook.lumen.notification.email.infrastructure.NotificationDigestItemRepository;
 import com.notebook.lumen.notification.preference.application.NotificationDeliveryPreferenceService;
 import com.notebook.lumen.notification.preference.domain.UserNotificationDeliveryPreference;
-import com.notebook.lumen.notification.analytics.NotificationAnalyticsEventKind;
-import com.notebook.lumen.notification.analytics.NotificationAnalyticsRecorder;
 import com.notebook.lumen.notification.shared.config.NotificationProperties;
 import com.notebook.lumen.notification.user.domain.UserNotificationType;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -64,7 +64,9 @@ public class NotificationDigestService {
             pref,
             now,
             parseLocalTime(properties.digest().dailySendTime(), LocalTime.of(9, 0)),
-            properties.digest().weeklyDay() == null ? java.time.DayOfWeek.MONDAY : properties.digest().weeklyDay(),
+            properties.digest().weeklyDay() == null
+                ? java.time.DayOfWeek.MONDAY
+                : properties.digest().weeklyDay(),
             parseLocalTime(properties.digest().weeklySendTime(), LocalTime.of(9, 0)));
     digestItemRepository.save(
         new NotificationDigestItem(
@@ -101,7 +103,11 @@ public class NotificationDigestService {
       for (NotificationDigestItem item : items) {
         item.markSent(emailId, now);
         analyticsRecorder.record(
-            NotificationAnalyticsEventKind.DIGEST_SENT, item.getNotificationType().name(), "EMAIL", "", 1);
+            NotificationAnalyticsEventKind.DIGEST_SENT,
+            item.getNotificationType().name(),
+            "EMAIL",
+            "",
+            1);
       }
     }
     if (!due.isEmpty()) {

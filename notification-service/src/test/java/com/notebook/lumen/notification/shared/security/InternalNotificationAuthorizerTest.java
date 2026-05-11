@@ -107,7 +107,8 @@ class InternalNotificationAuthorizerTest {
             null),
         new NotificationProperties.InApp(true),
         new NotificationProperties.Preferences(true),
-        new NotificationProperties.Digest(true, true, 60, 100, 50, "09:00", java.time.DayOfWeek.MONDAY, "09:00"),
+        new NotificationProperties.Digest(
+            true, true, 60, 100, 50, "09:00", java.time.DayOfWeek.MONDAY, "09:00"),
         NotificationTestFanout.disabled(),
         NotificationTestWorkspace.disabled());
   }

@@ -80,7 +80,8 @@ public class AdminRbacOverrideManifestParser {
       }
       @SuppressWarnings("unchecked")
       Map<String, Object> map = (Map<String, Object>) new LinkedHashMap<>(toStringKeyedMap(m));
-      Optional<AdminRbacOverrideAssignmentRow> parsed = parseRow(map, props, warnings, errors, checkUserExists);
+      Optional<AdminRbacOverrideAssignmentRow> parsed =
+          parseRow(map, props, warnings, errors, checkUserExists);
       if (parsed.isPresent()) {
         accepted.add(parsed.get());
       } else {
@@ -155,7 +156,9 @@ public class AdminRbacOverrideManifestParser {
 
     Instant expiresAt = null;
     Object exp = m.get("expiresAt");
-    if (exp != null && !String.valueOf(exp).equalsIgnoreCase("null") && !String.valueOf(exp).isBlank()) {
+    if (exp != null
+        && !String.valueOf(exp).equalsIgnoreCase("null")
+        && !String.valueOf(exp).isBlank()) {
       try {
         expiresAt = Instant.parse(String.valueOf(exp).trim());
       } catch (DateTimeParseException e) {
@@ -199,7 +202,17 @@ public class AdminRbacOverrideManifestParser {
 
     return Optional.of(
         new AdminRbacOverrideAssignmentRow(
-            stableId, userId, role, action, reasonRef, requestedBy, approvedBy, status, expiresAt, createdAt, metaSource));
+            stableId,
+            userId,
+            role,
+            action,
+            reasonRef,
+            requestedBy,
+            approvedBy,
+            status,
+            expiresAt,
+            createdAt,
+            metaSource));
   }
 
   private static UUID parseUuidLenient(Object raw) {

@@ -21,7 +21,9 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 @Testcontainers
 @ActiveProfiles("rls-test")
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(
+    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+    properties = {"workspace.notification.enabled=false"})
 class WorkspaceStrictHeaderRlsIntegrationTest {
   @Container
   static final PostgreSQLContainer<?> POSTGRES =

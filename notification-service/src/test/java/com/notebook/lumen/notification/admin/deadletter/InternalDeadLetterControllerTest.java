@@ -32,11 +32,11 @@ class InternalDeadLetterControllerTest {
     Mockito.when(svc.list(null, null, null, 0, 10, null))
         .thenReturn(new DeadLetterAdminDtos.DeadLetterListResponse(List.of(), 0, 10, 0));
     var c =
-        new InternalDeadLetterController(
-            new InternalDeadLetterAdminProperties(true), auth, svc);
+        new InternalDeadLetterController(new InternalDeadLetterAdminProperties(true), auth, svc);
     c.list("Bearer t", "fanout", "DEAD", null, null, null, 0, 10, null);
     verify(auth)
-        .authorize("Bearer t", InternalNotificationAuthorizer.ADMIN_NOTIFICATIONS_DEAD_LETTER_READ_SCOPE);
+        .authorize(
+            "Bearer t", InternalNotificationAuthorizer.ADMIN_NOTIFICATIONS_DEAD_LETTER_READ_SCOPE);
     verify(svc).list(null, null, null, 0, 10, null);
   }
 
@@ -46,15 +46,16 @@ class InternalDeadLetterControllerTest {
     FanoutDeadLetterAdminService svc = mock(FanoutDeadLetterAdminService.class);
     UUID id = UUID.randomUUID();
     var c =
-        new InternalDeadLetterController(
-            new InternalDeadLetterAdminProperties(true), auth, svc);
+        new InternalDeadLetterController(new InternalDeadLetterAdminProperties(true), auth, svc);
     c.requeue(
         "Bearer t",
         "actor",
         id,
         new DeadLetterAdminDtos.FanoutRequeueHttpRequest("k", "reason reason reason"));
     verify(auth)
-        .authorize("Bearer t", InternalNotificationAuthorizer.ADMIN_NOTIFICATIONS_DEAD_LETTER_REQUEUE_SCOPE);
+        .authorize(
+            "Bearer t",
+            InternalNotificationAuthorizer.ADMIN_NOTIFICATIONS_DEAD_LETTER_REQUEUE_SCOPE);
     verify(svc).requeue(eq(id), eq("k"), eq("reason reason reason"), eq("actor"));
   }
 }

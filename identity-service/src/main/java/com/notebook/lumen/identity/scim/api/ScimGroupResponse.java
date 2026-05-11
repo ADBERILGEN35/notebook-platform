@@ -18,10 +18,7 @@ public record ScimGroupResponse(
 
   @JsonInclude(JsonInclude.Include.NON_NULL)
   public record Member(
-      String value,
-      @JsonProperty("$ref") String ref,
-      String display,
-      String type) {}
+      String value, @JsonProperty("$ref") String ref, String display, String type) {}
 
   public record Meta(String resourceType, Instant created, Instant lastModified) {}
 

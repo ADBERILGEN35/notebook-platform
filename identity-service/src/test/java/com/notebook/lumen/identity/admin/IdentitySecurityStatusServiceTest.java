@@ -35,7 +35,9 @@ class IdentitySecurityStatusServiceTest {
                     "groups",
                     "admins",
                     "example.com")));
-    var scim = new ScimProperties(true, "scim-token-value", "", true, "notebook-admins");
+    var scim =
+        new ScimProperties(
+            true, "scim-token-value", "", true, "notebook-admins", true, 5, false, 100, 10);
     var mfa =
         new MfaProperties(
             true, new MfaProperties.Webauthn(true, "localhost", "rp", "", "preferred"), 300, false);
@@ -75,35 +77,20 @@ class IdentitySecurityStatusServiceTest {
     assertThat(body.siem().endpointConfigured()).isTrue();
 
     String json = mapper.writeValueAsString(body);
-    assertThat(json).doesNotContain("scim-token-value", "siem-secret-token", "super-secret-client", "cid");
+    assertThat(json)
+        .doesNotContain("scim-token-value", "siem-secret-token", "super-secret-client", "cid");
   }
 
   @Test
   void siemDisabled_yieldsNoSecretConfigured() {
     var sso = new SsoProperties(false, 300, false, "", "", List.of());
-    var scim = new ScimProperties(false, "", "", false, "");
+    var scim = new ScimProperties(false, "", "", false, "", true, 5, false, 100, 10);
     var mfa =
         new MfaProperties(
             false, new MfaProperties.Webauthn(false, "", "", "", "preferred"), 300, false);
     var siem =
         new SiemProperties(
-            false,
-            "noop",
-            "",
-            "none",
-            "",
-            "",
-            "",
-            10,
-            100,
-            10,
-            30,
-            3600,
-            false,
-            30,
-            30,
-            90,
-            false);
+            false, "noop", "", "none", "", "", "", 10, 100, 10, 30, 3600, false, 30, 30, 90, false);
 
     AdminRbacService adminRbac = Mockito.mock(AdminRbacService.class);
     Mockito.when(adminRbac.statusSnapshot())

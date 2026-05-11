@@ -53,7 +53,9 @@ public class EnterpriseStatusWarningEngine {
                 WarningSeverity.CRITICAL));
       }
     }
-    if (features.scim() != null && features.scim().enabled() && !features.scim().tokenConfigured()) {
+    if (features.scim() != null
+        && features.scim().enabled()
+        && !features.scim().tokenConfigured()) {
       warnings.add(
           new EnterpriseWarning(
               "SCIM_TOKEN_MISSING",
@@ -110,14 +112,16 @@ public class EnterpriseStatusWarningEngine {
       }
     }
     if (features.notifications() != null) {
-      if (features.notifications().sseEnabled() && !features.notifications().distributedFanoutEnabled()) {
+      if (features.notifications().sseEnabled()
+          && !features.notifications().distributedFanoutEnabled()) {
         warnings.add(
             new EnterpriseWarning(
                 "NOTIFICATION_SSE_WITHOUT_DISTRIBUTED_FANOUT",
                 "SSE is enabled but distributed fan-out is disabled (single-instance realtime).",
                 WarningSeverity.INFO));
       }
-      if (features.notifications().digestEnabled() && !features.notifications().digestWorkerEnabled()) {
+      if (features.notifications().digestEnabled()
+          && !features.notifications().digestWorkerEnabled()) {
         warnings.add(
             new EnterpriseWarning(
                 "NOTIFICATION_DIGEST_WORKER_DISABLED",

@@ -10,6 +10,8 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.Instant;
 import java.util.UUID;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Entity
 @Table(name = "external_identities")
@@ -36,6 +38,7 @@ public class ExternalIdentity {
   private boolean emailVerified;
 
   @Column(name = "claims")
+  @JdbcTypeCode(SqlTypes.JSON)
   private String claims;
 
   @Column(name = "linked_at", nullable = false)

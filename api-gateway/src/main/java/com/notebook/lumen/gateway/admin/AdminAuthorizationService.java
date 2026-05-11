@@ -72,8 +72,8 @@ public class AdminAuthorizationService {
   }
 
   /**
-   * Legacy enterprise admin write: {@code PLATFORM_ADMIN} only; allowlists are not sufficient. MFA when
-   * required by gateway policy.
+   * Legacy enterprise admin write: {@code PLATFORM_ADMIN} only; allowlists are not sufficient. MFA
+   * when required by gateway policy.
    */
   public Optional<ErrorCode> enterpriseAdminWriteDenialReason(Jwt jwt) {
     if (jwt == null) {
@@ -94,7 +94,8 @@ public class AdminAuthorizationService {
     }
     if (!rbacProperties.enforce()) {
       if (!isAdmin(jwt)) {
-        return Optional.of(requiresMfa() ? ErrorCode.ADMIN_MFA_REQUIRED : ErrorCode.ADMIN_ACCESS_DENIED);
+        return Optional.of(
+            requiresMfa() ? ErrorCode.ADMIN_MFA_REQUIRED : ErrorCode.ADMIN_ACCESS_DENIED);
       }
       return Optional.empty();
     }
@@ -167,20 +168,19 @@ public class AdminAuthorizationService {
 
   /** Read-only dead-letter listing / dry-run (Faz 82). */
   public Optional<ErrorCode> ensureNotificationDeadLetterRead(Jwt jwt) {
-    return ensureAdminPermission(jwt, PlatformAdminRbacConstants.PERM_NOTIFICATIONS_DEAD_LETTER_READ);
+    return ensureAdminPermission(
+        jwt, PlatformAdminRbacConstants.PERM_NOTIFICATIONS_DEAD_LETTER_READ);
   }
 
   /**
-   * Dead-letter requeue requires the dedicated permission plus the same admin-write MFA gate as other
-   * high-impact mutations.
+   * Dead-letter requeue requires the dedicated permission plus the same admin-write MFA gate as
+   * other high-impact mutations.
    */
   public Optional<ErrorCode> ensureNotificationRetentionRead(Jwt jwt) {
     return ensureAdminPermission(jwt, PlatformAdminRbacConstants.PERM_NOTIFICATIONS_RETENTION_READ);
   }
 
-  /**
-   * Destructive retention purge: dedicated permission plus admin-write MFA gate (Faz 83).
-   */
+  /** Destructive retention purge: dedicated permission plus admin-write MFA gate (Faz 83). */
   public Optional<ErrorCode> ensureNotificationRetentionRun(Jwt jwt) {
     if (!rbacProperties.enforce()) {
       if (!isAdmin(jwt)) {
@@ -213,7 +213,8 @@ public class AdminAuthorizationService {
       return Optional.empty();
     }
     Optional<ErrorCode> base =
-        ensureAdminPermission(jwt, PlatformAdminRbacConstants.PERM_NOTIFICATIONS_DEAD_LETTER_REQUEUE);
+        ensureAdminPermission(
+            jwt, PlatformAdminRbacConstants.PERM_NOTIFICATIONS_DEAD_LETTER_REQUEUE);
     if (base.isPresent()) {
       return base;
     }
@@ -224,7 +225,8 @@ public class AdminAuthorizationService {
   }
 
   public Optional<ErrorCode> ensureNotificationLegalHoldRead(Jwt jwt) {
-    return ensureAdminPermission(jwt, PlatformAdminRbacConstants.PERM_NOTIFICATIONS_LEGAL_HOLD_READ);
+    return ensureAdminPermission(
+        jwt, PlatformAdminRbacConstants.PERM_NOTIFICATIONS_LEGAL_HOLD_READ);
   }
 
   /** Create / release legal hold: dedicated permission plus admin-write MFA gate (Faz 84). */
@@ -258,12 +260,13 @@ public class AdminAuthorizationService {
     if (!rbacProperties.enforce()) {
       return enterpriseAdminWriteDenialReason(jwt);
     }
-    return ensureAdminPermission(jwt, PlatformAdminRbacConstants.PERM_CHANGE_REQUEST_GITOPS_DRY_RUN);
+    return ensureAdminPermission(
+        jwt, PlatformAdminRbacConstants.PERM_CHANGE_REQUEST_GITOPS_DRY_RUN);
   }
 
   /**
-   * GitOps PR creation requires the dedicated permission plus the same admin-write MFA gate used for other
-   * high-impact enterprise mutations.
+   * GitOps PR creation requires the dedicated permission plus the same admin-write MFA gate used
+   * for other high-impact enterprise mutations.
    */
   public Optional<ErrorCode> ensureChangeRequestGitOpsCreatePr(Jwt jwt) {
     if (!rbacProperties.enforce()) {
@@ -322,7 +325,8 @@ public class AdminAuthorizationService {
   }
 
   private Optional<ErrorCode> ensureOperationCreatePermission(Jwt jwt, String operationType) {
-    Optional<String> required = GatewayAdminOperationPermissions.requiredCreatePermission(operationType);
+    Optional<String> required =
+        GatewayAdminOperationPermissions.requiredCreatePermission(operationType);
     if (required.isEmpty()) {
       return Optional.of(ErrorCode.ADMIN_OPERATION_NOT_ALLOWED);
     }

@@ -29,7 +29,8 @@ public record AdminRbacProperties(
     groupSecurityAdmin = groupSecurityAdmin == null ? "" : groupSecurityAdmin;
     groupIdentityAdmin = groupIdentityAdmin == null ? "" : groupIdentityAdmin;
     groupChangeRequestAuthor = groupChangeRequestAuthor == null ? "" : groupChangeRequestAuthor;
-    groupChangeRequestApprover = groupChangeRequestApprover == null ? "" : groupChangeRequestApprover;
+    groupChangeRequestApprover =
+        groupChangeRequestApprover == null ? "" : groupChangeRequestApprover;
     groupObservabilityViewer = groupObservabilityViewer == null ? "" : groupObservabilityViewer;
     visibilityAllowlistEmails = visibilityAllowlistEmails == null ? "" : visibilityAllowlistEmails;
   }

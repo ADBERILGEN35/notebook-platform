@@ -7,5 +7,6 @@ public interface GitOpsPullRequestProvider {
 
   void validateRepositoryAccess(AdminGitOpsPrProperties config);
 
-  GitOpsPrProviderResult createPullRequest(GitOpsPrProviderRequest request, AdminGitOpsPrProperties config);
+  GitOpsPrProviderResult createPullRequest(
+      GitOpsPrProviderRequest request, AdminGitOpsPrProperties config);
 }

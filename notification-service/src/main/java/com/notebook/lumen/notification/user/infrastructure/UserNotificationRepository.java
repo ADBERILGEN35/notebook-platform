@@ -49,7 +49,8 @@ public interface UserNotificationRepository extends JpaRepository<UserNotificati
         and n.recipientUserId = :recipientUserId
         and n.archivedAt is null
       """)
-  Optional<UserNotification> findVisibleOwned(@Param("id") UUID id, @Param("recipientUserId") UUID recipientUserId);
+  Optional<UserNotification> findVisibleOwned(
+      @Param("id") UUID id, @Param("recipientUserId") UUID recipientUserId);
 
   @Query(
       """

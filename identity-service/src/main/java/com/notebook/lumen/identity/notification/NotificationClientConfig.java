@@ -44,8 +44,12 @@ public class NotificationClientConfig {
       IdentityNotificationProperties properties) {
     if (signer != null) {
       String scope =
-          path != null && path.contains("/internal/notifications/in-app") ? IN_APP_SCOPE : EMAIL_SCOPE;
-      headers.set("X-Service-Authorization", "Bearer " + signer.sign(properties.serviceJwt().audience(), scope));
+          path != null && path.contains("/internal/notifications/in-app")
+              ? IN_APP_SCOPE
+              : EMAIL_SCOPE;
+      headers.set(
+          "X-Service-Authorization",
+          "Bearer " + signer.sign(properties.serviceJwt().audience(), scope));
     }
   }
 

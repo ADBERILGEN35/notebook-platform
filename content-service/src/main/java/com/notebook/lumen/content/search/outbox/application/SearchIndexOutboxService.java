@@ -192,6 +192,15 @@ public class SearchIndexOutboxService {
         event.getAttemptCount());
   }
 
+  /**
+   * Used by {@link SearchIndexOutboxWorker}'s {@code @Scheduled(fixedDelayString = ...)} SpEL. Must
+   * not reference the worker bean there: during that bean's initialization the factory cannot
+   * resolve a self-reference.
+   */
+  public String schedulePollIntervalMillis() {
+    return String.valueOf(outbox().effectivePollIntervalSeconds() * 1000);
+  }
+
   private String sanitizedError(RuntimeException failure) {
     String message = failure.getMessage();
     if (message == null || message.isBlank()) {

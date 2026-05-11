@@ -16,7 +16,6 @@ import com.notebook.lumen.identity.admin.gitops.api.AdminGitOpsDtos;
 import com.notebook.lumen.identity.admin.gitops.api.AdminGitOpsDtos.CreatePrBody;
 import com.notebook.lumen.identity.admin.gitops.api.AdminGitOpsDtos.DryRunBody;
 import com.notebook.lumen.identity.audit.AuditService;
-import jakarta.servlet.http.HttpServletRequest;
 import java.time.Instant;
 import java.util.Map;
 import java.util.Optional;
@@ -91,14 +90,19 @@ class AdminGitOpsPrServiceTest {
     when(mockProvider.getProviderName()).thenReturn("mock");
     when(providerRegistry.requireProvider()).thenReturn(mockProvider);
     when(mockProvider.createPullRequest(any(), any()))
-        .thenReturn(new GitOpsPrProviderResult("https://mock.example/pr/1", "1", "admin-change/x-staging"));
+        .thenReturn(
+            new GitOpsPrProviderResult("https://mock.example/pr/1", "1", "admin-change/x-staging"));
   }
 
   @Test
   void dryRun_pendingRejectedWhenRequireApproved() {
     UUID id = UUID.randomUUID();
-    when(changeRequestRepository.findById(id)).thenReturn(Optional.of(approvedLike(id, ChangeRequestStatus.PENDING)));
-    assertThatThrownBy(() -> service.dryRun(id, new DryRunBody("staging"), UUID.randomUUID(), new MockHttpServletRequest()))
+    when(changeRequestRepository.findById(id))
+        .thenReturn(Optional.of(approvedLike(id, ChangeRequestStatus.PENDING)));
+    assertThatThrownBy(
+            () ->
+                service.dryRun(
+                    id, new DryRunBody("staging"), UUID.randomUUID(), new MockHttpServletRequest()))
         .isInstanceOf(AdminGitOpsException.class)
         .hasFieldOrPropertyWithValue("errorCode", "ADMIN_GITOPS_CHANGE_REQUEST_NOT_APPROVED");
   }
@@ -107,25 +111,32 @@ class AdminGitOpsPrServiceTest {
   void dryRun_approved_ok() {
     UUID id = UUID.randomUUID();
     UUID actor = UUID.randomUUID();
-    when(changeRequestRepository.findById(id)).thenReturn(Optional.of(approvedLike(id, ChangeRequestStatus.APPROVED)));
-    AdminGitOpsDtos.DryRunResponse r = service.dryRun(id, new DryRunBody(null), actor, new MockHttpServletRequest());
+    when(changeRequestRepository.findById(id))
+        .thenReturn(Optional.of(approvedLike(id, ChangeRequestStatus.APPROVED)));
+    AdminGitOpsDtos.DryRunResponse r =
+        service.dryRun(id, new DryRunBody(null), actor, new MockHttpServletRequest());
     assertThat(r.changeRequestId()).isEqualTo(id);
     assertThat(r.targetEnvironment()).isEqualTo("staging");
     assertThat(r.changedFiles()).hasSize(1);
     @SuppressWarnings("unchecked")
     ArgumentCaptor<Map<String, Object>> cap = ArgumentCaptor.forClass(Map.class);
-    verify(auditService).record(eq("ADMIN_GITOPS_DRY_RUN_CREATED"), eq(actor), any(), eq(id), any(), cap.capture());
+    verify(auditService)
+        .record(eq("ADMIN_GITOPS_DRY_RUN_CREATED"), eq(actor), any(), eq(id), any(), cap.capture());
     assertThat(cap.getValue()).containsKey("changeRequestId");
   }
 
   @Test
   void createPr_pendingRejected() {
     UUID id = UUID.randomUUID();
-    when(changeRequestRepository.findById(id)).thenReturn(Optional.of(approvedLike(id, ChangeRequestStatus.PENDING)));
+    when(changeRequestRepository.findById(id))
+        .thenReturn(Optional.of(approvedLike(id, ChangeRequestStatus.PENDING)));
     assertThatThrownBy(
             () ->
                 service.createPr(
-                    id, new CreatePrBody("staging", null, null), UUID.randomUUID(), new MockHttpServletRequest()))
+                    id,
+                    new CreatePrBody("staging", null, null),
+                    UUID.randomUUID(),
+                    new MockHttpServletRequest()))
         .isInstanceOf(AdminGitOpsException.class)
         .hasFieldOrPropertyWithValue("errorCode", "ADMIN_GITOPS_CHANGE_REQUEST_NOT_APPROVED");
   }
@@ -133,11 +144,15 @@ class AdminGitOpsPrServiceTest {
   @Test
   void createPr_envMismatchRejected() {
     UUID id = UUID.randomUUID();
-    when(changeRequestRepository.findById(id)).thenReturn(Optional.of(approvedLike(id, ChangeRequestStatus.APPROVED)));
+    when(changeRequestRepository.findById(id))
+        .thenReturn(Optional.of(approvedLike(id, ChangeRequestStatus.APPROVED)));
     assertThatThrownBy(
             () ->
                 service.createPr(
-                    id, new CreatePrBody("prod", null, "CONFIRM"), UUID.randomUUID(), new MockHttpServletRequest()))
+                    id,
+                    new CreatePrBody("prod", null, "CONFIRM"),
+                    UUID.randomUUID(),
+                    new MockHttpServletRequest()))
         .isInstanceOf(AdminGitOpsException.class)
         .hasFieldOrPropertyWithValue("errorCode", "ADMIN_GITOPS_ENVIRONMENT_NOT_ALLOWED");
   }
@@ -148,7 +163,10 @@ class AdminGitOpsPrServiceTest {
     UUID id = UUID.randomUUID();
     when(changeRequestRepository.findById(id))
         .thenReturn(Optional.of(rbacApprovedCr(id, targetUser, ChangeRequestStatus.APPROVED)));
-    assertThatThrownBy(() -> service.dryRun(id, new DryRunBody("staging"), UUID.randomUUID(), new MockHttpServletRequest()))
+    assertThatThrownBy(
+            () ->
+                service.dryRun(
+                    id, new DryRunBody("staging"), UUID.randomUUID(), new MockHttpServletRequest()))
         .isInstanceOf(AdminGitOpsException.class)
         .hasFieldOrPropertyWithValue("errorCode", "ADMIN_GITOPS_RBAC_DISABLED");
   }
@@ -161,14 +179,17 @@ class AdminGitOpsPrServiceTest {
     UUID actor = UUID.randomUUID();
     when(changeRequestRepository.findById(id))
         .thenReturn(Optional.of(rbacApprovedCr(id, targetUser, ChangeRequestStatus.APPROVED)));
-    AdminGitOpsDtos.DryRunResponse r = service.dryRun(id, new DryRunBody(null), actor, new MockHttpServletRequest());
+    AdminGitOpsDtos.DryRunResponse r =
+        service.dryRun(id, new DryRunBody(null), actor, new MockHttpServletRequest());
     assertThat(r.changedFiles().get(0).path()).endsWith("admin-rbac-overrides.yaml");
-    // unifiedDiffPreview omits unchanged lines; the adminRbacOverrides key line may not appear when only assignments[] grows.
+    // unifiedDiffPreview omits unchanged lines; the adminRbacOverrides key line may not appear when
+    // only assignments[] grows.
     assertThat(r.diffPreview()).contains("assignments");
     assertThat(r.diffPreview()).contains(targetUser.toString());
     @SuppressWarnings("unchecked")
     ArgumentCaptor<Map<String, Object>> cap = ArgumentCaptor.forClass(Map.class);
-    verify(auditService).record(eq("ADMIN_GITOPS_DRY_RUN_CREATED"), eq(actor), any(), eq(id), any(), cap.capture());
+    verify(auditService)
+        .record(eq("ADMIN_GITOPS_DRY_RUN_CREATED"), eq(actor), any(), eq(id), any(), cap.capture());
     assertThat(cap.getValue()).containsEntry("targetUserId", targetUser.toString());
   }
 
@@ -180,32 +201,42 @@ class AdminGitOpsPrServiceTest {
     UUID actor = UUID.randomUUID();
     when(changeRequestRepository.findById(id))
         .thenReturn(Optional.of(rbacApprovedCr(id, targetUser, ChangeRequestStatus.APPROVED)));
-    when(
-            proposalRepository.findFirstByChangeRequestIdAndTargetEnvironmentAndProviderAndStatus(
-                id, "staging", "mock", GitOpsPrProposalStatus.PR_CREATED))
+    when(proposalRepository.findFirstByChangeRequestIdAndTargetEnvironmentAndProviderAndStatus(
+            id, "staging", "mock", GitOpsPrProposalStatus.PR_CREATED))
         .thenReturn(Optional.empty());
     AdminGitOpsDtos.CreatePrResponse resp =
-        service.createPr(id, new CreatePrBody("staging", UUID.randomUUID().toString(), null), actor, new MockHttpServletRequest());
+        service.createPr(
+            id,
+            new CreatePrBody("staging", UUID.randomUUID().toString(), null),
+            actor,
+            new MockHttpServletRequest());
     assertThat(resp.status()).isEqualTo("PR_CREATED");
-    verify(auditService).record(eq("ADMIN_GITOPS_PR_CREATED"), eq(actor), any(), any(), any(), any());
-    verify(auditService).record(eq("ADMIN_RBAC_GITOPS_PROPOSAL_CREATED"), eq(actor), any(), any(), any(), any());
+    verify(auditService)
+        .record(eq("ADMIN_GITOPS_PR_CREATED"), eq(actor), any(), any(), any(), any());
+    verify(auditService)
+        .record(eq("ADMIN_RBAC_GITOPS_PROPOSAL_CREATED"), eq(actor), any(), any(), any(), any());
   }
 
   @Test
   void createPr_mockProvider_success() {
     UUID id = UUID.randomUUID();
     UUID actor = UUID.randomUUID();
-    when(changeRequestRepository.findById(id)).thenReturn(Optional.of(approvedLike(id, ChangeRequestStatus.APPROVED)));
-    when(
-            proposalRepository.findFirstByChangeRequestIdAndTargetEnvironmentAndProviderAndStatus(
-                id, "staging", "mock", GitOpsPrProposalStatus.PR_CREATED))
+    when(changeRequestRepository.findById(id))
+        .thenReturn(Optional.of(approvedLike(id, ChangeRequestStatus.APPROVED)));
+    when(proposalRepository.findFirstByChangeRequestIdAndTargetEnvironmentAndProviderAndStatus(
+            id, "staging", "mock", GitOpsPrProposalStatus.PR_CREATED))
         .thenReturn(Optional.empty());
     AdminGitOpsDtos.CreatePrResponse resp =
-        service.createPr(id, new CreatePrBody("staging", UUID.randomUUID().toString(), null), actor, new MockHttpServletRequest());
+        service.createPr(
+            id,
+            new CreatePrBody("staging", UUID.randomUUID().toString(), null),
+            actor,
+            new MockHttpServletRequest());
     assertThat(resp.status()).isEqualTo("PR_CREATED");
     assertThat(resp.providerPrUrl()).isNotBlank();
     verify(proposalRepository, times(2)).save(any(AdminGitOpsPrProposal.class));
-    verify(auditService).record(eq("ADMIN_GITOPS_PR_CREATED"), eq(actor), any(), any(), any(), any());
+    verify(auditService)
+        .record(eq("ADMIN_GITOPS_PR_CREATED"), eq(actor), any(), any(), any(), any());
   }
 
   private static PlatformAdminChangeRequest approvedLike(UUID id, ChangeRequestStatus status) {
@@ -227,7 +258,8 @@ class AdminGitOpsPrServiceTest {
         "MEDIUM");
   }
 
-  private static PlatformAdminChangeRequest rbacApprovedCr(UUID id, UUID targetUser, ChangeRequestStatus status) {
+  private static PlatformAdminChangeRequest rbacApprovedCr(
+      UUID id, UUID targetUser, ChangeRequestStatus status) {
     String normalized = "grant:platform_audit_viewer:" + targetUser;
     Map<String, Object> validation =
         Map.of(

@@ -50,6 +50,7 @@ class WorkspaceInternalAuthHeadersTest {
     return new ContentProperties(
         "",
         null,
+        new ContentProperties.Concurrency(false),
         new ContentProperties.Workspace(
             "http://localhost", 1000, 50, 10000, 2, "", "static-token", "", mode),
         new ContentProperties.ServiceJwt(

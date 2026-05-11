@@ -12,7 +12,8 @@ public class EmailWorker {
   private final NotificationWorkerRunTimestamps workerRunTimestamps;
   private final AtomicBoolean acceptingClaims = new AtomicBoolean(true);
 
-  public EmailWorker(EmailNotificationService service, NotificationWorkerRunTimestamps workerRunTimestamps) {
+  public EmailWorker(
+      EmailNotificationService service, NotificationWorkerRunTimestamps workerRunTimestamps) {
     this.service = service;
     this.workerRunTimestamps = workerRunTimestamps;
   }

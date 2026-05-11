@@ -17,7 +17,8 @@ import reactor.core.publisher.Mono;
 
 @Service
 public class AdminNotificationLegalHoldProxyService {
-  private static final Logger log = LoggerFactory.getLogger(AdminNotificationLegalHoldProxyService.class);
+  private static final Logger log =
+      LoggerFactory.getLogger(AdminNotificationLegalHoldProxyService.class);
   static final String LEGAL_HOLD_READ_SCOPE = "internal:admin:notifications:legal-hold:read";
   static final String LEGAL_HOLD_WRITE_SCOPE = "internal:admin:notifications:legal-hold:write";
   private static final String NOTIFICATION_AUDIENCE = "notification-service";
@@ -80,8 +81,7 @@ public class AdminNotificationLegalHoldProxyService {
       if (actorEmail != null && !actorEmail.isBlank()) {
         req = req.header("X-Admin-Actor-Email", actorEmail);
       }
-      return req
-          .retrieve()
+      return req.retrieve()
           .bodyToMono(String.class)
           .timeout(Duration.ofSeconds(30))
           .map(this::parseJson)

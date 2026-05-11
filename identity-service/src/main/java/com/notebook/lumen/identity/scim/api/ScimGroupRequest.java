@@ -8,8 +8,5 @@ import java.util.List;
 public record ScimGroupRequest(String externalId, String displayName, List<Member> members) {
   @JsonIgnoreProperties(ignoreUnknown = true)
   public record Member(
-      String value,
-      String display,
-      String type,
-      @JsonProperty("$ref") String ref) {}
+      String value, String display, String type, @JsonProperty("$ref") String ref) {}
 }

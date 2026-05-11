@@ -12,7 +12,8 @@ class SiemEventClassifierTest {
     SiemEventClassifier classifier =
         new SiemEventClassifier(
             new SiemProperties(
-                true, "noop", "", "none", "", "", "", 10, 100, 10, 30, 3600, false, 30, 30, 90, false));
+                true, "noop", "", "none", "", "", "", 10, 100, 10, 30, 3600, false, 30, 30, 90,
+                false));
     assertThat(classifier.classify("USER_LOGIN_FAILED")).isPresent();
     assertThat(classifier.classify("SCIM_USER_DEPROVISIONED")).isPresent();
   }
@@ -22,7 +23,8 @@ class SiemEventClassifierTest {
     SiemEventClassifier classifier =
         new SiemEventClassifier(
             new SiemProperties(
-                true, "noop", "", "none", "", "", "", 10, 100, 10, 30, 3600, false, 30, 30, 90, false));
+                true, "noop", "", "none", "", "", "", 10, 100, 10, 30, 3600, false, 30, 30, 90,
+                false));
     assertThat(classifier.classify("USER_LOGIN_SUCCEEDED")).isEmpty();
   }
 }

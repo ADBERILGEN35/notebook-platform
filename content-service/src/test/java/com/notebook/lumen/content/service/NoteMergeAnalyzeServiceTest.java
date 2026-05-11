@@ -83,10 +83,12 @@ class NoteMergeAnalyzeServiceTest {
             new NoteMergeSnapshot(
                 "\"note-rev-0\"",
                 "Base",
-                objectMapper.readTree("[{\"id\":\"b1\",\"type\":\"paragraph\",\"props\":{\"v\":1}}]")),
+                objectMapper.readTree(
+                    "[{\"id\":\"b1\",\"type\":\"paragraph\",\"props\":{\"v\":1}}]")),
             new NoteMergeLocalSnapshot(
                 "Local title",
-                objectMapper.readTree("[{\"id\":\"b1\",\"type\":\"paragraph\",\"props\":{\"v\":1}}]")),
+                objectMapper.readTree(
+                    "[{\"id\":\"b1\",\"type\":\"paragraph\",\"props\":{\"v\":1}}]")),
             1);
 
     var response = service.analyze(new UserContext(userId, workspaceId), noteId, request);
@@ -129,10 +131,12 @@ class NoteMergeAnalyzeServiceTest {
             new NoteMergeSnapshot(
                 "\"note-rev-0\"",
                 "Base",
-                objectMapper.readTree("[{\"id\":\"b1\",\"type\":\"paragraph\",\"props\":{\"v\":1}}]")),
+                objectMapper.readTree(
+                    "[{\"id\":\"b1\",\"type\":\"paragraph\",\"props\":{\"v\":1}}]")),
             new NoteMergeLocalSnapshot(
                 "Base",
-                objectMapper.readTree("[{\"id\":\"b1\",\"type\":\"paragraph\",\"props\":{\"v\":2}}]")),
+                objectMapper.readTree(
+                    "[{\"id\":\"b1\",\"type\":\"paragraph\",\"props\":{\"v\":2}}]")),
             1);
 
     var response = service.analyze(new UserContext(userId, workspaceId), noteId, request);

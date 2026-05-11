@@ -14,7 +14,9 @@ class ScimAuthServiceTest {
   @Test
   void rejectsWhenDisabled() {
     ScimAuthService service =
-        new ScimAuthService(new ScimProperties(false, "", "", true, "notebook-admins"), mock(AuditService.class));
+        new ScimAuthService(
+            new ScimProperties(false, "", "", true, "notebook-admins", true, 5, false, 100, 10),
+            mock(AuditService.class));
     HttpServletRequest request = mock(HttpServletRequest.class);
     assertThatThrownBy(() -> service.requireAuthorized(request))
         .isInstanceOf(ScimException.class)
@@ -25,7 +27,8 @@ class ScimAuthServiceTest {
   void acceptsValidBearerToken() {
     ScimAuthService service =
         new ScimAuthService(
-            new ScimProperties(true, "scim-secret", "", true, "notebook-admins"),
+            new ScimProperties(
+                true, "scim-secret", "", true, "notebook-admins", true, 5, false, 100, 10),
             mock(AuditService.class));
     HttpServletRequest request = mock(HttpServletRequest.class);
     org.mockito.Mockito.when(request.getHeader("Authorization")).thenReturn("Bearer scim-secret");

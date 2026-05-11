@@ -52,7 +52,8 @@ public class AuditExportService {
   private final GatewayAuditExportProperties properties;
   private final ObjectMapper objectMapper;
 
-  public AuditExportService(AuditProxyService auditProxyService, GatewayAuditExportProperties properties) {
+  public AuditExportService(
+      AuditProxyService auditProxyService, GatewayAuditExportProperties properties) {
     this.auditProxyService = auditProxyService;
     this.properties = properties;
     this.objectMapper = JsonMapper.builder().findAndAddModules().build();
@@ -60,45 +61,66 @@ public class AuditExportService {
 
   public Mono<AuditExportPayload> export(
       AuditSource source, String formatRaw, Map<String, String> normalizedFilters) {
-    String format = normalizeFormat(formatRaw);
-    Instant createdFrom = requireInstant(normalizedFilters.get("createdFrom"), "createdFrom");
-    Instant createdTo = requireInstant(normalizedFilters.get("createdTo"), "createdTo");
-    if (createdFrom.isAfter(createdTo)) {
-      throw new AuditProxyException(
-          HttpStatus.BAD_REQUEST,
-          ErrorCode.AUDIT_EXPORT_RANGE_REQUIRED,
-          "createdFrom must be before or equal to createdTo");
-    }
-    long days = Duration.between(createdFrom, createdTo).toDays();
-    if (days > properties.effectiveMaxRangeDays()) {
-      throw new AuditProxyException(
-          HttpStatus.BAD_REQUEST,
-          ErrorCode.AUDIT_EXPORT_RANGE_TOO_LARGE,
-          "Export date range exceeds allowed limit");
-    }
+    return Mono.defer(
+        () -> {
+          try {
+            String format = normalizeFormat(formatRaw);
+            Instant createdFrom =
+                requireInstant(normalizedFilters.get("createdFrom"), "createdFrom");
+            Instant createdTo = requireInstant(normalizedFilters.get("createdTo"), "createdTo");
+            if (createdFrom.isAfter(createdTo)) {
+              return Mono.error(
+                  new AuditProxyException(
+                      HttpStatus.BAD_REQUEST,
+                      ErrorCode.AUDIT_EXPORT_RANGE_REQUIRED,
+                      "createdFrom must be before or equal to createdTo"));
+            }
+            long days = Duration.between(createdFrom, createdTo).toDays();
+            if (days > properties.effectiveMaxRangeDays()) {
+              return Mono.error(
+                  new AuditProxyException(
+                      HttpStatus.BAD_REQUEST,
+                      ErrorCode.AUDIT_EXPORT_RANGE_TOO_LARGE,
+                      "Export date range exceeds allowed limit"));
+            }
 
-    List<Map<String, Object>> rows = new ArrayList<>();
-    return collectPages(source, normalizedFilters, 0, rows)
-        .then(
-            Mono.fromSupplier(
-                () -> {
-                  byte[] data = formatData(format, rows);
-                  String filename =
-                      "audit-"
-                          + source.value()
-                          + "-"
-                          + LocalDate.now(ZoneOffset.UTC)
-                          + "."
-                          + ("csv".equals(format) ? "csv" : "jsonl");
-                  String contentType =
-                      "csv".equals(format) ? "text/csv; charset=utf-8" : "application/x-ndjson";
-                  return new AuditExportPayload(
-                      data, contentType, filename, rows.size(), createdFrom, createdTo, format);
-                }));
+            List<Map<String, Object>> rows = new ArrayList<>();
+            return collectPages(source, normalizedFilters, 0, rows)
+                .then(
+                    Mono.fromSupplier(
+                        () -> {
+                          byte[] data = formatData(format, rows);
+                          String filename =
+                              "audit-"
+                                  + source.value()
+                                  + "-"
+                                  + LocalDate.now(ZoneOffset.UTC)
+                                  + "."
+                                  + ("csv".equals(format) ? "csv" : "jsonl");
+                          String contentType =
+                              "csv".equals(format)
+                                  ? "text/csv; charset=utf-8"
+                                  : "application/x-ndjson";
+                          return new AuditExportPayload(
+                              data,
+                              contentType,
+                              filename,
+                              rows.size(),
+                              createdFrom,
+                              createdTo,
+                              format);
+                        }));
+          } catch (AuditProxyException e) {
+            return Mono.error(e);
+          }
+        });
   }
 
   private Mono<Void> collectPages(
-      AuditSource source, Map<String, String> baseFilters, int page, List<Map<String, Object>> rows) {
+      AuditSource source,
+      Map<String, String> baseFilters,
+      int page,
+      List<Map<String, Object>> rows) {
     Map<String, String> params = new LinkedHashMap<>(baseFilters);
     params.put("page", Integer.toString(page));
     params.put("size", Integer.toString(properties.effectivePageSize()));
@@ -122,7 +144,8 @@ public class AuditExportService {
                     rows.add(toSanitizedRow(source, item));
                   }
                 }
-                boolean hasNext = root.path("hasNext").asBoolean(!root.path("last").asBoolean(true));
+                boolean hasNext =
+                    root.path("hasNext").asBoolean(!root.path("last").asBoolean(true));
                 if (!hasNext) {
                   return Mono.empty();
                 }
@@ -151,7 +174,8 @@ public class AuditExportService {
     row.put("requestId", text(item, "requestId"));
     row.put("ipAddress", text(item, "ipAddress"));
     row.put("userAgent", text(item, "userAgent"));
-    Object sanitizedMetadata = sanitizeValue("metadata", objectMapper.convertValue(item.path("metadata"), Object.class));
+    Object sanitizedMetadata =
+        sanitizeValue("metadata", objectMapper.convertValue(item.path("metadata"), Object.class));
     row.put("metadata", sanitizedMetadata);
     row.put("createdAt", text(item, "createdAt"));
     return row;
@@ -194,7 +218,9 @@ public class AuditExportService {
       return out.toString().getBytes(StandardCharsets.UTF_8);
     } catch (Exception e) {
       throw new AuditProxyException(
-          HttpStatus.SERVICE_UNAVAILABLE, ErrorCode.AUDIT_EXPORT_FAILED, "Failed to format export payload");
+          HttpStatus.SERVICE_UNAVAILABLE,
+          ErrorCode.AUDIT_EXPORT_FAILED,
+          "Failed to format export payload");
     }
   }
 
@@ -217,12 +243,16 @@ public class AuditExportService {
   private String normalizeFormat(String raw) {
     if (raw == null || raw.isBlank()) {
       throw new AuditProxyException(
-          HttpStatus.BAD_REQUEST, ErrorCode.INVALID_AUDIT_EXPORT_FORMAT, "Export format is required");
+          HttpStatus.BAD_REQUEST,
+          ErrorCode.INVALID_AUDIT_EXPORT_FORMAT,
+          "Export format is required");
     }
     String value = raw.trim().toLowerCase(Locale.ROOT);
     if (!value.equals("csv") && !value.equals("jsonl")) {
       throw new AuditProxyException(
-          HttpStatus.BAD_REQUEST, ErrorCode.INVALID_AUDIT_EXPORT_FORMAT, "Invalid audit export format");
+          HttpStatus.BAD_REQUEST,
+          ErrorCode.INVALID_AUDIT_EXPORT_FORMAT,
+          "Invalid audit export format");
     }
     return value;
   }

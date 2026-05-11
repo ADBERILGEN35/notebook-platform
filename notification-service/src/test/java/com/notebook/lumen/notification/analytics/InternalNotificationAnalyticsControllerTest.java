@@ -1,7 +1,6 @@
 package com.notebook.lumen.notification.analytics;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
@@ -54,8 +53,7 @@ class InternalNotificationAnalyticsControllerTest {
             svc);
     c.summary("Bearer t", from, to, "hour");
     verify(auth)
-        .authorize(
-            "Bearer t", InternalNotificationAuthorizer.ADMIN_NOTIFICATIONS_ANALYTICS_SCOPE);
+        .authorize("Bearer t", InternalNotificationAuthorizer.ADMIN_NOTIFICATIONS_ANALYTICS_SCOPE);
     verify(svc).validateRange(from, to);
     verify(svc).build(from, to);
   }

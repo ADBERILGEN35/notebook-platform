@@ -13,10 +13,10 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -55,17 +55,29 @@ public class AdminAuditController {
       @RequestParam Map<String, String> allQueryParams,
       @RequestHeader(name = GatewayHeaders.REQUEST_ID, required = false) String requestId) {
     if (!adminAuthorizationService.adminFeatureEnabled()) {
-      return Mono.just(error(HttpStatus.NOT_FOUND, ErrorCode.ADMIN_AUDIT_DISABLED, "Admin audit is disabled", requestId));
+      return Mono.just(
+          error(
+              HttpStatus.NOT_FOUND,
+              ErrorCode.ADMIN_AUDIT_DISABLED,
+              "Admin audit is disabled",
+              requestId));
     }
     Optional<ErrorCode> denial =
-        adminAuthorizationService.ensureAdminPermission(jwt, PlatformAdminRbacConstants.PERM_AUDIT_READ);
+        adminAuthorizationService.ensureAdminPermission(
+            jwt, PlatformAdminRbacConstants.PERM_AUDIT_READ);
     if (denial.isPresent()) {
-      return Mono.just(auditAuthError(denial.get(), requestId, PlatformAdminRbacConstants.PERM_AUDIT_READ));
+      return Mono.just(
+          auditAuthError(denial.get(), requestId, PlatformAdminRbacConstants.PERM_AUDIT_READ));
     }
 
     AuditSource auditSource = AuditSource.fromValue(source);
     if (auditSource == null) {
-      return Mono.just(error(HttpStatus.BAD_REQUEST, ErrorCode.INVALID_AUDIT_SOURCE, "Invalid audit source", requestId));
+      return Mono.just(
+          error(
+              HttpStatus.BAD_REQUEST,
+              ErrorCode.INVALID_AUDIT_SOURCE,
+              "Invalid audit source",
+              requestId));
     }
 
     Map<String, String> query = new LinkedHashMap<>(allQueryParams);
@@ -103,17 +115,23 @@ public class AdminAuditController {
       @RequestHeader(name = GatewayHeaders.REQUEST_ID, required = false) String requestId) {
     if (!adminAuthorizationService.adminFeatureEnabled()) {
       return Mono.just(
-          error(HttpStatus.NOT_FOUND, ErrorCode.ADMIN_AUDIT_DISABLED, "Admin audit is disabled", requestId));
+          error(
+              HttpStatus.NOT_FOUND,
+              ErrorCode.ADMIN_AUDIT_DISABLED,
+              "Admin audit is disabled",
+              requestId));
     }
     boolean machinePrincipal = machineAuthService.isMachineToken(jwt);
     if (machinePrincipal) {
       AuditExportMachineAuthService.ValidationResult validation = machineAuthService.validate(jwt);
       if (!validation.success()) {
-        return Mono.just(error(validation.status(), validation.errorCode(), validation.message(), requestId));
+        return Mono.just(
+            error(validation.status(), validation.errorCode(), validation.message(), requestId));
       }
     } else {
       Optional<ErrorCode> denial =
-          adminAuthorizationService.ensureAdminPermission(jwt, PlatformAdminRbacConstants.PERM_AUDIT_EXPORT);
+          adminAuthorizationService.ensureAdminPermission(
+              jwt, PlatformAdminRbacConstants.PERM_AUDIT_EXPORT);
       if (denial.isPresent()) {
         ErrorCode c = denial.get();
         if (c == ErrorCode.ADMIN_PERMISSION_REQUIRED) {
@@ -125,7 +143,8 @@ public class AdminAuditController {
                   requestId,
                   Map.of("permission", PlatformAdminRbacConstants.PERM_AUDIT_EXPORT)));
         }
-        return Mono.just(auditAuthError(c, requestId, PlatformAdminRbacConstants.PERM_AUDIT_EXPORT));
+        return Mono.just(
+            auditAuthError(c, requestId, PlatformAdminRbacConstants.PERM_AUDIT_EXPORT));
       }
     }
     if (!auditExportProperties.enabled()) {
@@ -139,7 +158,11 @@ public class AdminAuditController {
     AuditSource auditSource = AuditSource.fromValue(source);
     if (auditSource == null) {
       return Mono.just(
-          error(HttpStatus.BAD_REQUEST, ErrorCode.INVALID_AUDIT_SOURCE, "Invalid audit source", requestId));
+          error(
+              HttpStatus.BAD_REQUEST,
+              ErrorCode.INVALID_AUDIT_SOURCE,
+              "Invalid audit source",
+              requestId));
     }
     Map<String, String> query = new LinkedHashMap<>(allQueryParams);
     query.remove("source");
@@ -160,7 +183,9 @@ public class AdminAuditController {
                   "admin_audit_export_completed principalType={} principalId={} issuer={} scope={} jti={} source={} format={} createdFrom={} createdTo={} exportedCount={} requestId={} durationMs={} filters={}",
                   machinePrincipal ? "machine" : "user",
                   jwt == null ? null : jwt.getSubject(),
-                  machinePrincipal && jwt != null && jwt.getIssuer() != null ? jwt.getIssuer().toString() : null,
+                  machinePrincipal && jwt != null && jwt.getIssuer() != null
+                      ? jwt.getIssuer().toString()
+                      : null,
                   machinePrincipal && jwt != null ? jwt.getClaimAsString("scope") : null,
                   machinePrincipal && jwt != null ? jwt.getId() : null,
                   auditSource.value(),
@@ -186,7 +211,9 @@ public class AdminAuditController {
                   "admin_audit_export_failed principalType={} principalId={} issuer={} scope={} jti={} source={} format={} requestId={} durationMs={} errorCode={} message={}",
                   machinePrincipal ? "machine" : "user",
                   jwt == null ? null : jwt.getSubject(),
-                  machinePrincipal && jwt != null && jwt.getIssuer() != null ? jwt.getIssuer().toString() : null,
+                  machinePrincipal && jwt != null && jwt.getIssuer() != null
+                      ? jwt.getIssuer().toString()
+                      : null,
                   machinePrincipal && jwt != null ? jwt.getClaimAsString("scope") : null,
                   machinePrincipal && jwt != null ? jwt.getId() : null,
                   auditSource.value(),
@@ -209,7 +236,13 @@ public class AdminAuditController {
         .contentType(MediaType.APPLICATION_JSON)
         .<Object>body(
             new ErrorResponse(
-                Instant.now(), status.value(), code.name(), message, "/admin/audit-events", requestId, details));
+                Instant.now(),
+                status.value(),
+                code.name(),
+                message,
+                "/admin/audit-events",
+                requestId,
+                details));
   }
 
   private ResponseEntity<Object> error(
@@ -217,7 +250,8 @@ public class AdminAuditController {
     return error(status, code, message, requestId, null);
   }
 
-  private ResponseEntity<Object> auditAuthError(ErrorCode code, String requestId, String permission) {
+  private ResponseEntity<Object> auditAuthError(
+      ErrorCode code, String requestId, String permission) {
     if (code == ErrorCode.ADMIN_MFA_REQUIRED) {
       log.warn(
           "admin_mfa_required_blocked adminUserId={} endpoint={} requestId={}",
@@ -239,6 +273,11 @@ public class AdminAuditController {
           requestId,
           Map.of("permission", permission));
     }
-    return error(HttpStatus.FORBIDDEN, ErrorCode.ADMIN_ACCESS_DENIED, "Admin access denied", requestId, null);
+    return error(
+        HttpStatus.FORBIDDEN,
+        ErrorCode.ADMIN_ACCESS_DENIED,
+        "Admin access denied",
+        requestId,
+        null);
   }
 }

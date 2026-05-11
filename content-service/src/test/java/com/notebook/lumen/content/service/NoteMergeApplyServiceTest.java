@@ -60,7 +60,9 @@ class NoteMergeApplyServiceTest {
     NoteMergeApplyRequest request =
         new NoteMergeApplyRequest(
             new NoteMergeSnapshot(
-                "\"note-rev-0\"", "Base", objectMapper.readTree("[{\"id\":\"b1\",\"type\":\"paragraph\"}]")),
+                "\"note-rev-0\"",
+                "Base",
+                objectMapper.readTree("[{\"id\":\"b1\",\"type\":\"paragraph\"}]")),
             new NoteMergeLocalSnapshot(
                 "Local", objectMapper.readTree("[{\"id\":\"b1\",\"type\":\"paragraph\"}]")),
             "\"note-rev-1\"",
@@ -131,7 +133,9 @@ class NoteMergeApplyServiceTest {
     NoteMergeApplyRequest request =
         new NoteMergeApplyRequest(
             new NoteMergeSnapshot(
-                "\"note-rev-0\"", "Base", objectMapper.readTree("[{\"id\":\"b1\",\"type\":\"paragraph\"}]")),
+                "\"note-rev-0\"",
+                "Base",
+                objectMapper.readTree("[{\"id\":\"b1\",\"type\":\"paragraph\"}]")),
             new NoteMergeLocalSnapshot(
                 "Local", objectMapper.readTree("[{\"id\":\"b1\",\"type\":\"paragraph\"}]")),
             "\"note-rev-1\"",
@@ -166,7 +170,9 @@ class NoteMergeApplyServiceTest {
     NoteMergeApplyRequest request =
         new NoteMergeApplyRequest(
             new NoteMergeSnapshot(
-                "\"note-rev-0\"", "Base", objectMapper.readTree("[{\"id\":\"b1\",\"type\":\"paragraph\"}]")),
+                "\"note-rev-0\"",
+                "Base",
+                objectMapper.readTree("[{\"id\":\"b1\",\"type\":\"paragraph\"}]")),
             new NoteMergeLocalSnapshot(
                 "Local", objectMapper.readTree("[{\"id\":\"b1\",\"type\":\"paragraph\"}]")),
             "\"note-rev-1\"",

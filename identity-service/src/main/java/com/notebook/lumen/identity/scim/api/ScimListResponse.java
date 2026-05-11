@@ -9,6 +9,10 @@ public record ScimListResponse<T>(
   public static <T> ScimListResponse<T> of(
       int totalResults, int startIndex, int itemsPerPage, List<T> resources) {
     return new ScimListResponse<>(
-        List.of(SCHEMA), totalResults, startIndex, itemsPerPage, resources == null ? List.of() : resources);
+        List.of(SCHEMA),
+        totalResults,
+        startIndex,
+        itemsPerPage,
+        resources == null ? List.of() : resources);
   }
 }

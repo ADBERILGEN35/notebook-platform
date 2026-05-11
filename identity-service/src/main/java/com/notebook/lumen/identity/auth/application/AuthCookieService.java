@@ -67,15 +67,22 @@ public class AuthCookieService {
     cookie.setSecure(authTransportProperties.cookieSecure());
     cookie.setPath(authTransportProperties.effectiveCookiePath());
     cookie.setMaxAge(maxAge);
-    if (authTransportProperties.cookieDomain() != null && !authTransportProperties.cookieDomain().isBlank()) {
+    if (authTransportProperties.cookieDomain() != null
+        && !authTransportProperties.cookieDomain().isBlank()) {
       cookie.setDomain(authTransportProperties.cookieDomain());
     }
-    response.addHeader("Set-Cookie", toSetCookieHeader(cookie, authTransportProperties.effectiveCookieSameSite()));
+    response.addHeader(
+        "Set-Cookie", toSetCookieHeader(cookie, authTransportProperties.effectiveCookieSameSite()));
   }
 
   private String toSetCookieHeader(Cookie cookie, String sameSite) {
     StringBuilder builder = new StringBuilder();
-    builder.append(cookie.getName()).append("=").append(cookie.getValue()).append("; Path=").append(cookie.getPath());
+    builder
+        .append(cookie.getName())
+        .append("=")
+        .append(cookie.getValue())
+        .append("; Path=")
+        .append(cookie.getPath());
     if (cookie.getDomain() != null && !cookie.getDomain().isBlank()) {
       builder.append("; Domain=").append(cookie.getDomain());
     }

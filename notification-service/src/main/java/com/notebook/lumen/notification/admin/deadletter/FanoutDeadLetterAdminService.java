@@ -51,7 +51,8 @@ public class FanoutDeadLetterAdminService {
       String sortParam) {
     int capped = Math.min(Math.max(size, 1), deadLetterProperties.pageMaxSize());
     Sort sort = parseSort(sortParam);
-    Specification<NotificationFanoutOutbox> spec = deadFanoutSpec(eventType, createdFrom, createdTo);
+    Specification<NotificationFanoutOutbox> spec =
+        deadFanoutSpec(eventType, createdFrom, createdTo);
     Page<NotificationFanoutOutbox> result =
         outboxRepository.findAll(spec, PageRequest.of(Math.max(page, 0), capped, sort));
     List<DeadLetterAdminDtos.DeadLetterListItemDto> items =
@@ -131,13 +132,14 @@ public class FanoutDeadLetterAdminService {
             .orElseThrow(
                 () ->
                     new NotificationException(
-                        HttpStatus.NOT_FOUND, "DEAD_LETTER_NOT_FOUND", "Dead-letter row not found"));
+                        HttpStatus.NOT_FOUND,
+                        "DEAD_LETTER_NOT_FOUND",
+                        "Dead-letter row not found"));
     List<DeadLetterAdminDtos.RequeueDryRunCheck> checks = new ArrayList<>();
     boolean statusDead = row.getStatus() == NotificationFanoutOutboxStatus.DEAD;
     checks.add(new DeadLetterAdminDtos.RequeueDryRunCheck("STATUS_DEAD", statusDead));
     boolean underLimit = row.getRequeueCount() < deadLetterProperties.maxRequeueCount();
-    checks.add(
-        new DeadLetterAdminDtos.RequeueDryRunCheck("REQUEUE_LIMIT_OK", underLimit));
+    checks.add(new DeadLetterAdminDtos.RequeueDryRunCheck("REQUEUE_LIMIT_OK", underLimit));
     boolean can = statusDead && underLimit;
     var impact =
         new DeadLetterAdminDtos.RequeueDryRunImpact(
@@ -179,7 +181,9 @@ public class FanoutDeadLetterAdminService {
             .orElseThrow(
                 () ->
                     new NotificationException(
-                        HttpStatus.NOT_FOUND, "DEAD_LETTER_NOT_FOUND", "Dead-letter row not found"));
+                        HttpStatus.NOT_FOUND,
+                        "DEAD_LETTER_NOT_FOUND",
+                        "Dead-letter row not found"));
 
     var idem =
         requeueRequestRepository.findBySourceAndDeadLetterIdAndIdempotencyKey(
@@ -226,12 +230,18 @@ public class FanoutDeadLetterAdminService {
         "NOTIFICATION_FANOUT_OUTBOX",
         id,
         Map.of(
-            "source", SOURCE_NAME,
-            "eventType", row.getEventType(),
-            "attemptCount", row.getAttemptCount(),
-            "requeueCount", row.getRequeueCount(),
-            "reasonPresent", true,
-            "actorUserId", actorUserId));
+            "source",
+            SOURCE_NAME,
+            "eventType",
+            row.getEventType(),
+            "attemptCount",
+            row.getAttemptCount(),
+            "requeueCount",
+            row.getRequeueCount(),
+            "reasonPresent",
+            true,
+            "actorUserId",
+            actorUserId));
 
     return new DeadLetterAdminDtos.FanoutRequeueResponse(
         id.toString(),
@@ -243,8 +253,7 @@ public class FanoutDeadLetterAdminService {
         false);
   }
 
-  private void auditDenied(
-      UUID id, NotificationFanoutOutbox row, String code, String actorUserId) {
+  private void auditDenied(UUID id, NotificationFanoutOutbox row, String code, String actorUserId) {
     auditService.record(
         DeadLetterAuditEventType.REQUEUE_DENIED,
         "NOTIFICATION_FANOUT_OUTBOX",
@@ -271,7 +280,9 @@ public class FanoutDeadLetterAdminService {
     String t = reason.trim();
     if (t.length() < 5) {
       throw new NotificationException(
-          HttpStatus.BAD_REQUEST, "DEAD_LETTER_REASON_TOO_SHORT", "Reason must be at least 5 characters");
+          HttpStatus.BAD_REQUEST,
+          "DEAD_LETTER_REASON_TOO_SHORT",
+          "Reason must be at least 5 characters");
     }
     if (t.length() > 2000) {
       throw new NotificationException(
@@ -282,9 +293,7 @@ public class FanoutDeadLetterAdminService {
   private static void validateIdempotencyKey(String key) {
     if (key == null || key.isBlank()) {
       throw new NotificationException(
-          HttpStatus.BAD_REQUEST,
-          "DEAD_LETTER_IDEMPOTENCY_REQUIRED",
-          "idempotencyKey is required");
+          HttpStatus.BAD_REQUEST, "DEAD_LETTER_IDEMPOTENCY_REQUIRED", "idempotencyKey is required");
     }
     String t = key.trim();
     if (t.length() > 128) {

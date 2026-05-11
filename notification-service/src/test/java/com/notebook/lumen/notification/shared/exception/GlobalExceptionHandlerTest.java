@@ -25,8 +25,7 @@ class GlobalExceptionHandlerTest {
     MockHttpServletRequest request = new MockHttpServletRequest();
     request.setRequestURI("/notification-preferences");
     var response =
-        handler.handleMissingHeader(
-            new MissingRequestHeaderException("X-User-Id", null), request);
+        handler.handleMissingHeader(new MissingRequestHeaderException("X-User-Id", null), request);
     assertThat(response.getStatusCode().value()).isEqualTo(403);
     assertThat(response.getBody()).isNotNull();
     assertThat(response.getBody().errorCode()).isEqualTo("NOTIFICATION_PREFERENCE_ACCESS_DENIED");
@@ -35,10 +34,10 @@ class GlobalExceptionHandlerTest {
   @Test
   void workspacePreferenceMissingHeaderMapsToWorkspaceAccessDenied() {
     MockHttpServletRequest request = new MockHttpServletRequest();
-    request.setRequestURI("/notification-preferences/workspaces/00000000-0000-0000-0000-000000000001");
+    request.setRequestURI(
+        "/notification-preferences/workspaces/00000000-0000-0000-0000-000000000001");
     var response =
-        handler.handleMissingHeader(
-            new MissingRequestHeaderException("X-User-Id", null), request);
+        handler.handleMissingHeader(new MissingRequestHeaderException("X-User-Id", null), request);
     assertThat(response.getStatusCode().value()).isEqualTo(403);
     assertThat(response.getBody()).isNotNull();
     assertThat(response.getBody().errorCode())
@@ -48,7 +47,8 @@ class GlobalExceptionHandlerTest {
   @Test
   void workspacePreferenceValidationMapsToInvalidWorkspaceRequest() throws Exception {
     MockHttpServletRequest request = new MockHttpServletRequest();
-    request.setRequestURI("/notification-preferences/workspaces/00000000-0000-0000-0000-000000000001");
+    request.setRequestURI(
+        "/notification-preferences/workspaces/00000000-0000-0000-0000-000000000001");
     Method m =
         WorkspaceNotificationPreferenceController.class.getDeclaredMethod(
             "patch", String.class, UUID.class, WorkspaceNotificationPreferencePatchRequest.class);
@@ -61,7 +61,8 @@ class GlobalExceptionHandlerTest {
     var response = handler.handleValidation(ex, request);
     assertThat(response.getStatusCode().value()).isEqualTo(400);
     assertThat(response.getBody()).isNotNull();
-    assertThat(response.getBody().errorCode()).isEqualTo("INVALID_WORKSPACE_NOTIFICATION_PREFERENCE_REQUEST");
+    assertThat(response.getBody().errorCode())
+        .isEqualTo("INVALID_WORKSPACE_NOTIFICATION_PREFERENCE_REQUEST");
   }
 
   @Test
@@ -70,7 +71,8 @@ class GlobalExceptionHandlerTest {
     request.setRequestURI("/notification-preferences");
     var response =
         handler.handleRequestParseErrors(
-            new HttpMessageNotReadableException("bad", new MockHttpInputMessage(new byte[0])), request);
+            new HttpMessageNotReadableException("bad", new MockHttpInputMessage(new byte[0])),
+            request);
     assertThat(response.getStatusCode().value()).isEqualTo(400);
     assertThat(response.getBody()).isNotNull();
     assertThat(response.getBody().errorCode())

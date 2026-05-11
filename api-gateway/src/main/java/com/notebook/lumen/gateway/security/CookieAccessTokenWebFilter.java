@@ -13,7 +13,7 @@ import org.springframework.web.server.WebFilterChain;
 import reactor.core.publisher.Mono;
 
 @Component
-@Order(Ordered.HIGHEST_PRECEDENCE + 20)
+@Order(Ordered.HIGHEST_PRECEDENCE + 25)
 public class CookieAccessTokenWebFilter implements WebFilter {
   private final GatewayAuthProperties authProperties;
 
@@ -33,7 +33,8 @@ public class CookieAccessTokenWebFilter implements WebFilter {
 
     HttpHeaders headers = new HttpHeaders();
     headers.putAll(exchange.getRequest().getHeaders());
-    var cookie = exchange.getRequest().getCookies().getFirst(authProperties.effectiveAccessCookieName());
+    var cookie =
+        exchange.getRequest().getCookies().getFirst(authProperties.effectiveAccessCookieName());
     if (cookie == null || cookie.getValue() == null || cookie.getValue().isBlank()) {
       return chain.filter(exchange);
     }

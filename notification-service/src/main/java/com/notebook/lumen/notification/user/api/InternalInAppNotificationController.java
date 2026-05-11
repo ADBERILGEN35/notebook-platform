@@ -1,11 +1,11 @@
 package com.notebook.lumen.notification.user.api;
 
 import com.notebook.lumen.notification.analytics.NotificationAnalyticsRecorder;
+import com.notebook.lumen.notification.preference.application.NotificationPreferenceResolver;
+import com.notebook.lumen.notification.preference.domain.NotificationChannel;
 import com.notebook.lumen.notification.shared.config.NotificationProperties;
 import com.notebook.lumen.notification.shared.exception.NotificationException;
 import com.notebook.lumen.notification.shared.security.InternalNotificationAuthorizer;
-import com.notebook.lumen.notification.preference.application.NotificationPreferenceResolver;
-import com.notebook.lumen.notification.preference.domain.NotificationChannel;
 import com.notebook.lumen.notification.user.application.UserNotificationService;
 import jakarta.validation.Valid;
 import java.util.UUID;
@@ -46,7 +46,9 @@ public class InternalInAppNotificationController {
       @Valid @RequestBody InAppNotificationCreateRequest request) {
     if (properties.inApp() == null || !properties.inApp().enabled()) {
       throw new NotificationException(
-          HttpStatus.NOT_FOUND, "IN_APP_NOTIFICATIONS_DISABLED", "In-app notifications are disabled");
+          HttpStatus.NOT_FOUND,
+          "IN_APP_NOTIFICATIONS_DISABLED",
+          "In-app notifications are disabled");
     }
     authorizer.authorize(serviceAuthorization, InternalNotificationAuthorizer.IN_APP_CREATE_SCOPE);
     UUID userId = request.recipientUserId();

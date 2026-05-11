@@ -1,7 +1,7 @@
 package com.notebook.lumen.identity.siem.application;
 
-import com.notebook.lumen.identity.siem.SiemProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.notebook.lumen.identity.siem.SiemProperties;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -20,7 +20,10 @@ public class GenericHttpSiemEventPublisher implements SiemEventPublisher {
   public GenericHttpSiemEventPublisher(SiemProperties properties, ObjectMapper objectMapper) {
     this.properties = properties;
     this.objectMapper = objectMapper;
-    this.httpClient = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(properties.timeoutSeconds())).build();
+    this.httpClient =
+        HttpClient.newBuilder()
+            .connectTimeout(Duration.ofSeconds(properties.timeoutSeconds()))
+            .build();
   }
 
   @Override
@@ -37,7 +40,9 @@ public class GenericHttpSiemEventPublisher implements SiemEventPublisher {
               .header(HttpHeaders.CONTENT_TYPE, "application/x-ndjson");
       applyAuth(builder);
       HttpResponse<String> response =
-          httpClient.send(builder.POST(HttpRequest.BodyPublishers.ofString(ndjson.toString())).build(), HttpResponse.BodyHandlers.ofString());
+          httpClient.send(
+              builder.POST(HttpRequest.BodyPublishers.ofString(ndjson.toString())).build(),
+              HttpResponse.BodyHandlers.ofString());
       int code = response.statusCode();
       if (code >= 200 && code < 300) {
         return SiemPublishResult.ok();
@@ -60,7 +65,9 @@ public class GenericHttpSiemEventPublisher implements SiemEventPublisher {
     if ("header".equals(mode)
         && properties.customHeaderName() != null
         && !properties.customHeaderName().isBlank()) {
-      builder.header(properties.customHeaderName(), properties.customHeaderValue() == null ? "" : properties.customHeaderValue());
+      builder.header(
+          properties.customHeaderName(),
+          properties.customHeaderValue() == null ? "" : properties.customHeaderValue());
     }
   }
 }

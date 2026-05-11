@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
+
 @RestController
 public class AdminEnterpriseChangeRequestController {
   private static final Logger log =
@@ -52,8 +53,11 @@ public class AdminEnterpriseChangeRequestController {
         requestId,
         PATH_PREFIX,
         denial,
-        permissionDetail(denial, PlatformAdminRbacConstants.PERM_CHANGE_REQUEST_LIST, Optional.empty()),
-        () -> proxyService.list(status, jwt.getSubject(), jwt.getClaimAsString("email"), requestId, PATH_PREFIX));
+        permissionDetail(
+            denial, PlatformAdminRbacConstants.PERM_CHANGE_REQUEST_LIST, Optional.empty()),
+        () ->
+            proxyService.list(
+                status, jwt.getSubject(), jwt.getClaimAsString("email"), requestId, PATH_PREFIX));
   }
 
   @PostMapping(
@@ -74,7 +78,11 @@ public class AdminEnterpriseChangeRequestController {
         permissionDetail(denial, PlatformAdminRbacConstants.PERM_CHANGE_REQUEST_CREATE, op),
         () ->
             proxyService.validate(
-                body, jwt.getSubject(), jwt.getClaimAsString("email"), requestId, PATH_PREFIX + "/validate"));
+                body,
+                jwt.getSubject(),
+                jwt.getClaimAsString("email"),
+                requestId,
+                PATH_PREFIX + "/validate"));
   }
 
   @PostMapping(
@@ -148,7 +156,8 @@ public class AdminEnterpriseChangeRequestController {
         requestId,
         PATH_PREFIX + "/{id}/approve",
         denial,
-        permissionDetail(denial, PlatformAdminRbacConstants.PERM_CHANGE_REQUEST_APPROVE, Optional.empty()),
+        permissionDetail(
+            denial, PlatformAdminRbacConstants.PERM_CHANGE_REQUEST_APPROVE, Optional.empty()),
         () ->
             proxyService.approve(
                 id,
@@ -176,7 +185,9 @@ public class AdminEnterpriseChangeRequestController {
         PATH_PREFIX + "/{id}/gitops/dry-run",
         denial,
         permissionDetail(
-            denial, PlatformAdminRbacConstants.PERM_CHANGE_REQUEST_GITOPS_DRY_RUN, Optional.empty()),
+            denial,
+            PlatformAdminRbacConstants.PERM_CHANGE_REQUEST_GITOPS_DRY_RUN,
+            Optional.empty()),
         () ->
             proxyService.gitopsDryRun(
                 id,
@@ -231,7 +242,8 @@ public class AdminEnterpriseChangeRequestController {
         requestId,
         PATH_PREFIX + "/{id}/reject",
         denial,
-        permissionDetail(denial, PlatformAdminRbacConstants.PERM_CHANGE_REQUEST_REJECT, Optional.empty()),
+        permissionDetail(
+            denial, PlatformAdminRbacConstants.PERM_CHANGE_REQUEST_REJECT, Optional.empty()),
         () ->
             proxyService.reject(
                 id,
@@ -282,7 +294,8 @@ public class AdminEnterpriseChangeRequestController {
     return switch (code) {
       case ADMIN_WRITE_MFA_REQUIRED -> "Admin write requires multi-factor authentication.";
       case ADMIN_PERMISSION_REQUIRED -> "Required admin permission is missing.";
-      case ADMIN_OPERATION_PERMISSION_REQUIRED -> "Required permission for this change-request operation is missing.";
+      case ADMIN_OPERATION_PERMISSION_REQUIRED ->
+          "Required permission for this change-request operation is missing.";
       default -> "Admin write access denied.";
     };
   }
@@ -325,6 +338,8 @@ public class AdminEnterpriseChangeRequestController {
       Map<String, Object> details) {
     return ResponseEntity.status(status)
         .contentType(MediaType.APPLICATION_JSON)
-        .body(new ErrorResponse(Instant.now(), status.value(), code.name(), message, path, requestId, details));
+        .body(
+            new ErrorResponse(
+                Instant.now(), status.value(), code.name(), message, path, requestId, details));
   }
 }

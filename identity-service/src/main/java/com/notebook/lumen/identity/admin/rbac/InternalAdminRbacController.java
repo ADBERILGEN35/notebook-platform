@@ -120,7 +120,10 @@ public class InternalAdminRbacController {
     return resp;
   }
 
-  @PostMapping(path = "/overrides/validate", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+  @PostMapping(
+      path = "/overrides/validate",
+      consumes = MediaType.APPLICATION_JSON_VALUE,
+      produces = MediaType.APPLICATION_JSON_VALUE)
   public AdminRbacOverridesDtos.OverridesValidateResponse overridesValidate(
       @RequestHeader(AuditAdminAuthorizer.HEADER_NAME) String serviceAuthorization,
       @RequestHeader(InternalAdminChangeRequestController.HEADER_ADMIN_USER_ID) String adminUserId,
@@ -129,7 +132,8 @@ public class InternalAdminRbacController {
     authorizer.authorize(serviceAuthorization, AuditAdminAuthorizer.RBAC_READ_SCOPE);
     UUID actor = parseAdminUserId(adminUserId);
     String content = body == null || body.content() == null ? "" : body.content();
-    AdminRbacOverridesDtos.OverridesValidateResponse resp = adminRbacOverrideLoader.validateContent(content);
+    AdminRbacOverridesDtos.OverridesValidateResponse resp =
+        adminRbacOverrideLoader.validateContent(content);
     auditService.record(
         "ADMIN_RBAC_OVERRIDES_VALIDATED",
         actor,

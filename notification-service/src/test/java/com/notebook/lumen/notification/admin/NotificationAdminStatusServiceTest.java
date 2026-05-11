@@ -29,14 +29,7 @@ class NotificationAdminStatusServiceTest {
             new NotificationProperties.GenericHttp(
                 "https://api.example", "api-key-secret", "Authorization", 1000, 3000),
             new NotificationProperties.Webhooks(
-                true,
-                "generic-http",
-                "whsec",
-                "X-Sig",
-                "X-Ts",
-                300,
-                false,
-                false));
+                true, "generic-http", "whsec", "X-Sig", "X-Ts", 300, false, false));
     var props =
         new NotificationProperties(
             "",
@@ -44,9 +37,10 @@ class NotificationAdminStatusServiceTest {
             new NotificationProperties.Internal(null, null, null),
             new NotificationProperties.InApp(true),
             new NotificationProperties.Preferences(true),
-            new NotificationProperties.Digest(true, true, 60, 100, 50, "09:00", java.time.DayOfWeek.MONDAY, "09:00"),
-        NotificationTestFanout.disabled(),
-        NotificationTestWorkspace.disabled());
+            new NotificationProperties.Digest(
+                true, true, 60, 100, 50, "09:00", java.time.DayOfWeek.MONDAY, "09:00"),
+            NotificationTestFanout.disabled(),
+            NotificationTestWorkspace.disabled());
     var sse = new NotificationSseProperties();
     sse.setEnabled(true);
     sse.getDistributed().setEnabled(true);

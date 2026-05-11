@@ -61,6 +61,8 @@ public enum RetentionPurgeKind {
     }
     throw new IllegalArgumentException(
         "Unknown retention target; use ALL or one of: "
-            + Arrays.stream(values()).map(RetentionPurgeKind::apiTargetKey).collect(Collectors.joining(", ")));
+            + Arrays.stream(values())
+                .map(RetentionPurgeKind::apiTargetKey)
+                .collect(Collectors.joining(", ")));
   }
 }

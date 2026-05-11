@@ -66,7 +66,8 @@ public class NoteMergeApplyService {
   @Transactional
   public ApplyResult apply(UserContext user, UUID noteId, NoteMergeApplyRequest request) {
     long startedAt = System.nanoTime();
-    int mergeVersion = request == null || request.mergeVersion() == null ? 0 : request.mergeVersion();
+    int mergeVersion =
+        request == null || request.mergeVersion() == null ? 0 : request.mergeVersion();
     String result = "error";
     int conflictCount = 0;
     try {
@@ -92,7 +93,9 @@ public class NoteMergeApplyService {
 
       String requestHash = hashRequest(request);
       NoteMergeIdempotencyKey claim = null;
-      if (idempotencyEnabled && request.idempotencyKey() != null && !request.idempotencyKey().isBlank()) {
+      if (idempotencyEnabled
+          && request.idempotencyKey() != null
+          && !request.idempotencyKey().isBlank()) {
         claim = claimIdempotency(user, noteId, request.idempotencyKey(), requestHash);
         if (claim.getStatus() == NoteMergeIdempotencyKey.Status.COMPLETED) {
           incrementIdempotency("replayed");
@@ -111,7 +114,8 @@ public class NoteMergeApplyService {
         if (claim != null) {
           claim.markFailed(Instant.now());
         }
-        recordFailureAudit(user, noteId, "NOTE_MERGE_REMOTE_CHANGED", request.mergeVersion(), request);
+        recordFailureAudit(
+            user, noteId, "NOTE_MERGE_REMOTE_CHANGED", request.mergeVersion(), request);
         result = "remote_changed";
         throw new ContentException(
             HttpStatus.PRECONDITION_FAILED,
@@ -124,7 +128,8 @@ public class NoteMergeApplyService {
         }
         conflictCount = analysis.conflicts().size();
         analysis.conflicts().forEach(conflict -> incrementConflict(conflict.type(), "apply"));
-        recordFailureAudit(user, noteId, "NOTE_MERGE_APPLY_CONFLICTED", request.mergeVersion(), request);
+        recordFailureAudit(
+            user, noteId, "NOTE_MERGE_APPLY_CONFLICTED", request.mergeVersion(), request);
         result = "conflict";
         return new ApplyResult.Conflict(
             new NoteMergeApplyConflictResponse(
@@ -159,7 +164,8 @@ public class NoteMergeApplyService {
                 List.of(),
                 analysis.summary());
         if (claim != null) {
-          claim.markCompleted(etag, persisted.versionNumber(), persisted.note().id(), Instant.now());
+          claim.markCompleted(
+              etag, persisted.versionNumber(), persisted.note().id(), Instant.now());
         }
         cleanupExpiredIdempotency();
         result = "success";
@@ -169,7 +175,8 @@ public class NoteMergeApplyService {
           claim.markFailed(Instant.now());
         }
         if ("NOTE_CONFLICT".equals(ex.getErrorCode())) {
-          recordFailureAudit(user, noteId, "NOTE_MERGE_REMOTE_CHANGED", request.mergeVersion(), request);
+          recordFailureAudit(
+              user, noteId, "NOTE_MERGE_REMOTE_CHANGED", request.mergeVersion(), request);
           result = "remote_changed";
           throw new ContentException(
               HttpStatus.PRECONDITION_FAILED,
@@ -207,8 +214,12 @@ public class NoteMergeApplyService {
           "note_merge_apply result={} mergeVersion={} expectedRemoteEtagPresent={} idempotencyKeyPresent={} conflictCount={} durationMs={}",
           result,
           mergeVersion,
-          request != null && request.expectedRemoteEtag() != null && !request.expectedRemoteEtag().isBlank(),
-          request != null && request.idempotencyKey() != null && !request.idempotencyKey().isBlank(),
+          request != null
+              && request.expectedRemoteEtag() != null
+              && !request.expectedRemoteEtag().isBlank(),
+          request != null
+              && request.idempotencyKey() != null
+              && !request.idempotencyKey().isBlank(),
           conflictCount,
           durationMs);
     }
@@ -239,7 +250,13 @@ public class NoteMergeApplyService {
     }
     NoteMergeIdempotencyKey created =
         new NoteMergeIdempotencyKey(
-            UUID.randomUUID(), user.workspaceId(), user.userId(), noteId, key, requestHash, Instant.now());
+            UUID.randomUUID(),
+            user.workspaceId(),
+            user.userId(),
+            noteId,
+            key,
+            requestHash,
+            Instant.now());
     incrementIdempotency("created");
     return idempotencyRepository.save(created);
   }
@@ -247,7 +264,10 @@ public class NoteMergeApplyService {
   private NoteMergeApplyResponse buildReplayResponse(
       UserContext user, UUID noteId, NoteMergeIdempotencyKey key, int mergeVersion) {
     var note = noteService.get(user, noteId);
-    String etag = key.getResultEtag() == null ? noteEtagSupport.buildEtag(note.noteRevision()) : key.getResultEtag();
+    String etag =
+        key.getResultEtag() == null
+            ? noteEtagSupport.buildEtag(note.noteRevision())
+            : key.getResultEtag();
     int version = key.getResultVersion() == null ? 0 : key.getResultVersion();
     return new NoteMergeApplyResponse(
         note.id(),
@@ -288,7 +308,8 @@ public class NoteMergeApplyService {
     if (!idempotencyEnabled || idempotencyTtlHours <= 0) {
       return;
     }
-    idempotencyRepository.deleteByCreatedAtBefore(Instant.now().minusSeconds((long) idempotencyTtlHours * 3600L));
+    idempotencyRepository.deleteByCreatedAtBefore(
+        Instant.now().minusSeconds((long) idempotencyTtlHours * 3600L));
   }
 
   private ContentException bad(String code, String message) {
@@ -342,7 +363,11 @@ public class NoteMergeApplyService {
   }
 
   private void recordFailureAudit(
-      UserContext user, UUID noteId, String eventType, int mergeVersion, NoteMergeApplyRequest request) {
+      UserContext user,
+      UUID noteId,
+      String eventType,
+      int mergeVersion,
+      NoteMergeApplyRequest request) {
     if (!auditFailuresEnabled) return;
     try {
       var note = noteService.get(user, noteId);
@@ -353,11 +378,16 @@ public class NoteMergeApplyService {
           "NOTE",
           noteId,
           Map.of(
-              "notebookId", note.notebookId().toString(),
-              "mergeVersion", mergeVersion,
-              "expectedRemoteEtagPresent", request.expectedRemoteEtag() != null && !request.expectedRemoteEtag().isBlank(),
-              "idempotencyKeyPresent", request.idempotencyKey() != null && !request.idempotencyKey().isBlank(),
-              "source", "backend_apply"));
+              "notebookId",
+              note.notebookId().toString(),
+              "mergeVersion",
+              mergeVersion,
+              "expectedRemoteEtagPresent",
+              request.expectedRemoteEtag() != null && !request.expectedRemoteEtag().isBlank(),
+              "idempotencyKeyPresent",
+              request.idempotencyKey() != null && !request.idempotencyKey().isBlank(),
+              "source",
+              "backend_apply"));
     } catch (RuntimeException ignored) {
       // best-effort failure audit
     }

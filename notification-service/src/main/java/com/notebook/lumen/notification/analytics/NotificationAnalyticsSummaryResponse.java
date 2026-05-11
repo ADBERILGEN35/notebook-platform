@@ -28,13 +28,15 @@ public record NotificationAnalyticsSummaryResponse(
       long digestSent,
       long quietHoursDelayed) {}
 
-  public record ChannelBreakdownRow(String channel, long created, long queued, long sent, long failed) {}
+  public record ChannelBreakdownRow(
+      String channel, long created, long queued, long sent, long failed) {}
 
   public record TypeBreakdownRow(String notificationType, long created) {}
 
   public record FanoutSnapshot(long pending, long retrying, long dead) {}
 
-  public record SseSnapshot(int activeConnections, long sendFailuresInRange, long eventsSentMeterTotal) {}
+  public record SseSnapshot(
+      int activeConnections, long sendFailuresInRange, long eventsSentMeterTotal) {}
 
   public record RedisFanoutSnapshot(
       long publishSuccessInRange, long publishFailureInRange, long subscriberReceivedInRange) {}

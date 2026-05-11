@@ -46,7 +46,11 @@ public class EnterpriseChangeRequestProxyService {
   }
 
   public Mono<ResponseEntity<Object>> list(
-      String statusFilter, String adminUserId, String adminEmail, String clientRequestId, String gatewayPath) {
+      String statusFilter,
+      String adminUserId,
+      String adminEmail,
+      String clientRequestId,
+      String gatewayPath) {
     return Mono.defer(
         () -> {
           final String jwt;
@@ -73,8 +77,7 @@ public class EnterpriseChangeRequestProxyService {
           if (clientRequestId != null && !clientRequestId.isBlank()) {
             spec = spec.header("X-Request-Id", clientRequestId);
           }
-          return spec
-              .retrieve()
+          return spec.retrieve()
               .bodyToMono(String.class)
               .map(raw -> jsonEntity(HttpStatus.OK, raw, gatewayPath, clientRequestId))
               .onErrorResume(e -> Mono.just(mapException(e, gatewayPath, clientRequestId)));
@@ -106,7 +109,8 @@ public class EnterpriseChangeRequestProxyService {
       String adminEmail,
       String clientRequestId,
       String gatewayPath) {
-    return postJson("/" + id + "/approve", body, adminUserId, adminEmail, clientRequestId, gatewayPath);
+    return postJson(
+        "/" + id + "/approve", body, adminUserId, adminEmail, clientRequestId, gatewayPath);
   }
 
   public Mono<ResponseEntity<Object>> reject(
@@ -116,7 +120,8 @@ public class EnterpriseChangeRequestProxyService {
       String adminEmail,
       String clientRequestId,
       String gatewayPath) {
-    return postJson("/" + id + "/reject", body, adminUserId, adminEmail, clientRequestId, gatewayPath);
+    return postJson(
+        "/" + id + "/reject", body, adminUserId, adminEmail, clientRequestId, gatewayPath);
   }
 
   public Mono<ResponseEntity<Object>> gitopsDryRun(
@@ -126,7 +131,8 @@ public class EnterpriseChangeRequestProxyService {
       String adminEmail,
       String clientRequestId,
       String gatewayPath) {
-    return postJson("/" + id + "/gitops/dry-run", body, adminUserId, adminEmail, clientRequestId, gatewayPath);
+    return postJson(
+        "/" + id + "/gitops/dry-run", body, adminUserId, adminEmail, clientRequestId, gatewayPath);
   }
 
   public Mono<ResponseEntity<Object>> gitopsCreatePr(
@@ -136,7 +142,13 @@ public class EnterpriseChangeRequestProxyService {
       String adminEmail,
       String clientRequestId,
       String gatewayPath) {
-    return postJson("/" + id + "/gitops/create-pr", body, adminUserId, adminEmail, clientRequestId, gatewayPath);
+    return postJson(
+        "/" + id + "/gitops/create-pr",
+        body,
+        adminUserId,
+        adminEmail,
+        clientRequestId,
+        gatewayPath);
   }
 
   public Mono<ResponseEntity<Object>> cancel(
@@ -171,8 +183,7 @@ public class EnterpriseChangeRequestProxyService {
           if (clientRequestId != null && !clientRequestId.isBlank()) {
             spec = spec.header("X-Request-Id", clientRequestId);
           }
-          return spec
-              .exchangeToMono(
+          return spec.exchangeToMono(
                   response -> {
                     if (response.statusCode().value() == 204) {
                       return Mono.just(ResponseEntity.noContent().build());
@@ -207,25 +218,25 @@ public class EnterpriseChangeRequestProxyService {
           } catch (RuntimeException e) {
             return Mono.just(jwtFailureResponse(gatewayPath, clientRequestId));
           }
-                String path = writeProperties.effectiveInternalPath() + suffix;
-                String url = trimTrailingSlash(auditProxyProperties.identityServiceUrl()) + path;
-                return webClient
-                    .post()
-                    .uri(url)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .bodyValue(body)
-                    .headers(
-                        h -> {
-                          h.set(AuditProxyService.INTERNAL_AUTH_HEADER, "Bearer " + jwt);
-                          h.set(HDR_ADMIN_USER_ID, adminUserId);
-                          if (adminEmail != null && !adminEmail.isBlank()) {
-                            h.set(HDR_ADMIN_USER_EMAIL, adminEmail);
-                          }
-                          if (clientRequestId != null && !clientRequestId.isBlank()) {
-                            h.set("X-Request-Id", clientRequestId);
-                          }
-                        })
-                    .exchangeToMono(
+          String path = writeProperties.effectiveInternalPath() + suffix;
+          String url = trimTrailingSlash(auditProxyProperties.identityServiceUrl()) + path;
+          return webClient
+              .post()
+              .uri(url)
+              .contentType(MediaType.APPLICATION_JSON)
+              .bodyValue(body)
+              .headers(
+                  h -> {
+                    h.set(AuditProxyService.INTERNAL_AUTH_HEADER, "Bearer " + jwt);
+                    h.set(HDR_ADMIN_USER_ID, adminUserId);
+                    if (adminEmail != null && !adminEmail.isBlank()) {
+                      h.set(HDR_ADMIN_USER_EMAIL, adminEmail);
+                    }
+                    if (clientRequestId != null && !clientRequestId.isBlank()) {
+                      h.set("X-Request-Id", clientRequestId);
+                    }
+                  })
+              .exchangeToMono(
                   response -> {
                     int code = response.statusCode().value();
                     if (code == 204) {
@@ -253,7 +264,8 @@ public class EnterpriseChangeRequestProxyService {
   }
 
   private String changeRequestsBaseUrl() {
-    return trimTrailingSlash(auditProxyProperties.identityServiceUrl()) + writeProperties.effectiveInternalPath();
+    return trimTrailingSlash(auditProxyProperties.identityServiceUrl())
+        + writeProperties.effectiveInternalPath();
   }
 
   private ResponseEntity<Object> jsonEntity(
@@ -261,12 +273,15 @@ public class EnterpriseChangeRequestProxyService {
     return rawEntity(status.value(), raw, gatewayPath, clientRequestId);
   }
 
-  private ResponseEntity<Object> rawEntity(int status, String raw, String gatewayPath, String clientRequestId) {
+  private ResponseEntity<Object> rawEntity(
+      int status, String raw, String gatewayPath, String clientRequestId) {
     try {
       if (status >= 400) {
-        return ResponseEntity.status(status).body(parseOrGenericError(raw, status, gatewayPath, clientRequestId));
+        return ResponseEntity.status(status)
+            .body(parseOrGenericError(raw, status, gatewayPath, clientRequestId));
       }
-      Object parsed = objectMapper.readValue(raw == null || raw.isBlank() ? "{}" : raw, Object.class);
+      Object parsed =
+          objectMapper.readValue(raw == null || raw.isBlank() ? "{}" : raw, Object.class);
       return ResponseEntity.status(status).body(parsed);
     } catch (Exception e) {
       return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
@@ -281,13 +296,15 @@ public class EnterpriseChangeRequestProxyService {
     }
   }
 
-  private Object parseOrGenericError(String raw, int status, String gatewayPath, String clientRequestId) {
+  private Object parseOrGenericError(
+      String raw, int status, String gatewayPath, String clientRequestId) {
     try {
       var node = objectMapper.readTree(raw == null || raw.isBlank() ? "{}" : raw);
       String code = node.path("errorCode").asText(null);
       String message = node.path("message").asText("Request failed");
       if (code != null && !code.isBlank()) {
-        return new ErrorResponse(Instant.now(), status, code, message, gatewayPath, clientRequestId);
+        return new ErrorResponse(
+            Instant.now(), status, code, message, gatewayPath, clientRequestId);
       }
     } catch (Exception ignored) {
     }
@@ -300,9 +317,11 @@ public class EnterpriseChangeRequestProxyService {
         clientRequestId);
   }
 
-  private ResponseEntity<Object> mapException(Throwable e, String gatewayPath, String clientRequestId) {
+  private ResponseEntity<Object> mapException(
+      Throwable e, String gatewayPath, String clientRequestId) {
     if (e instanceof WebClientResponseException w) {
-      return rawEntity(w.getStatusCode().value(), w.getResponseBodyAsString(), gatewayPath, clientRequestId);
+      return rawEntity(
+          w.getStatusCode().value(), w.getResponseBodyAsString(), gatewayPath, clientRequestId);
     }
     return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
         .body(

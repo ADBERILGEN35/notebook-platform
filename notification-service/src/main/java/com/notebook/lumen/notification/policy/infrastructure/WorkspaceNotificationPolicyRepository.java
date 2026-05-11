@@ -1,7 +1,7 @@
 package com.notebook.lumen.notification.policy.infrastructure;
 
-import com.notebook.lumen.notification.preference.domain.NotificationChannel;
 import com.notebook.lumen.notification.policy.domain.WorkspaceNotificationPolicy;
+import com.notebook.lumen.notification.preference.domain.NotificationChannel;
 import com.notebook.lumen.notification.user.domain.UserNotificationType;
 import java.util.List;
 import java.util.Optional;

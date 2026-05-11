@@ -20,19 +20,21 @@ public record GatewayAuditProxyProperties(
   }
 
   public ServiceJwtProperties signerProperties() {
-    ServiceJwt jwt = serviceJwt == null ? new ServiceJwt(null, null, null, null, null, null, null, null) : serviceJwt;
+    ServiceJwt jwt =
+        serviceJwt == null
+            ? new ServiceJwt(null, null, null, null, null, null, null, null)
+            : serviceJwt;
     return new ServiceJwtProperties(
         jwt.activeKid(),
         jwt.privateKey(),
         jwt.privateKeyPath(),
         jwt.issuer() == null || jwt.issuer().isBlank() ? "audit-admin" : jwt.issuer(),
-        jwt.subject() == null || jwt.subject().isBlank()
-            ? "service:api-gateway"
-            : jwt.subject(),
+        jwt.subject() == null || jwt.subject().isBlank() ? "service:api-gateway" : jwt.subject(),
         jwt.serviceName() == null || jwt.serviceName().isBlank()
             ? "api-gateway"
             : jwt.serviceName(),
-        Duration.ofSeconds(jwt.ttlSeconds() == null || jwt.ttlSeconds() <= 0 ? 60 : jwt.ttlSeconds()));
+        Duration.ofSeconds(
+            jwt.ttlSeconds() == null || jwt.ttlSeconds() <= 0 ? 60 : jwt.ttlSeconds()));
   }
 
   public record ServiceJwt(

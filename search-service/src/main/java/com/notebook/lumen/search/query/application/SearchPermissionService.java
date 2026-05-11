@@ -39,12 +39,14 @@ public class SearchPermissionService {
       return allowed;
     } catch (Exception e) {
       log.error(
-          "Workspace membership check failed userId={} workspaceId={}",
-          userId,
-          workspaceId,
-          e);
+          "Workspace membership check failed userId={} workspaceId={}", userId, workspaceId, e);
       meterRegistry
-          .counter("search_permission_runtime_checks_total", "check", "workspace_membership", "result", "failed")
+          .counter(
+              "search_permission_runtime_checks_total",
+              "check",
+              "workspace_membership",
+              "result",
+              "failed")
           .increment();
       // fail-closed
       return false;
@@ -76,7 +78,12 @@ public class SearchPermissionService {
           notebookId,
           e);
       meterRegistry
-          .counter("search_permission_runtime_checks_total", "check", "notebook_permission", "result", "failed")
+          .counter(
+              "search_permission_runtime_checks_total",
+              "check",
+              "notebook_permission",
+              "result",
+              "failed")
           .increment();
       // fail-closed for restricted documents
       return false;

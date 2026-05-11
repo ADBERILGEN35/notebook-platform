@@ -2,10 +2,10 @@ package com.notebook.lumen.notification.user.fanout;
 
 import com.notebook.lumen.notification.analytics.NotificationWorkerRunTimestamps;
 import com.notebook.lumen.notification.shared.config.NotificationProperties;
-import java.time.Instant;
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.annotation.PostConstruct;
+import java.time.Instant;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 

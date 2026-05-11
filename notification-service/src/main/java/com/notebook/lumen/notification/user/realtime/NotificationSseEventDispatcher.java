@@ -40,7 +40,8 @@ public class NotificationSseEventDispatcher {
     this.analyticsRecorder = analyticsRecorder;
   }
 
-  public NotificationSseEventEnvelope buildCreatedEnvelope(UserNotification notification, long unreadCount) {
+  public NotificationSseEventEnvelope buildCreatedEnvelope(
+      UserNotification notification, long unreadCount) {
     Map<String, Object> payload = new LinkedHashMap<>();
     payload.put("notificationId", notification.getId().toString());
     payload.put("type", notification.getType().name());
@@ -120,16 +121,14 @@ public class NotificationSseEventDispatcher {
   }
 
   /**
-   * Request-path dispatch: local broker + distributed publish; distributed failures are swallowed so
-   * DB transactions are not rolled back after commit (Faz 64).
+   * Request-path dispatch: local broker + distributed publish; distributed failures are swallowed
+   * so DB transactions are not rolled back after commit (Faz 64).
    */
   public void dispatchAllowDistributedFailure(NotificationSseEventEnvelope envelope) {
     dispatch(envelope, false);
   }
 
-  /**
-   * Outbox worker: distributed publish failures propagate so rows can retry or dead-letter.
-   */
+  /** Outbox worker: distributed publish failures propagate so rows can retry or dead-letter. */
   public void dispatchStrictDistributed(NotificationSseEventEnvelope envelope) {
     dispatch(envelope, true);
   }
@@ -170,12 +169,14 @@ public class NotificationSseEventDispatcher {
     }
     try {
       distributedPublisher.publish(envelope);
-      analyticsRecorder.record(NotificationAnalyticsEventKind.REDIS_FANOUT_PUBLISH_SUCCESS, "", "", "", 1);
+      analyticsRecorder.record(
+          NotificationAnalyticsEventKind.REDIS_FANOUT_PUBLISH_SUCCESS, "", "", "", 1);
       meterRegistry
           .counter("notifications_sse_distributed_published_total", "status", "success")
           .increment();
     } catch (RuntimeException e) {
-      analyticsRecorder.record(NotificationAnalyticsEventKind.REDIS_FANOUT_PUBLISH_FAILURE, "", "", "", 1);
+      analyticsRecorder.record(
+          NotificationAnalyticsEventKind.REDIS_FANOUT_PUBLISH_FAILURE, "", "", "", 1);
       meterRegistry
           .counter("notifications_sse_distributed_published_total", "status", "failure")
           .increment();

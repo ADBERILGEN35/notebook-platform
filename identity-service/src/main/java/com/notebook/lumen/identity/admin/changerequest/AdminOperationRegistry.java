@@ -23,7 +23,8 @@ public class AdminOperationRegistry {
       return false;
     }
     String t = operationType.trim();
-    return OP_ADMIN_RBAC_ROLE_GRANT_REQUEST.equals(t) || OP_ADMIN_RBAC_ROLE_REVOKE_REQUEST.equals(t);
+    return OP_ADMIN_RBAC_ROLE_GRANT_REQUEST.equals(t)
+        || OP_ADMIN_RBAC_ROLE_REVOKE_REQUEST.equals(t);
   }
 
   private static final Map<String, AdminOperationDefinition> BY_TYPE =
@@ -135,7 +136,8 @@ public class AdminOperationRegistry {
       return "";
     }
     String v = requestedValue.trim().toLowerCase(Locale.ROOT);
-    if (def.allowedNormalizedValues().contains("true") || def.allowedNormalizedValues().contains("false")) {
+    if (def.allowedNormalizedValues().contains("true")
+        || def.allowedNormalizedValues().contains("false")) {
       if ("1".equals(v) || "yes".equals(v)) {
         return "true";
       }

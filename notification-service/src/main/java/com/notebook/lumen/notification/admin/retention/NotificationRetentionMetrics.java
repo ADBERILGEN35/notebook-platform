@@ -14,9 +14,12 @@ import org.springframework.stereotype.Component;
 public class NotificationRetentionMetrics {
 
   private final MeterRegistry registry;
-  private final Map<RetentionPurgeKind, Counter> deletedByTarget = new EnumMap<>(RetentionPurgeKind.class);
-  private final Map<RetentionPurgeKind, Counter> failuresByTarget = new EnumMap<>(RetentionPurgeKind.class);
-  private final Map<RetentionPurgeKind, Counter> planByTarget = new EnumMap<>(RetentionPurgeKind.class);
+  private final Map<RetentionPurgeKind, Counter> deletedByTarget =
+      new EnumMap<>(RetentionPurgeKind.class);
+  private final Map<RetentionPurgeKind, Counter> failuresByTarget =
+      new EnumMap<>(RetentionPurgeKind.class);
+  private final Map<RetentionPurgeKind, Counter> planByTarget =
+      new EnumMap<>(RetentionPurgeKind.class);
   private final AtomicLong lastRunEpochMs = new AtomicLong(0);
   private Counter workerRunSuccess;
   private Counter workerRunDryRunOnly;

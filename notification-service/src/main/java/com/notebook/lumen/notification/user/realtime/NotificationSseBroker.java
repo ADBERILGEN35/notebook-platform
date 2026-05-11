@@ -23,7 +23,8 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 @Component
 public class NotificationSseBroker {
   private static final Logger log = LoggerFactory.getLogger(NotificationSseBroker.class);
-  private final Map<UUID, CopyOnWriteArrayList<SseEmitter>> emittersByUser = new ConcurrentHashMap<>();
+  private final Map<UUID, CopyOnWriteArrayList<SseEmitter>> emittersByUser =
+      new ConcurrentHashMap<>();
   private final NotificationSseProperties sseProperties;
   private final MeterRegistry meterRegistry;
   private final NotificationAnalyticsRecorder analyticsRecorder;
@@ -38,7 +39,8 @@ public class NotificationSseBroker {
     this.meterRegistry = meterRegistry;
     this.analyticsRecorder = analyticsRecorder;
     long heartbeat = Math.max(1, sseProperties.getHeartbeatSeconds());
-    scheduler.scheduleWithFixedDelay(this::publishHeartbeat, heartbeat, heartbeat, TimeUnit.SECONDS);
+    scheduler.scheduleWithFixedDelay(
+        this::publishHeartbeat, heartbeat, heartbeat, TimeUnit.SECONDS);
   }
 
   public SseEmitter connect(UUID userId) {
@@ -55,16 +57,19 @@ public class NotificationSseBroker {
       throw new IllegalStateException("Too many active SSE connections");
     }
 
-    long timeout = sseProperties.getTimeoutSeconds() <= 0 ? 0 : sseProperties.getTimeoutSeconds() * 1000;
+    long timeout =
+        sseProperties.getTimeoutSeconds() <= 0 ? 0 : sseProperties.getTimeoutSeconds() * 1000;
     SseEmitter emitter = new SseEmitter(timeout);
     emitters.add(emitter);
     meterRegistry.counter("notifications_sse_connected_total").increment();
-    meterRegistry.gauge("notifications_sse_connections_active", emittersByUser, this::activeConnections);
+    meterRegistry.gauge(
+        "notifications_sse_connections_active", emittersByUser, this::activeConnections);
 
     emitter.onCompletion(() -> disconnect(userId, emitter));
     emitter.onTimeout(() -> disconnect(userId, emitter));
     emitter.onError(error -> disconnect(userId, emitter));
-    sendInternal(userId, emitter, "connected", Map.of("connectedAt", Instant.now().toString()), false);
+    sendInternal(
+        userId, emitter, "connected", Map.of("connectedAt", Instant.now().toString()), false);
     return emitter;
   }
 
@@ -101,11 +106,17 @@ public class NotificationSseBroker {
   }
 
   private boolean sendInternal(
-      UUID userId, SseEmitter emitter, String eventType, Map<String, Object> payload, boolean heartbeat) {
+      UUID userId,
+      SseEmitter emitter,
+      String eventType,
+      Map<String, Object> payload,
+      boolean heartbeat) {
     try {
       emitter.send(SseEmitter.event().name(eventType).data(payload));
       if (!heartbeat) {
-        meterRegistry.counter("notifications_sse_events_sent_total", "eventType", eventType).increment();
+        meterRegistry
+            .counter("notifications_sse_events_sent_total", "eventType", eventType)
+            .increment();
       }
       return true;
     } catch (IOException ex) {

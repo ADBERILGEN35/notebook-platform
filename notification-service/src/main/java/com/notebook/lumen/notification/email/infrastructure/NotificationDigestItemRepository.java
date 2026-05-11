@@ -9,7 +9,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-public interface NotificationDigestItemRepository extends JpaRepository<NotificationDigestItem, UUID> {
+public interface NotificationDigestItemRepository
+    extends JpaRepository<NotificationDigestItem, UUID> {
 
   long countByStatus(NotificationDigestItemStatus status);
 

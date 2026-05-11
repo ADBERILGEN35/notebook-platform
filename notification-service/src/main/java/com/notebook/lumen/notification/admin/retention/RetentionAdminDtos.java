@@ -25,9 +25,7 @@ public final class RetentionAdminDtos {
       long purgeableCount,
       List<String> targetWarnings) {}
 
-  /**
-   * {@code dryRun} null defaults to true (safe) when JSON omits the field.
-   */
+  /** {@code dryRun} null defaults to true (safe) when JSON omits the field. */
   public record RetentionRunRequest(Boolean dryRun, String target, String reason) {
     public boolean effectiveDryRun() {
       return dryRun == null || dryRun;

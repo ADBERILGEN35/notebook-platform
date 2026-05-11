@@ -19,8 +19,9 @@ public class AdminRbacOverrideEffectiveApplier {
       List<String> userWarnings) {}
 
   /**
-   * Applies GitOps override rows for a single user. {@code baseFromIdpAndScim} must be a frozen copy of roles implied
-   * by SSO/SCIM mappings only (before this method mutates {@code mergedRoles}).
+   * Applies GitOps override rows for a single user. {@code baseFromIdpAndScim} must be a frozen
+   * copy of roles implied by SSO/SCIM mappings only (before this method mutates {@code
+   * mergedRoles}).
    */
   public ApplyOutcome apply(
       UUID userId,
@@ -42,10 +43,7 @@ public class AdminRbacOverrideEffectiveApplier {
         overrideGrantDepth.merge(role, 1, Integer::sum);
         sources.add(
             new AdminRbacVisibilityDtos.RoleSource(
-                "GITOPS_OVERRIDE",
-                "admin-rbac-overrides.yaml",
-                List.of(role),
-                row.reasonRef()));
+                "GITOPS_OVERRIDE", "admin-rbac-overrides.yaml", List.of(role), row.reasonRef()));
       } else if (row.isRevoke()) {
         int depth = overrideGrantDepth.getOrDefault(role, 0);
         if (depth > 0) {

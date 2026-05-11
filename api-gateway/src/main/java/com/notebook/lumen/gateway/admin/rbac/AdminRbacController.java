@@ -79,7 +79,10 @@ public class AdminRbacController {
     return proxyService.overridesStatus(jwt.getSubject(), requestId, OVERRIDES_STATUS_PATH);
   }
 
-  @PostMapping(path = OVERRIDES_VALIDATE_PATH, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+  @PostMapping(
+      path = OVERRIDES_VALIDATE_PATH,
+      produces = MediaType.APPLICATION_JSON_VALUE,
+      consumes = MediaType.APPLICATION_JSON_VALUE)
   public Mono<ResponseEntity<Object>> overridesValidate(
       @AuthenticationPrincipal Jwt jwt,
       @RequestBody(required = false) Map<String, Object> body,
@@ -88,7 +91,8 @@ public class AdminRbacController {
     if (denial.isPresent()) {
       return Mono.just(forbidden(denial.get(), requestId, OVERRIDES_VALIDATE_PATH));
     }
-    return proxyService.overridesValidate(body, jwt.getSubject(), requestId, OVERRIDES_VALIDATE_PATH);
+    return proxyService.overridesValidate(
+        body, jwt.getSubject(), requestId, OVERRIDES_VALIDATE_PATH);
   }
 
   private static ResponseEntity<Object> forbidden(ErrorCode code, String requestId, String path) {
@@ -106,6 +110,12 @@ public class AdminRbacController {
         .contentType(MediaType.APPLICATION_JSON)
         .body(
             new ErrorResponse(
-                Instant.now(), HttpStatus.FORBIDDEN.value(), code.name(), message, path, requestId, details));
+                Instant.now(),
+                HttpStatus.FORBIDDEN.value(),
+                code.name(),
+                message,
+                path,
+                requestId,
+                details));
   }
 }

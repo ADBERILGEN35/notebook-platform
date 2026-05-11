@@ -14,7 +14,7 @@ import org.springframework.web.server.WebFilterChain;
 import reactor.core.publisher.Mono;
 
 @Component
-@Order(Ordered.HIGHEST_PRECEDENCE + 30)
+@Order(Ordered.HIGHEST_PRECEDENCE + 10)
 public class CsrfDoubleSubmitWebFilter implements WebFilter {
   private final GatewayAuthProperties authProperties;
   private final GatewayErrorResponseWriter errorResponseWriter;
@@ -48,13 +48,18 @@ public class CsrfDoubleSubmitWebFilter implements WebFilter {
       return chain.filter(exchange);
     }
 
-    var accessCookie = exchange.getRequest().getCookies().getFirst(authProperties.effectiveAccessCookieName());
-    if (accessCookie == null || accessCookie.getValue() == null || accessCookie.getValue().isBlank()) {
+    var accessCookie =
+        exchange.getRequest().getCookies().getFirst(authProperties.effectiveAccessCookieName());
+    if (accessCookie == null
+        || accessCookie.getValue() == null
+        || accessCookie.getValue().isBlank()) {
       return chain.filter(exchange);
     }
 
-    var csrfCookie = exchange.getRequest().getCookies().getFirst(authProperties.effectiveCsrfCookieName());
-    String csrfHeader = exchange.getRequest().getHeaders().getFirst(authProperties.effectiveCsrfHeaderName());
+    var csrfCookie =
+        exchange.getRequest().getCookies().getFirst(authProperties.effectiveCsrfCookieName());
+    String csrfHeader =
+        exchange.getRequest().getHeaders().getFirst(authProperties.effectiveCsrfHeaderName());
     if (csrfCookie == null || csrfCookie.getValue() == null || csrfCookie.getValue().isBlank()) {
       return errorResponseWriter.write(
           exchange, HttpStatus.FORBIDDEN, ErrorCode.CSRF_TOKEN_REQUIRED, "CSRF token is required");

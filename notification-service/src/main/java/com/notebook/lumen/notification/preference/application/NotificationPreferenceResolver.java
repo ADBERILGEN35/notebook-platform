@@ -85,8 +85,7 @@ public class NotificationPreferenceResolver {
    */
   public boolean isEmailDisabledOnlyByWorkspace(
       UUID userId, UUID workspaceId, UserNotificationType type) {
-    return workspaceOverrideDisablesChannel(
-        userId, workspaceId, type, NotificationChannel.EMAIL);
+    return workspaceOverrideDisablesChannel(userId, workspaceId, type, NotificationChannel.EMAIL);
   }
 
   private boolean resolveBaseChannelEnabled(

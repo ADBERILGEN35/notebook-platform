@@ -15,10 +15,6 @@ public record ContentProperties(
     Workspace workspace,
     ServiceJwt serviceJwt,
     Search search) {
-  public ContentProperties(
-      String workerInstanceId, Blocks blocks, Workspace workspace, ServiceJwt serviceJwt, Search search) {
-    this(workerInstanceId, blocks, new Concurrency(false), workspace, serviceJwt, search);
-  }
 
   public record Blocks(boolean allowUnknownBlockTypes, int maxDepth, int maxJsonBytes) {}
 

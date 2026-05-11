@@ -1,6 +1,5 @@
 package com.notebook.lumen.gateway.admin.notifications;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.notebook.lumen.common.security.admin.PlatformAdminRbacConstants;
 import com.notebook.lumen.gateway.admin.AdminAuthorizationService;
 import com.notebook.lumen.gateway.error.ErrorCode;
@@ -28,7 +27,8 @@ import reactor.core.publisher.Mono;
 
 @RestController
 public class AdminNotificationDeadLetterController {
-  private static final Logger log = LoggerFactory.getLogger(AdminNotificationDeadLetterController.class);
+  private static final Logger log =
+      LoggerFactory.getLogger(AdminNotificationDeadLetterController.class);
 
   private final AdminAuthorizationService adminAuthorizationService;
   private final AdminNotificationDeadLetterProxyService proxyService;
@@ -40,7 +40,9 @@ public class AdminNotificationDeadLetterController {
     this.proxyService = proxyService;
   }
 
-  @GetMapping(path = "/admin/notifications/dead-letter", produces = MediaType.APPLICATION_JSON_VALUE)
+  @GetMapping(
+      path = "/admin/notifications/dead-letter",
+      produces = MediaType.APPLICATION_JSON_VALUE)
   public Mono<ResponseEntity<Object>> list(
       @AuthenticationPrincipal Jwt jwt,
       @RequestParam(defaultValue = "fanout") String source,
@@ -59,8 +61,7 @@ public class AdminNotificationDeadLetterController {
               "Enterprise admin console is disabled on this gateway.",
               requestId));
     }
-    Optional<ErrorCode> denial =
-        adminAuthorizationService.ensureNotificationDeadLetterRead(jwt);
+    Optional<ErrorCode> denial = adminAuthorizationService.ensureNotificationDeadLetterRead(jwt);
     if (denial.isPresent()) {
       return Mono.just(forbiddenRead(jwt, denial.get(), requestId));
     }
@@ -117,8 +118,7 @@ public class AdminNotificationDeadLetterController {
               "Enterprise admin console is disabled on this gateway.",
               requestId));
     }
-    Optional<ErrorCode> denial =
-        adminAuthorizationService.ensureNotificationDeadLetterRead(jwt);
+    Optional<ErrorCode> denial = adminAuthorizationService.ensureNotificationDeadLetterRead(jwt);
     if (denial.isPresent()) {
       return Mono.just(forbiddenRead(jwt, denial.get(), requestId));
     }
@@ -161,8 +161,7 @@ public class AdminNotificationDeadLetterController {
               "Enterprise admin console is disabled on this gateway.",
               requestId));
     }
-    Optional<ErrorCode> denial =
-        adminAuthorizationService.ensureNotificationDeadLetterRequeue(jwt);
+    Optional<ErrorCode> denial = adminAuthorizationService.ensureNotificationDeadLetterRequeue(jwt);
     if (denial.isPresent()) {
       return Mono.just(forbiddenRequeue(jwt, denial.get(), requestId));
     }
@@ -211,7 +210,8 @@ public class AdminNotificationDeadLetterController {
   }
 
   private ResponseEntity<Object> forbiddenRead(Jwt jwt, ErrorCode code, String requestId) {
-    return forbidden(jwt, code, requestId, PlatformAdminRbacConstants.PERM_NOTIFICATIONS_DEAD_LETTER_READ);
+    return forbidden(
+        jwt, code, requestId, PlatformAdminRbacConstants.PERM_NOTIFICATIONS_DEAD_LETTER_READ);
   }
 
   private ResponseEntity<Object> forbiddenRequeue(Jwt jwt, ErrorCode code, String requestId) {
@@ -230,12 +230,20 @@ public class AdminNotificationDeadLetterController {
         };
     Map<String, Object> details =
         code == ErrorCode.ADMIN_PERMISSION_REQUIRED
-            ? Map.of("permission", PlatformAdminRbacConstants.PERM_NOTIFICATIONS_DEAD_LETTER_REQUEUE)
+            ? Map.of(
+                "permission", PlatformAdminRbacConstants.PERM_NOTIFICATIONS_DEAD_LETTER_REQUEUE)
             : null;
-    return error(HttpStatus.FORBIDDEN, code, message, requestId, "/admin/notifications/dead-letter", details);
+    return error(
+        HttpStatus.FORBIDDEN,
+        code,
+        message,
+        requestId,
+        "/admin/notifications/dead-letter",
+        details);
   }
 
-  private ResponseEntity<Object> forbidden(Jwt jwt, ErrorCode code, String requestId, String permission) {
+  private ResponseEntity<Object> forbidden(
+      Jwt jwt, ErrorCode code, String requestId, String permission) {
     if (code == ErrorCode.ADMIN_MFA_REQUIRED) {
       log.warn(
           "admin_mfa_required_blocked adminUserId={} endpoint=dead-letter requestId={}",
@@ -250,11 +258,18 @@ public class AdminNotificationDeadLetterController {
                 : "Admin access denied.";
     Map<String, Object> details =
         code == ErrorCode.ADMIN_PERMISSION_REQUIRED ? Map.of("permission", permission) : null;
-    return error(HttpStatus.FORBIDDEN, code, message, requestId, "/admin/notifications/dead-letter", details);
+    return error(
+        HttpStatus.FORBIDDEN,
+        code,
+        message,
+        requestId,
+        "/admin/notifications/dead-letter",
+        details);
   }
 
   private ResponseEntity<Object> notFound(ErrorCode code, String message, String requestId) {
-    return error(HttpStatus.NOT_FOUND, code, message, requestId, "/admin/notifications/dead-letter", null);
+    return error(
+        HttpStatus.NOT_FOUND, code, message, requestId, "/admin/notifications/dead-letter", null);
   }
 
   private ResponseEntity<Object> badGateway(

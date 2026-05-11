@@ -14,8 +14,7 @@ public class NotificationRetentionJdbcRepository {
   public record CountMin(long count, Instant oldestEligibleAt) {}
 
   private static final RowMapper<CountMin> COUNT_MIN =
-      (rs, rowNum) ->
-          new CountMin(rs.getLong("c"), readInstant(rs, "m"));
+      (rs, rowNum) -> new CountMin(rs.getLong("c"), readInstant(rs, "m"));
 
   private final JdbcTemplate jdbc;
 

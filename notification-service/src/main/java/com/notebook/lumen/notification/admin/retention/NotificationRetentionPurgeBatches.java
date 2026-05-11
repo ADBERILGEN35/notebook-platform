@@ -21,8 +21,7 @@ public class NotificationRetentionPurgeBatches {
       case NOTIFICATION_DEAD_LETTER_REQUEUE_REQUESTS ->
           jdbc.deleteDeadLetterRequeueBatch(cutoffs.deadLetterRequeue(), limit);
       case NOTIFICATION_DIGEST_ITEMS_TERMINAL ->
-          jdbc.deleteDigestTerminalBatch(
-              cutoffs.digestTerminal(), cutoffs.digestTerminal(), limit);
+          jdbc.deleteDigestTerminalBatch(cutoffs.digestTerminal(), cutoffs.digestTerminal(), limit);
       case EMAIL_NOTIFICATIONS_TERMINAL ->
           jdbc.deleteEmailTerminalBatch(cutoffs.emailTerminal(), limit);
       case NOTIFICATION_FANOUT_OUTBOX_SENT ->

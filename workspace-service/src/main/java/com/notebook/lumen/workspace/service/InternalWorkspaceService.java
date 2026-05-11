@@ -8,8 +8,8 @@ import com.notebook.lumen.workspace.domain.WorkspaceMember;
 import com.notebook.lumen.workspace.domain.WorkspaceRole;
 import com.notebook.lumen.workspace.dto.InternalResponses.NotebookPermissionResponse;
 import com.notebook.lumen.workspace.dto.InternalResponses.SearchPermissionSnapshotResponse;
-import com.notebook.lumen.workspace.dto.InternalResponses.WorkspaceMembershipResponse;
 import com.notebook.lumen.workspace.dto.InternalResponses.TagExistsResponse;
+import com.notebook.lumen.workspace.dto.InternalResponses.WorkspaceMembershipResponse;
 import com.notebook.lumen.workspace.repository.NotebookMemberRepository;
 import com.notebook.lumen.workspace.repository.NotebookRepository;
 import com.notebook.lumen.workspace.repository.TagRepository;
@@ -65,8 +65,7 @@ public class InternalWorkspaceService {
         .findByIdWorkspaceIdAndIdUserId(workspaceId, userId)
         .map(
             member ->
-                new WorkspaceMembershipResponse(
-                    workspaceId, userId, true, member.getRole().name()))
+                new WorkspaceMembershipResponse(workspaceId, userId, true, member.getRole().name()))
         .orElseGet(() -> new WorkspaceMembershipResponse(workspaceId, userId, false, null));
   }
 
@@ -78,12 +77,12 @@ public class InternalWorkspaceService {
             .orElseThrow(() -> Exceptions.notFound("NOTEBOOK_NOT_FOUND", "Notebook not found"));
     tenantDatabaseSession.applyWorkspace(notebook.getWorkspaceId());
 
-    boolean hasExplicitMembers =
-        notebookMemberRepository.countByIdNotebookId(notebook.getId()) > 0;
+    boolean hasExplicitMembers = notebookMemberRepository.countByIdNotebookId(notebook.getId()) > 0;
     boolean restricted = hasExplicitMembers;
     boolean workspaceReadable = !restricted;
     String visibilityMode = restricted ? "RESTRICTED" : "WORKSPACE";
-    int permissionVersion = notebook.getPermissionVersion() == null ? 0 : notebook.getPermissionVersion();
+    int permissionVersion =
+        notebook.getPermissionVersion() == null ? 0 : notebook.getPermissionVersion();
 
     return new SearchPermissionSnapshotResponse(
         notebook.getWorkspaceId(),

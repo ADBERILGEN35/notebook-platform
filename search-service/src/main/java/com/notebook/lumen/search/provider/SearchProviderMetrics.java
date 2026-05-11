@@ -13,7 +13,8 @@ public class SearchProviderMetrics {
     this.meterRegistry = meterRegistry;
   }
 
-  public <T> T record(SearchProviderType provider, SearchOperation operation, Supplier<T> supplier) {
+  public <T> T record(
+      SearchProviderType provider, SearchOperation operation, Supplier<T> supplier) {
     Timer.Sample sample = Timer.start(meterRegistry);
     try {
       T result = supplier.get();

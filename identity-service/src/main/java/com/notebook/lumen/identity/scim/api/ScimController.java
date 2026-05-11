@@ -48,7 +48,11 @@ public class ScimController {
         "schemas", List.of("urn:ietf:params:scim:schemas:core:2.0:ServiceProviderConfig"),
         "patch", Map.of("supported", true),
         "bulk",
-            Map.of("supported", scimProperties.bulkEnabled(), "maxOperations", scimProperties.bulkMaxOperations()),
+            Map.of(
+                "supported",
+                scimProperties.bulkEnabled(),
+                "maxOperations",
+                scimProperties.bulkMaxOperations()),
         "filter", Map.of("supported", true, "maxResults", 200),
         "changePassword", Map.of("supported", false),
         "sort", Map.of("supported", false),
@@ -85,7 +89,15 @@ public class ScimController {
         "itemsPerPage", 2,
         "Resources",
             List.of(
-                Map.of("id", "User", "name", "User", "endpoint", "/Users", "schema", ScimUserResponse.CORE_SCHEMA),
+                Map.of(
+                    "id",
+                    "User",
+                    "name",
+                    "User",
+                    "endpoint",
+                    "/Users",
+                    "schema",
+                    ScimUserResponse.CORE_SCHEMA),
                 Map.of(
                     "id",
                     "Group",

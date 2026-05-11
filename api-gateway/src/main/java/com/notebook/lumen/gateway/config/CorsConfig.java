@@ -32,7 +32,8 @@ public class CorsConfig {
             HttpMethod.DELETE.name(),
             HttpMethod.OPTIONS.name()));
     config.setAllowedHeaders(
-        List.of(HttpHeaders.AUTHORIZATION, HttpHeaders.CONTENT_TYPE, "X-Workspace-Id", "X-CSRF-Token"));
+        List.of(
+            HttpHeaders.AUTHORIZATION, HttpHeaders.CONTENT_TYPE, "X-Workspace-Id", "X-CSRF-Token"));
     config.setExposedHeaders(List.of("X-Request-Id"));
     config.setAllowCredentials(properties.allowCredentials());
 

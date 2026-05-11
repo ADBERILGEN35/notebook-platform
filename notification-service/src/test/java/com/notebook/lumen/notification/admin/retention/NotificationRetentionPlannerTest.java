@@ -27,8 +27,7 @@ class NotificationRetentionPlannerTest {
     when(analyticsProperties.retentionDays()).thenReturn(90);
     when(notificationProperties.fanout())
         .thenReturn(
-            new NotificationProperties.Fanout(
-                true, true, true, 5, 100, 10, 5, 300, 60, 24, 30));
+            new NotificationProperties.Fanout(true, true, true, 5, 100, 10, 5, 300, 60, 24, 30));
     when(retentionProperties.deadLetterRequeueRequestRetentionDays()).thenReturn(90);
     when(retentionProperties.digestSentRetentionDays()).thenReturn(90);
     when(retentionProperties.emailTerminalRetentionDays()).thenReturn(90);
@@ -40,7 +39,8 @@ class NotificationRetentionPlannerTest {
         .thenReturn(new NotificationRetentionJdbcRepository.CountMin(0, null));
     when(jdbc.countDeadLetterRequeueEligible(org.mockito.ArgumentMatchers.any()))
         .thenReturn(new NotificationRetentionJdbcRepository.CountMin(0, null));
-    when(jdbc.countDigestTerminalEligible(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any()))
+    when(jdbc.countDigestTerminalEligible(
+            org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any()))
         .thenReturn(new NotificationRetentionJdbcRepository.CountMin(0, null));
     when(jdbc.countEmailTerminalEligible(org.mockito.ArgumentMatchers.any()))
         .thenReturn(new NotificationRetentionJdbcRepository.CountMin(0, null));

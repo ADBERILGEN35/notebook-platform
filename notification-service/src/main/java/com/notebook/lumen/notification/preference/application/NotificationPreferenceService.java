@@ -81,7 +81,8 @@ public class NotificationPreferenceService {
     Instant now = Instant.now();
     for (Map.Entry<UserNotificationType, Map<NotificationChannel, PreferenceDefaults>> entry :
         defaultMatrix().entrySet()) {
-      for (Map.Entry<NotificationChannel, PreferenceDefaults> channelEntry : entry.getValue().entrySet()) {
+      for (Map.Entry<NotificationChannel, PreferenceDefaults> channelEntry :
+          entry.getValue().entrySet()) {
         PreferenceDefaults defaults = channelEntry.getValue();
         repository.save(
             new UserNotificationPreference(
@@ -121,24 +122,19 @@ public class NotificationPreferenceService {
         new LinkedHashMap<>();
     matrix.put(
         UserNotificationType.SECURITY_SESSIONS_REVOKED,
-        channelDefaults(
-            new PreferenceDefaults(true, true), new PreferenceDefaults(true, true)));
+        channelDefaults(new PreferenceDefaults(true, true), new PreferenceDefaults(true, true)));
     matrix.put(
         UserNotificationType.WORKSPACE_INVITATION_RECEIVED,
-        channelDefaults(
-            new PreferenceDefaults(true, false), new PreferenceDefaults(true, false)));
+        channelDefaults(new PreferenceDefaults(true, false), new PreferenceDefaults(true, false)));
     matrix.put(
         UserNotificationType.COMMENT_ADDED,
-        channelDefaults(
-            new PreferenceDefaults(true, false), new PreferenceDefaults(false, false)));
+        channelDefaults(new PreferenceDefaults(true, false), new PreferenceDefaults(false, false)));
     matrix.put(
         UserNotificationType.NOTE_VERSION_RESTORED,
-        channelDefaults(
-            new PreferenceDefaults(true, false), new PreferenceDefaults(false, false)));
+        channelDefaults(new PreferenceDefaults(true, false), new PreferenceDefaults(false, false)));
     matrix.put(
         UserNotificationType.SYSTEM_NOTICE,
-        channelDefaults(
-            new PreferenceDefaults(true, false), new PreferenceDefaults(false, false)));
+        channelDefaults(new PreferenceDefaults(true, false), new PreferenceDefaults(false, false)));
     return matrix;
   }
 

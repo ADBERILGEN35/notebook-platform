@@ -7,12 +7,14 @@ import java.util.Optional;
 /**
  * Allow-listed change-request operation → GitOps file path and patch semantics.
  *
- * <p>Scalar config keys live under {@code config.*} in {@code values.yaml}. Admin RBAC proposals append
- * rows to {@code admin-rbac-overrides.yaml} (governance artifact; not runtime-ingested in Faz 87).
+ * <p>Scalar config keys live under {@code config.*} in {@code values.yaml}. Admin RBAC proposals
+ * append rows to {@code admin-rbac-overrides.yaml} (governance artifact; not runtime-ingested in
+ * Faz 87).
  */
 public enum GitOpsPathMapping {
   ADMIN_MFA_MODE_UPDATE("ADMIN_MFA_MODE_UPDATE", Optional.of("gatewayAdminMfaMode")),
-  MERGE_ANALYSIS_ROLLOUT_REQUEST("MERGE_ANALYSIS_ROLLOUT_REQUEST", Optional.of("noteMergeAnalysisEnabled")),
+  MERGE_ANALYSIS_ROLLOUT_REQUEST(
+      "MERGE_ANALYSIS_ROLLOUT_REQUEST", Optional.of("noteMergeAnalysisEnabled")),
   MERGE_APPLY_ROLLOUT_REQUEST("MERGE_APPLY_ROLLOUT_REQUEST", Optional.of("noteMergeApplyEnabled")),
   SCIM_BULK_ROLLOUT_REQUEST("SCIM_BULK_ROLLOUT_REQUEST", Optional.of("scimBulkEnabled")),
   ADMIN_RBAC_ROLE_GRANT_REQUEST("ADMIN_RBAC_ROLE_GRANT_REQUEST", Optional.empty()),

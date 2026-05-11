@@ -18,12 +18,16 @@ public class MockGitOpsPullRequestProvider implements GitOpsPullRequestProvider 
   }
 
   @Override
-  public GitOpsPrProviderResult createPullRequest(GitOpsPrProviderRequest request, AdminGitOpsPrProperties config) {
+  public GitOpsPrProviderResult createPullRequest(
+      GitOpsPrProviderRequest request, AdminGitOpsPrProperties config) {
     if (request.headBranch() == null || request.headBranch().isBlank()) {
       throw new AdminGitOpsException(
-          "ADMIN_GITOPS_PROVIDER_FAILED", HttpStatus.BAD_REQUEST, "headBranch is required for mock provider");
+          "ADMIN_GITOPS_PROVIDER_FAILED",
+          HttpStatus.BAD_REQUEST,
+          "headBranch is required for mock provider");
     }
-    String num = String.valueOf(Math.abs(UUID.randomUUID().getMostSignificantBits()) % 90000 + 10000);
+    String num =
+        String.valueOf(Math.abs(UUID.randomUUID().getMostSignificantBits()) % 90000 + 10000);
     String url = "https://mock.gitops.invalid/pull/" + num;
     return new GitOpsPrProviderResult(url, num, request.headBranch());
   }

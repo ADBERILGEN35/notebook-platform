@@ -28,7 +28,8 @@ public interface WorkspaceClient {
       boolean canComment,
       boolean canManage) {}
 
-  record WorkspaceMembershipResponse(UUID workspaceId, UUID userId, boolean isMember, String role) {}
+  record WorkspaceMembershipResponse(
+      UUID workspaceId, UUID userId, boolean isMember, String role) {}
 
   record SearchPermissionSnapshotResponse(
       UUID workspaceId,

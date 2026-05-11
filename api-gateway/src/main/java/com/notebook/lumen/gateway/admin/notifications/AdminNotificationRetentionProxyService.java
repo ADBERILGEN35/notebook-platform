@@ -17,7 +17,8 @@ import reactor.core.publisher.Mono;
 
 @Service
 public class AdminNotificationRetentionProxyService {
-  private static final Logger log = LoggerFactory.getLogger(AdminNotificationRetentionProxyService.class);
+  private static final Logger log =
+      LoggerFactory.getLogger(AdminNotificationRetentionProxyService.class);
   static final String RETENTION_READ_SCOPE = "internal:admin:notifications:retention:read";
   static final String RETENTION_RUN_SCOPE = "internal:admin:notifications:retention:run";
   private static final String NOTIFICATION_AUDIENCE = "notification-service";
@@ -67,8 +68,7 @@ public class AdminNotificationRetentionProxyService {
       if (destructive && actorUserId != null && !actorUserId.isBlank()) {
         req = req.header(ADMIN_ACTOR_HEADER, actorUserId);
       }
-      return req
-          .retrieve()
+      return req.retrieve()
           .bodyToMono(String.class)
           .timeout(Duration.ofSeconds(30))
           .map(this::parseJson)

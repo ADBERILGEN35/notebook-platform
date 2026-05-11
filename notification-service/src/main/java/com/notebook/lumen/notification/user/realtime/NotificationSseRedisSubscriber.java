@@ -1,6 +1,5 @@
 package com.notebook.lumen.notification.user.realtime;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.notebook.lumen.notification.shared.config.NotificationSseProperties;
 import java.nio.charset.StandardCharsets;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -25,7 +24,8 @@ public class NotificationSseRedisSubscriber {
     MessageListener listener =
         (Message message, byte[] pattern) ->
             messageHandler.handleMessage(new String(message.getBody(), StandardCharsets.UTF_8));
-    container.addMessageListener(listener, new ChannelTopic(sseProperties.getDistributed().getChannel()));
+    container.addMessageListener(
+        listener, new ChannelTopic(sseProperties.getDistributed().getChannel()));
     return container;
   }
 }
