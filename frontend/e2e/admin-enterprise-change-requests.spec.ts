@@ -28,6 +28,7 @@ test.beforeEach(async ({ page }) => {
   ENTERPRISE_ADMIN_WRITE_ENABLED: true,
   ENTERPRISE_ADMIN_APPROVALS_ENABLED: true,
   ENTERPRISE_GITOPS_PR_ENABLED: true,
+  GITOPS_RBAC_ROLE_REQUESTS_ENABLED: true,
   AUDIT_API_MODE: "mock",
 };
 `,
@@ -359,6 +360,78 @@ test.describe('Enterprise change requests', () => {
     await page.getByRole('button', { name: 'Dry-run GitOps' }).click()
     await clickDialogPrimary(page, 'GitOps dry-run', 'Run dry-run')
     await expect(page.getByText('--- e2e')).toBeVisible()
+  })
+
+  test('gitops dry-run for approved RBAC role request shows manifest warning', async ({ page }) => {
+    const targetUser = 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee'
+    const row = {
+      id: '66666666-6666-6666-6666-666666666666',
+      requestedByUserId: '77777777-7777-7777-7777-777777777777',
+      status: 'APPROVED',
+      operationType: 'ADMIN_RBAC_ROLE_GRANT_REQUEST',
+      targetService: 'identity-service',
+      targetKey: 'admin.rbac.role',
+      currentValue: null,
+      requestedValue: `grant:platform_audit_viewer:${targetUser}`,
+      targetEnvironment: 'staging',
+      severity: 'MEDIUM',
+      impactSummary: {},
+      validationResult: {
+        targetUserId: targetUser,
+        requestedRole: 'PLATFORM_AUDIT_VIEWER',
+        rbacAction: 'GRANT',
+      },
+      createdAt: new Date().toISOString(),
+      externalRequestId: null,
+      decidedAt: new Date().toISOString(),
+      decidedByUserId: STUB_USER_ID,
+      decisionReason: null,
+      approvedAt: new Date().toISOString(),
+      rejectedAt: null,
+    }
+
+    await page.route(matchGatewayChangeRequestsApi, async (route) => {
+      const url = route.request().url()
+      const method = route.request().method()
+      if (method === 'GET') {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ items: [row] }),
+        })
+        return
+      }
+      if (method === 'POST' && url.includes('/gitops/dry-run')) {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            changeRequestId: row.id,
+            targetEnvironment: 'staging',
+            provider: 'mock',
+            changedFiles: [
+              {
+                path: 'deploy/gitops/environments/staging/admin-rbac-overrides.yaml',
+                changes: [{ yamlPath: 'adminRbacOverrides.assignments[+]', oldValue: '', newValue: 'userId: x' }],
+              },
+            ],
+            diffPreview: 'adminRbacOverrides',
+            warnings: ['RBAC_ASSIGNMENT_ALREADY_PROPOSED'],
+          }),
+        })
+        return
+      }
+      await route.continue()
+    })
+
+    await signUpAndLogin(page, `chg-rbac-gitops-${Date.now()}@example.com`, 'Password1234!', 'RBAC GitOps E2E')
+    await page.goto('/app/admin/enterprise/change-requests')
+    await page.getByRole('button', { name: 'Approved' }).click()
+    await page.getByRole('button', { name: 'Dry-run GitOps' }).click()
+    await expect(page.getByText(/does not grant or revoke roles at runtime/i)).toBeVisible()
+    await clickDialogPrimary(page, 'GitOps dry-run', 'Run dry-run')
+    await expect(page.getByText('RBAC_ASSIGNMENT_ALREADY_PROPOSED')).toBeVisible()
+    await expect(page.getByText('adminRbacOverrides')).toBeVisible()
   })
 
   test('403 on list shows permission message', async ({ page }) => {

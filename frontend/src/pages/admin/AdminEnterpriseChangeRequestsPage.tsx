@@ -10,6 +10,7 @@ import {
   isEnterpriseAdminApprovalsUiEnabled,
   isEnterpriseAdminWriteEnabled,
   isEnterpriseGitOpsPrUiEnabled,
+  isEnterpriseGitOpsRbacRoleRequestsUiEnabled,
 } from '../../shared/config/admin-feature-flags'
 import { useAuthStore } from '../../features/auth/auth-store'
 import {
@@ -84,9 +85,11 @@ export function AdminEnterpriseChangeRequestsPage() {
   const [searchParams] = useSearchParams()
   const preOp = searchParams.get('op') ?? ''
   const preVal = searchParams.get('val') ?? ''
+  const preCr = searchParams.get('cr') ?? ''
   const currentUser = useAuthStore((s) => s.user)
   const approvalsUi = isEnterpriseAdminApprovalsUiEnabled()
   const gitOpsUi = isEnterpriseGitOpsPrUiEnabled()
+  const gitOpsRbacUi = isEnterpriseGitOpsRbacRoleRequestsUiEnabled()
   const canCreateFlow = hasPlatformPermission(currentUser, PERM_CHANGE_REQUEST_CREATE)
   const canApprove = hasPlatformPermission(currentUser, PERM_CHANGE_REQUEST_APPROVE)
   const canReject = hasPlatformPermission(currentUser, PERM_CHANGE_REQUEST_REJECT)
@@ -170,6 +173,12 @@ export function AdminEnterpriseChangeRequestsPage() {
   useEffect(() => {
     void refresh()
   }, [refresh])
+
+  useEffect(() => {
+    if (!preCr.trim() || !items?.length) return
+    const row = items.find((i) => i.id === preCr.trim())
+    if (row) setDetailRow(row)
+  }, [preCr, items])
 
   useEffect(() => {
     setRequestedValue((prev) => (opMeta.valueOptions.includes(prev) ? prev : opMeta.valueOptions[0]))
@@ -418,6 +427,14 @@ export function AdminEnterpriseChangeRequestsPage() {
         </p>
       ) : null}
 
+      {gitOpsUi && !gitOpsRbacUi && isEnterpriseAdminWriteEnabled() ? (
+        <p className="text-xs text-amber-800">
+          Approved <strong>admin RBAC role</strong> GitOps proposals are hidden until{' '}
+          <code className="rounded bg-amber-100 px-1">FRONTEND_GITOPS_RBAC_ROLE_REQUESTS_ENABLED</code> and backend{' '}
+          <code className="rounded bg-amber-100 px-1">ADMIN_GITOPS_RBAC_ROLE_REQUESTS_ENABLED</code> are enabled (Faz 87).
+        </p>
+      ) : null}
+
       <Card className="space-y-3">
         <p className="text-xs font-semibold uppercase text-slate-500">Create request</p>
         {!canCreateFlow ? (
@@ -624,7 +641,10 @@ export function AdminEnterpriseChangeRequestsPage() {
                             Cancel
                           </button>
                         ) : null}
-                        {row.status === 'APPROVED' && gitOpsUi ? (
+                        {row.status === 'APPROVED' &&
+                        gitOpsUi &&
+                        (!changeRequestsApi.isAdminRbacRoleChangeRequestOperation(row.operationType) ||
+                          gitOpsRbacUi) ? (
                           <span className="inline-flex flex-wrap gap-x-2 gap-y-1">
                             {canGitOpsDryRun ? (
                               <button
@@ -650,6 +670,11 @@ export function AdminEnterpriseChangeRequestsPage() {
                               <span className="text-slate-500">GitOps (no permission)</span>
                             ) : null}
                           </span>
+                        ) : row.status === 'APPROVED' &&
+                          gitOpsUi &&
+                          changeRequestsApi.isAdminRbacRoleChangeRequestOperation(row.operationType) &&
+                          !gitOpsRbacUi ? (
+                          <span className="text-xs text-slate-500">RBAC GitOps proposals off</span>
                         ) : row.status === 'APPROVED' ? (
                           <span className="text-emerald-800">GitOps handoff</span>
                         ) : null}
@@ -799,6 +824,13 @@ export function AdminEnterpriseChangeRequestsPage() {
               Preview only — no pull request is created. Values come from packaged baselines; production paths are
               allow-listed in identity-service.
             </p>
+            {gitOpsDryRunRow &&
+            changeRequestsApi.isAdminRbacRoleChangeRequestOperation(gitOpsDryRunRow.operationType) ? (
+              <p className="rounded border border-amber-200 bg-amber-50 p-2 text-amber-950">
+                RBAC requests append a row to <code className="font-mono">admin-rbac-overrides.yaml</code> only. This
+                dry-run does <strong>not</strong> grant or revoke roles at runtime.
+              </p>
+            ) : null}
             {gitOpsError ? <ErrorAlert message={gitOpsError} /> : null}
             <label className="block">
               Target environment
@@ -827,6 +859,16 @@ export function AdminEnterpriseChangeRequestsPage() {
             </div>
             {gitOpsDryRunResult ? (
               <div className="space-y-2">
+                {gitOpsDryRunResult.warnings?.length ? (
+                  <div className="rounded border border-amber-200 bg-amber-50 p-2 text-amber-950">
+                    <p className="font-semibold">Warnings</p>
+                    <ul className="list-inside list-disc">
+                      {gitOpsDryRunResult.warnings.map((w) => (
+                        <li key={w}>{w}</li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : null}
                 <p className="font-semibold text-slate-900">Diff preview</p>
                 <pre className="max-h-48 overflow-auto whitespace-pre-wrap rounded border border-slate-200 bg-slate-50 p-2 text-[11px]">
                   {gitOpsDryRunResult.diffPreview}
@@ -853,6 +895,13 @@ export function AdminEnterpriseChangeRequestsPage() {
               Opens a pull request via the configured provider (mock or GitHub). No secrets are shown in the UI; runtime
               config is not applied automatically.
             </p>
+            {gitOpsCreateRow &&
+            changeRequestsApi.isAdminRbacRoleChangeRequestOperation(gitOpsCreateRow.operationType) ? (
+              <p className="rounded border border-amber-200 bg-amber-50 p-2 text-amber-950">
+                RBAC PRs only update the governance manifest <code className="font-mono">admin-rbac-overrides.yaml</code>
+                . Merging the PR does <strong>not</strong> apply roles until a future runtime ingestion phase.
+              </p>
+            ) : null}
             {gitOpsError ? <ErrorAlert message={gitOpsError} /> : null}
             <p>
               Change request <span className="font-mono">{gitOpsCreateRow.id}</span> — environment{' '}

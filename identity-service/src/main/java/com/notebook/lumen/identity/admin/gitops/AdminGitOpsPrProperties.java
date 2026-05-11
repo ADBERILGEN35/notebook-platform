@@ -19,7 +19,8 @@ public record AdminGitOpsPrProperties(
     String repositoryOwner,
     String repositoryName,
     String githubToken,
-    @DefaultValue("true") boolean requireApprovedChange) {
+    @DefaultValue("true") boolean requireApprovedChange,
+    @DefaultValue("false") boolean rbacRoleRequestsEnabled) {
 
   public AdminGitOpsPrProperties {
     provider = provider == null || provider.isBlank() ? "mock" : provider.trim().toLowerCase(Locale.ROOT);

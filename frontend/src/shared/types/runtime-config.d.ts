@@ -38,6 +38,8 @@ declare global {
       ENTERPRISE_ADMIN_WRITE_ENABLED?: boolean | string
       ENTERPRISE_ADMIN_APPROVALS_ENABLED?: boolean | string
       ENTERPRISE_GITOPS_PR_ENABLED?: boolean | string
+      /** Faz 87: show GitOps actions for approved RBAC role change requests (requires enterprise GitOps UI). */
+      GITOPS_RBAC_ROLE_REQUESTS_ENABLED?: boolean | string
       ADMIN_RBAC_UI_ENABLED?: boolean | string
       ADMIN_RBAC_ROLE_REQUESTS_ENABLED?: boolean | string
       NOTIFICATION_ANALYTICS_UI_ENABLED?: boolean | string

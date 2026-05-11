@@ -3,8 +3,10 @@ package com.notebook.lumen.identity.admin.gitops;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.notebook.lumen.identity.admin.changerequest.AdminOperationRegistry;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.util.Locale;
 import java.util.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,18 +72,34 @@ public class GithubGitOpsPullRequestProvider implements GitOpsPullRequestProvide
     String head = request.headBranch();
 
     JsonNode fileNode = fetchContents(owner, repo, path, base, config);
+    String sha;
+    String existingYaml;
     if (fileNode == null || !fileNode.path("sha").isTextual()) {
-      throw new AdminGitOpsException(
-          "ADMIN_GITOPS_MAPPING_NOT_FOUND", HttpStatus.BAD_REQUEST, "GitHub file not found at path on base branch");
+      if (AdminOperationRegistry.isRbacRoleOperation(request.operationType())) {
+        String env = resolveTargetEnvironment(request);
+        existingYaml = yamlPatchService.baselineAdminRbacOverridesYaml(env);
+        sha = null;
+      } else {
+        throw new AdminGitOpsException(
+            "ADMIN_GITOPS_MAPPING_NOT_FOUND", HttpStatus.BAD_REQUEST, "GitHub file not found at path on base branch");
+      }
+    } else {
+      sha = fileNode.get("sha").asText();
+      existingYaml = decodeContent(fileNode.path("content"));
     }
-    String sha = fileNode.get("sha").asText();
-    String existingYaml = decodeContent(fileNode.path("content"));
+
+    GitOpsRbacPatchContext rbacCtx = null;
+    if (AdminOperationRegistry.isRbacRoleOperation(request.operationType())) {
+      rbacCtx =
+          new GitOpsRbacPatchContext(
+              request.rbacChangeRequestId(), request.rbacRequestedByUserId(), request.rbacApprovedByUserId());
+    }
 
     String newYaml;
     try {
       newYaml =
           yamlPatchService.applyPatchToContent(
-              existingYaml, request.operationType(), request.normalizedRequestedValue());
+              existingYaml, request.operationType(), request.normalizedRequestedValue(), rbacCtx);
     } catch (AdminGitOpsException e) {
       throw e;
     } catch (RuntimeException e) {
@@ -224,12 +242,27 @@ public class GithubGitOpsPullRequestProvider implements GitOpsPullRequestProvide
         "ADMIN_GITOPS_PROVIDER_FAILED", HttpStatus.BAD_GATEWAY, "Could not create Git branch after retries");
   }
 
+  private static String resolveTargetEnvironment(GitOpsPrProviderRequest request) {
+    String env = request.targetEnvironment() == null ? "" : request.targetEnvironment().trim();
+    if (!env.isBlank()) {
+      return env.toLowerCase(Locale.ROOT);
+    }
+    String path = request.valuesFilePath();
+    int idx = path.indexOf("/environments/");
+    if (idx < 0) {
+      return "dev";
+    }
+    String rest = path.substring(idx + "/environments/".length());
+    int slash = rest.indexOf('/');
+    return (slash > 0 ? rest.substring(0, slash) : rest).toLowerCase(Locale.ROOT);
+  }
+
   private void commitFileUpdate(
       String owner,
       String repo,
       String path,
       String branch,
-      String fileSha,
+      String fileShaNullable,
       String newContent,
       String message,
       AdminGitOpsPrProperties config) {
@@ -237,7 +270,9 @@ public class GithubGitOpsPullRequestProvider implements GitOpsPullRequestProvide
       ObjectNode body = objectMapper.createObjectNode();
       body.put("message", message);
       body.put("content", Base64.getEncoder().encodeToString(newContent.getBytes(StandardCharsets.UTF_8)));
-      body.put("sha", fileSha);
+      if (fileShaNullable != null && !fileShaNullable.isBlank()) {
+        body.put("sha", fileShaNullable);
+      }
       body.put("branch", branch);
       restClient
           .put()

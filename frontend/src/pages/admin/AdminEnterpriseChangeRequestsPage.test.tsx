@@ -9,6 +9,7 @@ vi.mock('../../shared/config/admin-feature-flags', () => ({
   isEnterpriseAdminWriteEnabled: () => true,
   isEnterpriseAdminApprovalsUiEnabled: () => true,
   isEnterpriseGitOpsPrUiEnabled: () => true,
+  isEnterpriseGitOpsRbacRoleRequestsUiEnabled: () => true,
 }))
 
 vi.mock('../../features/auth/auth-store', () => ({

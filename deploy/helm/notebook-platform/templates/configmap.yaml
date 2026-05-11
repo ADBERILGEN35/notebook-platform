@@ -139,6 +139,7 @@ data:
   ADMIN_GITOPS_REPOSITORY_OWNER: {{ .Values.config.adminGitopsRepositoryOwner | quote }}
   ADMIN_GITOPS_REPOSITORY_NAME: {{ .Values.config.adminGitopsRepositoryName | quote }}
   ADMIN_GITOPS_REQUIRE_APPROVED_CHANGE: {{ .Values.config.adminGitopsRequireApprovedChange | quote }}
+  ADMIN_GITOPS_RBAC_ROLE_REQUESTS_ENABLED: {{ .Values.config.adminGitopsRbacRoleRequestsEnabled | quote }}
   IDENTITY_INTERNAL_ADMIN_STATUS_ENABLED: {{ .Values.config.internalAdminStatusEnabled | quote }}
   NOTIFICATION_INTERNAL_ADMIN_STATUS_ENABLED: {{ .Values.config.internalAdminStatusEnabled | quote }}
   NOTIFICATION_INTERNAL_ADMIN_ANALYTICS_ENABLED: {{ .Values.config.notificationInternalAdminAnalyticsEnabled | quote }}

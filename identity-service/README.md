@@ -239,7 +239,7 @@ revocation.
 
 ## Platform admin change requests (Faz 77)
 
-- `GET|POST /internal/admin/change-requests` (+ `/validate`, `/{id}/cancel`, `/{id}/approve`, `/{id}/reject`, `/{id}/gitops/dry-run`, `/{id}/gitops/create-pr`) — service JWT scope `internal:admin:change-requests:manage`, gated by `ADMIN_CHANGE_REQUESTS_ENABLED` and `ADMIN_CHANGE_REQUEST_APPROVALS_ENABLED` for approve/reject; GitOps endpoints additionally require `ADMIN_GITOPS_PR_ENABLED`.
+- `GET|POST /internal/admin/change-requests` (+ `/validate`, `/{id}/cancel`, `/{id}/approve`, `/{id}/reject`, `/{id}/gitops/dry-run`, `/{id}/gitops/create-pr`) — service JWT scope `internal:admin:change-requests:manage`, gated by `ADMIN_CHANGE_REQUESTS_ENABLED` and `ADMIN_CHANGE_REQUEST_APPROVALS_ENABLED` for approve/reject; GitOps endpoints additionally require `ADMIN_GITOPS_PR_ENABLED`. RBAC role grant/revoke GitOps (`admin-rbac-overrides.yaml`) is further gated by `ADMIN_GITOPS_RBAC_ROLE_REQUESTS_ENABLED` (default `false`).
 - Persists allow-listed **desired state** only (`platform_admin_change_requests`); GitOps PR automation (Faz 80) uses `admin_gitops_pr_proposals` and does not apply runtime config. See `docs/enterprise-admin-write-operations.md` and `docs/admin-gitops-pr-automation.md`.
 
 ## Fine-grained admin RBAC (Faz 79)

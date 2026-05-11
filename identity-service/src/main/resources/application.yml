@@ -132,6 +132,7 @@ identity:
       repository-name: ${ADMIN_GITOPS_REPOSITORY_NAME:}
       github-token: ${ADMIN_GITOPS_GITHUB_TOKEN:}
       require-approved-change: ${ADMIN_GITOPS_REQUIRE_APPROVED_CHANGE:true}
+      rbac-role-requests-enabled: ${ADMIN_GITOPS_RBAC_ROLE_REQUESTS_ENABLED:false}
   mfa:
     enabled: ${MFA_ENABLED:false}
     webauthn:

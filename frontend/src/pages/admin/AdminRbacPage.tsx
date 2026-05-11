@@ -430,7 +430,19 @@ function RoleRequestModal({
             />
           </label>
         ) : null}
-        {msg ? <p className="text-xs text-emerald-800">{msg}</p> : null}
+        {msg ? (
+          <div className="space-y-1 text-xs text-emerald-800">
+            <p>{msg}</p>
+            {createM.isSuccess && createM.data?.id ? (
+              <Link
+                className="inline-block font-medium text-primary-700 underline"
+                to={`/app/admin/enterprise/change-requests?cr=${encodeURIComponent(createM.data.id)}`}
+              >
+                View change request
+              </Link>
+            ) : null}
+          </div>
+        ) : null}
         {validateM.error ? <ErrorAlert error={validateM.error} /> : null}
         {createM.error ? <ErrorAlert error={createM.error} /> : null}
         <div className="flex justify-end gap-2">

@@ -45,6 +45,18 @@ export const isEnterpriseGitOpsPrUiEnabled = (): boolean =>
     false,
   )
 
+/**
+ * Faz 87: GitOps dry-run / PR for approved admin RBAC role grant/revoke requests (manifest proposal only).
+ * Requires {@link isEnterpriseGitOpsPrUiEnabled} plus explicit opt-in.
+ */
+export const isEnterpriseGitOpsRbacRoleRequestsUiEnabled = (): boolean =>
+  isEnterpriseGitOpsPrUiEnabled() &&
+  parseBool(
+    window.__NOTEBOOK_CONFIG__?.GITOPS_RBAC_ROLE_REQUESTS_ENABLED ??
+      import.meta.env.VITE_GITOPS_RBAC_ROLE_REQUESTS_ENABLED,
+    false,
+  )
+
 /** Faz 81: notification delivery analytics admin dashboard (aggregate-only). */
 export const isNotificationAnalyticsUiEnabled = (): boolean =>
   parseBool(

@@ -1,0 +1,5 @@
+# Governance artifact: approved admin RBAC role change proposals (Faz 87).
+# identity-service does not ingest this file at runtime — merge only after review.
+adminRbacOverrides:
+  version: 1
+  assignments: []

@@ -72,6 +72,12 @@ export type GitOpsDryRunResponse = {
   warnings: string[]
 }
 
+export function isAdminRbacRoleChangeRequestOperation(operationType: string): boolean {
+  return (
+    operationType === 'ADMIN_RBAC_ROLE_GRANT_REQUEST' || operationType === 'ADMIN_RBAC_ROLE_REVOKE_REQUEST'
+  )
+}
+
 export type GitOpsCreatePrResponse = {
   proposalId: string
   status: string
