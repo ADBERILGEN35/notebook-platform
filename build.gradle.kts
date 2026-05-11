@@ -61,7 +61,13 @@ subprojects {
     extensions.configure<SpotlessExtension> {
         setLineEndings(LineEnding.UNIX)
         java {
-            target("src/**/*.java")
+            // Use a project-dir-rooted file tree so paths stay canonical on WSL + shared Windows folders
+            // (avoids daemon/cache carrying `C:\...` into a `/mnt/c/...` project dir).
+            target(
+                fileTree(layout.projectDirectory.dir("src").asFile) {
+                    include("**/*.java")
+                },
+            )
             googleJavaFormat("1.28.0")
             removeUnusedImports()
             trimTrailingWhitespace()

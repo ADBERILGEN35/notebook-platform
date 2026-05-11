@@ -1,6 +1,7 @@
 package com.notebook.lumen.identity.admin;
 
 import com.notebook.lumen.common.security.admin.PlatformAdminRbacConstants;
+import com.notebook.lumen.identity.breakglass.BreakGlassService;
 import com.notebook.lumen.identity.mfa.MfaProperties;
 import com.notebook.lumen.identity.scim.ScimProperties;
 import com.notebook.lumen.identity.siem.SiemProperties;
@@ -16,18 +17,21 @@ public class IdentitySecurityStatusService {
   private final MfaProperties mfaProperties;
   private final SiemProperties siemProperties;
   private final AdminRbacService adminRbacService;
+  private final BreakGlassService breakGlassService;
 
   public IdentitySecurityStatusService(
       SsoProperties ssoProperties,
       ScimProperties scimProperties,
       MfaProperties mfaProperties,
       SiemProperties siemProperties,
-      AdminRbacService adminRbacService) {
+      AdminRbacService adminRbacService,
+      BreakGlassService breakGlassService) {
     this.ssoProperties = ssoProperties;
     this.scimProperties = scimProperties;
     this.mfaProperties = mfaProperties;
     this.siemProperties = siemProperties;
     this.adminRbacService = adminRbacService;
+    this.breakGlassService = breakGlassService;
   }
 
   public IdentitySecurityStatusResponse build() {
@@ -56,7 +60,16 @@ public class IdentitySecurityStatusService {
             siemEndpointConfigured(siemProperties),
             siemSecretConfigured(siemProperties));
     var adminRbac = mapAdminRbac(adminRbacService.statusSnapshot());
-    return new IdentitySecurityStatusResponse(sso, scim, mfa, siem, adminRbac, false, null);
+    var bg = breakGlassService.status();
+    var breakGlass =
+        new IdentitySecurityStatusResponse.BreakGlass(
+            bg.enabled(),
+            bg.tokenConfigured(),
+            bg.sessionTtlMinutes(),
+            bg.maxActiveSessions(),
+            bg.requireReason(),
+            bg.requireMfa());
+    return new IdentitySecurityStatusResponse(sso, scim, mfa, siem, adminRbac, breakGlass, false, null);
   }
 
   private static IdentitySecurityStatusResponse.AdminRbac mapAdminRbac(

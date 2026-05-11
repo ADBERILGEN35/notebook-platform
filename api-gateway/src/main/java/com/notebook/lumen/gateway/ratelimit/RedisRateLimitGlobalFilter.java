@@ -97,6 +97,9 @@ public class RedisRateLimitGlobalFilter implements GlobalFilter, Ordered {
     if (isAdminNotificationLegalHoldWriteEndpoint(exchange)) {
       return checkAllowed(exchange, chain, adminWriteRedisRateLimiter, routeId, userId(exchange));
     }
+    if (isAdminRbacOverridesReloadEndpoint(exchange)) {
+      return checkAllowed(exchange, chain, adminWriteRedisRateLimiter, routeId, userId(exchange));
+    }
 
     RedisRateLimiter limiter;
     if (authEndpoint) {
@@ -162,7 +165,18 @@ public class RedisRateLimitGlobalFilter implements GlobalFilter, Ordered {
 
   private boolean isAdminRbacReadEndpoint(ServerWebExchange exchange) {
     String path = exchange.getRequest().getPath().value();
-    return path.startsWith("/admin/rbac/users") || path.startsWith("/admin/rbac/overrides");
+    if (path.startsWith("/admin/rbac/users")) {
+      return true;
+    }
+    return path.startsWith("/admin/rbac/overrides")
+        && !isAdminRbacOverridesReloadEndpoint(exchange);
+  }
+
+  private boolean isAdminRbacOverridesReloadEndpoint(ServerWebExchange exchange) {
+    if (!org.springframework.http.HttpMethod.POST.equals(exchange.getRequest().getMethod())) {
+      return false;
+    }
+    return "/admin/rbac/overrides/reload".equals(exchange.getRequest().getPath().value());
   }
 
   private boolean isAdminNotificationAnalyticsEndpoint(ServerWebExchange exchange) {

@@ -325,6 +325,22 @@ data:
   ADMIN_RBAC_OVERRIDES_FAIL_CLOSED: {{ .Values.config.adminRbacOverridesFailClosed | quote }}
   ADMIN_RBAC_OVERRIDES_MAX_ASSIGNMENTS: {{ .Values.config.adminRbacOverridesMaxAssignments | quote }}
   ADMIN_RBAC_OVERRIDES_REQUIRE_APPROVED_STATUS: {{ .Values.config.adminRbacOverridesRequireApprovedStatus | quote }}
+  ADMIN_RBAC_OVERRIDES_RELOAD_ENABLED: {{ .Values.config.adminRbacOverridesReloadEnabled | quote }}
+  ADMIN_RBAC_OVERRIDES_LAST_KNOWN_GOOD_ENABLED: {{ .Values.config.adminRbacOverridesLastKnownGoodEnabled | quote }}
+  ADMIN_RBAC_OVERRIDES_RELOAD_FAIL_CLOSED: {{ .Values.config.adminRbacOverridesReloadFailClosed | quote }}
+  ADMIN_RBAC_OVERRIDES_WATCH_ENABLED: {{ .Values.config.adminRbacOverridesWatchEnabled | quote }}
+  ADMIN_RBAC_OVERRIDES_WATCH_INTERVAL_SECONDS: {{ .Values.config.adminRbacOverridesWatchIntervalSeconds | quote }}
+  ADMIN_RBAC_OVERRIDES_WATCH_DEBOUNCE_SECONDS: {{ .Values.config.adminRbacOverridesWatchDebounceSeconds | quote }}
+  ADMIN_RBAC_OVERRIDES_REQUIRE_VALID_CHECKSUM: {{ .Values.config.adminRbacOverridesRequireValidChecksum | quote }}
+  BREAK_GLASS_ENABLED: {{ .Values.config.breakGlassEnabled | quote }}
+  BREAK_GLASS_TOKEN_HASH: {{ .Values.config.breakGlassTokenHash | quote }}
+  BREAK_GLASS_SESSION_TTL_MINUTES: {{ .Values.config.breakGlassSessionTtlMinutes | quote }}
+  BREAK_GLASS_REQUIRE_MFA: {{ .Values.config.breakGlassRequireMfa | quote }}
+  BREAK_GLASS_REQUIRE_REASON: {{ .Values.config.breakGlassRequireReason | quote }}
+  BREAK_GLASS_MAX_ACTIVE_SESSIONS: {{ .Values.config.breakGlassMaxActiveSessions | quote }}
+  BREAK_GLASS_NOTIFY_ON_USE: {{ .Values.config.breakGlassNotifyOnUse | quote }}
+  GATEWAY_BREAK_GLASS_ADMIN_ALLOWED: {{ .Values.config.gatewayBreakGlassAdminAllowed | quote }}
+  BREAK_GLASS_ALLOW_ADMIN_WRITE: {{ .Values.config.breakGlassAllowAdminWrite | quote }}
   SCIM_GROUP_NESTING_ENABLED: {{ .Values.config.scimGroupNestingEnabled | quote }}
   SCIM_GROUP_NESTING_MAX_DEPTH: {{ .Values.config.scimGroupNestingMaxDepth | quote }}
   SCIM_BULK_ENABLED: {{ .Values.config.scimBulkEnabled | quote }}

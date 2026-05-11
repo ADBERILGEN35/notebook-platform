@@ -49,6 +49,15 @@ class AdminRbacServiceTest {
   }
 
   @Test
+  void resolvePermissionsIdentityAdminIncludesOverrideReload() {
+    var svc =
+        new AdminRbacService(
+            new AdminRbacProperties(true, true, "", "", "", "", "", "", "", "", false, false, ""));
+    assertThat(svc.resolvePermissions(List.of(PlatformAdminRbacConstants.ROLE_PLATFORM_IDENTITY_ADMIN)))
+        .contains(PlatformAdminRbacConstants.PERM_RBAC_OVERRIDE_RELOAD);
+  }
+
+  @Test
   void resolvePermissionsAuditViewer() {
     var svc =
         new AdminRbacService(

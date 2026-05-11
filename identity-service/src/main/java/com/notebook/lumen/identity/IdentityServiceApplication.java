@@ -6,6 +6,7 @@ import com.notebook.lumen.identity.admin.changerequest.AdminChangeRequestPropert
 import com.notebook.lumen.identity.admin.gitops.AdminGitOpsPrProperties;
 import com.notebook.lumen.identity.admin.rbac.overrides.AdminRbacOverridesProperties;
 import com.notebook.lumen.identity.audit.AuditAdminProperties;
+import com.notebook.lumen.identity.breakglass.BreakGlassProperties;
 import com.notebook.lumen.identity.mfa.MfaProperties;
 import com.notebook.lumen.identity.notification.IdentityNotificationProperties;
 import com.notebook.lumen.identity.scim.ScimProperties;
@@ -29,6 +30,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
   InternalAdminStatusProperties.class,
   AdminRbacProperties.class,
   AdminRbacOverridesProperties.class,
+  BreakGlassProperties.class,
   AdminChangeRequestProperties.class,
   AdminGitOpsPrProperties.class,
   IdentityNotificationProperties.class,

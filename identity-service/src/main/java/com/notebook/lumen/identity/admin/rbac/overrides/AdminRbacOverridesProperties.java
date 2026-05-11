@@ -9,7 +9,14 @@ public record AdminRbacOverridesProperties(
     String file,
     @DefaultValue("false") boolean failClosed,
     @DefaultValue("500") int maxAssignments,
-    @DefaultValue("true") boolean requireApprovedStatus) {
+    @DefaultValue("true") boolean requireApprovedStatus,
+    @DefaultValue("false") boolean reloadEnabled,
+    @DefaultValue("true") boolean lastKnownGoodEnabled,
+    @DefaultValue("false") boolean reloadFailClosed,
+    @DefaultValue("false") boolean watchEnabled,
+    @DefaultValue("30") int watchIntervalSeconds,
+    @DefaultValue("5") int watchDebounceSeconds,
+    @DefaultValue("false") boolean requireValidChecksum) {
 
   public AdminRbacOverridesProperties {
     file =
@@ -18,6 +25,12 @@ public record AdminRbacOverridesProperties(
             : file.trim();
     if (maxAssignments < 1) {
       maxAssignments = 500;
+    }
+    if (watchIntervalSeconds < 5) {
+      watchIntervalSeconds = 5;
+    }
+    if (watchDebounceSeconds < 1) {
+      watchDebounceSeconds = 1;
     }
   }
 

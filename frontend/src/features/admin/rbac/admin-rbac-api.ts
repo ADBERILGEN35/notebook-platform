@@ -9,15 +9,42 @@ export type AdminRbacRoleSource = {
 
 export type AdminRbacOverridesStatus = {
   enabled: boolean
+  reloadEnabled: boolean
+  lastKnownGoodEnabled: boolean
   failClosed: boolean
   fileConfigured: boolean
   loaded: boolean
   fileBasename: string
-  lastLoadedAt: string | null
+  loadedAt: string | null
+  checksum: string
+  manifestVersion: string
+  lastReloadAttemptAt: string | null
+  lastReloadResult: string
   assignmentCount: number
   validAssignmentCount: number
   ignoredAssignmentCount: number
+  warningCount: number
+  errorCount: number
   warnings: string[]
+}
+
+export type AdminRbacOverridesReloadResponse = {
+  reloaded: boolean
+  result: string
+  checksum: string
+  validAssignmentCount: number
+  ignoredAssignmentCount: number
+  warnings: string[]
+}
+
+/** Short display for sha256:… checksums (never raw YAML). */
+export function formatOverrideChecksumShort(checksum: string | null | undefined): string {
+  const c = (checksum ?? '').trim()
+  if (!c) return '—'
+  const lower = c.toLowerCase()
+  const hex = lower.startsWith('sha256:') ? lower.slice('sha256:'.length) : lower
+  if (hex.length <= 20) return lower.startsWith('sha256:') ? `sha256:${hex}` : c
+  return `sha256:${hex.slice(0, 4)}…${hex.slice(-4)}`
 }
 
 export type AdminRbacUserRow = {
@@ -69,4 +96,13 @@ export async function getAdminRbacUser(userId: string): Promise<AdminRbacUserDet
 
 export async function getAdminRbacOverridesStatus(): Promise<AdminRbacOverridesStatus> {
   return apiRequest<AdminRbacOverridesStatus>('/admin/rbac/overrides/status', { method: 'GET' })
+}
+
+export async function postAdminRbacOverridesReload(body: {
+  reason: string
+}): Promise<AdminRbacOverridesReloadResponse> {
+  return apiRequest<AdminRbacOverridesReloadResponse>('/admin/rbac/overrides/reload', {
+    method: 'POST',
+    body: JSON.stringify(body),
+  })
 }

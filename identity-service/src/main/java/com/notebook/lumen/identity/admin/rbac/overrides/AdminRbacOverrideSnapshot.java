@@ -8,6 +8,8 @@ public record AdminRbacOverrideSnapshot(
     boolean fileConfigured,
     Instant lastLoadedAt,
     String fileBasename,
+    String checksum,
+    String manifestVersion,
     List<AdminRbacOverrideAssignmentRow> assignments,
     List<String> loadWarnings,
     List<String> loadErrors,
@@ -15,6 +17,6 @@ public record AdminRbacOverrideSnapshot(
 
   public static AdminRbacOverrideSnapshot emptyDisabled() {
     return new AdminRbacOverrideSnapshot(
-        false, false, null, "", List.of(), List.of(), List.of(), 0);
+        false, false, null, "", "", "", List.of(), List.of(), List.of(), 0);
   }
 }

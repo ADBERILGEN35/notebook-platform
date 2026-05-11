@@ -8,14 +8,22 @@ public final class AdminRbacOverridesDtos {
 
   public record OverridesStatusResponse(
       boolean enabled,
+      boolean reloadEnabled,
+      boolean lastKnownGoodEnabled,
       boolean failClosed,
       boolean fileConfigured,
       boolean loaded,
       String fileBasename,
-      Instant lastLoadedAt,
+      Instant loadedAt,
+      String checksum,
+      String manifestVersion,
+      Instant lastReloadAttemptAt,
+      String lastReloadResult,
       int assignmentCount,
       int validAssignmentCount,
       int ignoredAssignmentCount,
+      int warningCount,
+      int errorCount,
       List<String> warnings) {}
 
   public record OverridesValidateRequest(String content) {}
@@ -27,4 +35,14 @@ public final class AdminRbacOverridesDtos {
       int ignoredAssignmentCount,
       List<String> warnings,
       List<String> errors) {}
+
+  public record OverridesReloadRequest(String reason) {}
+
+  public record OverridesReloadResponse(
+      boolean reloaded,
+      String result,
+      String checksum,
+      int validAssignmentCount,
+      int ignoredAssignmentCount,
+      List<String> warnings) {}
 }

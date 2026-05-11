@@ -53,6 +53,5 @@ export default defineConfig({
     teardownTimeout: 120_000,
     testTimeout: 30_000,
     maxWorkers: 4,
-    minWorkers: 1,
   },
 })

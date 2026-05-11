@@ -382,6 +382,8 @@ Faz 87 adds **GitOps PR proposals** for approved RBAC grant/revoke change reques
 Faz 88 adds **optional mounted-file runtime ingestion** for that manifest (feature-flagged off by default),
 gateway `GET/POST /admin/rbac/overrides/*`, metrics/audit, and read-only UI status — see
 `docs/admin-rbac-runtime-overrides.md` (no IdP/SCIM mutation, no direct role API).
+Faz 89 adds **manual hot reload**, last-known-good, checksum/version in status, optional background watch (default off),
+gateway `POST /admin/rbac/overrides/reload` with dedicated permission + MFA — see `docs/admin-rbac-override-reload.md`.
 Faz 64 adds a **durable DB outbox** for notification SSE fanout with worker retries and dead-letter
 semantics while keeping Redis pub/sub as the realtime layer (`docs/notification-durable-fanout.md`).
 Faz 81 adds **admin notification delivery analytics** (aggregate-only; `docs/notification-analytics-dashboard.md`).

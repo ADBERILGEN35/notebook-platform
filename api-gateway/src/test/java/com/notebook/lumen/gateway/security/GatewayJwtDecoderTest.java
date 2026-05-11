@@ -95,6 +95,20 @@ class GatewayJwtDecoderTest {
   }
 
   @Test
+  void jwtDecoder_acceptsBreakGlassTokenType() throws Exception {
+    KeyPair keys = keyPair();
+    String token = token(keys, "key-1", "break_glass_admin", Instant.now().plusSeconds(60));
+
+    withJwksServer(
+        keys,
+        "key-1",
+        jwksUri -> {
+          ReactiveJwtDecoder decoder = decoder(new GatewayJwtProperties(jwksUri, "", ""));
+          StepVerifier.create(decoder.decode(token)).expectNextCount(1).verifyComplete();
+        });
+  }
+
+  @Test
   void jwtDecoder_supportsStaticPublicKeyFallback() throws Exception {
     KeyPair keys = keyPair();
     Path publicKeyPath = tempDir.resolve("public.pem");

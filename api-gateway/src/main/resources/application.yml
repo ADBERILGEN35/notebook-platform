@@ -167,6 +167,7 @@ gateway:
       enabled: ${GATEWAY_ADMIN_AUDIT_ENABLED:false}
     write:
       enabled: ${GATEWAY_ADMIN_WRITE_ENABLED:false}
+    change-requests:
       internal-path: ${GATEWAY_ADMIN_CHANGE_REQUESTS_INTERNAL_PATH:/internal/admin/change-requests}
     rbac-visibility:
       internal-path: ${GATEWAY_ADMIN_RBAC_VISIBILITY_PATH:/internal/admin/rbac}
@@ -209,6 +210,10 @@ gateway:
         subject: ${GATEWAY_ADMIN_AUDIT_SERVICE_JWT_SUBJECT:service:api-gateway}
         service-name: ${GATEWAY_ADMIN_AUDIT_SERVICE_JWT_SERVICE_NAME:api-gateway}
         ttl-seconds: ${GATEWAY_ADMIN_AUDIT_SERVICE_JWT_TTL_SECONDS:60}
+
+  break-glass:
+    admin-allowed: ${GATEWAY_BREAK_GLASS_ADMIN_ALLOWED:false}
+    allow-admin-write: ${BREAK_GLASS_ALLOW_ADMIN_WRITE:false}
 
 logging:
   level:

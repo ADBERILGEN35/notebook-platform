@@ -19,6 +19,7 @@ class EnterpriseStatusWarningEngineTest {
             new MfaStatus("warn", List.of("webauthn"), true, true),
             new SiemStatus(false, "noop", false, false, false),
             new AdminRbacStatus(false, true, Map.of()),
+            new BreakGlassStatus(false, false, false, false, 15, 1, true, true),
             new AuditExportStatus(false, false, false, false, "", false),
             new NotificationsStatus(false, false, false, false),
             new GatewaySecurityStatus(true, true, "warn", List.of(), true, false, "bearer", false),
@@ -38,6 +39,7 @@ class EnterpriseStatusWarningEngineTest {
             new MfaStatus("enforce", List.of("webauthn"), true, true),
             new SiemStatus(false, "noop", false, false, false),
             new AdminRbacStatus(false, true, Map.of()),
+            new BreakGlassStatus(false, false, false, false, 15, 1, true, true),
             new AuditExportStatus(false, false, false, false, "", false),
             new NotificationsStatus(true, false, true, true),
             new GatewaySecurityStatus(

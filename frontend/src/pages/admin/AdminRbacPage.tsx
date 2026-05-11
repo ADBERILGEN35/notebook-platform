@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { PageHeader } from '../../shared/components/PageHeader'
 import { Card } from '../../shared/components/Card'
@@ -9,6 +9,7 @@ import { PermissionDenied } from '../../shared/components/PermissionDenied'
 import { useAuthStore } from '../../features/auth/auth-store'
 import {
   PERM_RBAC_CHANGE_REQUEST_CREATE,
+  PERM_RBAC_OVERRIDE_RELOAD,
   PERM_RBAC_READ,
   hasPlatformPermission,
 } from '../../features/admin/access/admin-permissions'
@@ -19,6 +20,7 @@ import {
   validateChangeRequest,
 } from '../../features/admin/enterprise/change-requests-api'
 import {
+  isAdminRbacOverridesReloadUiEnabled,
   isAdminRbacOverridesStatusUiEnabled,
   isAdminRbacRoleRequestsUiEnabled,
   isAdminRbacUiEnabled,
@@ -41,13 +43,16 @@ export function AdminRbacPage() {
   const uiOn = isAdminRbacUiEnabled()
   const roleReqOn = isAdminRbacRoleRequestsUiEnabled() && isEnterpriseAdminWriteEnabled()
   const overridesStatusOn = isAdminRbacOverridesStatusUiEnabled()
+  const overridesReloadOn = isAdminRbacOverridesReloadUiEnabled()
   const canRoleRequest = hasPlatformPermission(user, PERM_RBAC_CHANGE_REQUEST_CREATE)
+  const canReloadOverrides = hasPlatformPermission(user, PERM_RBAC_OVERRIDE_RELOAD)
 
   const [q, setQ] = useState('')
   const [roleFilter, setRoleFilter] = useState('')
   const [permFilter, setPermFilter] = useState('')
   const [page, setPage] = useState(0)
   const [detailId, setDetailId] = useState<string | null>(null)
+  const [reloadOpen, setReloadOpen] = useState(false)
 
   const listQ = useQuery({
     queryKey: ['admin-rbac-users', q, roleFilter, permFilter, page],
@@ -117,7 +122,18 @@ export function AdminRbacPage() {
 
       {overridesStatusOn && canRead ? (
         <Card className="space-y-2 text-xs text-slate-700">
-          <p className="font-semibold text-slate-900">GitOps RBAC overrides (read-only)</p>
+          <div className="flex flex-wrap items-start justify-between gap-2">
+            <p className="font-semibold text-slate-900">GitOps RBAC overrides (read-only)</p>
+            {overridesReloadOn && canReloadOverrides ? (
+              <button
+                type="button"
+                className="rounded border border-slate-300 px-2 py-1 text-xs font-medium text-slate-800 hover:bg-slate-50"
+                onClick={() => setReloadOpen(true)}
+              >
+                Reload manifest
+              </button>
+            ) : null}
+          </div>
           {overridesStatusQ.isLoading ? <LoadingState /> : null}
           {overridesStatusQ.error ? <ErrorAlert error={overridesStatusQ.error} /> : null}
           {overridesStatusQ.data ? (
@@ -125,6 +141,14 @@ export function AdminRbacPage() {
               <div>
                 <dt className="text-slate-500">Ingestion enabled</dt>
                 <dd>{String(overridesStatusQ.data.enabled)}</dd>
+              </div>
+              <div>
+                <dt className="text-slate-500">Reload API enabled</dt>
+                <dd>{String(overridesStatusQ.data.reloadEnabled)}</dd>
+              </div>
+              <div>
+                <dt className="text-slate-500">Last-known-good</dt>
+                <dd>{String(overridesStatusQ.data.lastKnownGoodEnabled)}</dd>
               </div>
               <div>
                 <dt className="text-slate-500">Loaded</dt>
@@ -135,18 +159,38 @@ export function AdminRbacPage() {
                 <dd className="font-mono">{overridesStatusQ.data.fileBasename || '—'}</dd>
               </div>
               <div>
+                <dt className="text-slate-500">Version</dt>
+                <dd className="font-mono">{overridesStatusQ.data.manifestVersion || '—'}</dd>
+              </div>
+              <div>
+                <dt className="text-slate-500">Checksum</dt>
+                <dd className="font-mono">{rbacApi.formatOverrideChecksumShort(overridesStatusQ.data.checksum)}</dd>
+              </div>
+              <div>
                 <dt className="text-slate-500">Assignments (valid / ignored)</dt>
                 <dd>
                   {overridesStatusQ.data.validAssignmentCount} / {overridesStatusQ.data.ignoredAssignmentCount}
                 </dd>
               </div>
               <div>
-                <dt className="text-slate-500">Last loaded</dt>
+                <dt className="text-slate-500">Loaded at</dt>
                 <dd>
-                  {overridesStatusQ.data.lastLoadedAt
-                    ? new Date(overridesStatusQ.data.lastLoadedAt).toLocaleString()
+                  {overridesStatusQ.data.loadedAt
+                    ? new Date(overridesStatusQ.data.loadedAt).toLocaleString()
                     : '—'}
                 </dd>
+              </div>
+              <div>
+                <dt className="text-slate-500">Last reload attempt</dt>
+                <dd>
+                  {overridesStatusQ.data.lastReloadAttemptAt
+                    ? new Date(overridesStatusQ.data.lastReloadAttemptAt).toLocaleString()
+                    : '—'}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-slate-500">Last reload result</dt>
+                <dd className="font-mono">{overridesStatusQ.data.lastReloadResult || '—'}</dd>
               </div>
             </dl>
           ) : null}
@@ -164,6 +208,7 @@ export function AdminRbacPage() {
           </p>
         </Card>
       ) : null}
+      {reloadOpen ? <OverridesReloadModal onClose={() => setReloadOpen(false)} /> : null}
 
       <Card className="flex flex-wrap gap-3">
         <label className="flex flex-col gap-1 text-xs">
@@ -394,6 +439,64 @@ function DetailDrawer({
           onClose={() => setModal(null)}
         />
       ) : null}
+    </div>
+  )
+}
+
+function OverridesReloadModal({ onClose }: { onClose: () => void }) {
+  const qc = useQueryClient()
+  const [reason, setReason] = useState('')
+  const [msg, setMsg] = useState<string | null>(null)
+  const reloadM = useMutation({
+    mutationFn: () => rbacApi.postAdminRbacOverridesReload({ reason: reason.trim() }),
+    onSuccess: async (res) => {
+      await qc.invalidateQueries({ queryKey: ['admin-rbac-overrides-status'] })
+      setMsg(
+        res.result === 'SUCCESS'
+          ? `Reload succeeded. Valid rows: ${res.validAssignmentCount}, ignored: ${res.ignoredAssignmentCount}.`
+          : `Reload completed with result ${res.result}.`,
+      )
+    },
+  })
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+      <Card className="max-w-md space-y-3">
+        <h3 className="text-sm font-semibold text-slate-900">Reload RBAC overrides</h3>
+        <p className="text-xs text-amber-900">
+          Reload may change effective admin permissions for users covered by the mounted manifest. Raw YAML is never
+          displayed here.
+        </p>
+        <label className="flex flex-col gap-1 text-xs" htmlFor="rbac-override-reload-reason">
+          Reason (required, min. 10 characters)
+          <textarea
+            id="rbac-override-reload-reason"
+            data-testid="rbac-override-reload-reason"
+            className="rounded border border-slate-200 px-2 py-1 text-sm"
+            rows={3}
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+          />
+        </label>
+        {reloadM.error ? <ErrorAlert error={reloadM.error} /> : null}
+        {msg ? <p className="text-xs text-emerald-800">{msg}</p> : null}
+        <div className="flex justify-end gap-2">
+          <button type="button" className="rounded border px-3 py-1.5 text-xs" onClick={onClose}>
+            {msg ? 'Close' : 'Cancel'}
+          </button>
+          {!msg ? (
+            <button
+              type="button"
+              data-testid="rbac-override-reload-submit"
+              className="rounded bg-primary-600 px-3 py-1.5 text-xs text-white disabled:opacity-50"
+              disabled={reloadM.isPending || reason.trim().length < 10}
+              onClick={() => reloadM.mutate()}
+            >
+              Reload
+            </button>
+          ) : null}
+        </div>
+      </Card>
     </div>
   )
 }

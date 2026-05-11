@@ -22,6 +22,7 @@ record EnterpriseStatusFeatures(
     MfaStatus mfa,
     SiemStatus siem,
     AdminRbacStatus adminRbac,
+    BreakGlassStatus breakGlass,
     AuditExportStatus auditExport,
     NotificationsStatus notifications,
     GatewaySecurityStatus gatewaySecurity,
@@ -30,6 +31,17 @@ record EnterpriseStatusFeatures(
 @JsonInclude(JsonInclude.Include.NON_NULL)
 record AdminRbacStatus(
     boolean enabled, boolean legacyPlatformAdminImpliesAll, Map<String, Boolean> rolesConfigured) {}
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
+record BreakGlassStatus(
+    boolean enabled,
+    boolean tokenConfigured,
+    boolean gatewayAllowed,
+    boolean adminWriteAllowed,
+    int sessionTtlMinutes,
+    int maxActiveSessions,
+    boolean requireReason,
+    boolean requireMfa) {}
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 record MergeResolutionStatus(

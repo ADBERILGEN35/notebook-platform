@@ -35,7 +35,7 @@ public class AdminRbacOverrideManifestParser {
 
     if (yamlText == null || yamlText.isBlank()) {
       warnings.add("OVERRIDE_EMPTY_DOCUMENT");
-      return new AdminRbacOverrideParseResult(accepted, warnings, errors, 0, 0);
+      return new AdminRbacOverrideParseResult(accepted, warnings, errors, 0, 0, "");
     }
 
     final Yaml yaml = new Yaml();
@@ -44,31 +44,32 @@ public class AdminRbacOverrideManifestParser {
       rootObj = yaml.load(yamlText);
     } catch (RuntimeException e) {
       errors.add("YAML_PARSE_ERROR");
-      return new AdminRbacOverrideParseResult(List.of(), List.of(), errors, 0, 1);
+      return new AdminRbacOverrideParseResult(List.of(), List.of(), errors, 0, 1, "");
     }
     if (!(rootObj instanceof Map<?, ?> root)) {
       errors.add("OVERRIDE_ROOT_NOT_MAP");
-      return new AdminRbacOverrideParseResult(List.of(), warnings, errors, 0, 1);
+      return new AdminRbacOverrideParseResult(List.of(), warnings, errors, 0, 1, "");
     }
     Object ar = root.get("adminRbacOverrides");
     if (!(ar instanceof Map<?, ?> arMap)) {
       errors.add("OVERRIDE_MISSING_ADMIN_RBAC_OVERRIDES");
-      return new AdminRbacOverrideParseResult(List.of(), warnings, errors, 0, 1);
+      return new AdminRbacOverrideParseResult(List.of(), warnings, errors, 0, 1, "");
     }
     Object ver = arMap.get("version");
+    String manifestVersion = ver == null ? "" : String.valueOf(ver).trim();
     if (ver == null || !"1".equals(String.valueOf(ver).trim())) {
       warnings.add("OVERRIDE_UNSUPPORTED_VERSION");
     }
     Object al = arMap.get("assignments");
     if (!(al instanceof List<?> rawList)) {
       warnings.add("OVERRIDE_ASSIGNMENTS_NOT_LIST");
-      return new AdminRbacOverrideParseResult(List.of(), warnings, errors, 0, 0);
+      return new AdminRbacOverrideParseResult(List.of(), warnings, errors, 0, 0, manifestVersion);
     }
 
     int rawCount = rawList.size();
     if (rawCount > props.maxAssignments()) {
       warnings.add("OVERRIDE_LIMIT_EXCEEDED");
-      return new AdminRbacOverrideParseResult(List.of(), warnings, errors, 0, rawCount);
+      return new AdminRbacOverrideParseResult(List.of(), warnings, errors, 0, rawCount, manifestVersion);
     }
 
     int ignored = 0;
@@ -90,7 +91,8 @@ public class AdminRbacOverrideManifestParser {
     }
 
     dedupeWarnings(warnings);
-    return new AdminRbacOverrideParseResult(accepted, warnings, errors, accepted.size(), ignored);
+    return new AdminRbacOverrideParseResult(
+        accepted, warnings, errors, accepted.size(), ignored, manifestVersion);
   }
 
   private static Map<String, Object> toStringKeyedMap(Map<?, ?> in) {

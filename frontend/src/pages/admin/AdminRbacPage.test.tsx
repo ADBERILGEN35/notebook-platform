@@ -10,6 +10,7 @@ vi.mock('../../shared/config/admin-feature-flags', () => ({
   isAdminRbacUiEnabled: () => true,
   isAdminRbacRoleRequestsUiEnabled: () => false,
   isAdminRbacOverridesStatusUiEnabled: () => false,
+  isAdminRbacOverridesReloadUiEnabled: () => false,
   isEnterpriseAdminWriteEnabled: () => true,
   isEnterpriseAdminApprovalsUiEnabled: () => true,
   isEnterpriseGitOpsPrUiEnabled: () => false,

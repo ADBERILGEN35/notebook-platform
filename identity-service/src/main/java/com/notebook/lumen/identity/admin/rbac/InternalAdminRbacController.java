@@ -152,6 +152,20 @@ public class InternalAdminRbacController {
     return resp;
   }
 
+  @PostMapping(
+      path = "/overrides/reload",
+      consumes = MediaType.APPLICATION_JSON_VALUE,
+      produces = MediaType.APPLICATION_JSON_VALUE)
+  public AdminRbacOverridesDtos.OverridesReloadResponse overridesReload(
+      @RequestHeader(AuditAdminAuthorizer.HEADER_NAME) String serviceAuthorization,
+      @RequestHeader(InternalAdminChangeRequestController.HEADER_ADMIN_USER_ID) String adminUserId,
+      @RequestBody(required = false) AdminRbacOverridesDtos.OverridesReloadRequest body,
+      HttpServletRequest request) {
+    authorizer.authorize(serviceAuthorization, AuditAdminAuthorizer.RBAC_OVERRIDE_RELOAD_SCOPE);
+    UUID actor = parseAdminUserId(adminUserId);
+    return adminRbacOverrideLoader.reload(actor, body == null ? null : body.reason());
+  }
+
   private static UUID parseAdminUserId(String raw) {
     try {
       return UUID.fromString(raw.trim());

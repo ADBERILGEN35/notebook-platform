@@ -18,6 +18,7 @@ import reactor.core.publisher.Mono;
 @Service
 public class AdminRbacProxyService {
   static final String RBAC_READ_SCOPE = "internal:admin:rbac:read";
+  static final String RBAC_OVERRIDE_RELOAD_SCOPE = "internal:admin:rbac:overrides:reload";
   private static final String IDENTITY_AUDIENCE = "identity-service";
   private static final String HDR_ADMIN_USER_ID = "X-Admin-User-Id";
 
@@ -136,6 +137,36 @@ public class AdminRbacProxyService {
             spec = spec.header("X-Request-Id", requestId);
           }
           return spec.bodyValue(body == null ? Map.of() : body)
+              .retrieve()
+              .bodyToMono(Object.class)
+              .map(resp -> ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(resp))
+              .onErrorResume(e -> Mono.just(mapException(e, gatewayPath, requestId)));
+        });
+  }
+
+  public Mono<ResponseEntity<Object>> overridesReload(
+      java.util.Map<String, Object> body, String adminUserId, String requestId, String gatewayPath) {
+    return Mono.defer(
+        () -> {
+          final String jwt;
+          try {
+            jwt = serviceJwtSigner.sign(IDENTITY_AUDIENCE, RBAC_OVERRIDE_RELOAD_SCOPE);
+          } catch (RuntimeException e) {
+            return Mono.just(jwtFailure(requestId, gatewayPath));
+          }
+          String url = baseUrl() + "/overrides/reload";
+          WebClient.RequestBodySpec spec =
+              webClient
+                  .post()
+                  .uri(url)
+                  .accept(MediaType.APPLICATION_JSON)
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .header(AuditProxyService.INTERNAL_AUTH_HEADER, "Bearer " + jwt)
+                  .header(HDR_ADMIN_USER_ID, adminUserId);
+          if (requestId != null && !requestId.isBlank()) {
+            spec = spec.header("X-Request-Id", requestId);
+          }
+          return spec.bodyValue(body == null ? java.util.Map.of() : body)
               .retrieve()
               .bodyToMono(Object.class)
               .map(resp -> ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(resp))

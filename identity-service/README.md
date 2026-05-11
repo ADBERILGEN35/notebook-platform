@@ -240,7 +240,7 @@ revocation.
 ## Platform admin change requests (Faz 77)
 
 - `GET|POST /internal/admin/change-requests` (+ `/validate`, `/{id}/cancel`, `/{id}/approve`, `/{id}/reject`, `/{id}/gitops/dry-run`, `/{id}/gitops/create-pr`) — service JWT scope `internal:admin:change-requests:manage`, gated by `ADMIN_CHANGE_REQUESTS_ENABLED` and `ADMIN_CHANGE_REQUEST_APPROVALS_ENABLED` for approve/reject; GitOps endpoints additionally require `ADMIN_GITOPS_PR_ENABLED`. RBAC role grant/revoke GitOps (`admin-rbac-overrides.yaml`) is further gated by `ADMIN_GITOPS_RBAC_ROLE_REQUESTS_ENABLED` (default `false`).
-- `GET /internal/admin/rbac/overrides/status`, `POST /internal/admin/rbac/overrides/validate` — same `internal:admin:rbac:read` scope; optional mounted manifest ingestion gated by `ADMIN_RBAC_OVERRIDES_ENABLED` (default `false`, see docs/admin-rbac-runtime-overrides.md).
+- `GET /internal/admin/rbac/overrides/status`, `POST /internal/admin/rbac/overrides/validate` — `internal:admin:rbac:read`; `POST /internal/admin/rbac/overrides/reload` — `internal:admin:rbac:overrides:reload` (Faz 89). Optional mounted manifest ingestion gated by `ADMIN_RBAC_OVERRIDES_ENABLED` (default `false`, see docs/admin-rbac-runtime-overrides.md and docs/admin-rbac-override-reload.md).
 - Persists allow-listed **desired state** only (`platform_admin_change_requests`); GitOps PR automation (Faz 80) uses `admin_gitops_pr_proposals` and does not apply runtime config. See `docs/enterprise-admin-write-operations.md` and `docs/admin-gitops-pr-automation.md`.
 
 ## Fine-grained admin RBAC (Faz 79)

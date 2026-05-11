@@ -3,6 +3,8 @@ package com.notebook.lumen.identity.admin;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.notebook.lumen.identity.breakglass.BreakGlassDtos;
+import com.notebook.lumen.identity.breakglass.BreakGlassService;
 import com.notebook.lumen.identity.mfa.MfaProperties;
 import com.notebook.lumen.identity.scim.ScimProperties;
 import com.notebook.lumen.identity.siem.SiemProperties;
@@ -66,7 +68,10 @@ class IdentitySecurityStatusServiceTest {
         .thenReturn(
             new AdminRbacService.AdminRbacStatusSnapshot(
                 false, true, false, false, false, false, false, false, false, false));
-    var service = new IdentitySecurityStatusService(sso, scim, mfa, siem, adminRbac);
+    BreakGlassService breakGlass = Mockito.mock(BreakGlassService.class);
+    Mockito.when(breakGlass.status())
+        .thenReturn(new BreakGlassDtos.BreakGlassStatusResponse(false, 15, 1, true, true, false));
+    var service = new IdentitySecurityStatusService(sso, scim, mfa, siem, adminRbac, breakGlass);
     IdentitySecurityStatusResponse body = service.build();
 
     assertThat(body.sso().enabled()).isTrue();
@@ -97,7 +102,10 @@ class IdentitySecurityStatusServiceTest {
         .thenReturn(
             new AdminRbacService.AdminRbacStatusSnapshot(
                 false, true, false, false, false, false, false, false, false, false));
-    var service = new IdentitySecurityStatusService(sso, scim, mfa, siem, adminRbac);
+    BreakGlassService breakGlass = Mockito.mock(BreakGlassService.class);
+    Mockito.when(breakGlass.status())
+        .thenReturn(new BreakGlassDtos.BreakGlassStatusResponse(false, 15, 1, true, true, false));
+    var service = new IdentitySecurityStatusService(sso, scim, mfa, siem, adminRbac, breakGlass);
     assertThat(service.build().siem().secretConfigured()).isFalse();
   }
 }

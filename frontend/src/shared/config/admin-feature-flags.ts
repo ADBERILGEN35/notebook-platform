@@ -126,6 +126,15 @@ export const isAdminRbacOverridesStatusUiEnabled = (): boolean =>
     false,
   )
 
+/** Faz 89: reload mounted GitOps overrides via gateway (identity hot-reload); gated server-side too. */
+export const isAdminRbacOverridesReloadUiEnabled = (): boolean =>
+  isAdminRbacOverridesStatusUiEnabled() &&
+  parseBool(
+    window.__NOTEBOOK_CONFIG__?.ADMIN_RBAC_OVERRIDES_RELOAD_ENABLED ??
+      import.meta.env.VITE_ADMIN_RBAC_OVERRIDES_RELOAD_ENABLED,
+    false,
+  )
+
 export const getAuditApiMode = (): AuditApiMode => {
   const raw =
     window.__NOTEBOOK_CONFIG__?.AUDIT_API_MODE ?? import.meta.env.VITE_AUDIT_API_MODE ?? 'mock'

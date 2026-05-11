@@ -22,6 +22,7 @@ export const PERM_NOTIFICATIONS_RETENTION_RUN = 'admin:notifications:retention:r
 export const PERM_NOTIFICATIONS_LEGAL_HOLD_READ = 'admin:notifications:legal-hold:read'
 export const PERM_NOTIFICATIONS_LEGAL_HOLD_WRITE = 'admin:notifications:legal-hold:write'
 export const PERM_RBAC_READ = 'admin:rbac:read'
+export const PERM_RBAC_OVERRIDE_RELOAD = 'admin:rbac:override:reload'
 export const PERM_RBAC_CHANGE_REQUEST_CREATE = 'admin:rbac:change-request:create'
 
 const OP_TO_CREATE_PERM: Record<string, string> = {

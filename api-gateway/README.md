@@ -234,12 +234,13 @@ done
 - `GATEWAY_ADMIN_RBAC_ENFORCE` (default `false`): when `true`, admin routes require JWT `platform_permissions` (or `PLATFORM_ADMIN`), not email allowlist alone.
 - See `docs/admin-rbac.md` and `docs/admin-permission-matrix.md`.
 
-## Admin RBAC overrides proxy (Faz 88)
+## Admin RBAC overrides proxy (Faz 88 / Faz 89)
 
-- `GET /admin/rbac/overrides/status` and `POST /admin/rbac/overrides/validate` require `admin:rbac:read` when RBAC enforce is on; proxied to identity internal `/internal/admin/rbac/overrides/*` with service JWT.
+- `GET /admin/rbac/overrides/status` and `POST /admin/rbac/overrides/validate` require `admin:rbac:read` when RBAC enforce is on; proxied to identity internal `/internal/admin/rbac/overrides/*` with service JWT scope `internal:admin:rbac:read`.
+- `POST /admin/rbac/overrides/reload` requires `admin:rbac:override:reload` plus the **admin-write MFA** gate when MFA is not `off`; proxied with scope `internal:admin:rbac:overrides:reload`; uses the **admin-write** Redis rate limit bucket.
 - Validate accepts JSON `{ "content": "<yaml>" }`; gateway does not persist body content.
-- Redis rate limit bucket includes `/admin/rbac/overrides` prefix.
-- See `docs/admin-rbac-runtime-overrides.md`.
+- Read-only `/admin/rbac/overrides` paths (except `POST .../reload`) use the admin-audit rate limit bucket; reload uses admin-write.
+- See `docs/admin-rbac-runtime-overrides.md` and `docs/admin-rbac-override-reload.md`.
 
 ## SCIM routing (Faz 61)
 

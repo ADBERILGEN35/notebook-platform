@@ -7,4 +7,5 @@ public record AdminRbacOverrideParseResult(
     List<String> warnings,
     List<String> errors,
     int validAssignmentCount,
-    int ignoredAssignmentCount) {}
+    int ignoredAssignmentCount,
+    String manifestVersion) {}

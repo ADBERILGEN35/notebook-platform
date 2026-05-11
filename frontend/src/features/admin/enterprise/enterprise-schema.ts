@@ -46,6 +46,18 @@ export const enterpriseStatusResponseSchema = z.object({
         secretConfigured: z.boolean(),
       })
       .optional(),
+    breakGlass: z
+      .object({
+        enabled: z.boolean(),
+        tokenConfigured: z.boolean(),
+        gatewayAllowed: z.boolean(),
+        adminWriteAllowed: z.boolean(),
+        sessionTtlMinutes: z.number(),
+        maxActiveSessions: z.number(),
+        requireReason: z.boolean(),
+        requireMfa: z.boolean(),
+      })
+      .optional(),
     auditExport: z
       .object({
         enabled: z.boolean(),

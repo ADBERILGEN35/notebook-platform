@@ -24,6 +24,7 @@ public final class PlatformAdminRbacConstants {
         PERM_SIEM_CHANGE_REQUEST_CREATE,
         PERM_IDENTITY_READ,
         PERM_RBAC_READ,
+        PERM_RBAC_OVERRIDE_RELOAD,
         PERM_RBAC_CHANGE_REQUEST_CREATE,
         PERM_CHANGE_REQUEST_GITOPS_DRY_RUN,
         PERM_CHANGE_REQUEST_GITOPS_CREATE,
@@ -76,6 +77,7 @@ public final class PlatformAdminRbacConstants {
   public static final String PERM_SIEM_CHANGE_REQUEST_CREATE = "admin:siem:change-request:create";
   public static final String PERM_IDENTITY_READ = "admin:identity:read";
   public static final String PERM_RBAC_READ = "admin:rbac:read";
+  public static final String PERM_RBAC_OVERRIDE_RELOAD = "admin:rbac:override:reload";
   public static final String PERM_RBAC_CHANGE_REQUEST_CREATE = "admin:rbac:change-request:create";
   public static final String PERM_CHANGE_REQUEST_GITOPS_DRY_RUN =
       "admin:change-request:gitops:dry-run";

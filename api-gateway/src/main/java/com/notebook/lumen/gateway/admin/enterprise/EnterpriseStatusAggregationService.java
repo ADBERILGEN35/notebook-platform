@@ -9,6 +9,7 @@ import com.notebook.lumen.gateway.config.GatewayAdminProperties;
 import com.notebook.lumen.gateway.config.GatewayAuditExportProperties;
 import com.notebook.lumen.gateway.config.GatewayAuditProxyProperties;
 import com.notebook.lumen.gateway.config.GatewayAuthProperties;
+import com.notebook.lumen.gateway.config.GatewayBreakGlassProperties;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -41,6 +42,7 @@ public class EnterpriseStatusAggregationService {
   private final GatewayAdminProperties adminProperties;
   private final GatewayAuditExportProperties auditExportProperties;
   private final GatewayAuthProperties authProperties;
+  private final GatewayBreakGlassProperties breakGlassProperties;
   private final Environment environment;
   private final EnterpriseStatusWarningEngine warningEngine;
 
@@ -53,6 +55,7 @@ public class EnterpriseStatusAggregationService {
       GatewayAdminProperties adminProperties,
       GatewayAuditExportProperties auditExportProperties,
       GatewayAuthProperties authProperties,
+      GatewayBreakGlassProperties breakGlassProperties,
       Environment environment,
       EnterpriseStatusWarningEngine warningEngine) {
     this.objectMapper = objectMapper;
@@ -63,6 +66,7 @@ public class EnterpriseStatusAggregationService {
     this.adminProperties = adminProperties;
     this.auditExportProperties = auditExportProperties;
     this.authProperties = authProperties;
+    this.breakGlassProperties = breakGlassProperties;
     this.environment = environment;
     this.warningEngine = warningEngine;
   }
@@ -217,6 +221,7 @@ public class EnterpriseStatusAggregationService {
     MfaStatus mfa = mapMfa(identity);
     SiemStatus siem = mapSiem(identity);
     AdminRbacStatus adminRbac = mapAdminRbac(identity);
+    BreakGlassStatus breakGlass = mapBreakGlass(identity);
     AuditExportStatus auditExport = mapAuditExport();
     NotificationsStatus notifications = mapNotifications(notification);
     GatewaySecurityStatus gatewaySecurity = mapGatewaySecurity();
@@ -227,10 +232,29 @@ public class EnterpriseStatusAggregationService {
         mfa,
         siem,
         adminRbac,
+        breakGlass,
         auditExport,
         notifications,
         gatewaySecurity,
         mergeResolution);
+  }
+
+  private BreakGlassStatus mapBreakGlass(JsonNode identity) {
+    boolean gwAllowed = breakGlassProperties.adminAllowed();
+    boolean writeAllowed = breakGlassProperties.allowAdminWrite();
+    if (identity == null || identity.path("breakGlass").isMissingNode()) {
+      return new BreakGlassStatus(false, false, gwAllowed, writeAllowed, 15, 1, true, true);
+    }
+    JsonNode n = identity.path("breakGlass");
+    return new BreakGlassStatus(
+        n.path("enabled").asBoolean(false),
+        n.path("tokenConfigured").asBoolean(false),
+        gwAllowed,
+        writeAllowed,
+        n.path("sessionTtlMinutes").asInt(15),
+        n.path("maxActiveSessions").asInt(1),
+        n.path("requireReason").asBoolean(true),
+        n.path("requireMfa").asBoolean(true));
   }
 
   private AdminRbacStatus mapAdminRbac(JsonNode identity) {

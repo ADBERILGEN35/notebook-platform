@@ -53,6 +53,7 @@ class AdminEnterpriseStatusControllerDirectTest {
                 new MfaStatus("off", List.of(), false, false),
                 new SiemStatus(false, "noop", false, false, false),
                 new AdminRbacStatus(false, true, Map.of()),
+                new BreakGlassStatus(false, false, false, false, 15, 1, true, true),
                 new AuditExportStatus(false, false, false, false, "", false),
                 new NotificationsStatus(false, false, false, false),
                 new GatewaySecurityStatus(

@@ -45,8 +45,17 @@ public class JwtTokenService {
   }
 
   public String generateAccessToken(UUID userId, String email, Map<String, Object> extraClaims) {
+    return generateAccessToken(userId, email, extraClaims, jwtProperties.getAccessTokenTtlSeconds());
+  }
+
+  /**
+   * Generate an access token with a custom TTL (seconds). Intended for short-lived emergency tokens
+   * such as break-glass sessions. Caller must keep TTL very small.
+   */
+  public String generateAccessToken(
+      UUID userId, String email, Map<String, Object> extraClaims, long ttlSeconds) {
     Instant now = Instant.now();
-    long ttlSeconds = jwtProperties.getAccessTokenTtlSeconds();
+    long effectiveTtlSeconds = ttlSeconds <= 0 ? jwtProperties.getAccessTokenTtlSeconds() : ttlSeconds;
 
     JwtClaimsSet.Builder builder =
         JwtClaimsSet.builder()
@@ -54,7 +63,7 @@ public class JwtTokenService {
             .claim(EMAIL_CLAIM, email)
             .claim(TOKEN_TYPE_CLAIM, ACCESS_TOKEN_TYPE)
             .issuedAt(now)
-            .expiresAt(now.plusSeconds(ttlSeconds));
+            .expiresAt(now.plusSeconds(effectiveTtlSeconds));
     for (Map.Entry<String, Object> entry : extraClaims.entrySet()) {
       builder.claim(entry.getKey(), entry.getValue());
     }

@@ -20,7 +20,8 @@
 
 ## Operations
 
-- **No hot reload**: file is read at startup (`@PostConstruct`). Pod restart / rollout picks up new manifest.
+- **Startup load**: file is read at startup (`@PostConstruct`).
+- **Hot reload (Faz 89)**: optional **manual** reload and operational hardening (checksum, last-known-good, audits/metrics). See [admin-rbac-override-reload.md](./admin-rbac-override-reload.md). Automatic file watch is **off** by default.
 - **Status / validate** internal APIs are proxied via gateway (`admin:rbac:read`). Validate accepts YAML **content** but does **not** persist it.
 
 See also [admin-rbac-override-manifest.md](./admin-rbac-override-manifest.md) and [admin-rbac-gitops-integration.md](./admin-rbac-gitops-integration.md).

@@ -24,6 +24,7 @@ public class IdentitySecurityConfig {
                         "/auth/signup",
                         "/auth/login",
                         "/auth/refresh",
+                        "/auth/break-glass/**",
                         "/auth/sso/**",
                         "/scim/v2/**",
                         "/internal/audit-events",

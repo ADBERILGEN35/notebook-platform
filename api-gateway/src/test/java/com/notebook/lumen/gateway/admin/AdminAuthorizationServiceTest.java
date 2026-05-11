@@ -397,6 +397,97 @@ class AdminAuthorizationServiceTest {
     assertThat(service.ensureAdminRbacRead(jwt)).isEmpty();
   }
 
+  @Test
+  void ensureAdminRbacOverridesReload_requiresDedicatedPermission() {
+    AdminAuthorizationService service =
+        new AdminAuthorizationService(
+            new GatewayAdminProperties(
+                true,
+                false,
+                "off",
+                "webauthn,recovery_code",
+                "",
+                "",
+                new Audit(true),
+                new Enterprise(true)),
+            writeOff(),
+            rbacOn());
+    Instant now = Instant.now();
+    Jwt jwt =
+        new Jwt(
+            "token",
+            now.minusSeconds(10),
+            now.plusSeconds(300),
+            Map.of("alg", "RS256"),
+            Map.of(
+                "sub",
+                "user-x",
+                "email",
+                "x@example.com",
+                "platform_permissions",
+                List.of(PlatformAdminRbacConstants.PERM_RBAC_READ),
+                "token_type",
+                "access"));
+    assertThat(service.ensureAdminRbacOverridesReload(jwt))
+        .contains(ErrorCode.ADMIN_PERMISSION_REQUIRED);
+  }
+
+  @Test
+  void ensureAdminRbacOverridesReload_requiresMfaWhenMfaWarn() {
+    AdminAuthorizationService service =
+        new AdminAuthorizationService(
+            new GatewayAdminProperties(
+                true,
+                false,
+                "warn",
+                "webauthn,recovery_code",
+                "",
+                "",
+                new Audit(true),
+                new Enterprise(true)),
+            writeOff(),
+            rbacOn());
+    Instant now = Instant.now();
+    Jwt noMfa =
+        new Jwt(
+            "token",
+            now.minusSeconds(10),
+            now.plusSeconds(300),
+            Map.of("alg", "RS256"),
+            Map.of(
+                "sub",
+                "user-x",
+                "email",
+                "x@example.com",
+                "platform_permissions",
+                List.of(PlatformAdminRbacConstants.PERM_RBAC_OVERRIDE_RELOAD),
+                "token_type",
+                "access"));
+    assertThat(service.ensureAdminRbacOverridesReload(noMfa))
+        .contains(ErrorCode.ADMIN_WRITE_MFA_REQUIRED);
+
+    Jwt withMfa =
+        new Jwt(
+            "token",
+            now.minusSeconds(10),
+            now.plusSeconds(300),
+            Map.of("alg", "RS256"),
+            Map.of(
+                "sub",
+                "user-x",
+                "email",
+                "x@example.com",
+                "platform_permissions",
+                List.of(PlatformAdminRbacConstants.PERM_RBAC_OVERRIDE_RELOAD),
+                "token_type",
+                "access",
+                "mfa_verified",
+                true,
+                "amr",
+                List.of("pwd", "webauthn")));
+    assertThat(service.ensureAdminRbacOverridesReload(withMfa)).isEmpty();
+  }
+
   private static Jwt jwt(String sub, String email, List<String> roles) {
     Instant now = Instant.now();
     return new Jwt(

@@ -10,6 +10,7 @@ public record IdentitySecurityStatusResponse(
     Mfa mfa,
     Siem siem,
     AdminRbac adminRbac,
+    BreakGlass breakGlass,
     boolean unavailable,
     String unavailableReason) {
 
@@ -40,4 +41,12 @@ public record IdentitySecurityStatusResponse(
       boolean workerEnabled,
       boolean endpointConfigured,
       boolean secretConfigured) {}
+
+  public record BreakGlass(
+      boolean enabled,
+      boolean tokenConfigured,
+      int sessionTtlMinutes,
+      int maxActiveSessions,
+      boolean requireReason,
+      boolean requireMfa) {}
 }

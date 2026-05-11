@@ -28,6 +28,7 @@ public class AdminRbacController {
   static final String USERS_PATH = "/admin/rbac/users";
   static final String OVERRIDES_STATUS_PATH = "/admin/rbac/overrides/status";
   static final String OVERRIDES_VALIDATE_PATH = "/admin/rbac/overrides/validate";
+  static final String OVERRIDES_RELOAD_PATH = "/admin/rbac/overrides/reload";
 
   private final AdminAuthorizationService adminAuthorizationService;
   private final AdminRbacProxyService proxyService;
@@ -95,17 +96,41 @@ public class AdminRbacController {
         body, jwt.getSubject(), requestId, OVERRIDES_VALIDATE_PATH);
   }
 
+  @PostMapping(
+      path = OVERRIDES_RELOAD_PATH,
+      produces = MediaType.APPLICATION_JSON_VALUE,
+      consumes = MediaType.APPLICATION_JSON_VALUE)
+  public Mono<ResponseEntity<Object>> overridesReload(
+      @AuthenticationPrincipal Jwt jwt,
+      @RequestBody(required = false) Map<String, Object> body,
+      @RequestHeader(name = GatewayHeaders.REQUEST_ID, required = false) String requestId) {
+    Optional<ErrorCode> denial = adminAuthorizationService.ensureAdminRbacOverridesReload(jwt);
+    if (denial.isPresent()) {
+      return Mono.just(
+          forbidden(
+              denial.get(),
+              requestId,
+              OVERRIDES_RELOAD_PATH,
+              PlatformAdminRbacConstants.PERM_RBAC_OVERRIDE_RELOAD));
+    }
+    return proxyService.overridesReload(
+        body, jwt.getSubject(), requestId, OVERRIDES_RELOAD_PATH);
+  }
+
   private static ResponseEntity<Object> forbidden(ErrorCode code, String requestId, String path) {
+    return forbidden(code, requestId, path, PlatformAdminRbacConstants.PERM_RBAC_READ);
+  }
+
+  private static ResponseEntity<Object> forbidden(
+      ErrorCode code, String requestId, String path, String permission) {
     String message =
-        code == ErrorCode.ADMIN_MFA_REQUIRED
+        code == ErrorCode.ADMIN_MFA_REQUIRED || code == ErrorCode.ADMIN_WRITE_MFA_REQUIRED
             ? "Admin access requires multi-factor authentication."
             : code == ErrorCode.ADMIN_PERMISSION_REQUIRED
                 ? "Required admin permission is missing."
                 : "Admin access denied.";
     Map<String, Object> details =
-        code == ErrorCode.ADMIN_PERMISSION_REQUIRED
-            ? Map.of("permission", PlatformAdminRbacConstants.PERM_RBAC_READ)
-            : null;
+        code == ErrorCode.ADMIN_PERMISSION_REQUIRED ? Map.of("permission", permission) : null;
     return ResponseEntity.status(HttpStatus.FORBIDDEN)
         .contentType(MediaType.APPLICATION_JSON)
         .body(

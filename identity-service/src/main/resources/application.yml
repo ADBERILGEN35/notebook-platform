@@ -90,9 +90,17 @@ audit:
     issuer: ${AUDIT_ADMIN_SERVICE_JWT_ISSUER:audit-admin}
     audience: ${AUDIT_ADMIN_SERVICE_JWT_AUDIENCE:identity-service}
     clock-skew-seconds: ${AUDIT_ADMIN_SERVICE_JWT_CLOCK_SKEW_SECONDS:5}
-    allowed-scopes: ${AUDIT_ADMIN_SERVICE_JWT_ALLOWED_SCOPES:internal:audit:read,internal:admin:status:read,internal:admin:change-requests:manage,internal:admin:rbac:read}
+    allowed-scopes: ${AUDIT_ADMIN_SERVICE_JWT_ALLOWED_SCOPES:internal:audit:read,internal:admin:status:read,internal:admin:change-requests:manage,internal:admin:rbac:read,internal:admin:rbac:overrides:reload}
 
 identity:
+  break-glass:
+    enabled: ${BREAK_GLASS_ENABLED:false}
+    token-hash: ${BREAK_GLASS_TOKEN_HASH:}
+    session-ttl-minutes: ${BREAK_GLASS_SESSION_TTL_MINUTES:15}
+    require-mfa: ${BREAK_GLASS_REQUIRE_MFA:true}
+    require-reason: ${BREAK_GLASS_REQUIRE_REASON:true}
+    max-active-sessions: ${BREAK_GLASS_MAX_ACTIVE_SESSIONS:1}
+    notify-on-use: ${BREAK_GLASS_NOTIFY_ON_USE:true}
   internal:
     admin-status:
       enabled: ${IDENTITY_INTERNAL_ADMIN_STATUS_ENABLED:false}
@@ -117,6 +125,13 @@ identity:
         fail-closed: ${ADMIN_RBAC_OVERRIDES_FAIL_CLOSED:false}
         max-assignments: ${ADMIN_RBAC_OVERRIDES_MAX_ASSIGNMENTS:500}
         require-approved-status: ${ADMIN_RBAC_OVERRIDES_REQUIRE_APPROVED_STATUS:true}
+        reload-enabled: ${ADMIN_RBAC_OVERRIDES_RELOAD_ENABLED:false}
+        last-known-good-enabled: ${ADMIN_RBAC_OVERRIDES_LAST_KNOWN_GOOD_ENABLED:true}
+        reload-fail-closed: ${ADMIN_RBAC_OVERRIDES_RELOAD_FAIL_CLOSED:false}
+        watch-enabled: ${ADMIN_RBAC_OVERRIDES_WATCH_ENABLED:false}
+        watch-interval-seconds: ${ADMIN_RBAC_OVERRIDES_WATCH_INTERVAL_SECONDS:30}
+        watch-debounce-seconds: ${ADMIN_RBAC_OVERRIDES_WATCH_DEBOUNCE_SECONDS:5}
+        require-valid-checksum: ${ADMIN_RBAC_OVERRIDES_REQUIRE_VALID_CHECKSUM:false}
     change-requests:
       enabled: ${ADMIN_CHANGE_REQUESTS_ENABLED:false}
       retention-days: ${ADMIN_CHANGE_REQUEST_RETENTION_DAYS:180}

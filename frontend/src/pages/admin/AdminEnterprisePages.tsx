@@ -13,6 +13,7 @@ import { isPwaEnabled } from '../../shared/config/offline-feature-flags'
 
 const DOCS = {
   enterpriseConsole: 'docs/enterprise-admin-console.md',
+  breakGlass: 'docs/break-glass-admin-access.md',
   sso: 'docs/enterprise-sso.md',
   scim: 'docs/scim-provisioning.md',
   siem: 'docs/siem-streaming-push.md',
@@ -243,6 +244,32 @@ function EnterpriseContent({
               <li>Accepted methods: {features.mfa.acceptedMethods.join(', ') || '—'}</li>
               <li>Identity MFA: {features.mfa.identityMfaEnabled ? 'on' : 'off'}</li>
               <li>WebAuthn: {features.mfa.webauthnEnabled ? 'on' : 'off'}</li>
+            </ul>
+          </FeatureCard>
+        ) : null}
+
+        {(show.overview || show.security) && features.breakGlass ? (
+          <FeatureCard
+            title="Break-glass admin access"
+            enabled={features.breakGlass.enabled && features.breakGlass.gatewayAllowed}
+            docPath={DOCS.breakGlass}
+            docLabel="Break-glass docs"
+            warnCount={0}
+            footer={
+              <p className="text-xs text-amber-900">
+                Disabled by default. No secrets are displayed. Admin write is blocked unless explicitly enabled.
+              </p>
+            }
+          >
+            <ul className="list-inside list-disc space-y-0.5">
+              <li>Identity enabled: {features.breakGlass.enabled ? 'yes' : 'no'}</li>
+              <li>Token configured (hash only): {features.breakGlass.tokenConfigured ? 'yes' : 'no'}</li>
+              <li>Gateway allowed: {features.breakGlass.gatewayAllowed ? 'yes' : 'no'}</li>
+              <li>Admin write allowed: {features.breakGlass.adminWriteAllowed ? 'yes' : 'no'}</li>
+              <li>Session TTL: {features.breakGlass.sessionTtlMinutes} min</li>
+              <li>Max active sessions: {features.breakGlass.maxActiveSessions}</li>
+              <li>Reason required: {features.breakGlass.requireReason ? 'yes' : 'no'}</li>
+              <li>Require MFA: {features.breakGlass.requireMfa ? 'yes' : 'no'}</li>
             </ul>
           </FeatureCard>
         ) : null}

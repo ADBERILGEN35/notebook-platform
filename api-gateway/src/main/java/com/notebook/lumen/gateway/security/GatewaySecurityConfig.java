@@ -50,7 +50,9 @@ public class GatewaySecurityConfig {
     OAuth2TokenValidator<Jwt> tokenTypeValidator =
         jwt -> {
           String tokenType = jwt.getClaimAsString("token_type");
-          if ("access".equals(tokenType) || "machine".equals(tokenType)) {
+          if ("access".equals(tokenType)
+              || "machine".equals(tokenType)
+              || "break_glass_admin".equals(tokenType)) {
             return OAuth2TokenValidatorResult.success();
           }
           return OAuth2TokenValidatorResult.failure(INVALID_TOKEN_TYPE);

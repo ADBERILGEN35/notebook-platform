@@ -19,7 +19,8 @@ class AdminRbacOverrideManifestParserTest {
 
   AdminRbacOverrideManifestParser parser;
   AdminRbacOverridesProperties props =
-      new AdminRbacOverridesProperties(false, "/tmp/x.yaml", false, 500, true);
+      new AdminRbacOverridesProperties(
+          false, "/tmp/x.yaml", false, 500, true, false, true, false, false, 30, 5, false);
 
   @BeforeEach
   void setUp() {
@@ -40,6 +41,7 @@ class AdminRbacOverrideManifestParserTest {
     assertThat(r.errors()).isEmpty();
     assertThat(r.acceptedAssignments()).hasSize(1);
     assertThat(r.acceptedAssignments().get(0).userId()).isEqualTo(u);
+    assertThat(r.manifestVersion()).isEqualTo("1");
   }
 
   @Test

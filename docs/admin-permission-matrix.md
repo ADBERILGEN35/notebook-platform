@@ -25,6 +25,7 @@ Resolved when `ADMIN_RBAC_ENABLED=true`. `PLATFORM_ADMIN` adds **all** permissio
 | `GET /admin/rbac/users` | `admin:rbac:read` |
 | `GET /admin/rbac/users/{userId}` | `admin:rbac:read` |
 | `GET /admin/rbac/overrides/status` | `admin:rbac:read` |
+| `POST /admin/rbac/overrides/reload` | `admin:rbac:override:reload` (+ admin-write MFA when configured) |
 | `POST /admin/rbac/overrides/validate` | `admin:rbac:read` (body is YAML-in-JSON for dry-run; **no persistence**) |
 | `GET /admin/notifications/analytics/summary` | `admin:notifications:analytics:read` |
 | `GET /admin/notifications/dead-letter` | `admin:notifications:dead-letter:read` |

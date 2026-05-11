@@ -1,15 +1,23 @@
 import type { Page } from '@playwright/test'
 import { matchGatewayChangeRequestsApi } from './gateway-stub-urls'
 
-export type AdminRbacE2eProfile = 'audit-viewer' | 'change-approver' | 'no-admin-access' | 'rbac-reader'
+export type AdminRbacE2eProfile =
+  | 'audit-viewer'
+  | 'change-approver'
+  | 'no-admin-access'
+  | 'rbac-reader'
+  | 'rbac-override-reloader'
 
 /**
  * Bearer-mode stubs with ADMIN_UI_DEV_OPEN off so RBAC helpers drive visibility (Faz 79 E2E).
  */
 export async function stubAdminRbacSession(page: Page, profile: AdminRbacE2eProfile) {
   const enterpriseWrite = profile === 'change-approver' ? 'true' : 'false'
-  const rbacUi = profile === 'rbac-reader' ? 'true' : 'false'
-  const rbacOverridesStatus = profile === 'rbac-reader' ? 'true' : 'false'
+  const rbacUi =
+    profile === 'rbac-reader' || profile === 'rbac-override-reloader' ? 'true' : 'false'
+  const rbacOverridesStatus =
+    profile === 'rbac-reader' || profile === 'rbac-override-reloader' ? 'true' : 'false'
+  const rbacOverridesReload = profile === 'rbac-override-reloader' ? 'true' : 'false'
 
   await page.route('**/runtime-config.js', async (route) => {
     await route.fulfill({
@@ -25,6 +33,7 @@ export async function stubAdminRbacSession(page: Page, profile: AdminRbacE2eProf
   ENTERPRISE_ADMIN_APPROVALS_ENABLED: true,
   ADMIN_RBAC_UI_ENABLED: ${rbacUi},
   ADMIN_RBAC_OVERRIDES_STATUS_ENABLED: ${rbacOverridesStatus},
+  ADMIN_RBAC_OVERRIDES_RELOAD_ENABLED: ${rbacOverridesReload},
 };
 `,
     })
@@ -45,6 +54,8 @@ export async function stubAdminRbacSession(page: Page, profile: AdminRbacE2eProf
     platformPermissions = ['admin:audit:read']
   } else if (profile === 'rbac-reader') {
     platformPermissions = ['admin:rbac:read']
+  } else if (profile === 'rbac-override-reloader') {
+    platformPermissions = ['admin:rbac:read', 'admin:rbac:override:reload']
   } else if (profile === 'change-approver') {
     platformRoles = ['PLATFORM_CHANGE_REQUEST_APPROVER']
     platformPermissions = [
