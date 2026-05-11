@@ -377,3 +377,9 @@
 Browser calls `GET /admin/enterprise/status` and (when enabled) change-request routes under `/admin/enterprise/change-requests` (including **approve/reject** in Faz 78); gateway holds service JWTs for internal status and change-request endpoints. Change requests do not mutate runtime secrets or return secret material; approval only transitions workflow state (`docs/enterprise-admin-write-operations.md`, `docs/admin-change-request-approval-workflow.md`).
 **Faz 79** adds signed JWT `platform_permissions` for least-privilege admin; gateway must not trust client-supplied permission headers.
 No SCIM/SIEM/OIDC secrets are returned — see `docs/enterprise-admin-console.md`.
+
+## Break-glass revocation notes (Faz 93)
+
+- Break-glass JWT includes unique `jti` and session/event references so active tokens can be revoked before expiry.
+- Denylist rows store metadata only (no raw token material).
+- Gateway denylist lookup supports fail-closed behavior to avoid allowing unverifiable high-risk emergency tokens.

@@ -90,7 +90,7 @@ audit:
     issuer: ${AUDIT_ADMIN_SERVICE_JWT_ISSUER:audit-admin}
     audience: ${AUDIT_ADMIN_SERVICE_JWT_AUDIENCE:identity-service}
     clock-skew-seconds: ${AUDIT_ADMIN_SERVICE_JWT_CLOCK_SKEW_SECONDS:5}
-    allowed-scopes: ${AUDIT_ADMIN_SERVICE_JWT_ALLOWED_SCOPES:internal:audit:read,internal:admin:status:read,internal:admin:change-requests:manage,internal:admin:rbac:read,internal:admin:rbac:overrides:reload,internal:admin:break-glass:events:read,internal:admin:break-glass:events:review}
+    allowed-scopes: ${AUDIT_ADMIN_SERVICE_JWT_ALLOWED_SCOPES:internal:audit:read,internal:admin:status:read,internal:admin:change-requests:manage,internal:admin:rbac:read,internal:admin:rbac:overrides:reload,internal:admin:break-glass:events:read,internal:admin:break-glass:events:review,internal:break-glass:token:check}
 
 identity:
   break-glass:
@@ -104,6 +104,9 @@ identity:
     review-required-within-minutes: ${BREAK_GLASS_REVIEW_REQUIRED_WITHIN_MINUTES:60}
     notify-security-admins: ${BREAK_GLASS_NOTIFY_SECURITY_ADMINS:true}
     review-api-enabled: ${BREAK_GLASS_REVIEW_API_ENABLED:false}
+    revocation-enabled: ${BREAK_GLASS_REVOCATION_ENABLED:false}
+    revoke-on-reject: ${BREAK_GLASS_REVOKE_ON_REJECT:true}
+    denylist-retention-hours: ${BREAK_GLASS_DENYLIST_RETENTION_HOURS:24}
     token-hash: ${BREAK_GLASS_TOKEN_HASH:}
     offline-public-key-path: ${BREAK_GLASS_OFFLINE_PUBLIC_KEY_PATH:}
     offline-allowed-issuer: ${BREAK_GLASS_OFFLINE_ALLOWED_ISSUER:notebook-break-glass-offline}

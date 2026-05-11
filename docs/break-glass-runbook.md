@@ -27,6 +27,7 @@
    - Enterprise console → Security → “Break-glass admin access”
    - Or `GET /auth/break-glass/status` (identity-service via gateway route) to confirm posture.
    - If governance is enabled: verify approval mode and pending review counters.
+   - If revocation is enabled: verify denylist check flags in gateway.
 
 ## Login
 
@@ -56,5 +57,6 @@ If `BREAK_GLASS_APPROVAL_MODE=required_before_issue`, workflow may return approv
 - Review audit events:
   - `BREAK_GLASS_LOGIN_ATTEMPT`, `BREAK_GLASS_LOGIN_FAILED`, `BREAK_GLASS_LOGIN_SUCCEEDED`, `BREAK_GLASS_SESSION_ISSUED`
   - `BREAK_GLASS_EVENT_CREATED`, `BREAK_GLASS_REVIEW_*`
+  - `BREAK_GLASS_TOKEN_REVOKED`, `BREAK_GLASS_TOKEN_ALREADY_*`
 - Post-incident review: root cause, controls, and any policy improvements.
 

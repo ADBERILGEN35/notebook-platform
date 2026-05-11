@@ -37,6 +37,7 @@ Runtime Docker/Kubernetes config:
 - Admin review page route: `/app/admin/security/break-glass`
 - Runtime flag: `FRONTEND_BREAK_GLASS_REVIEW_UI_ENABLED=false` (default)
 - UI event list/review surfaces never render token/assertion/credential secrets
+- Optional revoke action flag: `FRONTEND_BREAK_GLASS_REVOCATION_UI_ENABLED=false` (default)
 
 ## Implemented MVP Flows
 

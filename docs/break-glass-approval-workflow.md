@@ -22,13 +22,17 @@ Phase 92 adds governance workflow foundations on top of break-glass access.
   - `GET /internal/admin/break-glass/events`
   - `GET /internal/admin/break-glass/events/{id}`
   - `POST /internal/admin/break-glass/events/{id}/review`
+  - `POST /internal/admin/break-glass/events/{id}/revoke-token`
+  - `GET /internal/break-glass/tokens/{jti}/revoked`
 - Gateway admin API:
   - `GET /admin/break-glass/events`
   - `GET /admin/break-glass/events/{id}`
   - `POST /admin/break-glass/events/{id}/review`
+  - `POST /admin/break-glass/events/{id}/revoke-token`
 
 ## Security constraints
 
 - No token/assertion/private key is exposed in event responses.
-- Review does not extend or revoke already-issued short-lived token.
+- Review does not extend already-issued short-lived token.
+- Phase 93 adds optional revoke-on-reject + explicit manual revoke flow.
 - Admin write remains blocked by default.

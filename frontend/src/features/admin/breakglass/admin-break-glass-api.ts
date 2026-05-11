@@ -6,6 +6,7 @@ export type BreakGlassEventRow = {
   mode: string
   actorLabel: string
   status: string
+  tokenStatus: 'ACTIVE' | 'EXPIRED' | 'REVOKED' | 'UNKNOWN' | string
   rotationRequired: boolean
   issuedAt: string
   expiresAt: string
@@ -23,6 +24,7 @@ export type BreakGlassEventDetail = BreakGlassEventRow & {
   reviewedByUserId?: string | null
   reviewDecision?: string | null
   reviewReason?: string | null
+  tokenRevokedAt?: string | null
 }
 
 export async function listBreakGlassEvents(params: {
@@ -55,4 +57,17 @@ export async function reviewBreakGlassEvent(
     method: 'POST',
     body: JSON.stringify(body),
   })
+}
+
+export async function revokeBreakGlassEventToken(
+  id: string,
+  body: { reason: string },
+): Promise<{ revoked: boolean; alreadyExpired: boolean; alreadyRevoked: boolean }> {
+  return apiRequest<{ revoked: boolean; alreadyExpired: boolean; alreadyRevoked: boolean }>(
+    `/admin/break-glass/events/${encodeURIComponent(id)}/revoke-token`,
+    {
+      method: 'POST',
+      body: JSON.stringify(body),
+    },
+  )
 }

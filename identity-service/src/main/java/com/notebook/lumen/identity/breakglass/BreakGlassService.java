@@ -34,6 +34,8 @@ public class BreakGlassService {
   private static final String CLAIM_ACTOR_LABEL = "break_glass_actor";
   private static final String CLAIM_REASON_PRESENT = "break_glass_reason_present";
   private static final String CLAIM_MODE = "break_glass_mode";
+  private static final String CLAIM_SESSION_ID = "break_glass_session_id";
+  private static final String CLAIM_EVENT_ID = "break_glass_event_id";
   private static final String MODE_STATIC = "static-token";
   private static final String MODE_WEBAUTHN = "webauthn";
   private static final String MODE_OFFLINE = "offline-signed";
@@ -238,6 +240,7 @@ public class BreakGlassService {
           Instant.now(),
           Instant.now().plusSeconds(props.sessionTtlMinutes() * 60L),
           rotationRequired,
+          "",
           request);
       throw new BreakGlassException(
           "BREAK_GLASS_APPROVAL_REQUIRED",
@@ -248,14 +251,38 @@ public class BreakGlassService {
     audit(
         "BREAK_GLASS_LOGIN_SUCCEEDED",
         Map.of("mode", mode, "reasonPresent", true, "ttlMinutes", props.sessionTtlMinutes()));
+    UUID syntheticUserId = UUID.randomUUID();
+    String sessionId = UUID.randomUUID().toString();
+    String jti = UUID.randomUUID().toString();
+    long ttlSeconds = props.sessionTtlMinutes() * 60L;
+    BreakGlassAccessEvent createdEvent = null;
+    if (props.eventLogEnabled()) {
+      createdEvent =
+          accessEventService.createIssuedEvent(
+          sessionId,
+          mode,
+          actor,
+          reason,
+          Instant.now(),
+          Instant.now().plusSeconds(ttlSeconds),
+          rotationRequired,
+          jti,
+          request);
+    }
     Map<String, Object> claims =
         Map.of(
             "token_type",
             TOKEN_TYPE,
+            "jti",
+            jti,
             CLAIM_BREAK_GLASS,
             true,
             CLAIM_MODE,
             mode,
+            CLAIM_SESSION_ID,
+            sessionId,
+            CLAIM_EVENT_ID,
+            createdEvent == null ? "" : createdEvent.getId().toString(),
             CLAIM_PLATFORM_ROLES,
             List.of(PlatformAdminRbacConstants.ROLE_PLATFORM_ADMIN),
             CLAIM_PLATFORM_PERMS,
@@ -264,21 +291,7 @@ public class BreakGlassService {
             actor,
             CLAIM_REASON_PRESENT,
             true);
-    UUID syntheticUserId = UUID.randomUUID();
-    String sessionId = UUID.randomUUID().toString();
-    long ttlSeconds = props.sessionTtlMinutes() * 60L;
     String accessToken = jwtTokenService.generateAccessToken(syntheticUserId, actor, claims, ttlSeconds);
-    if (props.eventLogEnabled()) {
-      accessEventService.createIssuedEvent(
-          sessionId,
-          mode,
-          actor,
-          reason,
-          Instant.now(),
-          Instant.now().plusSeconds(ttlSeconds),
-          rotationRequired,
-          request);
-    }
     audit("BREAK_GLASS_SESSION_ISSUED", Map.of("mode", mode, "reasonPresent", true, "actor", actor));
     auditMetricLike(mode, "SUCCESS");
     return new BreakGlassDtos.BreakGlassLoginResponse(accessToken, "Bearer", ttlSeconds, true);

@@ -73,6 +73,18 @@ public class BreakGlassEventsController {
     return proxy.review(id, body, jwt.getSubject(), requestId, path);
   }
 
+  @PostMapping(path = BASE + "/{id}/revoke-token", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+  public Mono<ResponseEntity<Object>> revokeToken(
+      @AuthenticationPrincipal Jwt jwt,
+      @PathVariable UUID id,
+      @RequestBody(required = false) Map<String, Object> body,
+      @RequestHeader(name = GatewayHeaders.REQUEST_ID, required = false) String requestId) {
+    String path = BASE + "/" + id + "/revoke-token";
+    Optional<ErrorCode> denial = authz.ensureBreakGlassRevoke(jwt);
+    if (denial.isPresent()) return Mono.just(forbidden(denial.get(), requestId, path, PlatformAdminRbacConstants.PERM_BREAK_GLASS_REVOKE));
+    return proxy.revokeToken(id, body, jwt.getSubject(), requestId, path);
+  }
+
   private static ResponseEntity<Object> forbidden(
       ErrorCode code, String requestId, String path, String permission) {
     String message =

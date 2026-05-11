@@ -15,6 +15,7 @@ public final class BreakGlassReviewDtos {
       String mode,
       String actorLabel,
       String status,
+      String tokenStatus,
       boolean rotationRequired,
       Instant issuedAt,
       Instant expiresAt,
@@ -28,6 +29,7 @@ public final class BreakGlassReviewDtos {
       String mode,
       String actorLabel,
       String status,
+      String tokenStatus,
       boolean rotationRequired,
       Instant issuedAt,
       Instant expiresAt,
@@ -35,10 +37,18 @@ public final class BreakGlassReviewDtos {
       Instant reviewedAt,
       UUID reviewedByUserId,
       String reviewDecision,
-      String reviewReason) {}
+      String reviewReason,
+      Instant tokenRevokedAt) {}
 
   public record ReviewRequest(
       @NotBlank @Size(min = 3, max = 20) String decision,
       @NotBlank @Size(min = 10, max = 2000) String reason,
       boolean rotationRunbookAcknowledged) {}
+
+  public record RevokeTokenRequest(@NotBlank @Size(min = 10, max = 2000) String reason) {}
+
+  public record RevokeTokenResponse(boolean revoked, boolean alreadyExpired, boolean alreadyRevoked) {}
+
+  public record TokenRevokedStatusResponse(
+      boolean revoked, String sessionId, Instant expiresAt, String source) {}
 }

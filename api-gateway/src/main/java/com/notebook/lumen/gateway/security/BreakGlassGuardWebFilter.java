@@ -32,11 +32,15 @@ public class BreakGlassGuardWebFilter implements WebFilter {
 
   private final GatewayBreakGlassProperties properties;
   private final GatewayErrorResponseWriter errorResponseWriter;
+  private final BreakGlassDenylistClient denylistClient;
 
   public BreakGlassGuardWebFilter(
-      GatewayBreakGlassProperties properties, GatewayErrorResponseWriter errorResponseWriter) {
+      GatewayBreakGlassProperties properties,
+      GatewayErrorResponseWriter errorResponseWriter,
+      BreakGlassDenylistClient denylistClient) {
     this.properties = properties;
     this.errorResponseWriter = errorResponseWriter;
+    this.denylistClient = denylistClient;
   }
 
   @Override
@@ -79,6 +83,40 @@ public class BreakGlassGuardWebFilter implements WebFilter {
                     HttpStatus.FORBIDDEN,
                     ErrorCode.BREAK_GLASS_NOT_ALLOWED_AT_GATEWAY,
                     "Break-glass mode is not allowed at this gateway.");
+              }
+              if (properties.denylistCheckEnabled()) {
+                String jti = auth.getToken().getClaimAsString("jti");
+                String sessionId = auth.getToken().getClaimAsString("break_glass_session_id");
+                if (jti == null || jti.isBlank() || sessionId == null || sessionId.isBlank()) {
+                  return errorResponseWriter.write(
+                      exchange,
+                      HttpStatus.UNAUTHORIZED,
+                      ErrorCode.BREAK_GLASS_DENYLIST_LOOKUP_FAILED,
+                      "Break-glass token claims are incomplete.");
+                }
+                try {
+                  BreakGlassDenylistClient.DenylistStatus status = denylistClient.isRevoked(jti);
+                  if (status.revoked()) {
+                    log.warn(
+                        "break_glass_revoked_token_rejected path={} sub={}",
+                        exchange.getRequest().getPath().value(),
+                        auth.getToken().getSubject());
+                    return errorResponseWriter.write(
+                        exchange,
+                        HttpStatus.UNAUTHORIZED,
+                        ErrorCode.BREAK_GLASS_TOKEN_REVOKED,
+                        "Break-glass token has been revoked.");
+                  }
+                } catch (RuntimeException e) {
+                  log.warn("break_glass_denylist_lookup_failed message={}", e.getMessage());
+                  if (properties.denylistFailClosed()) {
+                    return errorResponseWriter.write(
+                        exchange,
+                        HttpStatus.UNAUTHORIZED,
+                        ErrorCode.BREAK_GLASS_DENYLIST_LOOKUP_FAILED,
+                        "Break-glass denylist check failed.");
+                  }
+                }
               }
 
               if (isWrite(exchange) && !properties.allowAdminWrite()) {

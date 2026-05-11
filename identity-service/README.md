@@ -36,6 +36,10 @@ docker compose -f docker-compose.dev.yml up -d
   - `BREAK_GLASS_EVENT_LOG_ENABLED`
   - `BREAK_GLASS_REVIEW_API_ENABLED`
   - internal review API: `/internal/admin/break-glass/events/*`
+- Faz 93 token revocation foundation:
+  - `BREAK_GLASS_REVOCATION_ENABLED`
+  - `BREAK_GLASS_REVOKE_ON_REJECT`
+  - internal token status API: `/internal/break-glass/tokens/{jti}/revoked`
 
 ## RSA anahtarları (RS256)
 

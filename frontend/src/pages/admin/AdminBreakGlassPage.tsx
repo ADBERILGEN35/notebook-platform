@@ -1,8 +1,20 @@
 import { useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { getBreakGlassEvent, listBreakGlassEvents, reviewBreakGlassEvent } from '../../features/admin/breakglass/admin-break-glass-api'
+import { useAuthStore } from '../../features/auth/auth-store'
+import {
+  PERM_BREAK_GLASS_REVOKE,
+  hasPlatformPermission,
+} from '../../features/admin/access/admin-permissions'
+import { isBreakGlassRevocationUiEnabled } from '../../shared/config/admin-feature-flags'
+import {
+  getBreakGlassEvent,
+  listBreakGlassEvents,
+  reviewBreakGlassEvent,
+  revokeBreakGlassEventToken,
+} from '../../features/admin/breakglass/admin-break-glass-api'
 
 export function AdminBreakGlassPage() {
+  const user = useAuthStore((s) => s.user)
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [decision, setDecision] = useState<'APPROVE' | 'REJECT' | 'CLOSE'>('APPROVE')
   const [reason, setReason] = useState('')
@@ -28,8 +40,17 @@ export function AdminBreakGlassPage() {
       await qc.invalidateQueries({ queryKey: ['break-glass-event', selectedId] })
     },
   })
+  const revokeMutation = useMutation({
+    mutationFn: (revokeReason: string) =>
+      revokeBreakGlassEventToken(selectedId as string, { reason: revokeReason }),
+    onSuccess: async () => {
+      await qc.invalidateQueries({ queryKey: ['break-glass-events'] })
+      await qc.invalidateQueries({ queryKey: ['break-glass-event', selectedId] })
+    },
+  })
 
   const overdue = useMemo(() => list.data?.overdueCount ?? 0, [list.data?.overdueCount])
+  const canRevoke = isBreakGlassRevocationUiEnabled() && hasPlatformPermission(user, PERM_BREAK_GLASS_REVOKE)
 
   return (
     <section className="space-y-4">
@@ -48,6 +69,7 @@ export function AdminBreakGlassPage() {
               <th className="px-3 py-2">Issued</th>
               <th className="px-3 py-2">Mode</th>
               <th className="px-3 py-2">Status</th>
+              <th className="px-3 py-2">Token</th>
               <th className="px-3 py-2">Rotation</th>
               <th className="px-3 py-2">Session</th>
             </tr>
@@ -58,6 +80,7 @@ export function AdminBreakGlassPage() {
                 <td className="px-3 py-2">{row.issuedAt}</td>
                 <td className="px-3 py-2">{row.mode}</td>
                 <td className="px-3 py-2">{row.status}</td>
+                <td className="px-3 py-2">{row.tokenStatus}</td>
                 <td className="px-3 py-2">{row.rotationRequired ? 'required' : 'no'}</td>
                 <td className="px-3 py-2">{row.sessionId}</td>
               </tr>
@@ -70,6 +93,10 @@ export function AdminBreakGlassPage() {
         <div className="rounded border border-slate-200 bg-slate-50 p-3 space-y-2">
           <p className="text-sm font-medium text-slate-900">Review event</p>
           <p className="text-xs text-slate-600">Reviewing does not extend or revoke the already issued token.</p>
+          <p className="text-xs text-amber-700">
+            Rejecting review may revoke the active token when revoke-on-reject is enabled.
+          </p>
+          <p className="text-xs text-slate-700">Token status: {detail.data.tokenStatus}</p>
           <div className="flex gap-2">
             <select
               className="rounded border border-slate-300 px-2 py-1 text-sm"
@@ -92,6 +119,13 @@ export function AdminBreakGlassPage() {
               onClick={() => reviewMutation.mutate()}
             >
               Submit
+            </button>
+            <button
+              className="rounded bg-rose-700 px-3 py-1.5 text-white disabled:opacity-50"
+              disabled={!canRevoke || detail.data.tokenStatus !== 'ACTIVE' || revokeMutation.isPending || reason.trim().length < 10}
+              onClick={() => revokeMutation.mutate(reason)}
+            >
+              Revoke active token
             </button>
           </div>
         </div>

@@ -61,6 +61,10 @@ Compose ile calistirirken tercih edilen yontem `JWT_JWKS_URI=http://identity-ser
   - `GET /admin/break-glass/events`
   - `GET /admin/break-glass/events/{id}`
   - `POST /admin/break-glass/events/{id}/review` (permission + MFA)
+- Break-glass denylist revocation (Faz 93):
+  - `POST /admin/break-glass/events/{id}/revoke-token`
+  - `GATEWAY_BREAK_GLASS_DENYLIST_CHECK_ENABLED`
+  - `GATEWAY_BREAK_GLASS_DENYLIST_FAIL_CLOSED`
 
 ## Routes
 

@@ -143,6 +143,13 @@ export const isBreakGlassReviewUiEnabled = (): boolean =>
     false,
   )
 
+export const isBreakGlassRevocationUiEnabled = (): boolean =>
+  parseBool(
+    window.__NOTEBOOK_CONFIG__?.BREAK_GLASS_REVOCATION_UI_ENABLED ??
+      import.meta.env.VITE_BREAK_GLASS_REVOCATION_UI_ENABLED,
+    false,
+  )
+
 export const getAuditApiMode = (): AuditApiMode => {
   const raw =
     window.__NOTEBOOK_CONFIG__?.AUDIT_API_MODE ?? import.meta.env.VITE_AUDIT_API_MODE ?? 'mock'

@@ -36,7 +36,8 @@ public final class PlatformAdminRbacConstants {
         PERM_NOTIFICATIONS_LEGAL_HOLD_READ,
         PERM_NOTIFICATIONS_LEGAL_HOLD_WRITE,
         PERM_BREAK_GLASS_READ,
-        PERM_BREAK_GLASS_REVIEW);
+        PERM_BREAK_GLASS_REVIEW,
+        PERM_BREAK_GLASS_REVOKE);
   }
 
   /**
@@ -100,4 +101,5 @@ public final class PlatformAdminRbacConstants {
       "admin:notifications:legal-hold:write";
   public static final String PERM_BREAK_GLASS_READ = "admin:break-glass:read";
   public static final String PERM_BREAK_GLASS_REVIEW = "admin:break-glass:review";
+  public static final String PERM_BREAK_GLASS_REVOKE = "admin:break-glass:revoke";
 }

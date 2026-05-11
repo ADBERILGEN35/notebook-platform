@@ -63,6 +63,18 @@ public class BreakGlassAccessEvent {
   @Column(name = "notification_sent", nullable = false)
   private boolean notificationSent;
 
+  @Column(name = "token_jti", length = 128)
+  private String tokenJti;
+
+  @Column(name = "token_revoked_at")
+  private Instant tokenRevokedAt;
+
+  @Column(name = "token_revoked_by_user_id")
+  private UUID tokenRevokedByUserId;
+
+  @Column(name = "token_revocation_reason")
+  private String tokenRevocationReason;
+
   @Column(name = "created_at", nullable = false)
   private Instant createdAt;
 
@@ -85,6 +97,7 @@ public class BreakGlassAccessEvent {
       String userAgentHash,
       boolean rotationRequired,
       boolean notificationSent,
+      String tokenJti,
       Instant createdAt,
       Instant updatedAt) {
     this.id = id;
@@ -100,6 +113,7 @@ public class BreakGlassAccessEvent {
     this.userAgentHash = userAgentHash;
     this.rotationRequired = rotationRequired;
     this.notificationSent = notificationSent;
+    this.tokenJti = tokenJti;
     this.createdAt = createdAt;
     this.updatedAt = updatedAt;
   }
@@ -121,6 +135,10 @@ public class BreakGlassAccessEvent {
   public String getUserAgentHash() { return userAgentHash; }
   public boolean isRotationRequired() { return rotationRequired; }
   public boolean isNotificationSent() { return notificationSent; }
+  public String getTokenJti() { return tokenJti; }
+  public Instant getTokenRevokedAt() { return tokenRevokedAt; }
+  public UUID getTokenRevokedByUserId() { return tokenRevokedByUserId; }
+  public String getTokenRevocationReason() { return tokenRevocationReason; }
   public Instant getCreatedAt() { return createdAt; }
   public Instant getUpdatedAt() { return updatedAt; }
 
@@ -130,6 +148,13 @@ public class BreakGlassAccessEvent {
     this.reviewReason = reason;
     this.reviewedAt = Instant.now();
     this.status = nextStatus;
+    this.updatedAt = Instant.now();
+  }
+
+  public void markTokenRevoked(UUID reviewerId, String reason) {
+    this.tokenRevokedAt = Instant.now();
+    this.tokenRevokedByUserId = reviewerId;
+    this.tokenRevocationReason = reason;
     this.updatedAt = Instant.now();
   }
 }

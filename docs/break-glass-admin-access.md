@@ -1,4 +1,4 @@
-# Break-glass admin access (Faz 90-92)
+# Break-glass admin access (Faz 90-93)
 
 ## Summary
 
@@ -19,7 +19,7 @@ Break-glass is an **emergency-only** access path to prevent total platform locko
 - Misconfiguration enabling break-glass permanently
 - Gateway accepting break-glass tokens unintentionally
 
-### Guardrails implemented in Faz 90-91
+### Guardrails implemented in Faz 90-93
 - **Disabled by default** (`BREAK_GLASS_ENABLED=false`, `GATEWAY_BREAK_GLASS_ADMIN_ALLOWED=false`)
 - **Short-lived access token only** (no refresh token)
 - **Reason required** (minimum 20 chars; server validated)
@@ -31,6 +31,7 @@ Break-glass is an **emergency-only** access path to prevent total platform locko
 - **Static token hardening** (lockout window + rotation recommended signal)
 - **Approval/review governance modes** (`BREAK_GLASS_APPROVAL_MODE`)
 - **Post-use review event trail** for emergency sessions
+- **Active token revocation + denylist foundation** for break-glass JWTs
 - **Session limit** guardrail (in-memory per instance; max active sessions default 1)
 
 ## Credential strategy (Faz 90)

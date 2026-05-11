@@ -11,7 +11,7 @@ Resolved when `ADMIN_RBAC_ENABLED=true`. `PLATFORM_ADMIN` adds **all** permissio
 | `PLATFORM_ADMIN` | All permissions in `PlatformAdminRbacConstants.allPermissions()` |
 | `PLATFORM_AUDIT_VIEWER` | `admin:audit:read` |
 | `PLATFORM_AUDIT_EXPORTER` | `admin:audit:read`, `admin:audit:export` |
-| `PLATFORM_SECURITY_ADMIN` | `admin:enterprise:status:read`, `admin:rbac:read`, `admin:change-request:list`, `admin:change-request:create`, `admin:security:change-request:create`, `admin:change-request:gitops:dry-run`, `admin:change-request:gitops:create`, `admin:notifications:dead-letter:read`, `admin:notifications:dead-letter:requeue`, `admin:notifications:retention:read`, `admin:notifications:retention:run`, `admin:notifications:legal-hold:read`, `admin:notifications:legal-hold:write` |
+| `PLATFORM_SECURITY_ADMIN` | `admin:enterprise:status:read`, `admin:rbac:read`, `admin:change-request:list`, `admin:change-request:create`, `admin:security:change-request:create`, `admin:change-request:gitops:dry-run`, `admin:change-request:gitops:create`, `admin:notifications:dead-letter:read`, `admin:notifications:dead-letter:requeue`, `admin:notifications:retention:read`, `admin:notifications:retention:run`, `admin:notifications:legal-hold:read`, `admin:notifications:legal-hold:write`, `admin:break-glass:read`, `admin:break-glass:review`, `admin:break-glass:revoke` |
 | `PLATFORM_IDENTITY_ADMIN` | `admin:identity:read`, `admin:enterprise:status:read`, `admin:rbac:read`, `admin:rbac:change-request:create`, `admin:change-request:list`, `admin:change-request:create`, `admin:scim:change-request:create`, `admin:change-request:gitops:dry-run`, `admin:change-request:gitops:create` |
 | `PLATFORM_CHANGE_REQUEST_AUTHOR` | `admin:change-request:list`, `admin:change-request:create`, `admin:change-request:cancel` |
 | `PLATFORM_CHANGE_REQUEST_APPROVER` | `admin:enterprise:status:read`, `admin:change-request:list`, `admin:change-request:approve`, `admin:change-request:reject`, `admin:change-request:gitops:dry-run`, `admin:change-request:gitops:create` |
@@ -27,6 +27,10 @@ Resolved when `ADMIN_RBAC_ENABLED=true`. `PLATFORM_ADMIN` adds **all** permissio
 | `GET /admin/rbac/overrides/status` | `admin:rbac:read` |
 | `POST /admin/rbac/overrides/reload` | `admin:rbac:override:reload` (+ admin-write MFA when configured) |
 | `POST /admin/rbac/overrides/validate` | `admin:rbac:read` (body is YAML-in-JSON for dry-run; **no persistence**) |
+| `GET /admin/break-glass/events` | `admin:break-glass:read` |
+| `GET /admin/break-glass/events/{id}` | `admin:break-glass:read` |
+| `POST /admin/break-glass/events/{id}/review` | `admin:break-glass:review` + admin-write MFA when required |
+| `POST /admin/break-glass/events/{id}/revoke-token` | `admin:break-glass:revoke` + admin-write MFA when required |
 | `GET /admin/notifications/analytics/summary` | `admin:notifications:analytics:read` |
 | `GET /admin/notifications/dead-letter` | `admin:notifications:dead-letter:read` |
 | `POST /admin/notifications/dead-letter/{id}/requeue/dry-run` | `admin:notifications:dead-letter:read` |

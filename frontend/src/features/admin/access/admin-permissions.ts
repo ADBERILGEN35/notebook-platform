@@ -26,6 +26,7 @@ export const PERM_RBAC_OVERRIDE_RELOAD = 'admin:rbac:override:reload'
 export const PERM_RBAC_CHANGE_REQUEST_CREATE = 'admin:rbac:change-request:create'
 export const PERM_BREAK_GLASS_READ = 'admin:break-glass:read'
 export const PERM_BREAK_GLASS_REVIEW = 'admin:break-glass:review'
+export const PERM_BREAK_GLASS_REVOKE = 'admin:break-glass:revoke'
 
 const OP_TO_CREATE_PERM: Record<string, string> = {
   ADMIN_MFA_MODE_UPDATE: PERM_SECURITY_CHANGE_REQUEST_CREATE,

@@ -355,9 +355,15 @@ data:
   BREAK_GLASS_REVIEW_REQUIRED_WITHIN_MINUTES: {{ .Values.config.breakGlassReviewRequiredWithinMinutes | quote }}
   BREAK_GLASS_NOTIFY_SECURITY_ADMINS: {{ .Values.config.breakGlassNotifySecurityAdmins | quote }}
   BREAK_GLASS_REVIEW_API_ENABLED: {{ .Values.config.breakGlassReviewApiEnabled | quote }}
+  BREAK_GLASS_REVOCATION_ENABLED: {{ .Values.config.breakGlassRevocationEnabled | quote }}
+  BREAK_GLASS_REVOKE_ON_REJECT: {{ .Values.config.breakGlassRevokeOnReject | quote }}
+  BREAK_GLASS_DENYLIST_RETENTION_HOURS: {{ .Values.config.breakGlassDenylistRetentionHours | quote }}
   GATEWAY_BREAK_GLASS_ADMIN_ALLOWED: {{ .Values.config.gatewayBreakGlassAdminAllowed | quote }}
   BREAK_GLASS_ALLOW_ADMIN_WRITE: {{ .Values.config.breakGlassAllowAdminWrite | quote }}
   GATEWAY_BREAK_GLASS_ALLOWED_MODES: {{ .Values.config.gatewayBreakGlassAllowedModes | quote }}
+  GATEWAY_BREAK_GLASS_DENYLIST_CHECK_ENABLED: {{ .Values.config.gatewayBreakGlassDenylistCheckEnabled | quote }}
+  GATEWAY_BREAK_GLASS_DENYLIST_FAIL_CLOSED: {{ .Values.config.gatewayBreakGlassDenylistFailClosed | quote }}
+  GATEWAY_BREAK_GLASS_DENYLIST_CACHE_SECONDS: {{ .Values.config.gatewayBreakGlassDenylistCacheSeconds | quote }}
   SCIM_GROUP_NESTING_ENABLED: {{ .Values.config.scimGroupNestingEnabled | quote }}
   SCIM_GROUP_NESTING_MAX_DEPTH: {{ .Values.config.scimGroupNestingMaxDepth | quote }}
   SCIM_BULK_ENABLED: {{ .Values.config.scimBulkEnabled | quote }}

@@ -179,6 +179,7 @@ public class AdminRbacService {
           perms.add(PlatformAdminRbacConstants.PERM_NOTIFICATIONS_LEGAL_HOLD_WRITE);
           perms.add(PlatformAdminRbacConstants.PERM_BREAK_GLASS_READ);
           perms.add(PlatformAdminRbacConstants.PERM_BREAK_GLASS_REVIEW);
+          perms.add(PlatformAdminRbacConstants.PERM_BREAK_GLASS_REVOKE);
         }
         case PlatformAdminRbacConstants.ROLE_PLATFORM_IDENTITY_ADMIN -> {
           perms.add(PlatformAdminRbacConstants.PERM_IDENTITY_READ);

@@ -15,6 +15,9 @@ public record BreakGlassProperties(
     @DefaultValue("60") int reviewRequiredWithinMinutes,
     @DefaultValue("true") boolean notifySecurityAdmins,
     @DefaultValue("false") boolean reviewApiEnabled,
+    @DefaultValue("false") boolean revocationEnabled,
+    @DefaultValue("true") boolean revokeOnReject,
+    @DefaultValue("24") int denylistRetentionHours,
     /** Expected token hash (recommended format: sha256:hex). */
     @DefaultValue("") String tokenHash,
     @DefaultValue("") String offlinePublicKeyPath,
@@ -42,6 +45,9 @@ public record BreakGlassProperties(
     }
     if (reviewRequiredWithinMinutes < 5) {
       reviewRequiredWithinMinutes = 60;
+    }
+    if (denylistRetentionHours < 1) {
+      denylistRetentionHours = 24;
     }
     if (staticTokenMaxFailuresPerWindow < 1) {
       staticTokenMaxFailuresPerWindow = 5;

@@ -101,6 +101,33 @@ public class BreakGlassEventsProxyService {
         });
   }
 
+  public Mono<ResponseEntity<Object>> revokeToken(
+      UUID id, Map<String, Object> body, String adminUserId, String requestId, String path) {
+    return Mono.defer(
+        () -> {
+          final String jwt;
+          try {
+            jwt = signer.sign(IDENTITY_AUDIENCE, BREAK_GLASS_EVENTS_REVIEW_SCOPE);
+          } catch (RuntimeException e) {
+            return Mono.just(jwtFailure(requestId, path));
+          }
+          WebClient.RequestBodySpec spec =
+              webClient
+                  .post()
+                  .uri(baseUrl() + "/" + id + "/revoke-token")
+                  .accept(MediaType.APPLICATION_JSON)
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .header(AuditProxyService.INTERNAL_AUTH_HEADER, "Bearer " + jwt)
+                  .header(HDR_ADMIN_USER_ID, adminUserId);
+          if (requestId != null && !requestId.isBlank()) spec = spec.header("X-Request-Id", requestId);
+          return spec.bodyValue(body == null ? Map.of() : body)
+              .retrieve()
+              .bodyToMono(Object.class)
+              .map(resp -> ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(resp))
+              .onErrorResume(e -> Mono.just(mapException(e, path, requestId)));
+        });
+  }
+
   private Mono<ResponseEntity<Object>> withAuthGet(
       String url, String scope, String adminUserId, String requestId, String path) {
     return Mono.defer(

@@ -215,6 +215,9 @@ gateway:
     admin-allowed: ${GATEWAY_BREAK_GLASS_ADMIN_ALLOWED:false}
     allow-admin-write: ${BREAK_GLASS_ALLOW_ADMIN_WRITE:false}
     allowed-modes: ${GATEWAY_BREAK_GLASS_ALLOWED_MODES:}
+    denylist-check-enabled: ${GATEWAY_BREAK_GLASS_DENYLIST_CHECK_ENABLED:false}
+    denylist-fail-closed: ${GATEWAY_BREAK_GLASS_DENYLIST_FAIL_CLOSED:true}
+    denylist-cache-seconds: ${GATEWAY_BREAK_GLASS_DENYLIST_CACHE_SECONDS:30}
 
 logging:
   level:

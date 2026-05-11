@@ -8,5 +8,8 @@ import org.springframework.boot.context.properties.bind.DefaultValue;
 public record GatewayBreakGlassProperties(
     @DefaultValue("false") boolean adminAllowed,
     @DefaultValue("false") boolean allowAdminWrite,
-    @DefaultValue("") List<String> allowedModes) {}
+    @DefaultValue("") List<String> allowedModes,
+    @DefaultValue("false") boolean denylistCheckEnabled,
+    @DefaultValue("true") boolean denylistFailClosed,
+    @DefaultValue("30") int denylistCacheSeconds) {}
 

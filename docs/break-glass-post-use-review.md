@@ -15,11 +15,11 @@ This document covers the post-use review operating model for break-glass session
 ## Review policy notes
 
 - Review reason is mandatory.
-- Review does not imply token revocation in this phase.
+- Review can trigger revocation when `BREAK_GLASS_REVOKE_ON_REJECT=true`.
 - Static-token use can be tracked with rotation-required marker.
 
 ## Future work (out of scope)
 
-- Active token revocation / denylist.
+- Global JWT denylist for non-break-glass tokens.
 - Multi-approver workflows.
 - Automatic rotation automation.

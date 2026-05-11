@@ -15,12 +15,17 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class BreakGlassAccessEventService {
   private final BreakGlassAccessEventRepository repository;
+  private final BreakGlassTokenDenylistRepository denylistRepository;
   private final AuditService auditService;
   private final BreakGlassProperties props;
 
   public BreakGlassAccessEventService(
-      BreakGlassAccessEventRepository repository, AuditService auditService, BreakGlassProperties props) {
+      BreakGlassAccessEventRepository repository,
+      BreakGlassTokenDenylistRepository denylistRepository,
+      AuditService auditService,
+      BreakGlassProperties props) {
     this.repository = repository;
+    this.denylistRepository = denylistRepository;
     this.auditService = auditService;
     this.props = props;
   }
@@ -34,6 +39,7 @@ public class BreakGlassAccessEventService {
       Instant issuedAt,
       Instant expiresAt,
       boolean rotationRequired,
+      String tokenJti,
       HttpServletRequest request) {
     Instant now = Instant.now();
     BreakGlassAccessEventStatus status =
@@ -56,6 +62,7 @@ public class BreakGlassAccessEventService {
             hash(request == null ? null : request.getHeader("User-Agent")),
             rotationRequired,
             false,
+            tokenJti,
             now,
             now);
     repository.save(event);
@@ -90,6 +97,7 @@ public class BreakGlassAccessEventService {
                         e.getMode(),
                         e.getActorLabel(),
                         e.getStatus().name(),
+                        tokenStatus(e),
                         e.isRotationRequired(),
                         e.getIssuedAt(),
                         e.getExpiresAt(),
@@ -123,6 +131,7 @@ public class BreakGlassAccessEventService {
         e.getMode(),
         e.getActorLabel(),
         e.getStatus().name(),
+        tokenStatus(e),
         e.isRotationRequired(),
         e.getIssuedAt(),
         e.getExpiresAt(),
@@ -130,7 +139,8 @@ public class BreakGlassAccessEventService {
         e.getReviewedAt(),
         e.getReviewedByUserId(),
         e.getReviewDecision(),
-        e.getReviewReason());
+        e.getReviewReason(),
+        e.getTokenRevokedAt());
   }
 
   @Transactional
@@ -155,6 +165,9 @@ public class BreakGlassAccessEventService {
         };
     e.markReviewed(reviewerId, decision, body.reason(), next);
     repository.save(e);
+    if ("REJECT".equals(decision) && props.revokeOnReject()) {
+      revokeToken(id, reviewerId, "Rejected review: " + body.reason(), "REVIEW_REJECT", request);
+    }
     auditService.record(
         "BREAK_GLASS_REVIEW_" + next.name(),
         reviewerId,
@@ -163,6 +176,83 @@ public class BreakGlassAccessEventService {
         request,
         Map.of("mode", e.getMode(), "status", next.name(), "reviewReasonPresent", true));
     return detail(id);
+  }
+
+  @Transactional
+  public BreakGlassReviewDtos.RevokeTokenResponse revokeToken(
+      UUID eventId, UUID reviewerId, String reason, String source, HttpServletRequest request) {
+    if (!props.revocationEnabled()) {
+      throw new BreakGlassException(
+          "BREAK_GLASS_TOKEN_REVOCATION_DISABLED",
+          HttpStatus.FORBIDDEN,
+          "Break-glass token revocation is disabled");
+    }
+    BreakGlassAccessEvent e = getOrThrow(eventId);
+    if (e.getTokenJti() == null || e.getTokenJti().isBlank()) {
+      throw new BreakGlassException(
+          "BREAK_GLASS_TOKEN_REVOCATION_UNAVAILABLE",
+          HttpStatus.CONFLICT,
+          "Break-glass token jti is unavailable");
+    }
+    if (denylistRepository.findByJti(e.getTokenJti()).isPresent()) {
+      auditService.record(
+          "BREAK_GLASS_TOKEN_ALREADY_REVOKED",
+          reviewerId,
+          "BREAK_GLASS",
+          e.getId(),
+          request,
+          Map.of("source", source));
+      return new BreakGlassReviewDtos.RevokeTokenResponse(false, false, true);
+    }
+    if (e.getExpiresAt().isBefore(Instant.now())) {
+      auditService.record(
+          "BREAK_GLASS_TOKEN_ALREADY_EXPIRED",
+          reviewerId,
+          "BREAK_GLASS",
+          e.getId(),
+          request,
+          Map.of("source", source));
+      return new BreakGlassReviewDtos.RevokeTokenResponse(false, true, false);
+    }
+    Instant now = Instant.now();
+    denylistRepository.save(
+        new BreakGlassTokenDenylistEntry(
+            UUID.randomUUID(),
+            e.getTokenJti(),
+            e.getSessionId(),
+            e.getId(),
+            reviewerId,
+            now,
+            e.getExpiresAt(),
+            reason == null ? "" : reason.trim(),
+            source,
+            now));
+    e.markTokenRevoked(reviewerId, reason);
+    repository.save(e);
+    auditService.record(
+        "BREAK_GLASS_TOKEN_REVOKED",
+        reviewerId,
+        "BREAK_GLASS",
+        e.getId(),
+        request,
+        Map.of("source", source, "reasonPresent", reason != null && !reason.isBlank()));
+    return new BreakGlassReviewDtos.RevokeTokenResponse(true, false, false);
+  }
+
+  @Transactional(readOnly = true)
+  public BreakGlassReviewDtos.TokenRevokedStatusResponse tokenRevokedStatus(String jti) {
+    return denylistRepository
+        .findByJti(jti == null ? "" : jti.trim())
+        .map(
+            e ->
+                new BreakGlassReviewDtos.TokenRevokedStatusResponse(
+                    true, shortSession(e.getSessionId()), e.getExpiresAt(), e.getSource()))
+        .orElseGet(() -> new BreakGlassReviewDtos.TokenRevokedStatusResponse(false, "", null, ""));
+  }
+
+  @Transactional(readOnly = true)
+  public long activeDenylistEntries() {
+    return denylistRepository.countByExpiresAtAfter(Instant.now());
   }
 
   private BreakGlassAccessEvent getOrThrow(UUID id) {
@@ -187,6 +277,16 @@ public class BreakGlassAccessEventService {
     }
     String out = reason.trim();
     return out.length() <= 120 ? out : out.substring(0, 120);
+  }
+
+  private static String tokenStatus(BreakGlassAccessEvent e) {
+    if (e.getTokenRevokedAt() != null) {
+      return "REVOKED";
+    }
+    if (e.getExpiresAt().isBefore(Instant.now())) {
+      return "EXPIRED";
+    }
+    return e.getTokenJti() == null || e.getTokenJti().isBlank() ? "UNKNOWN" : "ACTIVE";
   }
 
   private static String hash(String value) {
