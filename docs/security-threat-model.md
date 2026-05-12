@@ -345,6 +345,18 @@
 - Merged payloads are still persisted only through normal authenticated `PATCH` + `If-Match`; the
   server does not trust client merge logic beyond standard validation.
 
+## Advanced merge rules / block move support (Faz 95)
+
+- Same-parent block reorders are now treated as a typed safe change, not a blanket conflict.
+- Move/reorder summary lines reference block ids and indices only — never block text — and are
+  only returned to authenticated requestors of the note they already have read access to.
+- Audit (`NOTE_MERGE_APPLIED`) metadata is unchanged; no per-block move list is logged.
+- New `note_merge_conflicts_total{conflictType}` values (`BLOCK_MOVE_CONFLICT`,
+  `BLOCK_MOVED_AND_EDITED`, `BLOCK_DELETED_AFTER_MOVE`, `BLOCK_CROSS_PARENT_UNSUPPORTED`) keep
+  cardinality bounded.
+- No silent merge / auto-apply — every suggested merge still requires explicit user confirmation
+  via the conflict dialog.
+
 ## In-App Notification Threat Notes (Faz 45)
 
 - Ownership: user endpoints derive `recipientUserId` from gateway context (`X-User-Id`), not from client payload.
@@ -383,3 +395,11 @@ No SCIM/SIEM/OIDC secrets are returned — see `docs/enterprise-admin-console.md
 - Break-glass JWT includes unique `jti` and session/event references so active tokens can be revoked before expiry.
 - Denylist rows store metadata only (no raw token material).
 - Gateway denylist lookup supports fail-closed behavior to avoid allowing unverifiable high-risk emergency tokens.
+
+## Break-glass static-token rotation governance (Faz 94)
+
+- A `break_glass_token_rotation_events` row is created on successful static-token use when tracking is enabled. Duplicate REQUIRED events are suppressed per `oldTokenHashFingerprint`.
+- Rotation events store only short hash fingerprints (`fp:<hex prefix>`), never raw token text or full hashes.
+- The verify endpoint compares against the currently configured `BREAK_GLASS_TOKEN_HASH` fingerprint; it cannot be tricked into accepting an arbitrary value because there is no token input. The transition to `VERIFIED` requires that the value actually changed.
+- `CLOSED` is only reachable from `VERIFIED`; this prevents "paper" closure of unrotated tokens.
+- Audit events: `BREAK_GLASS_TOKEN_ROTATION_REQUIRED|ACKNOWLEDGED|VERIFIED|VERIFY_FAILED|CLOSED|VIEWED|DUPLICATE_SUPPRESSED|LIMIT_REACHED`.

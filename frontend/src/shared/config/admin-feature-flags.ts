@@ -150,6 +150,18 @@ export const isBreakGlassRevocationUiEnabled = (): boolean =>
     false,
   )
 
+/**
+ * Faz 94: break-glass static-token rotation governance UI (status card, acknowledge/verify/close).
+ * The UI never displays raw token or hash; new token material is provisioned out-of-band via
+ * External Secret / GitOps.
+ */
+export const isBreakGlassRotationUiEnabled = (): boolean =>
+  parseBool(
+    window.__NOTEBOOK_CONFIG__?.BREAK_GLASS_ROTATION_UI_ENABLED ??
+      import.meta.env.VITE_BREAK_GLASS_ROTATION_UI_ENABLED,
+    false,
+  )
+
 export const getAuditApiMode = (): AuditApiMode => {
   const raw =
     window.__NOTEBOOK_CONFIG__?.AUDIT_API_MODE ?? import.meta.env.VITE_AUDIT_API_MODE ?? 'mock'

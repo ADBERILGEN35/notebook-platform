@@ -94,6 +94,11 @@ public class BreakGlassController {
     out.put("maxActiveSessions", s.maxActiveSessions());
     out.put("requireReason", s.requireReason());
     out.put("requireMfa", s.requireMfa());
+    out.put("rotationTrackingEnabled", s.rotationTrackingEnabled());
+    out.put("rotationRequired", s.rotationRequired());
+    out.put("openRotationEvents", s.openRotationEvents());
+    out.put("oldestRotationRequiredAt", s.oldestRotationRequiredAt());
+    out.put("lastRotationVerifiedAt", s.lastRotationVerifiedAt());
     return out;
   }
 }

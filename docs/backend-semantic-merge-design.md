@@ -1,4 +1,10 @@
-# Backend Semantic Merge Design (Faz 71)
+# Backend Semantic Merge Design (Faz 71; extended in Faz 95)
+
+> **Faz 95 update:** `mergeVersion=1` engine now detects same-parent reorders and emits
+> typed move conflicts. The wire contract is unchanged shape-wise; new
+> `conflicts[].type` and `summary.*` strings appear additively. See
+> [`advanced-note-merge-rules.md`](advanced-note-merge-rules.md).
+
 
 ## Scope
 
@@ -65,7 +71,9 @@ Unsafe / conflict:
 - delete vs edit on same block -> `DELETE_VS_EDIT`
 - title diverged on both sides -> `TITLE_DIVERGENT`
 - missing/duplicate block ids -> `MISSING_BLOCK_ID` / `DUPLICATE_BLOCK_ID`
-- move/reorder/structural drift -> `MOVE_OR_STRUCTURE`
+- move/reorder/structural drift -> typed conflicts as of Faz 95
+  (`BLOCK_MOVE_CONFLICT`, `BLOCK_MOVED_AND_EDITED`, `BLOCK_DELETED_AFTER_MOVE`,
+  `BLOCK_CROSS_PARENT_UNSUPPORTED`); legacy `MOVE_OR_STRUCTURE` is no longer emitted
 
 If uncertain, analysis marks conflict and does not suggest merge.
 

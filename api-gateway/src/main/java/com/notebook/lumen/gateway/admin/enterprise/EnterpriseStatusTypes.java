@@ -52,7 +52,12 @@ record BreakGlassStatus(
     int sessionTtlMinutes,
     int maxActiveSessions,
     boolean requireReason,
-    boolean requireMfa) {}
+    boolean requireMfa,
+    boolean rotationTrackingEnabled,
+    boolean rotationRequired,
+    long openRotationEvents,
+    Instant oldestRotationRequiredAt,
+    Instant lastRotationVerifiedAt) {}
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 record MergeResolutionStatus(

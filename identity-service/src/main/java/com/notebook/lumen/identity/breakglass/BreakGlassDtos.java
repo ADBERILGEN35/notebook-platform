@@ -43,6 +43,11 @@ public final class BreakGlassDtos {
       java.time.Instant lastStaticTokenUsedAt,
       String approvalMode,
       long pendingReviewCount,
-      long overdueReviewCount) {}
+      long overdueReviewCount,
+      boolean rotationTrackingEnabled,
+      boolean rotationRequired,
+      long openRotationEvents,
+      java.time.Instant oldestRotationRequiredAt,
+      java.time.Instant lastRotationVerifiedAt) {}
 }
 

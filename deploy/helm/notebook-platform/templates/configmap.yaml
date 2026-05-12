@@ -358,6 +358,10 @@ data:
   BREAK_GLASS_REVOCATION_ENABLED: {{ .Values.config.breakGlassRevocationEnabled | quote }}
   BREAK_GLASS_REVOKE_ON_REJECT: {{ .Values.config.breakGlassRevokeOnReject | quote }}
   BREAK_GLASS_DENYLIST_RETENTION_HOURS: {{ .Values.config.breakGlassDenylistRetentionHours | quote }}
+  BREAK_GLASS_STATIC_TOKEN_ROTATION_TRACKING_ENABLED: {{ .Values.config.breakGlassRotationTrackingEnabled | quote }}
+  BREAK_GLASS_ROTATION_API_ENABLED: {{ .Values.config.breakGlassRotationApiEnabled | quote }}
+  BREAK_GLASS_TOKEN_HASH_FINGERPRINT_LENGTH: {{ .Values.config.breakGlassTokenHashFingerprintLength | quote }}
+  BREAK_GLASS_ROTATION_MAX_OPEN_EVENTS: {{ .Values.config.breakGlassRotationMaxOpenEvents | quote }}
   GATEWAY_BREAK_GLASS_ADMIN_ALLOWED: {{ .Values.config.gatewayBreakGlassAdminAllowed | quote }}
   BREAK_GLASS_ALLOW_ADMIN_WRITE: {{ .Values.config.breakGlassAllowAdminWrite | quote }}
   GATEWAY_BREAK_GLASS_ALLOWED_MODES: {{ .Values.config.gatewayBreakGlassAllowedModes | quote }}

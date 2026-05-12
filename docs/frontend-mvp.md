@@ -141,11 +141,15 @@ E2E scope moved to [`docs/frontend-e2e.md`](frontend-e2e.md).
 - Overwrite flow re-fetches latest ETag and replays PATCH with explicit user confirmation.
 - No automatic merge algorithm, CRDT/OT, or real-time collaboration in this phase.
 
-## Faz 66 Conflict diff / suggested merge (client-side)
+## Faz 66 Conflict diff / suggested merge (client-side; extended in Faz 95)
 
 - Three-way model: **base** (last successful sync), **local** (editor), **remote** (fresh `GET` when dialog opens).
 - Block-level summaries and **Apply suggested merge** for conservative, non-overlapping cases only; still uses normal `PATCH` + `If-Match` (no new API).
-- See [`note-conflict-diff-merge.md`](note-conflict-diff-merge.md).
+- **Faz 95:** same-parent block reorders combined with disjoint remote edits join the safe
+  suggestion path. Dialog adds `Moved blocks`, `Reordered blocks`, and `Move conflicts`
+  sections. No silent merge.
+- See [`note-conflict-diff-merge.md`](note-conflict-diff-merge.md) and
+  [`advanced-note-merge-rules.md`](advanced-note-merge-rules.md).
 
 ## Faz 49 Notification Preferences
 

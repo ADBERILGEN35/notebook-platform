@@ -88,7 +88,12 @@ class IdentitySecurityStatusServiceTest {
                 null,
                 "disabled",
                 0,
-                0));
+                0,
+                false,
+                false,
+                0,
+                null,
+                null));
     var service = new IdentitySecurityStatusService(sso, scim, mfa, siem, adminRbac, breakGlass);
     IdentitySecurityStatusResponse body = service.build();
 
@@ -140,7 +145,12 @@ class IdentitySecurityStatusServiceTest {
                 null,
                 "disabled",
                 0,
-                0));
+                0,
+                false,
+                false,
+                0,
+                null,
+                null));
     var service = new IdentitySecurityStatusService(sso, scim, mfa, siem, adminRbac, breakGlass);
     assertThat(service.build().siem().secretConfigured()).isFalse();
   }

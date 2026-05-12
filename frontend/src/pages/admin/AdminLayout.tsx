@@ -10,6 +10,7 @@ import {
   PERM_NOTIFICATIONS_LEGAL_HOLD_READ,
   PERM_RBAC_READ,
   PERM_BREAK_GLASS_READ,
+  PERM_BREAK_GLASS_ROTATION_READ,
   hasPlatformPermission,
 } from '../../features/admin/access/admin-permissions'
 import {
@@ -22,6 +23,7 @@ import {
   isNotificationLegalHoldUiEnabled,
   isAdminRbacUiEnabled,
   isBreakGlassReviewUiEnabled,
+  isBreakGlassRotationUiEnabled,
 } from '../../shared/config/admin-feature-flags'
 
 const linkClass = ({ isActive }: { isActive: boolean }) =>
@@ -52,6 +54,9 @@ export function AdminLayout() {
   const showBreakGlassReview =
     isBreakGlassReviewUiEnabled() &&
     (devNavOpen || hasPlatformPermission(user, PERM_BREAK_GLASS_READ))
+  const showBreakGlassRotation =
+    isBreakGlassRotationUiEnabled() &&
+    (devNavOpen || hasPlatformPermission(user, PERM_BREAK_GLASS_ROTATION_READ))
 
   return (
     <div className="flex flex-col gap-4 lg:flex-row lg:gap-8">
@@ -109,6 +114,13 @@ export function AdminLayout() {
             <li>
               <NavLink to="/app/admin/security/break-glass" className={linkClass}>
                 Break-glass events
+              </NavLink>
+            </li>
+          ) : null}
+          {showBreakGlassRotation ? (
+            <li>
+              <NavLink to="/app/admin/security/break-glass/rotation" className={linkClass}>
+                Break-glass rotation
               </NavLink>
             </li>
           ) : null}

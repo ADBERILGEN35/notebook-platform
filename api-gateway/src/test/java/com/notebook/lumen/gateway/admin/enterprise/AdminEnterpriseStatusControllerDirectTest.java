@@ -72,7 +72,12 @@ class AdminEnterpriseStatusControllerDirectTest {
                     15,
                     1,
                     true,
-                    true),
+                    true,
+                    false,
+                    false,
+                    0,
+                    null,
+                    null),
                 new AuditExportStatus(false, false, false, false, "", false),
                 new NotificationsStatus(false, false, false, false),
                 new GatewaySecurityStatus(

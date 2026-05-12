@@ -93,6 +93,10 @@ Faz 72 ile `POST /notes/{noteId}/merge/apply` endpointi eklenir; apply yalnizca 
 ile calisir ve `expectedRemoteEtag` ile stale merge korumasi yapar.
 Faz 73 ile merge analyze/apply akisina privacy-safe observability metricleri, structured loglar ve
 Enterprise Console merge status karti eklenir.
+Faz 95 ile block move/reorder detection eklenir: ayni-parent reorderlar safe merge setine girer,
+yeni conflict tipleri (`BLOCK_MOVE_CONFLICT`, `BLOCK_MOVED_AND_EDITED`, `BLOCK_DELETED_AFTER_MOVE`,
+`BLOCK_CROSS_PARENT_UNSUPPORTED`) emit edilir; silent merge eklenmez, kullanici onayi ile apply
+yine zorunludur. Detaylar: `docs/advanced-note-merge-rules.md`.
 
 ## Notification Service
 
@@ -384,7 +388,7 @@ gateway `GET/POST /admin/rbac/overrides/*`, metrics/audit, and read-only UI stat
 `docs/admin-rbac-runtime-overrides.md` (no IdP/SCIM mutation, no direct role API).
 Faz 89 adds **manual hot reload**, last-known-good, checksum/version in status, optional background watch (default off),
 gateway `POST /admin/rbac/overrides/reload` with dedicated permission + MFA — see `docs/admin-rbac-override-reload.md`.
-Faz 90-93 add **break-glass emergency governance foundation** (credential modes, WebAuthn/offline-signed hardening, approval/review workflow, active token revocation/denylist) — see `docs/break-glass-admin-access.md`, `docs/break-glass-approval-workflow.md`, `docs/break-glass-post-use-review.md`, and `docs/break-glass-token-revocation.md`.
+Faz 90-94 add **break-glass emergency governance foundation** (credential modes, WebAuthn/offline-signed hardening, approval/review workflow, active token revocation/denylist, and tracked static-token rotation governance with fingerprint-only verification) — see `docs/break-glass-admin-access.md`, `docs/break-glass-approval-workflow.md`, `docs/break-glass-post-use-review.md`, `docs/break-glass-token-revocation.md`, and `docs/break-glass-token-rotation.md` (+ runbook `docs/break-glass-token-rotation-runbook.md`).
 Faz 64 adds a **durable DB outbox** for notification SSE fanout with worker retries and dead-letter
 semantics while keeping Redis pub/sub as the realtime layer (`docs/notification-durable-fanout.md`).
 Faz 81 adds **admin notification delivery analytics** (aggregate-only; `docs/notification-analytics-dashboard.md`).

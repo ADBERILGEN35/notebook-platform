@@ -90,7 +90,7 @@ audit:
     issuer: ${AUDIT_ADMIN_SERVICE_JWT_ISSUER:audit-admin}
     audience: ${AUDIT_ADMIN_SERVICE_JWT_AUDIENCE:identity-service}
     clock-skew-seconds: ${AUDIT_ADMIN_SERVICE_JWT_CLOCK_SKEW_SECONDS:5}
-    allowed-scopes: ${AUDIT_ADMIN_SERVICE_JWT_ALLOWED_SCOPES:internal:audit:read,internal:admin:status:read,internal:admin:change-requests:manage,internal:admin:rbac:read,internal:admin:rbac:overrides:reload,internal:admin:break-glass:events:read,internal:admin:break-glass:events:review,internal:break-glass:token:check}
+    allowed-scopes: ${AUDIT_ADMIN_SERVICE_JWT_ALLOWED_SCOPES:internal:audit:read,internal:admin:status:read,internal:admin:change-requests:manage,internal:admin:rbac:read,internal:admin:rbac:overrides:reload,internal:admin:break-glass:events:read,internal:admin:break-glass:events:review,internal:admin:break-glass:rotation:read,internal:admin:break-glass:rotation:manage,internal:break-glass:token:check}
 
 identity:
   break-glass:
@@ -120,6 +120,10 @@ identity:
     static-token-max-failures-per-window: ${BREAK_GLASS_STATIC_TOKEN_MAX_FAILURES_PER_WINDOW:5}
     static-token-lockout-minutes: ${BREAK_GLASS_STATIC_TOKEN_LOCKOUT_MINUTES:15}
     static-token-rotation-recommended-after-use: ${BREAK_GLASS_STATIC_TOKEN_ROTATION_RECOMMENDED_AFTER_USE:true}
+    rotation-tracking-enabled: ${BREAK_GLASS_STATIC_TOKEN_ROTATION_TRACKING_ENABLED:false}
+    rotation-api-enabled: ${BREAK_GLASS_ROTATION_API_ENABLED:false}
+    token-hash-fingerprint-length: ${BREAK_GLASS_TOKEN_HASH_FINGERPRINT_LENGTH:12}
+    rotation-max-open-events: ${BREAK_GLASS_ROTATION_MAX_OPEN_EVENTS:5}
   internal:
     admin-status:
       enabled: ${IDENTITY_INTERNAL_ADMIN_STATUS_ENABLED:false}

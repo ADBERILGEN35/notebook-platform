@@ -79,7 +79,12 @@ public class IdentitySecurityStatusService {
             bg.sessionTtlMinutes(),
             bg.maxActiveSessions(),
             bg.requireReason(),
-            bg.requireMfa());
+            bg.requireMfa(),
+            bg.rotationTrackingEnabled(),
+            bg.rotationRequired(),
+            bg.openRotationEvents(),
+            bg.oldestRotationRequiredAt(),
+            bg.lastRotationVerifiedAt());
     return new IdentitySecurityStatusResponse(sso, scim, mfa, siem, adminRbac, breakGlass, false, null);
   }
 

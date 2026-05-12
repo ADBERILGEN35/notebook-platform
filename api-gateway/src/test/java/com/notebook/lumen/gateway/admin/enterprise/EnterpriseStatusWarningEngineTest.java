@@ -20,7 +20,7 @@ class EnterpriseStatusWarningEngineTest {
             new SiemStatus(false, "noop", false, false, false),
             new AdminRbacStatus(false, true, Map.of()),
             new BreakGlassStatus(
-                false, "static-token", List.of(), false, false, 0, false, false, false, null, "disabled", 0, 0, false, false, 15, 1, true, true),
+                false, "static-token", List.of(), false, false, 0, false, false, false, null, "disabled", 0, 0, false, false, 15, 1, true, true, false, false, 0, null, null),
             new AuditExportStatus(false, false, false, false, "", false),
             new NotificationsStatus(false, false, false, false),
             new GatewaySecurityStatus(true, true, "warn", List.of(), true, false, "bearer", false),
@@ -41,7 +41,7 @@ class EnterpriseStatusWarningEngineTest {
             new SiemStatus(false, "noop", false, false, false),
             new AdminRbacStatus(false, true, Map.of()),
             new BreakGlassStatus(
-                false, "static-token", List.of(), false, false, 0, false, false, false, null, "disabled", 0, 0, false, false, 15, 1, true, true),
+                false, "static-token", List.of(), false, false, 0, false, false, false, null, "disabled", 0, 0, false, false, 15, 1, true, true, false, false, 0, null, null),
             new AuditExportStatus(false, false, false, false, "", false),
             new NotificationsStatus(true, false, true, true),
             new GatewaySecurityStatus(

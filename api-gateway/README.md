@@ -65,6 +65,13 @@ Compose ile calistirirken tercih edilen yontem `JWT_JWKS_URI=http://identity-ser
   - `POST /admin/break-glass/events/{id}/revoke-token`
   - `GATEWAY_BREAK_GLASS_DENYLIST_CHECK_ENABLED`
   - `GATEWAY_BREAK_GLASS_DENYLIST_FAIL_CLOSED`
+- Break-glass static-token rotation governance (Faz 94, no token/hash in UI):
+  - `GET /admin/break-glass/rotation-events` (permission `admin:break-glass:rotation:read`)
+  - `GET /admin/break-glass/rotation-events/{id}`
+  - `POST /admin/break-glass/rotation-events/{id}/acknowledge` (permission `admin:break-glass:rotation:manage` + MFA)
+  - `POST /admin/break-glass/rotation-events/{id}/verify` (manage + MFA)
+  - `POST /admin/break-glass/rotation-events/{id}/close` (manage + MFA)
+  - see [`docs/break-glass-token-rotation.md`](../docs/break-glass-token-rotation.md)
 
 ## Routes
 

@@ -34,6 +34,21 @@ Cardinality rules:
 - no `userId`, `noteId`, `workspaceId` labels
 - only low-cardinality tags (`result`, `mergeVersion`, `conflictType`, `source`)
 
+### Conflict type vocabulary
+
+`conflictType` is bounded. As of Faz 95 the values are:
+
+- `MISSING_BLOCK_ID`, `DUPLICATE_BLOCK_ID` — structural id problems.
+- `TITLE_DIVERGENT` — both sides changed the title.
+- `SAME_BLOCK_CHANGED` — both sides edited the same block differently.
+- `DELETE_VS_EDIT` — one side removed, the other edited.
+- `BLOCK_MOVE_CONFLICT` — both sides moved the same block to different positions.
+- `BLOCK_MOVED_AND_EDITED` — one side moved a block, the other edited it.
+- `BLOCK_DELETED_AFTER_MOVE` — one side moved a block, the other deleted it.
+- `BLOCK_CROSS_PARENT_UNSUPPORTED` — cross-parent move outside Faz 95 safe set.
+
+Pure safe moves/reorders are **not** conflicts — they appear in `summary.localChanges` / `remoteChanges` only and do not increment `note_merge_conflicts_total`. The Faz 95 safe-suggestion path covers same-parent reorders combined with disjoint remote edits.
+
 ## Structured Logs
 
 Analyze log fields:

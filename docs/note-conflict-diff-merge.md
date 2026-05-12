@@ -1,4 +1,12 @@
-# Note conflict diff / merge (Faz 66)
+# Note conflict diff / merge (Faz 66; extended in Faz 95)
+
+> **Faz 95 update:** same-parent block reorders combined with disjoint remote edits are now part
+> of the safe suggested-merge set. New conflict types
+> (`BLOCK_MOVE_CONFLICT`, `BLOCK_MOVED_AND_EDITED`, `BLOCK_DELETED_AFTER_MOVE`,
+> `BLOCK_CROSS_PARENT_UNSUPPORTED`) replace the legacy blanket `MOVE_OR_STRUCTURE` conflict
+> for movement scenarios. See [`advanced-note-merge-rules.md`](advanced-note-merge-rules.md).
+> No silent merge — every safe suggestion still requires user confirmation.
+
 
 BlockNote-backed notes use **optimistic concurrency** (`If-Match` / ETag). When a save returns `412 NOTE_CONFLICT`, the client keeps local edits and must resolve against a newer server revision.
 

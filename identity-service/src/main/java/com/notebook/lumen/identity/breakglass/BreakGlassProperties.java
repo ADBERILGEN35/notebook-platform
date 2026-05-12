@@ -31,7 +31,11 @@ public record BreakGlassProperties(
     @DefaultValue("true") boolean notifyOnUse,
     @DefaultValue("5") int staticTokenMaxFailuresPerWindow,
     @DefaultValue("15") int staticTokenLockoutMinutes,
-    @DefaultValue("true") boolean staticTokenRotationRecommendedAfterUse) {
+    @DefaultValue("true") boolean staticTokenRotationRecommendedAfterUse,
+    @DefaultValue("false") boolean rotationTrackingEnabled,
+    @DefaultValue("false") boolean rotationApiEnabled,
+    @DefaultValue("12") int tokenHashFingerprintLength,
+    @DefaultValue("5") int rotationMaxOpenEvents) {
 
   public BreakGlassProperties {
     if (sessionTtlMinutes < 1) {
@@ -54,6 +58,15 @@ public record BreakGlassProperties(
     }
     if (staticTokenLockoutMinutes < 1) {
       staticTokenLockoutMinutes = 15;
+    }
+    if (tokenHashFingerprintLength < 8) {
+      tokenHashFingerprintLength = 12;
+    }
+    if (tokenHashFingerprintLength > 32) {
+      tokenHashFingerprintLength = 32;
+    }
+    if (rotationMaxOpenEvents < 1) {
+      rotationMaxOpenEvents = 5;
     }
     credentialMode = credentialMode == null || credentialMode.isBlank() ? "static-token" : credentialMode.trim();
     approvalMode = approvalMode == null || approvalMode.isBlank() ? "disabled" : approvalMode.trim();

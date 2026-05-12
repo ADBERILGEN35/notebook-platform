@@ -21,3 +21,6 @@ Phase 93 adds active break-glass access token revocation.
 - No token raw values are returned in UI.
 - Revocation requires review-grade permission + MFA at gateway.
 - Fail-closed mode is supported for denylist lookup failures.
+
+See also: `docs/break-glass-token-rotation.md` for the Faz 94 rotation
+governance flow that runs after the token is used.

@@ -59,5 +59,10 @@ public record IdentitySecurityStatusResponse(
       int sessionTtlMinutes,
       int maxActiveSessions,
       boolean requireReason,
-      boolean requireMfa) {}
+      boolean requireMfa,
+      boolean rotationTrackingEnabled,
+      boolean rotationRequired,
+      long openRotationEvents,
+      java.time.Instant oldestRotationRequiredAt,
+      java.time.Instant lastRotationVerifiedAt) {}
 }

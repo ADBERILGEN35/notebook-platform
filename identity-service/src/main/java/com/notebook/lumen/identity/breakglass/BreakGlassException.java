@@ -51,5 +51,40 @@ public final class BreakGlassException extends IdentityRuntimeException {
     return new BreakGlassException(
         "BREAK_GLASS_ASSERTION_REPLAYED", HttpStatus.FORBIDDEN, "Break-glass assertion replay detected");
   }
+
+  public static BreakGlassException rotationNotFound() {
+    return new BreakGlassException(
+        "BREAK_GLASS_ROTATION_NOT_FOUND",
+        HttpStatus.NOT_FOUND,
+        "Break-glass token rotation event not found");
+  }
+
+  public static BreakGlassException rotationInvalidTransition(String reason) {
+    return new BreakGlassException(
+        "BREAK_GLASS_ROTATION_INVALID_TRANSITION",
+        HttpStatus.CONFLICT,
+        reason == null || reason.isBlank() ? "Invalid rotation state transition" : reason);
+  }
+
+  public static BreakGlassException rotationNotChanged() {
+    return new BreakGlassException(
+        "BREAK_GLASS_ROTATION_NOT_CHANGED",
+        HttpStatus.CONFLICT,
+        "Configured break-glass token hash has not changed");
+  }
+
+  public static BreakGlassException rotationApiDisabled() {
+    return new BreakGlassException(
+        "BREAK_GLASS_ROTATION_API_DISABLED",
+        HttpStatus.FORBIDDEN,
+        "Break-glass rotation API is disabled");
+  }
+
+  public static BreakGlassException rotationLimitExceeded() {
+    return new BreakGlassException(
+        "BREAK_GLASS_ROTATION_LIMIT_EXCEEDED",
+        HttpStatus.TOO_MANY_REQUESTS,
+        "Break-glass rotation open-event limit exceeded");
+  }
 }
 

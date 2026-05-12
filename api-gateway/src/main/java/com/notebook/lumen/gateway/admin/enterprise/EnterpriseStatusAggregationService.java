@@ -244,7 +244,8 @@ public class EnterpriseStatusAggregationService {
     boolean writeAllowed = breakGlassProperties.allowAdminWrite();
     if (identity == null || identity.path("breakGlass").isMissingNode()) {
       return new BreakGlassStatus(
-          false, "static-token", List.of(), false, false, 0, false, false, false, null, "disabled", 0, 0, gwAllowed, writeAllowed, 15, 1, true, true);
+          false, "static-token", List.of(), false, false, 0, false, false, false, null, "disabled", 0, 0,
+          gwAllowed, writeAllowed, 15, 1, true, true, false, false, 0, null, null);
     }
     JsonNode n = identity.path("breakGlass");
     List<String> modes = new ArrayList<>();
@@ -271,7 +272,12 @@ public class EnterpriseStatusAggregationService {
         n.path("sessionTtlMinutes").asInt(15),
         n.path("maxActiveSessions").asInt(1),
         n.path("requireReason").asBoolean(true),
-        n.path("requireMfa").asBoolean(true));
+        n.path("requireMfa").asBoolean(true),
+        n.path("rotationTrackingEnabled").asBoolean(false),
+        n.path("rotationRequired").asBoolean(false),
+        n.path("openRotationEvents").asLong(0),
+        parseInstantOrNull(n.path("oldestRotationRequiredAt").asText(null)),
+        parseInstantOrNull(n.path("lastRotationVerifiedAt").asText(null)));
   }
 
   private AdminRbacStatus mapAdminRbac(JsonNode identity) {

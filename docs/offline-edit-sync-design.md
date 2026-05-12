@@ -38,6 +38,14 @@ Production posture remains unchanged: offline edit/sync flags are disabled by de
 - Merge conflict resolution flow now has privacy-safe observability hooks and backend metrics.
 - Offline draft vs online conflict source separation is supported in frontend merge event contract.
 
+## Faz 95 advanced merge rules
+
+- Offline draft conflict resolution reuses the same conflict dialog family, so it inherits Faz 95
+  same-parent reorder safe-merge suggestions and the new `Moved blocks` /
+  `Reordered blocks` / `Move conflicts` dialog sections.
+- No silent draft auto-merge — sync stays manual on conflict; user confirms apply.
+- See [`advanced-note-merge-rules.md`](advanced-note-merge-rules.md).
+
 ## Faz 69 security hardening update
 
 - Added WebCrypto-based encryption foundation for offline storage.

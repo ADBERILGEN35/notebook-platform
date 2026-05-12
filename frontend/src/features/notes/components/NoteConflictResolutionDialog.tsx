@@ -43,20 +43,29 @@ export function NoteConflictResolutionDialog(props: Props) {
       ),
     ),
   )
-  const onlyMoveConflict = Boolean(
-    props.mergeAnalysis?.conflicts.length &&
-      props.mergeAnalysis.conflicts.every((c) => c.reason === 'move_or_structure'),
+  const hasMoveConflict = Boolean(
+    props.mergeAnalysis?.conflicts.some((c) =>
+      ['block_move_conflict', 'block_moved_and_edited', 'block_deleted_after_move', 'block_cross_parent_unsupported', 'move_or_structure'].includes(
+        c.reason,
+      ),
+    ),
   )
+  const movedBlocks = props.mergeAnalysis?.movedBlocks ?? []
+  const reorderedBlocks = props.mergeAnalysis?.reorderedBlocks ?? []
+  const moveConflictRows = props.mergeAnalysis?.moveConflicts ?? []
 
   const guidance = (() => {
     if (props.remoteLoading || !props.mergeAnalysis) {
       return 'Loading the latest server version to compare changes…'
     }
+    if (showMerge && (movedBlocks.length || reorderedBlocks.length)) {
+      return 'We can safely combine your block order changes with server content changes. Review the suggested merge before applying.'
+    }
     if (showMerge) {
       return 'We can safely combine these changes. Suggested merge keeps non-overlapping changes from both versions.'
     }
-    if (onlyMoveConflict) {
-      return 'Block reordering or moves were detected. Review manually or save your copy.'
+    if (hasMoveConflict) {
+      return 'Block reordering or moves overlap with other changes. Review manually or save your copy.'
     }
     if (overlapConflict) {
       return 'Some changes touch the same block and need your decision. Review manually or save your copy.'
@@ -102,6 +111,44 @@ export function NoteConflictResolutionDialog(props: Props) {
               <SummaryList lines={props.mergeAnalysis.remoteChangeSummary} />
             </div>
           </details>
+          {movedBlocks.length ? (
+            <details className="rounded border border-sky-200 bg-sky-50/40 p-2" open={!isMobile}>
+              <summary className="cursor-pointer text-xs font-medium text-sky-900">Moved blocks</summary>
+              <div className="mt-2" data-testid="conflict-moved-blocks-summary">
+                <SummaryList
+                  lines={movedBlocks.map((m) =>
+                    m.parentChanged
+                      ? `Moved ${m.blockType} block ${m.blockId} to a different parent`
+                      : `Moved ${m.blockType} block ${m.blockId}`,
+                  )}
+                />
+              </div>
+            </details>
+          ) : null}
+          {reorderedBlocks.length ? (
+            <details className="rounded border border-sky-200 bg-sky-50/40 p-2" open={!isMobile}>
+              <summary className="cursor-pointer text-xs font-medium text-sky-900">Reordered blocks</summary>
+              <div className="mt-2" data-testid="conflict-reorder-summary">
+                <SummaryList
+                  lines={reorderedBlocks.map(
+                    (m) => `Reordered ${m.blockType} block ${m.blockId} from position ${m.fromIndex ?? '?'} to ${m.toIndex ?? '?'}`,
+                  )}
+                />
+              </div>
+            </details>
+          ) : null}
+          {moveConflictRows.length ? (
+            <details className="rounded border border-amber-200 bg-amber-50/50 p-2" open>
+              <summary className="cursor-pointer text-xs font-medium text-amber-900">Move conflicts</summary>
+              <div className="mt-2" data-testid="conflict-move-conflicts-summary">
+                <SummaryList
+                  lines={moveConflictRows.map(
+                    (m) => `Block ${m.blockId} was moved differently in both versions.`,
+                  )}
+                />
+              </div>
+            </details>
+          ) : null}
           {props.mergeAnalysis.conflictSummaries.length ? (
             <details className="rounded border border-amber-200 bg-amber-50/50 p-2" open>
               <summary className="cursor-pointer text-xs font-medium text-amber-900">Conflicts</summary>

@@ -17,6 +17,10 @@ public class AuditAdminAuthorizer {
   public static final String BREAK_GLASS_EVENTS_READ_SCOPE = "internal:admin:break-glass:events:read";
   public static final String BREAK_GLASS_EVENTS_REVIEW_SCOPE = "internal:admin:break-glass:events:review";
   public static final String BREAK_GLASS_TOKEN_CHECK_SCOPE = "internal:break-glass:token:check";
+  public static final String BREAK_GLASS_ROTATION_READ_SCOPE =
+      "internal:admin:break-glass:rotation:read";
+  public static final String BREAK_GLASS_ROTATION_MANAGE_SCOPE =
+      "internal:admin:break-glass:rotation:manage";
 
   private final AuditAdminProperties properties;
 

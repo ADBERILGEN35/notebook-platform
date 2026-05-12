@@ -96,6 +96,16 @@ oldugunda revision artar.
 - Analyze/apply sureleri timer metricleriyle olculur.
 - Structured merge loglari raw content icermez.
 
+## Advanced Merge Rules (Faz 95)
+
+- Block move/reorder detection: ayni parent icinde reorderlar artik typed bir change'tir
+  (silent merge yok, kullanici onayini hala bekliyor).
+- Yeni conflict tipleri: `BLOCK_MOVE_CONFLICT`, `BLOCK_MOVED_AND_EDITED`,
+  `BLOCK_DELETED_AFTER_MOVE`, `BLOCK_CROSS_PARENT_UNSUPPORTED`.
+- `clientMergeVersion=1` korunur (additive contract); legacy `MOVE_OR_STRUCTURE` artik
+  emit edilmez.
+- Detaylar: [`docs/advanced-note-merge-rules.md`](../docs/advanced-note-merge-rules.md).
+
 ## Block JSON
 
 `content_blocks` JSONB saklanir ve root array olmak zorundadir. Her block:

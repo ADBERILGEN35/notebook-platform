@@ -146,6 +146,219 @@ class NoteMergeAnalyzeServiceTest {
   }
 
   @Test
+  void analyze_safeReorder_localRootReorderRemoteEditUnrelatedBlock() throws Exception {
+    UUID noteId = UUID.randomUUID();
+    UUID workspaceId = UUID.randomUUID();
+    UUID notebookId = UUID.randomUUID();
+    UUID userId = UUID.randomUUID();
+    String remoteBlocks =
+        "[{\"id\":\"a\",\"type\":\"paragraph\",\"props\":{\"v\":1}},"
+            + "{\"id\":\"b\",\"type\":\"paragraph\",\"props\":{\"v\":1}},"
+            + "{\"id\":\"c\",\"type\":\"paragraph\",\"props\":{\"v\":2}}]";
+    when(noteService.load(noteId))
+        .thenReturn(
+            new Note(
+                noteId,
+                workspaceId,
+                notebookId,
+                null,
+                "T",
+                remoteBlocks,
+                1,
+                userId,
+                Instant.now()));
+    doNothing()
+        .when(noteService)
+        .assertAggregateWorkspaceHeader(new UserContext(userId, workspaceId), workspaceId);
+    when(permissionService.requireWritable(userId, notebookId))
+        .thenReturn(
+            new WorkspaceClient.NotebookPermissionResponse(
+                workspaceId, notebookId, "OWNER", true, true, true, true));
+    when(noteEtagSupport.buildEtag(0)).thenReturn("note-rev-0");
+    when(noteEtagSupport.parseIfMatchRevision("\"note-rev-0\"")).thenReturn(0L);
+
+    var request =
+        new NoteMergeAnalyzeRequest(
+            new NoteMergeSnapshot(
+                "\"note-rev-0\"",
+                "T",
+                objectMapper.readTree(
+                    "[{\"id\":\"a\",\"type\":\"paragraph\",\"props\":{\"v\":1}},"
+                        + "{\"id\":\"b\",\"type\":\"paragraph\",\"props\":{\"v\":1}},"
+                        + "{\"id\":\"c\",\"type\":\"paragraph\",\"props\":{\"v\":1}}]")),
+            new NoteMergeLocalSnapshot(
+                "T",
+                objectMapper.readTree(
+                    "[{\"id\":\"b\",\"type\":\"paragraph\",\"props\":{\"v\":1}},"
+                        + "{\"id\":\"a\",\"type\":\"paragraph\",\"props\":{\"v\":1}},"
+                        + "{\"id\":\"c\",\"type\":\"paragraph\",\"props\":{\"v\":1}}]")),
+            1);
+
+    var response = service.analyze(new UserContext(userId, workspaceId), noteId, request);
+    assertThat(response.hasConflicts()).isFalse();
+    assertThat(response.canAutoMerge()).isTrue();
+    assertThat(response.suggested()).isNotNull();
+    assertThat(response.suggested().contentBlocks().toString())
+        .startsWith("[{\"id\":\"b\"")
+        .contains("\"id\":\"a\"")
+        .contains("\"v\":2");
+    assertThat(response.summary().localChanges()).anyMatch(s -> s.contains("Reordered block"));
+  }
+
+  @Test
+  void analyze_conflict_bothSidesMoveSameBlockDifferently() throws Exception {
+    UUID noteId = UUID.randomUUID();
+    UUID workspaceId = UUID.randomUUID();
+    UUID notebookId = UUID.randomUUID();
+    UUID userId = UUID.randomUUID();
+    String remoteBlocks =
+        "[{\"id\":\"a\",\"type\":\"paragraph\"},"
+            + "{\"id\":\"c\",\"type\":\"paragraph\"},"
+            + "{\"id\":\"b\",\"type\":\"paragraph\"}]";
+    when(noteService.load(noteId))
+        .thenReturn(
+            new Note(
+                noteId,
+                workspaceId,
+                notebookId,
+                null,
+                "T",
+                remoteBlocks,
+                1,
+                userId,
+                Instant.now()));
+    doNothing()
+        .when(noteService)
+        .assertAggregateWorkspaceHeader(new UserContext(userId, workspaceId), workspaceId);
+    when(permissionService.requireWritable(userId, notebookId))
+        .thenReturn(
+            new WorkspaceClient.NotebookPermissionResponse(
+                workspaceId, notebookId, "OWNER", true, true, true, true));
+    when(noteEtagSupport.buildEtag(0)).thenReturn("note-rev-0");
+    when(noteEtagSupport.parseIfMatchRevision("\"note-rev-0\"")).thenReturn(0L);
+
+    var request =
+        new NoteMergeAnalyzeRequest(
+            new NoteMergeSnapshot(
+                "\"note-rev-0\"",
+                "T",
+                objectMapper.readTree(
+                    "[{\"id\":\"a\",\"type\":\"paragraph\"},"
+                        + "{\"id\":\"b\",\"type\":\"paragraph\"},"
+                        + "{\"id\":\"c\",\"type\":\"paragraph\"}]")),
+            new NoteMergeLocalSnapshot(
+                "T",
+                objectMapper.readTree(
+                    "[{\"id\":\"b\",\"type\":\"paragraph\"},"
+                        + "{\"id\":\"a\",\"type\":\"paragraph\"},"
+                        + "{\"id\":\"c\",\"type\":\"paragraph\"}]")),
+            1);
+
+    var response = service.analyze(new UserContext(userId, workspaceId), noteId, request);
+    assertThat(response.hasConflicts()).isTrue();
+    assertThat(response.canAutoMerge()).isFalse();
+    assertThat(response.conflicts()).extracting("type").contains("BLOCK_MOVE_CONFLICT");
+  }
+
+  @Test
+  void analyze_conflict_localMoveRemoteEditSameBlock() throws Exception {
+    UUID noteId = UUID.randomUUID();
+    UUID workspaceId = UUID.randomUUID();
+    UUID notebookId = UUID.randomUUID();
+    UUID userId = UUID.randomUUID();
+    String remoteBlocks =
+        "[{\"id\":\"a\",\"type\":\"paragraph\",\"props\":{\"v\":2}},"
+            + "{\"id\":\"b\",\"type\":\"paragraph\"}]";
+    when(noteService.load(noteId))
+        .thenReturn(
+            new Note(
+                noteId,
+                workspaceId,
+                notebookId,
+                null,
+                "T",
+                remoteBlocks,
+                1,
+                userId,
+                Instant.now()));
+    doNothing()
+        .when(noteService)
+        .assertAggregateWorkspaceHeader(new UserContext(userId, workspaceId), workspaceId);
+    when(permissionService.requireWritable(userId, notebookId))
+        .thenReturn(
+            new WorkspaceClient.NotebookPermissionResponse(
+                workspaceId, notebookId, "OWNER", true, true, true, true));
+    when(noteEtagSupport.buildEtag(0)).thenReturn("note-rev-0");
+    when(noteEtagSupport.parseIfMatchRevision("\"note-rev-0\"")).thenReturn(0L);
+
+    var request =
+        new NoteMergeAnalyzeRequest(
+            new NoteMergeSnapshot(
+                "\"note-rev-0\"",
+                "T",
+                objectMapper.readTree(
+                    "[{\"id\":\"a\",\"type\":\"paragraph\",\"props\":{\"v\":1}},"
+                        + "{\"id\":\"b\",\"type\":\"paragraph\"}]")),
+            new NoteMergeLocalSnapshot(
+                "T",
+                objectMapper.readTree(
+                    "[{\"id\":\"b\",\"type\":\"paragraph\"},"
+                        + "{\"id\":\"a\",\"type\":\"paragraph\",\"props\":{\"v\":1}}]")),
+            1);
+
+    var response = service.analyze(new UserContext(userId, workspaceId), noteId, request);
+    assertThat(response.hasConflicts()).isTrue();
+    assertThat(response.conflicts()).extracting("type").contains("BLOCK_MOVED_AND_EDITED");
+  }
+
+  @Test
+  void analyze_conflict_localMoveRemoteDelete() throws Exception {
+    UUID noteId = UUID.randomUUID();
+    UUID workspaceId = UUID.randomUUID();
+    UUID notebookId = UUID.randomUUID();
+    UUID userId = UUID.randomUUID();
+    String remoteBlocks = "[{\"id\":\"b\",\"type\":\"paragraph\"}]";
+    when(noteService.load(noteId))
+        .thenReturn(
+            new Note(
+                noteId,
+                workspaceId,
+                notebookId,
+                null,
+                "T",
+                remoteBlocks,
+                1,
+                userId,
+                Instant.now()));
+    doNothing()
+        .when(noteService)
+        .assertAggregateWorkspaceHeader(new UserContext(userId, workspaceId), workspaceId);
+    when(permissionService.requireWritable(userId, notebookId))
+        .thenReturn(
+            new WorkspaceClient.NotebookPermissionResponse(
+                workspaceId, notebookId, "OWNER", true, true, true, true));
+    when(noteEtagSupport.buildEtag(0)).thenReturn("note-rev-0");
+    when(noteEtagSupport.parseIfMatchRevision("\"note-rev-0\"")).thenReturn(0L);
+
+    var request =
+        new NoteMergeAnalyzeRequest(
+            new NoteMergeSnapshot(
+                "\"note-rev-0\"",
+                "T",
+                objectMapper.readTree(
+                    "[{\"id\":\"a\",\"type\":\"paragraph\"},{\"id\":\"b\",\"type\":\"paragraph\"}]")),
+            new NoteMergeLocalSnapshot(
+                "T",
+                objectMapper.readTree(
+                    "[{\"id\":\"b\",\"type\":\"paragraph\"},{\"id\":\"a\",\"type\":\"paragraph\"}]")),
+            1);
+
+    var response = service.analyze(new UserContext(userId, workspaceId), noteId, request);
+    assertThat(response.hasConflicts()).isTrue();
+    assertThat(response.conflicts()).extracting("type").contains("BLOCK_DELETED_AFTER_MOVE");
+  }
+
+  @Test
   void analyze_rejectsUnsupportedVersion() {
     UUID noteId = UUID.randomUUID();
     assertThatThrownBy(

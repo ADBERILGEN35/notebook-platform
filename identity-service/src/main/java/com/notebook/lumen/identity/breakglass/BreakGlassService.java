@@ -44,12 +44,15 @@ public class BreakGlassService {
   private final JwtTokenService jwtTokenService;
   private final AuditService auditService;
   private final BreakGlassAccessEventService accessEventService;
+  private final BreakGlassTokenRotationService rotationService;
 
   /** In-memory guardrail: at most N active sessions per instance. */
   private final AtomicReference<Instant> activeUntil = new AtomicReference<>(null);
   private final AtomicReference<Instant> staticTokenLockoutUntil = new AtomicReference<>(null);
   private final AtomicReference<Integer> staticTokenFailures = new AtomicReference<>(0);
   private final AtomicReference<Instant> lastStaticTokenUsedAt = new AtomicReference<>(null);
+  private final AtomicReference<UUID> lastIssuedEventId = new AtomicReference<>(null);
+  private final AtomicReference<String> lastIssuedSessionId = new AtomicReference<>(null);
   private final ConcurrentHashMap<String, Instant> usedAssertionJti = new ConcurrentHashMap<>();
   private final ConcurrentHashMap<String, Instant> pendingWebauthnChallenges = new ConcurrentHashMap<>();
 
@@ -57,11 +60,13 @@ public class BreakGlassService {
       BreakGlassProperties props,
       JwtTokenService jwtTokenService,
       AuditService auditService,
-      BreakGlassAccessEventService accessEventService) {
+      BreakGlassAccessEventService accessEventService,
+      BreakGlassTokenRotationService rotationService) {
     this.props = props;
     this.jwtTokenService = jwtTokenService;
     this.auditService = auditService;
     this.accessEventService = accessEventService;
+    this.rotationService = rotationService;
   }
 
   public BreakGlassDtos.BreakGlassStatusResponse status() {
@@ -77,6 +82,7 @@ public class BreakGlassService {
     }
     long pendingReviewCount = accessEventService.pendingReviewCount();
     long overdueReviewCount = accessEventService.overdueReviewCount();
+    BreakGlassRotationDtos.RotationSummary rotation = rotationService.summary();
     return new BreakGlassDtos.BreakGlassStatusResponse(
         props.enabled(),
         props.credentialMode(),
@@ -94,7 +100,12 @@ public class BreakGlassService {
         lastStaticTokenUsedAt.get(),
         BreakGlassApprovalMode.from(props.approvalMode()).wire(),
         pendingReviewCount,
-        overdueReviewCount);
+        overdueReviewCount,
+        rotation.trackingEnabled(),
+        rotation.rotationRequired(),
+        rotation.openRotationEvents(),
+        rotation.oldestRequiredAt(),
+        rotation.lastRotationVerifiedAt());
   }
 
   public BreakGlassDtos.BreakGlassLoginResponse login(String token, String reason) {
@@ -143,6 +154,17 @@ public class BreakGlassService {
     lastStaticTokenUsedAt.set(Instant.now());
     if (props.staticTokenRotationRecommendedAfterUse()) {
       audit("BREAK_GLASS_STATIC_TOKEN_ROTATION_REQUIRED", Map.of("mode", MODE_STATIC, "reasonPresent", true));
+      if (props.rotationTrackingEnabled()) {
+        try {
+          UUID lastEventId = lastIssuedEventId.get();
+          String lastSessionId = lastIssuedSessionId.get();
+          rotationService.recordRequiredAfterStaticUse(lastEventId, lastSessionId, request);
+        } catch (BreakGlassException ignored) {
+          // Audit already recorded; do not break login.
+        } catch (RuntimeException ignored) {
+          // Defensive: rotation tracking failure must not block emergency access.
+        }
+      }
     }
     return response;
   }
@@ -294,6 +316,8 @@ public class BreakGlassService {
     String accessToken = jwtTokenService.generateAccessToken(syntheticUserId, actor, claims, ttlSeconds);
     audit("BREAK_GLASS_SESSION_ISSUED", Map.of("mode", mode, "reasonPresent", true, "actor", actor));
     auditMetricLike(mode, "SUCCESS");
+    lastIssuedEventId.set(createdEvent == null ? null : createdEvent.getId());
+    lastIssuedSessionId.set(sessionId);
     return new BreakGlassDtos.BreakGlassLoginResponse(accessToken, "Bearer", ttlSeconds, true);
   }
 

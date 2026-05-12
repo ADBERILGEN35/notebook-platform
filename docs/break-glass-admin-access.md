@@ -96,6 +96,10 @@ See:
 See:
 - `docs/break-glass-approval-workflow.md`
 - `docs/break-glass-post-use-review.md`
+- `docs/break-glass-token-revocation.md`
+- `docs/break-glass-denylist.md`
+- `docs/break-glass-token-rotation.md` (Faz 94 rotation governance)
+- `docs/break-glass-token-rotation-runbook.md` (Faz 94 operator flow)
 
 - WebAuthn-based emergency account flow
 - Offline signed one-time JWT flow

@@ -54,9 +54,13 @@ If `BREAK_GLASS_APPROVAL_MODE=required_before_issue`, workflow may return approv
   - `GATEWAY_BREAK_GLASS_ADMIN_ALLOWED=false`
   - `BREAK_GLASS_ALLOW_ADMIN_WRITE=false`
 - Rotate static token and update `BREAK_GLASS_TOKEN_HASH` if static mode was used.
+  When `BREAK_GLASS_STATIC_TOKEN_ROTATION_TRACKING_ENABLED=true`, follow the
+  governance flow in [`break-glass-token-rotation-runbook.md`](break-glass-token-rotation-runbook.md):
+  acknowledge → update External Secret → restart pods → verify → close.
 - Review audit events:
   - `BREAK_GLASS_LOGIN_ATTEMPT`, `BREAK_GLASS_LOGIN_FAILED`, `BREAK_GLASS_LOGIN_SUCCEEDED`, `BREAK_GLASS_SESSION_ISSUED`
   - `BREAK_GLASS_EVENT_CREATED`, `BREAK_GLASS_REVIEW_*`
   - `BREAK_GLASS_TOKEN_REVOKED`, `BREAK_GLASS_TOKEN_ALREADY_*`
+  - `BREAK_GLASS_TOKEN_ROTATION_REQUIRED|ACKNOWLEDGED|VERIFIED|CLOSED`
 - Post-incident review: root cause, controls, and any policy improvements.
 

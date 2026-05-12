@@ -25,7 +25,8 @@ class BreakGlassServiceTest {
             props,
             mock(JwtTokenService.class),
             mock(AuditService.class),
-            mock(BreakGlassAccessEventService.class));
+            mock(BreakGlassAccessEventService.class),
+            mock(BreakGlassTokenRotationService.class));
     assertThatThrownBy(() -> svc.login("t", "reason reason reason reason"))
         .isInstanceOf(BreakGlassException.class)
         .hasMessageContaining("disabled");
@@ -37,7 +38,7 @@ class BreakGlassServiceTest {
     AuditService audit = mock(AuditService.class);
     JwtTokenService jwt = mock(JwtTokenService.class);
     BreakGlassService svc =
-        new BreakGlassService(props, jwt, audit, mock(BreakGlassAccessEventService.class));
+        new BreakGlassService(props, jwt, audit, mock(BreakGlassAccessEventService.class), mock(BreakGlassTokenRotationService.class));
     assertThatThrownBy(() -> svc.login("super-secret-token", "reason reason reason reason"))
         .isInstanceOf(BreakGlassException.class)
         .satisfies(e -> assertThat(((BreakGlassException) e).getErrorCode()).isEqualTo("BREAK_GLASS_INVALID_TOKEN"));
@@ -52,7 +53,8 @@ class BreakGlassServiceTest {
             props,
             mock(JwtTokenService.class),
             mock(AuditService.class),
-            mock(BreakGlassAccessEventService.class));
+            mock(BreakGlassAccessEventService.class),
+            mock(BreakGlassTokenRotationService.class));
     assertThatThrownBy(() -> svc.login("x", "short"))
         .isInstanceOf(BreakGlassException.class)
         .satisfies(e -> assertThat(((BreakGlassException) e).getErrorCode()).isEqualTo("BREAK_GLASS_REASON_REQUIRED"));
@@ -67,7 +69,7 @@ class BreakGlassServiceTest {
     JwtTokenService jwt = mock(JwtTokenService.class);
     when(jwt.generateAccessToken(any(), any(), any(Map.class), anyLong())).thenReturn("jwt-access");
     BreakGlassService svc =
-        new BreakGlassService(props, jwt, audit, mock(BreakGlassAccessEventService.class));
+        new BreakGlassService(props, jwt, audit, mock(BreakGlassAccessEventService.class), mock(BreakGlassTokenRotationService.class));
 
     BreakGlassDtos.BreakGlassLoginResponse resp =
         svc.login(token, "Recover admin access after RBAC override misconfiguration.");
@@ -113,7 +115,11 @@ class BreakGlassServiceTest {
         true,
         5,
         15,
-        true);
+        true,
+        false,
+        false,
+        12,
+        5);
   }
 }
 

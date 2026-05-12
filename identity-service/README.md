@@ -27,7 +27,7 @@ docker compose -f docker-compose.dev.yml up -d
 - Swagger UI: `http://localhost:8081/swagger-ui.html`
 - Sağlık: `http://localhost:8081/actuator/health`
 
-## Break-glass governance (Faz 90-92)
+## Break-glass governance (Faz 90-94)
 
 - Break-glass default kapalıdır (`BREAK_GLASS_ENABLED=false`).
 - Faz 91 credential mode foundation: `static-token|webauthn|offline-signed|hybrid`.
@@ -40,6 +40,13 @@ docker compose -f docker-compose.dev.yml up -d
   - `BREAK_GLASS_REVOCATION_ENABLED`
   - `BREAK_GLASS_REVOKE_ON_REJECT`
   - internal token status API: `/internal/break-glass/tokens/{jti}/revoked`
+- Faz 94 static-token rotation governance (tracked state machine, no token I/O in UI):
+  - `BREAK_GLASS_STATIC_TOKEN_ROTATION_TRACKING_ENABLED`
+  - `BREAK_GLASS_ROTATION_API_ENABLED`
+  - `BREAK_GLASS_TOKEN_HASH_FINGERPRINT_LENGTH` (clamped 8-32)
+  - `BREAK_GLASS_ROTATION_MAX_OPEN_EVENTS`
+  - internal rotation API: `/internal/admin/break-glass/rotation-events/*`
+  - see [`docs/break-glass-token-rotation.md`](../docs/break-glass-token-rotation.md) and [`docs/break-glass-token-rotation-runbook.md`](../docs/break-glass-token-rotation-runbook.md)
 
 ## RSA anahtarları (RS256)
 

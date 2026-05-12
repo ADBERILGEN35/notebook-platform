@@ -232,12 +232,29 @@ export function NotePage() {
         return 'duplicate_block_id'
       case 'TITLE_DIVERGENT':
         return 'title_divergent'
+      case 'BLOCK_MOVE_CONFLICT':
+        return 'block_move_conflict'
+      case 'BLOCK_MOVED_AND_EDITED':
+        return 'block_moved_and_edited'
+      case 'BLOCK_DELETED_AFTER_MOVE':
+        return 'block_deleted_after_move'
+      case 'BLOCK_CROSS_PARENT_UNSUPPORTED':
+        return 'block_cross_parent_unsupported'
       default:
         return 'move_or_structure'
     }
   }
   const serverMergeAnalysis: MergeAnalysis | null = useMemo(() => {
     if (!backendMergeQuery.data) return null
+    const moveConflicts = backendMergeQuery.data.conflicts
+      .filter((conflict) => conflict.type === 'BLOCK_MOVE_CONFLICT')
+      .map((conflict) => ({
+        blockId: conflict.blockId ?? '',
+        blockType: 'block',
+        fromIndex: null,
+        toIndex: null,
+        parentChanged: false,
+      }))
     return {
       suggestion: backendMergeQuery.data.suggested,
       conflicts: backendMergeQuery.data.conflicts.map((conflict) => ({
@@ -248,6 +265,9 @@ export function NotePage() {
       localChangeSummary: backendMergeQuery.data.summary.localChanges,
       remoteChangeSummary: backendMergeQuery.data.summary.remoteChanges,
       conflictSummaries: backendMergeQuery.data.summary.conflicts,
+      movedBlocks: [],
+      reorderedBlocks: [],
+      moveConflicts,
     }
   }, [backendMergeQuery.data])
   const mergeAnalysis = useMemo(() => {

@@ -2,6 +2,11 @@
 
 **Faz 77:** operators may record a GitOps-oriented **change request** for `NOTE_MERGE_ANALYSIS_ENABLED` / `NOTE_MERGE_APPLY_ENABLED` via the enterprise admin console (`docs/enterprise-admin-write-operations.md`); this does not toggle runtime flags automatically.
 
+**Faz 95:** apply path is unchanged — it consumes the analyze engine. Suggested merges may now
+include same-parent reorders. Apply still requires `expectedRemoteEtag`, idempotency,
+and is initiated only by user confirmation (no silent merge). See
+[`advanced-note-merge-rules.md`](advanced-note-merge-rules.md).
+
 ## Goal
 
 Provide a deterministic, user-triggered, ETag-guarded server-side merge apply contract on top of Faz 71 analyze-only endpoint.

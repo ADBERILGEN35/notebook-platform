@@ -27,6 +27,8 @@ export const PERM_RBAC_CHANGE_REQUEST_CREATE = 'admin:rbac:change-request:create
 export const PERM_BREAK_GLASS_READ = 'admin:break-glass:read'
 export const PERM_BREAK_GLASS_REVIEW = 'admin:break-glass:review'
 export const PERM_BREAK_GLASS_REVOKE = 'admin:break-glass:revoke'
+export const PERM_BREAK_GLASS_ROTATION_READ = 'admin:break-glass:rotation:read'
+export const PERM_BREAK_GLASS_ROTATION_MANAGE = 'admin:break-glass:rotation:manage'
 
 const OP_TO_CREATE_PERM: Record<string, string> = {
   ADMIN_MFA_MODE_UPDATE: PERM_SECURITY_CHANGE_REQUEST_CREATE,

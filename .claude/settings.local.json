@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(./gradlew :identity-service:compileJava)",
+      "Bash(./gradlew :identity-service:compileTestJava)",
+      "Bash(./gradlew :identity-service:test --tests \"com.notebook.lumen.identity.breakglass.*\" --tests \"com.notebook.lumen.identity.admin.*Security*\")",
+      "Bash(./gradlew :api-gateway:compileJava)",
+      "Bash(./gradlew :identity-service:test --tests \"com.notebook.lumen.identity.breakglass.BreakGlassTokenRotationServiceTest\")",
+      "Bash(./gradlew :identity-service:test)",
+      "Bash(./gradlew :api-gateway:test)",
+      "Bash(npm test *)",
+      "Bash(npx tsc *)",
+      "Bash(echo \"EXIT=$?\")",
+      "Bash(./gradlew :content-service:compileJava)",
+      "Bash(./gradlew :content-service:test --tests \"com.notebook.lumen.content.service.NoteMergeAnalyzeServiceTest\")",
+      "Bash(./gradlew :content-service:test --tests \"com.notebook.lumen.content.service.NoteMergeApplyServiceTest\")",
+      "Bash(./gradlew :content-service:test)",
+      "Bash(./gradlew :content-service:test --tests \"*Merge*\")"
+    ]
+  }
+}

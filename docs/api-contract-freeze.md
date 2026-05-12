@@ -32,6 +32,18 @@
 - New internal status endpoint: `GET /internal/admin/status/content`
 - Scope requirement: `internal:admin:status:read` (service JWT)
 - Gateway enterprise status response now includes content merge readiness slice.
+
+## Faz 95 contract notes
+
+- Wire shape of `POST /notes/{noteId}/merge/analyze` and `/merge/apply` is unchanged.
+- `clientMergeVersion=1` remains the supported version (additive evolution).
+- `conflicts[].type` may now be one of: `MISSING_BLOCK_ID`, `DUPLICATE_BLOCK_ID`, `TITLE_DIVERGENT`,
+  `SAME_BLOCK_CHANGED`, `DELETE_VS_EDIT`, `BLOCK_MOVE_CONFLICT`, `BLOCK_MOVED_AND_EDITED`,
+  `BLOCK_DELETED_AFTER_MOVE`, `BLOCK_CROSS_PARENT_UNSUPPORTED`.
+- Legacy `MOVE_OR_STRUCTURE` is no longer emitted; old clients render any unknown value as a
+  generic conflict.
+- `summary.localChanges` / `remoteChanges` may now include `"Reordered block ..."` and
+  `"Moved block ... to a different parent"` lines.
 ## Faz 34 Internal Contract Additions
 
 - `GET /internal/notebooks/{notebookId}/search-permission-snapshot`
