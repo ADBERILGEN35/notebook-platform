@@ -54,8 +54,7 @@ public class BreakGlassDenylistClient {
     cache.put(
         jti,
         new CachedStatus(
-            revoked,
-            Instant.now().plusSeconds(Math.max(1, properties.denylistCacheSeconds()))));
+            revoked, Instant.now().plusSeconds(Math.max(1, properties.denylistCacheSeconds()))));
     return new DenylistStatus(revoked, false);
   }
 
@@ -71,5 +70,6 @@ public class BreakGlassDenylistClient {
   }
 
   public record DenylistStatus(boolean revoked, boolean cacheHit) {}
+
   private record CachedStatus(boolean revoked, Instant cachedUntil) {}
 }

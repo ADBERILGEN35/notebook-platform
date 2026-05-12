@@ -91,3 +91,5 @@ Faz 68 wires this flow into offline draft manual sync:
   user resolution; no silent merge/apply is added.
 - Faz 75 foreground background sync MVP keeps conflict handling unchanged: conflict dialog is not
   auto-opened; users are directed to review drafts manually.
+- Faz 96 Service Worker Background Sync POC is dry-run only. A future worker write path must mark
+  `409/412` responses as `CONFLICT` and defer all review/apply actions to foreground UI.

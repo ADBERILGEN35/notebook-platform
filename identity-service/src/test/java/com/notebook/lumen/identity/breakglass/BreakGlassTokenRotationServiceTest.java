@@ -7,7 +7,6 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import com.notebook.lumen.identity.audit.AuditService;
 import java.time.Instant;
@@ -39,19 +38,22 @@ class BreakGlassTokenRotationServiceTest {
   @Test
   void recordRequired_createsEventWhenTrackingEnabled() {
     BreakGlassTokenRotationService svc =
-        new BreakGlassTokenRotationService(repository, props(true, false, "sha256:deadbeef"), auditService);
+        new BreakGlassTokenRotationService(
+            repository, props(true, false, "sha256:deadbeef"), auditService);
     Optional<BreakGlassTokenRotationEvent> created =
         svc.recordRequiredAfterStaticUse(UUID.randomUUID(), "session-1", null);
     assertThat(created).isPresent();
     assertThat(created.get().getStatus()).isEqualTo(BreakGlassTokenRotationEventStatus.REQUIRED);
     assertThat(created.get().getOldTokenHashFingerprint()).startsWith("fp:");
-    verify(auditService, atLeastOnce()).record(eq("BREAK_GLASS_TOKEN_ROTATION_REQUIRED"), any(), any(), any(), any(), any());
+    verify(auditService, atLeastOnce())
+        .record(eq("BREAK_GLASS_TOKEN_ROTATION_REQUIRED"), any(), any(), any(), any(), any());
   }
 
   @Test
   void recordRequired_isNoopWhenDisabled() {
     BreakGlassTokenRotationService svc =
-        new BreakGlassTokenRotationService(repository, props(false, false, "sha256:deadbeef"), auditService);
+        new BreakGlassTokenRotationService(
+            repository, props(false, false, "sha256:deadbeef"), auditService);
     Optional<BreakGlassTokenRotationEvent> created =
         svc.recordRequiredAfterStaticUse(null, null, null);
     assertThat(created).isEmpty();
@@ -61,7 +63,8 @@ class BreakGlassTokenRotationServiceTest {
   @Test
   void recordRequired_doesNotDuplicateForSameFingerprint() {
     BreakGlassTokenRotationService svc =
-        new BreakGlassTokenRotationService(repository, props(true, false, "sha256:deadbeef"), auditService);
+        new BreakGlassTokenRotationService(
+            repository, props(true, false, "sha256:deadbeef"), auditService);
     Optional<BreakGlassTokenRotationEvent> first =
         svc.recordRequiredAfterStaticUse(UUID.randomUUID(), "s1", null);
     Optional<BreakGlassTokenRotationEvent> second =
@@ -74,27 +77,49 @@ class BreakGlassTokenRotationServiceTest {
   @Test
   void acknowledge_requiresApiEnabled() {
     BreakGlassTokenRotationService svc =
-        new BreakGlassTokenRotationService(repository, props(true, false, "sha256:deadbeef"), auditService);
+        new BreakGlassTokenRotationService(
+            repository, props(true, false, "sha256:deadbeef"), auditService);
     svc.recordRequiredAfterStaticUse(UUID.randomUUID(), "s1", null);
     BreakGlassTokenRotationEvent ev = fakeRepository.saved.values().iterator().next();
     assertThatThrownBy(
-            () -> svc.acknowledge(ev.getId(), UUID.randomUUID(), new BreakGlassRotationDtos.AcknowledgeRequest("Started rotation procedure."), null))
+            () ->
+                svc.acknowledge(
+                    ev.getId(),
+                    UUID.randomUUID(),
+                    new BreakGlassRotationDtos.AcknowledgeRequest("Started rotation procedure."),
+                    null))
         .isInstanceOf(BreakGlassException.class)
-        .satisfies(e -> assertThat(((BreakGlassException) e).getErrorCode()).isEqualTo("BREAK_GLASS_ROTATION_API_DISABLED"));
+        .satisfies(
+            e ->
+                assertThat(((BreakGlassException) e).getErrorCode())
+                    .isEqualTo("BREAK_GLASS_ROTATION_API_DISABLED"));
   }
 
   @Test
   void verify_failsWhenHashUnchanged() {
     BreakGlassTokenRotationService svc =
-        new BreakGlassTokenRotationService(repository, props(true, true, "sha256:deadbeef"), auditService);
+        new BreakGlassTokenRotationService(
+            repository, props(true, true, "sha256:deadbeef"), auditService);
     svc.recordRequiredAfterStaticUse(UUID.randomUUID(), "s1", null);
     BreakGlassTokenRotationEvent ev = fakeRepository.saved.values().iterator().next();
     UUID actor = UUID.randomUUID();
-    svc.acknowledge(ev.getId(), actor, new BreakGlassRotationDtos.AcknowledgeRequest("Begin rotation runbook."), null);
+    svc.acknowledge(
+        ev.getId(),
+        actor,
+        new BreakGlassRotationDtos.AcknowledgeRequest("Begin rotation runbook."),
+        null);
     assertThatThrownBy(
-            () -> svc.verify(ev.getId(), actor, new BreakGlassRotationDtos.VerifyRequest("Restarted pods after secret update."), null))
+            () ->
+                svc.verify(
+                    ev.getId(),
+                    actor,
+                    new BreakGlassRotationDtos.VerifyRequest("Restarted pods after secret update."),
+                    null))
         .isInstanceOf(BreakGlassException.class)
-        .satisfies(e -> assertThat(((BreakGlassException) e).getErrorCode()).isEqualTo("BREAK_GLASS_ROTATION_NOT_CHANGED"));
+        .satisfies(
+            e ->
+                assertThat(((BreakGlassException) e).getErrorCode())
+                    .isEqualTo("BREAK_GLASS_ROTATION_NOT_CHANGED"));
   }
 
   @Test
@@ -105,13 +130,21 @@ class BreakGlassTokenRotationServiceTest {
     svc.recordRequiredAfterStaticUse(UUID.randomUUID(), "s1", null);
     BreakGlassTokenRotationEvent ev = fakeRepository.saved.values().iterator().next();
     UUID actor = UUID.randomUUID();
-    svc.acknowledge(ev.getId(), actor, new BreakGlassRotationDtos.AcknowledgeRequest("Begin rotation runbook."), null);
+    svc.acknowledge(
+        ev.getId(),
+        actor,
+        new BreakGlassRotationDtos.AcknowledgeRequest("Begin rotation runbook."),
+        null);
 
     BreakGlassProperties rotated = props(true, true, "sha256:cafef00d");
     BreakGlassTokenRotationService svcRotated =
         new BreakGlassTokenRotationService(repository, rotated, auditService);
     BreakGlassRotationDtos.RotationEventDetail detail =
-        svcRotated.verify(ev.getId(), actor, new BreakGlassRotationDtos.VerifyRequest("Restarted pods after secret update."), null);
+        svcRotated.verify(
+            ev.getId(),
+            actor,
+            new BreakGlassRotationDtos.VerifyRequest("Restarted pods after secret update."),
+            null);
     assertThat(detail.status()).isEqualTo("VERIFIED");
     assertThat(detail.newFingerprint()).isNotEqualTo(detail.oldFingerprint());
     assertThat(detail.newFingerprint()).startsWith("fp:");
@@ -120,20 +153,30 @@ class BreakGlassTokenRotationServiceTest {
   @Test
   void close_requiresVerified() {
     BreakGlassTokenRotationService svc =
-        new BreakGlassTokenRotationService(repository, props(true, true, "sha256:deadbeef"), auditService);
+        new BreakGlassTokenRotationService(
+            repository, props(true, true, "sha256:deadbeef"), auditService);
     svc.recordRequiredAfterStaticUse(UUID.randomUUID(), "s1", null);
     BreakGlassTokenRotationEvent ev = fakeRepository.saved.values().iterator().next();
     UUID actor = UUID.randomUUID();
     assertThatThrownBy(
-            () -> svc.close(ev.getId(), actor, new BreakGlassRotationDtos.CloseRequest("Closing without verify."), null))
+            () ->
+                svc.close(
+                    ev.getId(),
+                    actor,
+                    new BreakGlassRotationDtos.CloseRequest("Closing without verify."),
+                    null))
         .isInstanceOf(BreakGlassException.class)
-        .satisfies(e -> assertThat(((BreakGlassException) e).getErrorCode()).isEqualTo("BREAK_GLASS_ROTATION_INVALID_TRANSITION"));
+        .satisfies(
+            e ->
+                assertThat(((BreakGlassException) e).getErrorCode())
+                    .isEqualTo("BREAK_GLASS_ROTATION_INVALID_TRANSITION"));
   }
 
   @Test
   void detail_doesNotExposeRawTokenOrHash() {
     BreakGlassTokenRotationService svc =
-        new BreakGlassTokenRotationService(repository, props(true, true, "sha256:deadbeef"), auditService);
+        new BreakGlassTokenRotationService(
+            repository, props(true, true, "sha256:deadbeef"), auditService);
     svc.recordRequiredAfterStaticUse(UUID.randomUUID(), "s1", null);
     BreakGlassTokenRotationEvent ev = fakeRepository.saved.values().iterator().next();
     BreakGlassRotationDtos.RotationEventDetail detail = svc.detail(ev.getId(), null);
@@ -182,7 +225,9 @@ class BreakGlassTokenRotationServiceTest {
 
     @Override
     public Optional<BreakGlassTokenRotationEvent> findByRotationKey(String rotationKey) {
-      return saved.values().stream().filter(e -> rotationKey.equals(e.getRotationKey())).findFirst();
+      return saved.values().stream()
+          .filter(e -> rotationKey.equals(e.getRotationKey()))
+          .findFirst();
     }
 
     @Override
@@ -267,7 +312,9 @@ class BreakGlassTokenRotationServiceTest {
     }
 
     @Override
-    public boolean existsById(UUID uuid) { return saved.containsKey(uuid); }
+    public boolean existsById(UUID uuid) {
+      return saved.containsKey(uuid);
+    }
 
     @Override
     public List<BreakGlassTokenRotationEvent> findAll() {
@@ -285,13 +332,19 @@ class BreakGlassTokenRotationServiceTest {
     }
 
     @Override
-    public long count() { return saved.size(); }
+    public long count() {
+      return saved.size();
+    }
 
     @Override
-    public void deleteById(UUID uuid) { saved.remove(uuid); }
+    public void deleteById(UUID uuid) {
+      saved.remove(uuid);
+    }
 
     @Override
-    public void delete(BreakGlassTokenRotationEvent entity) { saved.remove(entity.getId()); }
+    public void delete(BreakGlassTokenRotationEvent entity) {
+      saved.remove(entity.getId());
+    }
 
     @Override
     public void deleteAllById(Iterable<? extends UUID> uuids) {
@@ -304,10 +357,14 @@ class BreakGlassTokenRotationServiceTest {
     }
 
     @Override
-    public void deleteAll() { saved.clear(); }
+    public void deleteAll() {
+      saved.clear();
+    }
 
     @Override
-    public List<BreakGlassTokenRotationEvent> findAll(org.springframework.data.domain.Sort sort) { return findAll(); }
+    public List<BreakGlassTokenRotationEvent> findAll(org.springframework.data.domain.Sort sort) {
+      return findAll();
+    }
 
     @Override
     public Page<BreakGlassTokenRotationEvent> findAll(Pageable pageable) {
@@ -319,7 +376,9 @@ class BreakGlassTokenRotationServiceTest {
     public void flush() {}
 
     @Override
-    public <S extends BreakGlassTokenRotationEvent> S saveAndFlush(S entity) { return save(entity); }
+    public <S extends BreakGlassTokenRotationEvent> S saveAndFlush(S entity) {
+      return save(entity);
+    }
 
     @Override
     public <S extends BreakGlassTokenRotationEvent> List<S> saveAllAndFlush(Iterable<S> entities) {
@@ -327,42 +386,79 @@ class BreakGlassTokenRotationServiceTest {
     }
 
     @Override
-    public void deleteAllInBatch(Iterable<BreakGlassTokenRotationEvent> entities) { deleteAll(entities); }
+    public void deleteAllInBatch(Iterable<BreakGlassTokenRotationEvent> entities) {
+      deleteAll(entities);
+    }
 
     @Override
-    public void deleteAllByIdInBatch(Iterable<UUID> uuids) { deleteAllById(uuids); }
+    public void deleteAllByIdInBatch(Iterable<UUID> uuids) {
+      deleteAllById(uuids);
+    }
 
     @Override
-    public void deleteAllInBatch() { saved.clear(); }
+    public void deleteAllInBatch() {
+      saved.clear();
+    }
 
     @Override
-    public BreakGlassTokenRotationEvent getOne(UUID uuid) { return saved.get(uuid); }
+    public BreakGlassTokenRotationEvent getOne(UUID uuid) {
+      return saved.get(uuid);
+    }
 
     @Override
-    public BreakGlassTokenRotationEvent getById(UUID uuid) { return saved.get(uuid); }
+    public BreakGlassTokenRotationEvent getById(UUID uuid) {
+      return saved.get(uuid);
+    }
 
     @Override
-    public BreakGlassTokenRotationEvent getReferenceById(UUID uuid) { return saved.get(uuid); }
+    public BreakGlassTokenRotationEvent getReferenceById(UUID uuid) {
+      return saved.get(uuid);
+    }
 
     @Override
-    public <S extends BreakGlassTokenRotationEvent> Optional<S> findOne(org.springframework.data.domain.Example<S> example) { return Optional.empty(); }
+    public <S extends BreakGlassTokenRotationEvent> Optional<S> findOne(
+        org.springframework.data.domain.Example<S> example) {
+      return Optional.empty();
+    }
 
     @Override
-    public <S extends BreakGlassTokenRotationEvent> List<S> findAll(org.springframework.data.domain.Example<S> example) { return List.of(); }
+    public <S extends BreakGlassTokenRotationEvent> List<S> findAll(
+        org.springframework.data.domain.Example<S> example) {
+      return List.of();
+    }
 
     @Override
-    public <S extends BreakGlassTokenRotationEvent> List<S> findAll(org.springframework.data.domain.Example<S> example, org.springframework.data.domain.Sort sort) { return List.of(); }
+    public <S extends BreakGlassTokenRotationEvent> List<S> findAll(
+        org.springframework.data.domain.Example<S> example,
+        org.springframework.data.domain.Sort sort) {
+      return List.of();
+    }
 
     @Override
-    public <S extends BreakGlassTokenRotationEvent> Page<S> findAll(org.springframework.data.domain.Example<S> example, Pageable pageable) { return Page.empty(); }
+    public <S extends BreakGlassTokenRotationEvent> Page<S> findAll(
+        org.springframework.data.domain.Example<S> example, Pageable pageable) {
+      return Page.empty();
+    }
 
     @Override
-    public <S extends BreakGlassTokenRotationEvent> long count(org.springframework.data.domain.Example<S> example) { return 0; }
+    public <S extends BreakGlassTokenRotationEvent> long count(
+        org.springframework.data.domain.Example<S> example) {
+      return 0;
+    }
 
     @Override
-    public <S extends BreakGlassTokenRotationEvent> boolean exists(org.springframework.data.domain.Example<S> example) { return false; }
+    public <S extends BreakGlassTokenRotationEvent> boolean exists(
+        org.springframework.data.domain.Example<S> example) {
+      return false;
+    }
 
     @Override
-    public <S extends BreakGlassTokenRotationEvent, R> R findBy(org.springframework.data.domain.Example<S> example, java.util.function.Function<org.springframework.data.repository.query.FluentQuery.FetchableFluentQuery<S>, R> queryFunction) { return null; }
+    public <S extends BreakGlassTokenRotationEvent, R> R findBy(
+        org.springframework.data.domain.Example<S> example,
+        java.util.function.Function<
+                org.springframework.data.repository.query.FluentQuery.FetchableFluentQuery<S>, R>
+            queryFunction) {
+      return null;
+    }
   }
 }

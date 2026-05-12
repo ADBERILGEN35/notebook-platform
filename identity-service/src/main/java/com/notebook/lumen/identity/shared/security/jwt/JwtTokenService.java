@@ -45,7 +45,8 @@ public class JwtTokenService {
   }
 
   public String generateAccessToken(UUID userId, String email, Map<String, Object> extraClaims) {
-    return generateAccessToken(userId, email, extraClaims, jwtProperties.getAccessTokenTtlSeconds());
+    return generateAccessToken(
+        userId, email, extraClaims, jwtProperties.getAccessTokenTtlSeconds());
   }
 
   /**
@@ -55,7 +56,8 @@ public class JwtTokenService {
   public String generateAccessToken(
       UUID userId, String email, Map<String, Object> extraClaims, long ttlSeconds) {
     Instant now = Instant.now();
-    long effectiveTtlSeconds = ttlSeconds <= 0 ? jwtProperties.getAccessTokenTtlSeconds() : ttlSeconds;
+    long effectiveTtlSeconds =
+        ttlSeconds <= 0 ? jwtProperties.getAccessTokenTtlSeconds() : ttlSeconds;
 
     JwtClaimsSet.Builder builder =
         JwtClaimsSet.builder()

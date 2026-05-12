@@ -99,13 +99,47 @@ public class ScimService {
       Map<String, String> bulkIdToResourceId) {
     String email = extractPrimaryEmail(request);
     String normalizedEmail = EmailNormalizer.normalize(email);
-    if (userRepository.findByEmail(normalizedEmail).isPresent()) {
-      throw new ScimException(HttpStatus.CONFLICT, "uniqueness", "User email already exists");
+    if (request.externalId() != null && !request.externalId().isBlank()) {
+      Optional<User> existingByExternalId =
+          userRepository.findByScimExternalId(request.externalId());
+      if (existingByExternalId.isPresent()) {
+        User existing = existingByExternalId.get();
+        if (existing.getStatus() == UserStatus.DISABLED && request.active() != Boolean.FALSE) {
+          existing.setEmail(normalizedEmail);
+          existing.setName(displayNameFrom(request));
+          existing.setSource(UserSource.SCIM);
+          existing.reactivateByScim();
+          userRepository.save(existing);
+          replaceUserMemberships(existing, request.groups(), httpRequest, bulkIdToResourceId);
+          auditService.record(
+              "SCIM_USER_REACTIVATED",
+              null,
+              "USER",
+              existing.getId(),
+              httpRequest,
+              Map.of("externalId", Objects.toString(existing.getScimExternalId(), "")));
+          return toScimUser(existing);
+        }
+        throw new ScimException(
+            HttpStatus.CONFLICT, "uniqueness", "SCIM externalId already exists");
+      }
     }
-    if (request.externalId() != null
-        && !request.externalId().isBlank()
-        && userRepository.findByScimExternalId(request.externalId()).isPresent()) {
-      throw new ScimException(HttpStatus.CONFLICT, "uniqueness", "SCIM externalId already exists");
+    Optional<User> existingByEmail = userRepository.findByEmail(normalizedEmail);
+    if (existingByEmail.isPresent()) {
+      User existing = existingByEmail.get();
+      if (request.externalId() != null
+          && !request.externalId().isBlank()
+          && existing.getScimExternalId() != null
+          && !request.externalId().equals(existing.getScimExternalId())) {
+        auditService.record(
+            "SCIM_EXTERNAL_ID_CONFLICT_DETECTED",
+            null,
+            "USER",
+            existing.getId(),
+            httpRequest,
+            Map.of("reason", "EMAIL_REUSE_DIFFERENT_EXTERNAL_ID"));
+      }
+      throw new ScimException(HttpStatus.CONFLICT, "uniqueness", "User email already exists");
     }
     Instant now = Instant.now();
     User created =
@@ -723,9 +757,17 @@ public class ScimService {
   }
 
   private void updateUserFields(User user, ScimUserRequest request) {
+    String nextExternalId = blankToNull(request.externalId());
+    if (nextExternalId != null
+        && userRepository
+            .findByScimExternalId(nextExternalId)
+            .filter(u -> !u.getId().equals(user.getId()))
+            .isPresent()) {
+      throw new ScimException(HttpStatus.CONFLICT, "uniqueness", "SCIM externalId already exists");
+    }
     user.setName(displayNameFrom(request));
     user.setEmail(EmailNormalizer.normalize(extractPrimaryEmail(request)));
-    user.setScimExternalId(blankToNull(request.externalId()));
+    user.setScimExternalId(nextExternalId);
     user.setSource(UserSource.SCIM);
     applyActive(user, request.active() == null || request.active(), null);
   }

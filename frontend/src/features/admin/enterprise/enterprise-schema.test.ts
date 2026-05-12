@@ -8,7 +8,21 @@ describe('enterpriseStatusResponseSchema', () => {
       generatedAt: '2026-01-01T00:00:00Z',
       features: {
         sso: { enabled: true, providersConfigured: 1, allowedDomainsConfigured: true, adminGroupMappingConfigured: true, trustIdpMfa: false },
-        scim: { enabled: false, groupsEnabled: false, adminGroupsConfigured: false, tokenConfigured: false },
+        scim: {
+          enabled: false,
+          groupsEnabled: false,
+          adminGroupsConfigured: false,
+          tokenConfigured: false,
+          providerType: 'generic',
+          deltaSyncEnabled: false,
+          deltaSyncMode: 'disabled',
+          bulkSupported: false,
+          filteringSupported: true,
+          patchSupported: true,
+          nestedGroupsSupported: false,
+          rateLimitAware: true,
+          maxPageSize: 100,
+        },
         mfa: { adminMfaMode: 'warn', acceptedMethods: ['webauthn'], identityMfaEnabled: true, webauthnEnabled: true },
         siem: { enabled: false, provider: 'noop', workerEnabled: false, endpointConfigured: false, secretConfigured: false },
         auditExport: {

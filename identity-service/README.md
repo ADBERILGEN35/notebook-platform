@@ -244,7 +244,8 @@ revocation.
 - Deprovision (`active=false` or `DELETE`) revokes active refresh tokens.
 - Groups: normalized `scim_group_memberships` supports USER and nested GROUP members; cycles/depth guarded (`SCIM_GROUP_NESTING_*`).
 - Bulk: `POST /scim/v2/Bulk` behind `SCIM_BULK_ENABLED` (default false); non-transactional MVP.
-- Docs: `docs/scim-provisioning.md`, `docs/scim-group-nesting.md`, `docs/scim-bulk-operations.md`.
+- Faz 97 adds provider compatibility diagnostics, checkpoint/run tracking tables, and tombstone/re-add hardening. Defaults keep production delta sync disabled.
+- Docs: `docs/scim-provisioning.md`, `docs/scim-group-nesting.md`, `docs/scim-bulk-operations.md`, `docs/scim-provider-compatibility.md`, `docs/scim-delta-sync-design.md`, `docs/scim-sync-diagnostics.md`.
 
 ## Streaming SIEM push (Faz 62)
 

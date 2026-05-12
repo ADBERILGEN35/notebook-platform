@@ -65,6 +65,9 @@ import {
   isOfflineEncryptionEnabled,
   isOfflineNotesEnabled,
   isOfflineSyncEnabled,
+  isSwBackgroundSyncDryRunOnly,
+  isSwBackgroundSyncEnabled,
+  isSwBackgroundSyncRegisterEnabled,
   offlineSyncRolloutMode,
 } from '../shared/config/offline-feature-flags'
 import { refreshOfflineDraftDiagnostics, syncOfflineDraft, syncPendingDrafts } from '../features/offline/offline-sync-service'
@@ -75,6 +78,13 @@ import {
   getBackgroundSyncModePreference,
   setBackgroundSyncModePreference,
 } from '../features/offline/offline-sync-preferences'
+import { getSwBackgroundSyncSummary } from '../features/offline/sw-background-sync-diagnostics'
+import { getSwBackgroundSyncSupport } from '../features/offline/sw-background-sync-policy'
+import {
+  registerSwBackgroundSync,
+  runSwBackgroundSyncDryRun,
+} from '../features/offline/sw-background-sync-registration'
+import type { SwBackgroundSyncRegistrationStatus, SwBackgroundSyncSummary } from '../features/offline/sw-background-sync-types'
 
 export function SettingsPage() {
   const navigate = useNavigate()
@@ -89,6 +99,10 @@ export function SettingsPage() {
   const offlineSyncEnabled = isOfflineSyncEnabled()
   const syncRolloutMode = offlineSyncRolloutMode()
   const backgroundSyncEnabled = isOfflineBackgroundSyncEnabled()
+  const swBackgroundSyncEnabled = isSwBackgroundSyncEnabled()
+  const swBackgroundSyncDryRunOnly = isSwBackgroundSyncDryRunOnly()
+  const swBackgroundSyncRegisterEnabled = isSwBackgroundSyncRegisterEnabled()
+  const swBackgroundSyncSupport = getSwBackgroundSyncSupport()
   const runtimeBackgroundMode = offlineBackgroundSyncMode()
   const offlineEncryptionEnabled = isOfflineEncryptionEnabled()
   const offlineDraftEncryptionRequired = isOfflineDraftEncryptionRequired()
@@ -323,6 +337,12 @@ export function SettingsPage() {
   const [lastBackgroundSummary, setLastBackgroundSummary] = useState<Awaited<
     ReturnType<typeof runForegroundBackgroundSync>
   > | null>(null)
+  const [swBackgroundSummary, setSwBackgroundSummary] = useState<SwBackgroundSyncSummary | null>(null)
+  const [swRegistrationStatus, setSwRegistrationStatus] = useState<SwBackgroundSyncRegistrationStatus | null>(null)
+  useEffect(() => {
+    if (!offlineNotesEnabled || !offlineEditEnabled) return
+    void getSwBackgroundSyncSummary().then(setSwBackgroundSummary)
+  }, [offlineNotesEnabled, offlineEditEnabled])
   const runBackgroundSyncMutation = useMutation({
     mutationFn: () =>
       runForegroundBackgroundSync({
@@ -338,6 +358,25 @@ export function SettingsPage() {
       void offlineDraftsQuery.refetch()
       void offlineDraftsOverviewQuery.refetch()
       void offlineNotesQuery.refetch()
+    },
+  })
+  const registerSwBackgroundSyncMutation = useMutation({
+    mutationFn: registerSwBackgroundSync,
+    onSuccess: setSwRegistrationStatus,
+  })
+  const runSwBackgroundSyncDryRunMutation = useMutation({
+    mutationFn: () =>
+      runSwBackgroundSyncDryRun({
+        browserSupported: swBackgroundSyncSupport.supported,
+        registered: swRegistrationStatus?.registered ?? false,
+        sessionAvailable: Boolean(user),
+      }),
+    onSuccess: async (summary) => {
+      setSwBackgroundSummary(summary)
+      await refreshOfflineDraftDiagnostics()
+      void offlineDraftsPendingQuery.refetch()
+      void offlineDraftsQuery.refetch()
+      void offlineDraftsOverviewQuery.refetch()
     },
   })
 
@@ -539,6 +578,12 @@ export function SettingsPage() {
           <p className="mt-1 text-xs text-slate-500">
             Background sync: {backgroundSyncEnabled ? 'enabled' : 'disabled'} · Mode: {effectiveBackgroundMode}
           </p>
+          <p className="mt-1 text-xs text-slate-500">
+            Service Worker Background Sync: {swBackgroundSyncSupport.supported ? 'Supported' : 'Unsupported'} ·{' '}
+            {swRegistrationStatus?.registered ? 'Registered' : 'Not registered'} ·{' '}
+            {swBackgroundSyncDryRunOnly ? 'Dry-run only' : 'Remote write disabled for Faz 96'} · Flag:{' '}
+            {swBackgroundSyncEnabled ? 'enabled' : 'disabled'}
+          </p>
           <div className="mt-2 flex items-center gap-2 text-sm text-slate-700">
             <label htmlFor="background-sync-mode">Background mode</label>
             <select
@@ -574,6 +619,25 @@ export function SettingsPage() {
               disabled={!backgroundSyncEnabled || runBackgroundSyncMutation.isPending}
             >
               Run foreground background sync
+            </Button>
+            <Button
+              type="button"
+              onClick={() => registerSwBackgroundSyncMutation.mutate()}
+              disabled={
+                !swBackgroundSyncEnabled ||
+                !swBackgroundSyncRegisterEnabled ||
+                !swBackgroundSyncSupport.supported ||
+                registerSwBackgroundSyncMutation.isPending
+              }
+            >
+              Register SW dry-run
+            </Button>
+            <Button
+              type="button"
+              onClick={() => runSwBackgroundSyncDryRunMutation.mutate()}
+              disabled={!swBackgroundSyncEnabled || !swBackgroundSyncDryRunOnly || runSwBackgroundSyncDryRunMutation.isPending}
+            >
+              Run SW sync dry-run
             </Button>
             <Button
               type="button"
@@ -649,6 +713,8 @@ export function SettingsPage() {
           {discardDraftMutation.isError ? <ErrorAlert error={discardDraftMutation.error} /> : null}
           {discardFailedMutation.isError ? <ErrorAlert error={discardFailedMutation.error} /> : null}
           {runBackgroundSyncMutation.isError ? <ErrorAlert error={runBackgroundSyncMutation.error} /> : null}
+          {registerSwBackgroundSyncMutation.isError ? <ErrorAlert error={registerSwBackgroundSyncMutation.error} /> : null}
+          {runSwBackgroundSyncDryRunMutation.isError ? <ErrorAlert error={runSwBackgroundSyncDryRunMutation.error} /> : null}
           {lastBackgroundSummary ? (
             <p className="mt-2 text-xs text-slate-600">
               Last background sync: attempted {lastBackgroundSummary.attempted}, synced {lastBackgroundSummary.synced},
@@ -669,6 +735,21 @@ export function SettingsPage() {
               {diagnostics.backgroundSkippedReasons ? (
                 <p>Skipped reasons: {JSON.stringify(diagnostics.backgroundSkippedReasons)}</p>
               ) : null}
+            </div>
+          ) : null}
+          {swRegistrationStatus ? (
+            <p className="mt-2 text-xs text-slate-600">
+              SW registration: {swRegistrationStatus.reason} · Tags: {swRegistrationStatus.tags.join(', ') || '-'}
+            </p>
+          ) : null}
+          {swBackgroundSummary ? (
+            <div className="mt-1 text-[11px] text-slate-500">
+              <p>
+                Last SW dry-run: eligible {swBackgroundSummary.eligible}, skipped {swBackgroundSummary.skipped},
+                supported {swBackgroundSummary.supported ? 'yes' : 'no'}, registered{' '}
+                {swBackgroundSummary.registered ? 'yes' : 'no'}
+              </p>
+              <p>SW skipped reasons: {JSON.stringify(swBackgroundSummary.skipReasons)}</p>
             </div>
           ) : null}
         </Card>

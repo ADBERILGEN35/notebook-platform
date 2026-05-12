@@ -87,6 +87,13 @@ Guidance text:
 The **Apply suggested merge** button only appears when the engine produced a suggestion. There is
 no silent auto-apply.
 
+## Service Worker sync boundary (Faz 96)
+
+Service Worker Background Sync does not call backend merge analyze/apply in Faz 96. The POC only
+counts eligible/skipped drafts in dry-run diagnostics. Any future worker remote-write path must treat
+merge analysis as foreground/UI-owned: `409/412` responses become `CONFLICT`, and the user reviews
+safe move/reorder suggestions before applying.
+
 ## Backend engine (content-service)
 
 `NoteMergeAnalyzeService` keeps `clientMergeVersion=1` (additive contract). The engine now:

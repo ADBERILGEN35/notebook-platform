@@ -99,6 +99,9 @@ vi.mock('../shared/config/offline-feature-flags', () => ({
   isOfflineEditEnabled: () => true,
   isOfflineSyncEnabled: () => false,
   isOfflineBackgroundSyncEnabled: () => false,
+  isSwBackgroundSyncEnabled: () => true,
+  isSwBackgroundSyncDryRunOnly: () => true,
+  isSwBackgroundSyncRegisterEnabled: () => false,
   offlineBackgroundSyncMode: () => 'disabled',
   isOfflineEncryptionEnabled: () => true,
   isOfflineDraftEncryptionRequired: () => true,
@@ -201,6 +204,78 @@ vi.mock('../features/offline/offline-sync-preferences', () => ({
   getBackgroundSyncModePreference: () => null,
   setBackgroundSyncModePreference: vi.fn(),
 }))
+vi.mock('../features/offline/sw-background-sync-diagnostics', () => ({
+  getSwBackgroundSyncSummary: vi.fn(async () => ({
+    id: 'latest',
+    startedAt: new Date().toISOString(),
+    completedAt: new Date().toISOString(),
+    mode: 'dry-run',
+    eligible: 0,
+    skipped: 1,
+    skipReasons: {
+      conflict: 0,
+      failed: 0,
+      locked: 0,
+      encrypted_key_unavailable: 1,
+      missing_base_etag: 0,
+      max_attempts: 0,
+      session_unavailable: 0,
+      csrf_unavailable: 0,
+      currently_editing_unknown: 0,
+      browser_unsupported: 0,
+      status_not_eligible: 0,
+      batch_limit: 0,
+      network_unavailable: 0,
+    },
+    supported: false,
+    registered: false,
+    dryRunOnly: true,
+    stopReason: null,
+  })),
+}))
+vi.mock('../features/offline/sw-background-sync-policy', () => ({
+  getSwBackgroundSyncSupport: () => ({
+    serviceWorkerSupported: true,
+    syncManagerSupported: false,
+    supported: false,
+    reason: 'sync_manager_unsupported',
+  }),
+}))
+vi.mock('../features/offline/sw-background-sync-registration', () => ({
+  registerSwBackgroundSync: vi.fn(async () => ({
+    supported: false,
+    registered: false,
+    reason: 'register_disabled',
+    tags: [],
+  })),
+  runSwBackgroundSyncDryRun: vi.fn(async () => ({
+    id: 'latest',
+    startedAt: new Date().toISOString(),
+    completedAt: new Date().toISOString(),
+    mode: 'dry-run',
+    eligible: 1,
+    skipped: 0,
+    skipReasons: {
+      conflict: 0,
+      failed: 0,
+      locked: 0,
+      encrypted_key_unavailable: 0,
+      missing_base_etag: 0,
+      max_attempts: 0,
+      session_unavailable: 0,
+      csrf_unavailable: 0,
+      currently_editing_unknown: 0,
+      browser_unsupported: 0,
+      status_not_eligible: 0,
+      batch_limit: 0,
+      network_unavailable: 0,
+    },
+    supported: false,
+    registered: false,
+    dryRunOnly: true,
+    stopReason: null,
+  })),
+}))
 
 describe('SettingsPage notification preferences + mfa', () => {
   beforeEach(() => patchSpy.mockClear())
@@ -267,5 +342,6 @@ describe('SettingsPage notification preferences + mfa', () => {
     expect(await screen.findByTestId('offline-drafts-list')).toBeTruthy()
     expect(screen.getByText(/^Offline drafts$/)).toBeTruthy()
     expect(screen.getByText(/sync is disabled in this environment/i)).toBeTruthy()
+    expect(screen.getByText(/Service Worker Background Sync: Unsupported/i)).toBeTruthy()
   })
 })

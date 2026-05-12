@@ -46,7 +46,11 @@ public class BreakGlassRotationController {
     Optional<ErrorCode> denial = authz.ensureBreakGlassRotationRead(jwt);
     if (denial.isPresent())
       return Mono.just(
-          forbidden(denial.get(), requestId, BASE, PlatformAdminRbacConstants.PERM_BREAK_GLASS_ROTATION_READ));
+          forbidden(
+              denial.get(),
+              requestId,
+              BASE,
+              PlatformAdminRbacConstants.PERM_BREAK_GLASS_ROTATION_READ));
     return proxy.list(status, page, size, jwt.getSubject(), requestId, BASE);
   }
 
@@ -59,7 +63,11 @@ public class BreakGlassRotationController {
     Optional<ErrorCode> denial = authz.ensureBreakGlassRotationRead(jwt);
     if (denial.isPresent())
       return Mono.just(
-          forbidden(denial.get(), requestId, path, PlatformAdminRbacConstants.PERM_BREAK_GLASS_ROTATION_READ));
+          forbidden(
+              denial.get(),
+              requestId,
+              path,
+              PlatformAdminRbacConstants.PERM_BREAK_GLASS_ROTATION_READ));
     return proxy.detail(id, jwt.getSubject(), requestId, path);
   }
 
@@ -76,7 +84,11 @@ public class BreakGlassRotationController {
     Optional<ErrorCode> denial = authz.ensureBreakGlassRotationManage(jwt);
     if (denial.isPresent())
       return Mono.just(
-          forbidden(denial.get(), requestId, path, PlatformAdminRbacConstants.PERM_BREAK_GLASS_ROTATION_MANAGE));
+          forbidden(
+              denial.get(),
+              requestId,
+              path,
+              PlatformAdminRbacConstants.PERM_BREAK_GLASS_ROTATION_MANAGE));
     return proxy.acknowledge(id, body, jwt.getSubject(), requestId, path);
   }
 
@@ -93,7 +105,11 @@ public class BreakGlassRotationController {
     Optional<ErrorCode> denial = authz.ensureBreakGlassRotationManage(jwt);
     if (denial.isPresent())
       return Mono.just(
-          forbidden(denial.get(), requestId, path, PlatformAdminRbacConstants.PERM_BREAK_GLASS_ROTATION_MANAGE));
+          forbidden(
+              denial.get(),
+              requestId,
+              path,
+              PlatformAdminRbacConstants.PERM_BREAK_GLASS_ROTATION_MANAGE));
     return proxy.verify(id, body, jwt.getSubject(), requestId, path);
   }
 
@@ -110,7 +126,11 @@ public class BreakGlassRotationController {
     Optional<ErrorCode> denial = authz.ensureBreakGlassRotationManage(jwt);
     if (denial.isPresent())
       return Mono.just(
-          forbidden(denial.get(), requestId, path, PlatformAdminRbacConstants.PERM_BREAK_GLASS_ROTATION_MANAGE));
+          forbidden(
+              denial.get(),
+              requestId,
+              path,
+              PlatformAdminRbacConstants.PERM_BREAK_GLASS_ROTATION_MANAGE));
     return proxy.close(id, body, jwt.getSubject(), requestId, path);
   }
 

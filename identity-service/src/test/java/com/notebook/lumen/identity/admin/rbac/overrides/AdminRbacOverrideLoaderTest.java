@@ -84,7 +84,8 @@ class AdminRbacOverrideLoaderTest {
     AdminRbacOverrideManifestParser parser = new AdminRbacOverrideManifestParser(userRepository);
     AdminRbacOverrideLoader loader = newLoader(props, parser);
     loader.bootstrapFromDisk(null);
-    assertThatThrownBy(() -> loader.reload(UUID.randomUUID(), "operator needs reload after deploy."))
+    assertThatThrownBy(
+            () -> loader.reload(UUID.randomUUID(), "operator needs reload after deploy."))
         .isInstanceOf(AdminRbacOverridesReloadException.class);
   }
 

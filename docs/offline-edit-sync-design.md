@@ -79,6 +79,14 @@ Production posture remains unchanged: offline edit/sync flags are disabled by de
 - Active note drafts are skipped during background run to avoid interrupting in-progress editing.
 - Conflict/failed/locked/review-required drafts remain outside automatic batch behavior.
 
+## Faz 96 Service Worker Background Sync research update
+
+- Added Service Worker Background Sync browser/platform research and a dry-run-only POC foundation.
+- `FRONTEND_SW_BACKGROUND_SYNC_*` flags default to disabled registration and dry-run-only behavior.
+- Service worker dry-run may count eligible drafts, but it does not send `PATCH /notes/{noteId}`.
+- Encrypted locked drafts are skipped because the Faz 69 key is memory-only and not persisted for a worker.
+- Conflict handling remains user-visible; the worker does not silently merge or apply backend merge results.
+
 ## Goals
 
 1. **Deterministic** sync: one **snapshot** per note to push (not an operation log in this phase).
@@ -99,12 +107,17 @@ Production posture remains unchanged: offline edit/sync flags are disabled by de
 |-------------------|---------|---------|
 | `FRONTEND_OFFLINE_NOTES_ENABLED` | Offline read cache | `true` in many samples; prod may be `false` |
 | `FRONTEND_OFFLINE_EDIT_ENABLED` | Local draft persistence + future editable offline UX | **`false`** |
-| `FRONTEND_OFFLINE_SYNC_ENABLED` | Reserved for automatic sync after reconnect | **`false`** (no worker in Faz 67) |
+| `FRONTEND_OFFLINE_SYNC_ENABLED` | Manual/guarded sync gate | **`false`** |
 | `FRONTEND_OFFLINE_EDIT_MAX_DRAFTS` | Prune oldest drafts by `lastEditedAt` | `50` |
 | `FRONTEND_OFFLINE_EDIT_MAX_DRAFT_AGE_DAYS` | Prune drafts older than this | `7` |
 | `FRONTEND_OFFLINE_ENCRYPTION_ENABLED` | Enable offline storage encryption foundation | `false` |
 | `FRONTEND_OFFLINE_DRAFT_ENCRYPTION_REQUIRED` | Require draft encryption to allow offline edit | `false` |
 | `FRONTEND_OFFLINE_CACHE_ENCRYPTION_ENABLED` | Encrypt offline read cache payloads | `false` |
+| `FRONTEND_SW_BACKGROUND_SYNC_ENABLED` | Service Worker Background Sync POC master switch | **`false`** |
+| `FRONTEND_SW_BACKGROUND_SYNC_DRY_RUN_ONLY` | Prevent remote writes from the worker | **`true`** |
+| `FRONTEND_SW_BACKGROUND_SYNC_REGISTER_ENABLED` | Allow registering `offline-draft-sync` tag | **`false`** |
+| `FRONTEND_SW_BACKGROUND_SYNC_MAX_BATCH` | Dry-run eligible batch cap | `3` |
+| `FRONTEND_SW_BACKGROUND_SYNC_REQUIRE_ENCRYPTION_KEY` | Reserved worker key guardrail | `false` |
 
 Runtime injection follows existing `FRONTEND_*` → `window.__NOTEBOOK_CONFIG__` pattern (see `frontend/docker-entrypoint.sh`).
 
@@ -116,7 +129,8 @@ Runtime injection follows existing `FRONTEND_*` → `window.__NOTEBOOK_CONFIG__`
 
 ## IndexedDB: `offline_note_drafts`
 
-Database: `notebook-offline` (version **2** adds the drafts store alongside existing `notes`).
+Database: `notebook-offline` (version **2** adds the drafts store alongside existing `notes`; later
+versions add encrypted payload support and Service Worker dry-run diagnostics/lock stores).
 
 Store: `offline_note_drafts`  
 Key: **`noteId`** (at most **one active draft row per note**).

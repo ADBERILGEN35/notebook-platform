@@ -244,8 +244,30 @@ public class EnterpriseStatusAggregationService {
     boolean writeAllowed = breakGlassProperties.allowAdminWrite();
     if (identity == null || identity.path("breakGlass").isMissingNode()) {
       return new BreakGlassStatus(
-          false, "static-token", List.of(), false, false, 0, false, false, false, null, "disabled", 0, 0,
-          gwAllowed, writeAllowed, 15, 1, true, true, false, false, 0, null, null);
+          false,
+          "static-token",
+          List.of(),
+          false,
+          false,
+          0,
+          false,
+          false,
+          false,
+          null,
+          "disabled",
+          0,
+          0,
+          gwAllowed,
+          writeAllowed,
+          15,
+          1,
+          true,
+          true,
+          false,
+          false,
+          0,
+          null,
+          null);
     }
     JsonNode n = identity.path("breakGlass");
     List<String> modes = new ArrayList<>();
@@ -311,14 +333,36 @@ public class EnterpriseStatusAggregationService {
 
   private ScimStatus mapScim(JsonNode identity) {
     if (identity == null) {
-      return new ScimStatus(false, false, false, false);
+      return new ScimStatus(
+          false,
+          false,
+          false,
+          false,
+          "generic",
+          false,
+          "disabled",
+          false,
+          true,
+          true,
+          false,
+          true,
+          100);
     }
     JsonNode n = identity.path("scim");
     return new ScimStatus(
         n.path("enabled").asBoolean(false),
         n.path("groupsEnabled").asBoolean(false),
         n.path("adminGroupsConfigured").asBoolean(false),
-        n.path("tokenConfigured").asBoolean(false));
+        n.path("tokenConfigured").asBoolean(false),
+        n.path("providerType").asText("generic"),
+        n.path("deltaSyncEnabled").asBoolean(false),
+        n.path("deltaSyncMode").asText("disabled"),
+        n.path("bulkSupported").asBoolean(false),
+        n.path("filteringSupported").asBoolean(true),
+        n.path("patchSupported").asBoolean(true),
+        n.path("nestedGroupsSupported").asBoolean(false),
+        n.path("rateLimitAware").asBoolean(true),
+        n.path("maxPageSize").asInt(100));
   }
 
   private MfaStatus mapMfa(JsonNode identity) {

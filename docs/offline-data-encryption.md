@@ -50,9 +50,14 @@ Faz 69 hardens offline storage for the offline edit/sync MVP introduced in Faz 6
   unavailable; locked encrypted drafts stay outside auto-safe eligibility.
 - Faz 75 MVP keeps this guardrail in app lifecycle triggers and surfaces blocked state in foreground UI
   rather than attempting unsafe background retries.
+- Faz 96 Service Worker Background Sync dry-run does not persist or receive the memory-only key.
+  Encrypted locked drafts are skipped with `encrypted_key_unavailable`; foreground sync remains the
+  safe path for encrypted drafts.
 
 ## Security caveats
 
 - Improves at-rest local storage exposure risk.
 - Does not eliminate XSS risk while key is in memory.
 - Does not protect against full browser process compromise.
+- Service workers cannot safely replay encrypted drafts after page close/restart without a future,
+  explicitly approved unlock/key-wrapping design.

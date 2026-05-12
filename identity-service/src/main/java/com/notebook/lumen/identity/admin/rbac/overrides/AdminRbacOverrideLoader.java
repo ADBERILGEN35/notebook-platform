@@ -14,13 +14,13 @@ import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.HexFormat;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.HexFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
@@ -176,8 +176,7 @@ public class AdminRbacOverrideLoader {
             "ignoredAssignmentCount", 0,
             "warningCount", 0));
 
-    Timer.Sample sample =
-        meterRegistry == null ? null : Timer.start(meterRegistry);
+    Timer.Sample sample = meterRegistry == null ? null : Timer.start(meterRegistry);
     Instant attemptAt = Instant.now();
     RuntimeBundle prior = state.get();
     try {
@@ -253,10 +252,7 @@ public class AdminRbacOverrideLoader {
   }
 
   private AdminRbacOverridesDtos.OverridesReloadResponse finishReloadMissingFile(
-      UUID actorUserId,
-      Timer.Sample sample,
-      Instant attemptAt,
-      RuntimeBundle prior) {
+      UUID actorUserId, Timer.Sample sample, Instant attemptAt, RuntimeBundle prior) {
     List<String> w = List.of("OVERRIDE_FILE_UNAVAILABLE");
     boolean hadLkg = prior.effective().loaded() && props.lastKnownGoodEnabled();
     if (hadLkg) {
@@ -473,7 +469,12 @@ public class AdminRbacOverrideLoader {
       throw AdminRbacOverridesReloadException.invalidManifest("Manifest validation failed.");
     }
     return new AdminRbacOverridesDtos.OverridesReloadResponse(
-        false, "FAILED", load.checksum(), 0, pr == null ? 0 : pr.ignoredAssignmentCount(), warnings);
+        false,
+        "FAILED",
+        load.checksum(),
+        0,
+        pr == null ? 0 : pr.ignoredAssignmentCount(),
+        warnings);
   }
 
   private record DiskLoadResult(
@@ -525,10 +526,17 @@ public class AdminRbacOverrideLoader {
       }
       AdminRbacOverrideSnapshot snap =
           new AdminRbacOverrideSnapshot(
-              false, true, Instant.now(), basename(props.filePath()), "", "", List.of(), w, List.of(), 0);
-      state.set(
-          new RuntimeBundle(
-              snap, Instant.now(), "BOOTSTRAP_FAILED", w, 0, 0, ""));
+              false,
+              true,
+              Instant.now(),
+              basename(props.filePath()),
+              "",
+              "",
+              List.of(),
+              w,
+              List.of(),
+              0);
+      state.set(new RuntimeBundle(snap, Instant.now(), "BOOTSTRAP_FAILED", w, 0, 0, ""));
       bumpLoadedCounter("failure");
       bumpWarnings(w);
       auditLoadFailed(actorUserId, w);
@@ -561,8 +569,7 @@ public class AdminRbacOverrideLoader {
                 errors,
                 pr.ignoredAssignmentCount());
         state.set(
-            new RuntimeBundle(
-                snap, Instant.now(), "BOOTSTRAP_FAILED", warnings, 0, 0, checksum));
+            new RuntimeBundle(snap, Instant.now(), "BOOTSTRAP_FAILED", warnings, 0, 0, checksum));
         bumpLoadedCounter("failure");
         bumpWarnings(warnings);
         auditLoadFailed(actorUserId, warnings);
@@ -606,9 +613,17 @@ public class AdminRbacOverrideLoader {
       log.warn("admin_rbac_overrides_read_failed", e);
       AdminRbacOverrideSnapshot snap =
           new AdminRbacOverrideSnapshot(
-              false, true, Instant.now(), basename(props.filePath()), "", "", List.of(), w, List.of(), 0);
-      state.set(
-          new RuntimeBundle(snap, Instant.now(), "BOOTSTRAP_FAILED", w, 0, 0, ""));
+              false,
+              true,
+              Instant.now(),
+              basename(props.filePath()),
+              "",
+              "",
+              List.of(),
+              w,
+              List.of(),
+              0);
+      state.set(new RuntimeBundle(snap, Instant.now(), "BOOTSTRAP_FAILED", w, 0, 0, ""));
       bumpLoadedCounter("failure");
       bumpWarnings(w);
       auditLoadFailed(actorUserId, w);
@@ -626,13 +641,7 @@ public class AdminRbacOverrideLoader {
 
     static RuntimeBundle disabled() {
       return new RuntimeBundle(
-          AdminRbacOverrideSnapshot.emptyDisabled(),
-          null,
-          "SKIPPED_DISABLED",
-          List.of(),
-          0,
-          0,
-          "");
+          AdminRbacOverrideSnapshot.emptyDisabled(), null, "SKIPPED_DISABLED", List.of(), 0, 0, "");
     }
   }
 

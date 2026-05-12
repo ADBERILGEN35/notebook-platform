@@ -187,6 +187,7 @@ public class AdminRbacService {
           perms.add(PlatformAdminRbacConstants.PERM_RBAC_READ);
           perms.add(PlatformAdminRbacConstants.PERM_RBAC_OVERRIDE_RELOAD);
           perms.add(PlatformAdminRbacConstants.PERM_RBAC_CHANGE_REQUEST_CREATE);
+          perms.add(PlatformAdminRbacConstants.PERM_SCIM_DIAGNOSTICS_READ);
           perms.add(PlatformAdminRbacConstants.PERM_CHANGE_REQUEST_LIST);
           perms.add(PlatformAdminRbacConstants.PERM_CHANGE_REQUEST_CREATE);
           perms.add(PlatformAdminRbacConstants.PERM_SCIM_CHANGE_REQUEST_CREATE);

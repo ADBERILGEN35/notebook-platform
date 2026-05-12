@@ -12,7 +12,6 @@ import static org.mockito.Mockito.when;
 import com.notebook.lumen.identity.audit.AuditService;
 import com.notebook.lumen.identity.shared.security.jwt.JwtTokenService;
 import java.util.Map;
-import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 class BreakGlassServiceTest {
@@ -38,10 +37,18 @@ class BreakGlassServiceTest {
     AuditService audit = mock(AuditService.class);
     JwtTokenService jwt = mock(JwtTokenService.class);
     BreakGlassService svc =
-        new BreakGlassService(props, jwt, audit, mock(BreakGlassAccessEventService.class), mock(BreakGlassTokenRotationService.class));
+        new BreakGlassService(
+            props,
+            jwt,
+            audit,
+            mock(BreakGlassAccessEventService.class),
+            mock(BreakGlassTokenRotationService.class));
     assertThatThrownBy(() -> svc.login("super-secret-token", "reason reason reason reason"))
         .isInstanceOf(BreakGlassException.class)
-        .satisfies(e -> assertThat(((BreakGlassException) e).getErrorCode()).isEqualTo("BREAK_GLASS_INVALID_TOKEN"));
+        .satisfies(
+            e ->
+                assertThat(((BreakGlassException) e).getErrorCode())
+                    .isEqualTo("BREAK_GLASS_INVALID_TOKEN"));
     verify(audit, atLeastOnce()).record(any(), any(), any(), any(), any(), any());
   }
 
@@ -57,7 +64,10 @@ class BreakGlassServiceTest {
             mock(BreakGlassTokenRotationService.class));
     assertThatThrownBy(() -> svc.login("x", "short"))
         .isInstanceOf(BreakGlassException.class)
-        .satisfies(e -> assertThat(((BreakGlassException) e).getErrorCode()).isEqualTo("BREAK_GLASS_REASON_REQUIRED"));
+        .satisfies(
+            e ->
+                assertThat(((BreakGlassException) e).getErrorCode())
+                    .isEqualTo("BREAK_GLASS_REASON_REQUIRED"));
   }
 
   @Test
@@ -69,7 +79,12 @@ class BreakGlassServiceTest {
     JwtTokenService jwt = mock(JwtTokenService.class);
     when(jwt.generateAccessToken(any(), any(), any(Map.class), anyLong())).thenReturn("jwt-access");
     BreakGlassService svc =
-        new BreakGlassService(props, jwt, audit, mock(BreakGlassAccessEventService.class), mock(BreakGlassTokenRotationService.class));
+        new BreakGlassService(
+            props,
+            jwt,
+            audit,
+            mock(BreakGlassAccessEventService.class),
+            mock(BreakGlassTokenRotationService.class));
 
     BreakGlassDtos.BreakGlassLoginResponse resp =
         svc.login(token, "Recover admin access after RBAC override misconfiguration.");
@@ -122,4 +137,3 @@ class BreakGlassServiceTest {
         5);
   }
 }
-

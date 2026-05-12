@@ -121,3 +121,22 @@ Rollback:
 
 - Set mode to `disabled` or disable feature flag.
 - Existing manual sync remains fully available.
+
+## Faz 96 Service Worker Background Sync research/POC
+
+Faz 96 keeps this foreground design as the primary sync path and adds a separate Service Worker
+Background Sync research + dry-run POC foundation.
+
+- Production Service Worker sync stays disabled.
+- New flags default to safe values:
+  - `FRONTEND_SW_BACKGROUND_SYNC_ENABLED=false`
+  - `FRONTEND_SW_BACKGROUND_SYNC_DRY_RUN_ONLY=true`
+  - `FRONTEND_SW_BACKGROUND_SYNC_REGISTER_ENABLED=false`
+  - `FRONTEND_SW_BACKGROUND_SYNC_MAX_BATCH=3`
+  - `FRONTEND_SW_BACKGROUND_SYNC_REQUIRE_ENCRYPTION_KEY=false`
+- Dry-run counts eligible/skipped drafts and writes aggregate diagnostics only.
+- Remote PATCH from the service worker requires a future explicit approval.
+- Encrypted locked drafts are skipped with `encrypted_key_unavailable`.
+
+See [`service-worker-background-sync-research.md`](service-worker-background-sync-research.md) and
+[`service-worker-background-sync-design.md`](service-worker-background-sync-design.md).

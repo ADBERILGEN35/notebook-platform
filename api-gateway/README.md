@@ -263,6 +263,7 @@ done
 - `/scim/v2/**` (Users, Groups, **Bulk**, ServiceProviderConfig, etc.) is routed to `identity-service`. CSRF is not applied to SCIM (bearer-only provisioning). SCIM rate limit bucket applies to the whole path prefix.
 - Gateway JWT auth is bypassed for SCIM path; SCIM bearer validation is enforced by identity-service.
 - SCIM path has dedicated rate limit bucket (`SCIM_RATE_LIMIT_*`).
+- Faz 97 read-only admin diagnostics are exposed at `/admin/identity/scim/compatibility/status`, `/admin/identity/scim/sync-runs`, and `/admin/identity/scim/sync-checkpoints`. They require `admin:identity:read` or `admin:scim:diagnostics:read` and do not expose SCIM tokens or raw payloads.
 
 ## SIEM integration scope (Faz 62)
 

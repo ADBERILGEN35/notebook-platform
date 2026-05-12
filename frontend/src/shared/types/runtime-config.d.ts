@@ -25,6 +25,11 @@ declare global {
       OFFLINE_BACKGROUND_SYNC_MIN_INTERVAL_SECONDS?: number | string
       OFFLINE_BACKGROUND_SYNC_REQUIRE_UNMETERED?: boolean | string
       OFFLINE_BACKGROUND_SYNC_REQUIRE_CHARGING?: boolean | string
+      SW_BACKGROUND_SYNC_ENABLED?: boolean | string
+      SW_BACKGROUND_SYNC_DRY_RUN_ONLY?: boolean | string
+      SW_BACKGROUND_SYNC_REGISTER_ENABLED?: boolean | string
+      SW_BACKGROUND_SYNC_MAX_BATCH?: number | string
+      SW_BACKGROUND_SYNC_REQUIRE_ENCRYPTION_KEY?: boolean | string
       BACKEND_MERGE_ANALYSIS_ENABLED?: boolean | string
       BACKEND_MERGE_APPLY_ENABLED?: boolean | string
       NOTIFICATIONS_ENABLED?: boolean | string
@@ -44,6 +49,7 @@ declare global {
       ADMIN_RBAC_ROLE_REQUESTS_ENABLED?: boolean | string
       ADMIN_RBAC_OVERRIDES_STATUS_ENABLED?: boolean | string
       ADMIN_RBAC_OVERRIDES_RELOAD_ENABLED?: boolean | string
+      SCIM_COMPATIBILITY_DIAGNOSTICS_ENABLED?: boolean | string
       BREAK_GLASS_REVIEW_UI_ENABLED?: boolean | string
       BREAK_GLASS_REVOCATION_UI_ENABLED?: boolean | string
       /** Faz 94: break-glass static-token rotation governance UI. */

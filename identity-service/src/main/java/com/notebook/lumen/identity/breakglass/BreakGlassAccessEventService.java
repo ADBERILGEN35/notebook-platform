@@ -72,7 +72,13 @@ public class BreakGlassAccessEventService {
         "BREAK_GLASS",
         event.getId(),
         request,
-        Map.of("mode", mode, "status", status.name(), "reasonPresent", reason != null && !reason.isBlank()));
+        Map.of(
+            "mode",
+            mode,
+            "status",
+            status.name(),
+            "reasonPresent",
+            reason != null && !reason.isBlank()));
     return event;
   }
 
@@ -81,11 +87,19 @@ public class BreakGlassAccessEventService {
       String status, String mode, Instant from, Instant to, int page, int size) {
     Instant start = from == null ? Instant.now().minus(7, ChronoUnit.DAYS) : from;
     Instant end = to == null ? Instant.now().plus(1, ChronoUnit.MINUTES) : to;
-    var pageable = PageRequest.of(Math.max(page, 0), Math.min(Math.max(size, 1), 200), Sort.by(Sort.Direction.DESC, "issuedAt"));
+    var pageable =
+        PageRequest.of(
+            Math.max(page, 0),
+            Math.min(Math.max(size, 1), 200),
+            Sort.by(Sort.Direction.DESC, "issuedAt"));
     var rows =
         (status == null || status.isBlank())
             ? repository.findByIssuedAtBetween(start, end, pageable)
-            : repository.findByStatusAndIssuedAtBetween(BreakGlassAccessEventStatus.valueOf(status.trim().toUpperCase()), start, end, pageable);
+            : repository.findByStatusAndIssuedAtBetween(
+                BreakGlassAccessEventStatus.valueOf(status.trim().toUpperCase()),
+                start,
+                end,
+                pageable);
     var items =
         rows.stream()
             .filter(e -> mode == null || mode.isBlank() || mode.equalsIgnoreCase(e.getMode()))
@@ -145,23 +159,35 @@ public class BreakGlassAccessEventService {
 
   @Transactional
   public BreakGlassReviewDtos.EventDetailResponse review(
-      UUID id, UUID reviewerId, BreakGlassReviewDtos.ReviewRequest body, HttpServletRequest request) {
+      UUID id,
+      UUID reviewerId,
+      BreakGlassReviewDtos.ReviewRequest body,
+      HttpServletRequest request) {
     if (!props.reviewApiEnabled()) {
       throw new BreakGlassException(
-          "BREAK_GLASS_REVIEW_API_DISABLED", HttpStatus.FORBIDDEN, "Break-glass review API disabled");
+          "BREAK_GLASS_REVIEW_API_DISABLED",
+          HttpStatus.FORBIDDEN,
+          "Break-glass review API disabled");
     }
     BreakGlassAccessEvent e = getOrThrow(id);
     if (e.getStatus() != BreakGlassAccessEventStatus.PENDING_REVIEW) {
       throw new BreakGlassException(
-          "BREAK_GLASS_EVENT_NOT_REVIEWABLE", HttpStatus.CONFLICT, "Break-glass event is not pending review");
+          "BREAK_GLASS_EVENT_NOT_REVIEWABLE",
+          HttpStatus.CONFLICT,
+          "Break-glass event is not pending review");
     }
-    String decision = body == null || body.decision() == null ? "" : body.decision().trim().toUpperCase();
+    String decision =
+        body == null || body.decision() == null ? "" : body.decision().trim().toUpperCase();
     BreakGlassAccessEventStatus next =
         switch (decision) {
           case "APPROVE" -> BreakGlassAccessEventStatus.REVIEW_APPROVED;
           case "REJECT" -> BreakGlassAccessEventStatus.REVIEW_REJECTED;
           case "CLOSE" -> BreakGlassAccessEventStatus.CLOSED;
-          default -> throw new BreakGlassException("BREAK_GLASS_EVENT_NOT_REVIEWABLE", HttpStatus.BAD_REQUEST, "Invalid review decision");
+          default ->
+              throw new BreakGlassException(
+                  "BREAK_GLASS_EVENT_NOT_REVIEWABLE",
+                  HttpStatus.BAD_REQUEST,
+                  "Invalid review decision");
         };
     e.markReviewed(reviewerId, decision, body.reason(), next);
     repository.save(e);
@@ -261,7 +287,9 @@ public class BreakGlassAccessEventService {
         .orElseThrow(
             () ->
                 new BreakGlassException(
-                    "BREAK_GLASS_EVENT_NOT_FOUND", HttpStatus.NOT_FOUND, "Break-glass event not found"));
+                    "BREAK_GLASS_EVENT_NOT_FOUND",
+                    HttpStatus.NOT_FOUND,
+                    "Break-glass event not found"));
   }
 
   private static String shortSession(String sessionId) {

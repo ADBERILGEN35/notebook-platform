@@ -59,7 +59,8 @@ public class BreakGlassRotationProxyService {
                   .accept(MediaType.APPLICATION_JSON)
                   .header(AuditProxyService.INTERNAL_AUTH_HEADER, "Bearer " + jwt)
                   .header(HDR_ADMIN_USER_ID, adminUserId);
-          if (requestId != null && !requestId.isBlank()) spec = spec.header("X-Request-Id", requestId);
+          if (requestId != null && !requestId.isBlank())
+            spec = spec.header("X-Request-Id", requestId);
           return spec.retrieve()
               .bodyToMono(Object.class)
               .map(body -> ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(body))
@@ -67,7 +68,8 @@ public class BreakGlassRotationProxyService {
         });
   }
 
-  public Mono<ResponseEntity<Object>> detail(UUID id, String adminUserId, String requestId, String path) {
+  public Mono<ResponseEntity<Object>> detail(
+      UUID id, String adminUserId, String requestId, String path) {
     return withAuthGet(baseUrl() + "/" + id, READ_SCOPE, adminUserId, requestId, path);
   }
 
@@ -104,7 +106,8 @@ public class BreakGlassRotationProxyService {
                   .contentType(MediaType.APPLICATION_JSON)
                   .header(AuditProxyService.INTERNAL_AUTH_HEADER, "Bearer " + jwt)
                   .header(HDR_ADMIN_USER_ID, adminUserId);
-          if (requestId != null && !requestId.isBlank()) spec = spec.header("X-Request-Id", requestId);
+          if (requestId != null && !requestId.isBlank())
+            spec = spec.header("X-Request-Id", requestId);
           return spec.bodyValue(body == null ? Map.of() : body)
               .retrieve()
               .bodyToMono(Object.class)
@@ -130,7 +133,8 @@ public class BreakGlassRotationProxyService {
                   .accept(MediaType.APPLICATION_JSON)
                   .header(AuditProxyService.INTERNAL_AUTH_HEADER, "Bearer " + jwt)
                   .header(HDR_ADMIN_USER_ID, adminUserId);
-          if (requestId != null && !requestId.isBlank()) spec = spec.header("X-Request-Id", requestId);
+          if (requestId != null && !requestId.isBlank())
+            spec = spec.header("X-Request-Id", requestId);
           return spec.retrieve()
               .bodyToMono(Object.class)
               .map(body -> ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(body))
@@ -140,7 +144,9 @@ public class BreakGlassRotationProxyService {
 
   private static ResponseEntity<Object> mapException(Throwable e, String path, String requestId) {
     if (e instanceof WebClientResponseException w) {
-      return ResponseEntity.status(w.getStatusCode()).contentType(MediaType.APPLICATION_JSON).body(w.getResponseBodyAsString());
+      return ResponseEntity.status(w.getStatusCode())
+          .contentType(MediaType.APPLICATION_JSON)
+          .body(w.getResponseBodyAsString());
     }
     return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
         .contentType(MediaType.APPLICATION_JSON)

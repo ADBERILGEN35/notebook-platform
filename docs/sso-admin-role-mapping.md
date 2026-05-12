@@ -25,6 +25,10 @@ Keep existing allowlist model while enabling IdP-group based admin identity thro
 ## SCIM parity (Faz 76)
 
 - `SCIM_ADMIN_GROUPS` uses the same case-insensitive displayName/externalId token idea as `SSO_ADMIN_GROUPS`, but resolves against **SCIM effective group membership** (direct + nested active groups).
+
+## Diagnostics note (Faz 97)
+
+SCIM provider compatibility diagnostics are read-only and do not mutate IdP groups or platform roles. Fine-grained role visibility still comes from SSO/SCIM group mapping and admin RBAC docs; provider delta/checkpoint state is documented separately in `docs/scim-sync-diagnostics.md`.
 - Prefer matching stable `externalId` values from the IdP where possible.
 
 ## Rollout

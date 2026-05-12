@@ -99,6 +99,15 @@ config:
   scimBulkEnabled: "false"
   scimBulkMaxOperations: "100"
   scimBulkFailOnErrorsMax: "10"
+  scimProviderType: "generic"
+  scimDeltaSyncEnabled: "false"
+  scimDeltaSyncMode: "disabled"
+  scimProviderSupportsBulk: "false"
+  scimProviderSupportsFiltering: "true"
+  scimProviderSupportsPatch: "true"
+  scimProviderSupportsNestedGroups: "false"
+  scimProviderRateLimitAware: "true"
+  scimProviderMaxPageSize: "100"
   siemPushEnabled: "false"
   siemProvider: "noop"
   siemEndpointUrl: ""
@@ -194,6 +203,11 @@ frontend:
     FRONTEND_OFFLINE_BACKGROUND_SYNC_MIN_INTERVAL_SECONDS: "60"
     FRONTEND_OFFLINE_BACKGROUND_SYNC_REQUIRE_UNMETERED: "false"
     FRONTEND_OFFLINE_BACKGROUND_SYNC_REQUIRE_CHARGING: "false"
+    FRONTEND_SW_BACKGROUND_SYNC_ENABLED: "false"
+    FRONTEND_SW_BACKGROUND_SYNC_DRY_RUN_ONLY: "true"
+    FRONTEND_SW_BACKGROUND_SYNC_REGISTER_ENABLED: "false"
+    FRONTEND_SW_BACKGROUND_SYNC_MAX_BATCH: "3"
+    FRONTEND_SW_BACKGROUND_SYNC_REQUIRE_ENCRYPTION_KEY: "false"
     FRONTEND_BACKEND_MERGE_ANALYSIS_ENABLED: "false"
     FRONTEND_BACKEND_MERGE_APPLY_ENABLED: "false"
     FRONTEND_NOTIFICATIONS_ENABLED: "true"
@@ -203,6 +217,7 @@ frontend:
     FRONTEND_ADMIN_UI_ENABLED: "true"
     FRONTEND_ADMIN_UI_DEV_OPEN: "false"
     FRONTEND_AUDIT_API_MODE: "real"
+    FRONTEND_SCIM_COMPATIBILITY_DIAGNOSTICS_ENABLED: "false"
   security:
     csp:
       enabled: true
@@ -266,5 +281,3 @@ auditExport:
       provider: "s3-compatible"
       bucket: ""
       prefix: "audit-archive"
-
-

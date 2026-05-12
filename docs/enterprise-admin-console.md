@@ -37,6 +37,7 @@ Read-only, **admin-only** visibility into enterprise security posture. No secret
    - Content merge fields (analyze/apply flags, merge versions, idempotency/metrics/audit-failure toggles).
    - Local gateway fields (admin/audit flags, MFA mode, audit export + machine-auth flags, rate limit/CSRF/transport summary).
 4. **Warning engine** adds `INFO` / `WARNING` / `CRITICAL` items (e.g. SSO without admin mapping, SCIM without token, SIEM worker off).
+5. **SCIM compatibility diagnostics (Faz 97)** can be enabled with `FRONTEND_SCIM_COMPATIBILITY_DIAGNOSTICS_ENABLED=true`. The security page then shows provider capability flags, warning codes, checkpoint summaries, and sync runs from read-only admin routes.
 
 ### Partial status
 
@@ -69,6 +70,7 @@ Identity and notification **verify** gateway service JWTs using existing audit-a
 ## Out of scope (Faz 63)
 
 - Editing SSO/SCIM/SIEM configuration from UI.
+- SCIM provider mutation, group edit UI, direct admin role mutation, or production delta-sync scheduler.
 - Secret rotation or token display.
 - Full org / billing console.
 

@@ -53,6 +53,7 @@ export type OfflineDraftOverview = {
   queuedAt: string | null
   syncedAt: string | null
   attemptCount: number
+  baseEtag: string | null
   lastError: string | null
   conflictReason: string | null
   title: string
@@ -336,6 +337,7 @@ export async function listOfflineDraftOverview(): Promise<OfflineDraftOverview[]
         queuedAt: decoded.queuedAt,
         syncedAt: decoded.syncedAt,
         attemptCount: decoded.attemptCount,
+        baseEtag: decoded.baseEtag,
         lastError: decoded.lastError,
         conflictReason: decoded.conflictReason,
         title: decoded.localSnapshot.title || '(untitled)',
@@ -354,6 +356,7 @@ export async function listOfflineDraftOverview(): Promise<OfflineDraftOverview[]
         queuedAt: row.queuedAt,
         syncedAt: row.syncedAt,
         attemptCount: row.attemptCount,
+        baseEtag: row.baseEtag ?? null,
         lastError: null,
         conflictReason: row.conflictReason,
         title: '(encrypted draft)',

@@ -26,6 +26,16 @@ Bu dokuman SCIM 2.0 foundation (Faz 61) ve grup nesting + bulk MVP (Faz 76) davr
 - `PUT/PATCH /Users/{id}`: temel alanlar + `active` gunceller.
 - `DELETE /Users/{id}`: hard delete degil, deprovision (`active=false`) uygular.
 - Deprovision sirasinda aktif refresh tokenlar revoke edilir.
+- Faz 97: deprovision tombstone alanlari (`deprovisioned_at`, `deprovision_reason`, `last_scim_external_id`) korunur. Ayni `externalId` ile `active=true` re-add gelirse mevcut deprovisioned kullanici reactivate edilebilir ve `SCIM_USER_REACTIVATED` audit eventi yazilir.
+- Farkli `externalId` ile ayni email yeniden gelirse otomatik linkleme yapilmaz; conflict/manual review sinyali olarak `SCIM_EXTERNAL_ID_CONFLICT_DETECTED` audit eventi yazilir.
+
+## Provider compatibility / delta foundation (Faz 97)
+
+- Provider matrix: `docs/scim-provider-compatibility.md`.
+- Delta/checkpoint design: `docs/scim-delta-sync-design.md`.
+- Diagnostics API/UI: `docs/scim-sync-diagnostics.md`.
+- `SCIM_DELTA_SYNC_ENABLED=false` ve `SCIM_DELTA_SYNC_MODE=disabled` default kalir.
+- Missing-from-delta hicbir zaman deprovision veya delete sebebi degildir.
 
 ## Notlar ve Limitler
 

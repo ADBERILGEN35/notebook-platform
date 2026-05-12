@@ -14,8 +14,11 @@ public class AuditAdminAuthorizer {
   public static final String CHANGE_REQUEST_SCOPE = "internal:admin:change-requests:manage";
   public static final String RBAC_READ_SCOPE = "internal:admin:rbac:read";
   public static final String RBAC_OVERRIDE_RELOAD_SCOPE = "internal:admin:rbac:overrides:reload";
-  public static final String BREAK_GLASS_EVENTS_READ_SCOPE = "internal:admin:break-glass:events:read";
-  public static final String BREAK_GLASS_EVENTS_REVIEW_SCOPE = "internal:admin:break-glass:events:review";
+  public static final String SCIM_DIAGNOSTICS_READ_SCOPE = "internal:admin:scim:diagnostics:read";
+  public static final String BREAK_GLASS_EVENTS_READ_SCOPE =
+      "internal:admin:break-glass:events:read";
+  public static final String BREAK_GLASS_EVENTS_REVIEW_SCOPE =
+      "internal:admin:break-glass:events:review";
   public static final String BREAK_GLASS_TOKEN_CHECK_SCOPE = "internal:break-glass:token:check";
   public static final String BREAK_GLASS_ROTATION_READ_SCOPE =
       "internal:admin:break-glass:rotation:read";

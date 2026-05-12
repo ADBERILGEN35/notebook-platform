@@ -208,6 +208,13 @@ E2E scope moved to [`docs/frontend-e2e.md`](frontend-e2e.md).
 - Settings adds richer draft list metadata, bulk sync/discard actions, and local diagnostics counters.
 - NotePage improves offline draft state banners and encrypted unavailable fallback messaging.
 
+## Faz 96 Service Worker Background Sync POC
+
+- Settings/Security now shows Service Worker Background Sync support, registration state and latest
+  dry-run diagnostics when the POC flag is enabled.
+- Defaults stay production-safe: SW background sync disabled, registration disabled and dry-run only.
+- No service-worker remote writes or silent conflict resolution are added.
+
 ## Faz 60 Enterprise SSO UX
 
 - Login page can show OIDC provider buttons from backend provider list.

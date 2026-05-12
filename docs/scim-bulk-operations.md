@@ -53,3 +53,4 @@ Paths may omit leading `/`; query strings are stripped.
 ## Rollout
 
 - Keep `SCIM_BULK_ENABLED=false` in production until an IdP validates behavior in dev/staging.
+- Faz 97 adds provider capability flag `SCIM_PROVIDER_SUPPORTS_BULK`; this is diagnostics metadata only and does not change `/Bulk` behavior or enable production bulk rollout.

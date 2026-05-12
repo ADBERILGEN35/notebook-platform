@@ -3,9 +3,10 @@ package com.notebook.lumen.identity.breakglass;
 import com.notebook.lumen.common.security.admin.PlatformAdminRbacConstants;
 import com.notebook.lumen.identity.audit.AuditService;
 import com.notebook.lumen.identity.shared.security.jwt.JwtTokenService;
+import jakarta.servlet.http.HttpServletRequest;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
@@ -13,16 +14,15 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashMap;
+import java.util.HexFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.HexFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import jakarta.servlet.http.HttpServletRequest;
 
 @Service
 public class BreakGlassService {
@@ -48,13 +48,15 @@ public class BreakGlassService {
 
   /** In-memory guardrail: at most N active sessions per instance. */
   private final AtomicReference<Instant> activeUntil = new AtomicReference<>(null);
+
   private final AtomicReference<Instant> staticTokenLockoutUntil = new AtomicReference<>(null);
   private final AtomicReference<Integer> staticTokenFailures = new AtomicReference<>(0);
   private final AtomicReference<Instant> lastStaticTokenUsedAt = new AtomicReference<>(null);
   private final AtomicReference<UUID> lastIssuedEventId = new AtomicReference<>(null);
   private final AtomicReference<String> lastIssuedSessionId = new AtomicReference<>(null);
   private final ConcurrentHashMap<String, Instant> usedAssertionJti = new ConcurrentHashMap<>();
-  private final ConcurrentHashMap<String, Instant> pendingWebauthnChallenges = new ConcurrentHashMap<>();
+  private final ConcurrentHashMap<String, Instant> pendingWebauthnChallenges =
+      new ConcurrentHashMap<>();
 
   public BreakGlassService(
       BreakGlassProperties props,
@@ -129,16 +131,26 @@ public class BreakGlassService {
     }
     String r = reason == null ? "" : reason.trim();
     if (props.requireReason() && r.length() < 20) {
-      audit("BREAK_GLASS_LOGIN_FAILED", Map.of("mode", MODE_STATIC, "reasonPresent", false, "failure", "REASON_REQUIRED"));
+      audit(
+          "BREAK_GLASS_LOGIN_FAILED",
+          Map.of("mode", MODE_STATIC, "reasonPresent", false, "failure", "REASON_REQUIRED"));
       throw BreakGlassException.reasonRequired();
     }
     if (isStaticTokenLocked()) {
-      audit("BREAK_GLASS_LOGIN_FAILED", Map.of("mode", MODE_STATIC, "reasonPresent", true, "failure", "LOCKOUT"));
+      audit(
+          "BREAK_GLASS_LOGIN_FAILED",
+          Map.of("mode", MODE_STATIC, "reasonPresent", true, "failure", "LOCKOUT"));
       throw BreakGlassException.rateLimited();
     }
     audit(
         "BREAK_GLASS_LOGIN_ATTEMPT",
-        Map.of("mode", MODE_STATIC, "reasonPresent", !r.isBlank(), "tokenConfigured", !props.tokenHash().isBlank()));
+        Map.of(
+            "mode",
+            MODE_STATIC,
+            "reasonPresent",
+            !r.isBlank(),
+            "tokenConfigured",
+            !props.tokenHash().isBlank()));
 
     if (!tokenMatchesConfiguredHash(token)) {
       registerStaticTokenFailure();
@@ -150,10 +162,17 @@ public class BreakGlassService {
     staticTokenFailures.set(0);
 
     BreakGlassDtos.BreakGlassLoginResponse response =
-        issueSession(MODE_STATIC, "break-glass:" + shortId(), r, props.staticTokenRotationRecommendedAfterUse(), request);
+        issueSession(
+            MODE_STATIC,
+            "break-glass:" + shortId(),
+            r,
+            props.staticTokenRotationRecommendedAfterUse(),
+            request);
     lastStaticTokenUsedAt.set(Instant.now());
     if (props.staticTokenRotationRecommendedAfterUse()) {
-      audit("BREAK_GLASS_STATIC_TOKEN_ROTATION_REQUIRED", Map.of("mode", MODE_STATIC, "reasonPresent", true));
+      audit(
+          "BREAK_GLASS_STATIC_TOKEN_ROTATION_REQUIRED",
+          Map.of("mode", MODE_STATIC, "reasonPresent", true));
       if (props.rotationTrackingEnabled()) {
         try {
           UUID lastEventId = lastIssuedEventId.get();
@@ -178,9 +197,14 @@ public class BreakGlassService {
       throw BreakGlassException.reasonRequired();
     }
     String challengeId = UUID.randomUUID().toString();
-    String challenge = Base64.getUrlEncoder().withoutPadding().encodeToString(UUID.randomUUID().toString().getBytes(StandardCharsets.UTF_8));
+    String challenge =
+        Base64.getUrlEncoder()
+            .withoutPadding()
+            .encodeToString(UUID.randomUUID().toString().getBytes(StandardCharsets.UTF_8));
     pendingWebauthnChallenges.put(challengeId, Instant.now().plus(5, ChronoUnit.MINUTES));
-    audit("BREAK_GLASS_WEBAUTHN_CHALLENGE_CREATED", Map.of("mode", MODE_WEBAUTHN, "reasonPresent", true));
+    audit(
+        "BREAK_GLASS_WEBAUTHN_CHALLENGE_CREATED",
+        Map.of("mode", MODE_WEBAUTHN, "reasonPresent", true));
     return new BreakGlassDtos.BreakGlassWebauthnChallengeResponse(challengeId, challenge);
   }
 
@@ -200,18 +224,25 @@ public class BreakGlassService {
     }
     Instant exp = pendingWebauthnChallenges.remove(challengeId == null ? "" : challengeId.trim());
     if (exp == null || Instant.now().isAfter(exp)) {
-      audit("BREAK_GLASS_WEBAUTHN_VERIFY_FAILED", Map.of("mode", MODE_WEBAUTHN, "failure", "CHALLENGE_INVALID_OR_EXPIRED"));
+      audit(
+          "BREAK_GLASS_WEBAUTHN_VERIFY_FAILED",
+          Map.of("mode", MODE_WEBAUTHN, "failure", "CHALLENGE_INVALID_OR_EXPIRED"));
       throw BreakGlassException.invalidToken();
     }
     if (credential == null || credential.isBlank()) {
-      audit("BREAK_GLASS_WEBAUTHN_VERIFY_FAILED", Map.of("mode", MODE_WEBAUTHN, "failure", "EMPTY_CREDENTIAL"));
+      audit(
+          "BREAK_GLASS_WEBAUTHN_VERIFY_FAILED",
+          Map.of("mode", MODE_WEBAUTHN, "failure", "EMPTY_CREDENTIAL"));
       throw BreakGlassException.invalidToken();
     }
-    audit("BREAK_GLASS_WEBAUTHN_VERIFY_SUCCEEDED", Map.of("mode", MODE_WEBAUTHN, "reasonPresent", true));
+    audit(
+        "BREAK_GLASS_WEBAUTHN_VERIFY_SUCCEEDED",
+        Map.of("mode", MODE_WEBAUTHN, "reasonPresent", true));
     return issueSession(MODE_WEBAUTHN, "break-glass-webauthn:" + shortId(), r, false, request);
   }
 
-  public BreakGlassDtos.BreakGlassLoginResponse loginOfflineSigned(String assertion, String reason) {
+  public BreakGlassDtos.BreakGlassLoginResponse loginOfflineSigned(
+      String assertion, String reason) {
     return loginOfflineSigned(assertion, reason, null);
   }
 
@@ -226,33 +257,53 @@ public class BreakGlassService {
     }
     OfflineClaims claims = parseOfflineAssertion(assertion);
     if (!Objects.equals(props.offlineAllowedIssuer(), claims.issuer())) {
-      audit("BREAK_GLASS_OFFLINE_ASSERTION_FAILED", Map.of("mode", MODE_OFFLINE, "failure", "INVALID_ISSUER"));
+      audit(
+          "BREAK_GLASS_OFFLINE_ASSERTION_FAILED",
+          Map.of("mode", MODE_OFFLINE, "failure", "INVALID_ISSUER"));
       throw BreakGlassException.invalidToken();
     }
     if (!Objects.equals(props.offlineRequiredAudience(), claims.audience())) {
-      audit("BREAK_GLASS_OFFLINE_ASSERTION_FAILED", Map.of("mode", MODE_OFFLINE, "failure", "INVALID_AUDIENCE"));
+      audit(
+          "BREAK_GLASS_OFFLINE_ASSERTION_FAILED",
+          Map.of("mode", MODE_OFFLINE, "failure", "INVALID_AUDIENCE"));
       throw BreakGlassException.invalidToken();
     }
     if (!"break_glass_admin".equalsIgnoreCase(claims.purpose())) {
-      audit("BREAK_GLASS_OFFLINE_ASSERTION_FAILED", Map.of("mode", MODE_OFFLINE, "failure", "INVALID_PURPOSE"));
+      audit(
+          "BREAK_GLASS_OFFLINE_ASSERTION_FAILED",
+          Map.of("mode", MODE_OFFLINE, "failure", "INVALID_PURPOSE"));
       throw BreakGlassException.invalidToken();
     }
     if (claims.expiresAt().isBefore(Instant.now())
-        || claims.issuedAt().plusSeconds(props.offlineMaxAssertionTtlSeconds()).isBefore(Instant.now())) {
-      audit("BREAK_GLASS_OFFLINE_ASSERTION_FAILED", Map.of("mode", MODE_OFFLINE, "failure", "ASSERTION_EXPIRED"));
+        || claims
+            .issuedAt()
+            .plusSeconds(props.offlineMaxAssertionTtlSeconds())
+            .isBefore(Instant.now())) {
+      audit(
+          "BREAK_GLASS_OFFLINE_ASSERTION_FAILED",
+          Map.of("mode", MODE_OFFLINE, "failure", "ASSERTION_EXPIRED"));
       throw BreakGlassException.invalidToken();
     }
     if (usedAssertionJti.putIfAbsent(claims.jti(), claims.expiresAt()) != null) {
-      audit("BREAK_GLASS_ASSERTION_REPLAYED", Map.of("mode", MODE_OFFLINE, "jtiHash", sha256(claims.jti())));
+      audit(
+          "BREAK_GLASS_ASSERTION_REPLAYED",
+          Map.of("mode", MODE_OFFLINE, "jtiHash", sha256(claims.jti())));
       throw BreakGlassException.assertionReplayed();
     }
-    audit("BREAK_GLASS_OFFLINE_ASSERTION_SUCCEEDED", Map.of("mode", MODE_OFFLINE, "reasonPresent", true));
+    audit(
+        "BREAK_GLASS_OFFLINE_ASSERTION_SUCCEEDED",
+        Map.of("mode", MODE_OFFLINE, "reasonPresent", true));
     return issueSession(MODE_OFFLINE, "break-glass-offline:" + shortId(), r, false, request);
   }
 
   private BreakGlassDtos.BreakGlassLoginResponse issueSession(
-      String mode, String actor, String reason, boolean rotationRequired, HttpServletRequest request) {
-    if (BreakGlassApprovalMode.from(props.approvalMode()) == BreakGlassApprovalMode.REQUIRED_BEFORE_ISSUE) {
+      String mode,
+      String actor,
+      String reason,
+      boolean rotationRequired,
+      HttpServletRequest request) {
+    if (BreakGlassApprovalMode.from(props.approvalMode())
+        == BreakGlassApprovalMode.REQUIRED_BEFORE_ISSUE) {
       String requestId = UUID.randomUUID().toString();
       accessEventService.createIssuedEvent(
           requestId,
@@ -281,15 +332,15 @@ public class BreakGlassService {
     if (props.eventLogEnabled()) {
       createdEvent =
           accessEventService.createIssuedEvent(
-          sessionId,
-          mode,
-          actor,
-          reason,
-          Instant.now(),
-          Instant.now().plusSeconds(ttlSeconds),
-          rotationRequired,
-          jti,
-          request);
+              sessionId,
+              mode,
+              actor,
+              reason,
+              Instant.now(),
+              Instant.now().plusSeconds(ttlSeconds),
+              rotationRequired,
+              jti,
+              request);
     }
     Map<String, Object> claims =
         Map.of(
@@ -313,8 +364,10 @@ public class BreakGlassService {
             actor,
             CLAIM_REASON_PRESENT,
             true);
-    String accessToken = jwtTokenService.generateAccessToken(syntheticUserId, actor, claims, ttlSeconds);
-    audit("BREAK_GLASS_SESSION_ISSUED", Map.of("mode", mode, "reasonPresent", true, "actor", actor));
+    String accessToken =
+        jwtTokenService.generateAccessToken(syntheticUserId, actor, claims, ttlSeconds);
+    audit(
+        "BREAK_GLASS_SESSION_ISSUED", Map.of("mode", mode, "reasonPresent", true, "actor", actor));
     auditMetricLike(mode, "SUCCESS");
     lastIssuedEventId.set(createdEvent == null ? null : createdEvent.getId());
     lastIssuedSessionId.set(sessionId);
@@ -344,7 +397,8 @@ public class BreakGlassService {
   }
 
   private boolean modeAllowed(String mode) {
-    String configured = props.credentialMode() == null ? "" : props.credentialMode().trim().toLowerCase();
+    String configured =
+        props.credentialMode() == null ? "" : props.credentialMode().trim().toLowerCase();
     if ("hybrid".equals(configured)) {
       return true;
     }
@@ -359,7 +413,8 @@ public class BreakGlassService {
   private void registerStaticTokenFailure() {
     int next = staticTokenFailures.updateAndGet(v -> v == null ? 1 : v + 1);
     if (next >= props.staticTokenMaxFailuresPerWindow()) {
-      staticTokenLockoutUntil.set(Instant.now().plus(props.staticTokenLockoutMinutes(), ChronoUnit.MINUTES));
+      staticTokenLockoutUntil.set(
+          Instant.now().plus(props.staticTokenLockoutMinutes(), ChronoUnit.MINUTES));
       staticTokenFailures.set(0);
     }
     auditMetricLike(MODE_STATIC, "FAILED");
@@ -391,9 +446,12 @@ public class BreakGlassService {
           throw new IllegalArgumentException("public key unavailable");
         }
       }
-      return new OfflineClaims(iss, aud, jti, purpose, Instant.ofEpochSecond(iat), Instant.ofEpochSecond(exp));
+      return new OfflineClaims(
+          iss, aud, jti, purpose, Instant.ofEpochSecond(iat), Instant.ofEpochSecond(exp));
     } catch (Exception e) {
-      audit("BREAK_GLASS_OFFLINE_ASSERTION_FAILED", Map.of("mode", MODE_OFFLINE, "failure", "PARSE_ERROR"));
+      audit(
+          "BREAK_GLASS_OFFLINE_ASSERTION_FAILED",
+          Map.of("mode", MODE_OFFLINE, "failure", "PARSE_ERROR"));
       throw BreakGlassException.invalidToken();
     }
   }
@@ -436,4 +494,3 @@ public class BreakGlassService {
       Instant issuedAt,
       Instant expiresAt) {}
 }
-

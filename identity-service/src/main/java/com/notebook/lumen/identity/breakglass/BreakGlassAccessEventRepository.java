@@ -7,7 +7,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface BreakGlassAccessEventRepository extends JpaRepository<BreakGlassAccessEvent, UUID> {
+public interface BreakGlassAccessEventRepository
+    extends JpaRepository<BreakGlassAccessEvent, UUID> {
   Optional<BreakGlassAccessEvent> findBySessionId(String sessionId);
 
   Page<BreakGlassAccessEvent> findByStatusAndIssuedAtBetween(

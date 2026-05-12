@@ -69,7 +69,8 @@ public class AdminRbacOverrideManifestParser {
     int rawCount = rawList.size();
     if (rawCount > props.maxAssignments()) {
       warnings.add("OVERRIDE_LIMIT_EXCEEDED");
-      return new AdminRbacOverrideParseResult(List.of(), warnings, errors, 0, rawCount, manifestVersion);
+      return new AdminRbacOverrideParseResult(
+          List.of(), warnings, errors, 0, rawCount, manifestVersion);
     }
 
     int ignored = 0;

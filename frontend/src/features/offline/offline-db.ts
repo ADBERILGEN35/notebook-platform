@@ -1,9 +1,11 @@
 import { openDB } from 'idb'
 
 export const OFFLINE_DB_NAME = 'notebook-offline'
-export const OFFLINE_DB_VERSION = 3
+export const OFFLINE_DB_VERSION = 4
 export const OFFLINE_NOTES_STORE = 'notes'
 export const OFFLINE_DRAFTS_STORE = 'offline_note_drafts'
+export const OFFLINE_SW_SYNC_DIAGNOSTICS_STORE = 'offline_sw_sync_diagnostics'
+export const OFFLINE_SYNC_LOCKS_STORE = 'offline_sync_locks'
 
 export function openOfflineDb() {
   return openDB(OFFLINE_DB_NAME, OFFLINE_DB_VERSION, {
@@ -21,6 +23,16 @@ export function openOfflineDb() {
       }
       if (oldVersion < 3) {
         // V3 introduces optional encrypted payload fields in existing stores.
+      }
+      if (oldVersion < 4) {
+        if (!db.objectStoreNames.contains(OFFLINE_SW_SYNC_DIAGNOSTICS_STORE)) {
+          db.createObjectStore(OFFLINE_SW_SYNC_DIAGNOSTICS_STORE, { keyPath: 'id' })
+        }
+        if (!db.objectStoreNames.contains(OFFLINE_SYNC_LOCKS_STORE)) {
+          const locks = db.createObjectStore(OFFLINE_SYNC_LOCKS_STORE, { keyPath: 'draftId' })
+          locks.createIndex('expiresAt', 'expiresAt')
+          locks.createIndex('owner', 'owner')
+        }
       }
     },
   })

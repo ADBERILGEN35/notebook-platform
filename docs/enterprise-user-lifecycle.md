@@ -13,6 +13,11 @@ Bu dokuman Faz 60 SSO foundation uzerine gelen SCIM lifecycle davranisini ozetle
   - kullanici `DISABLED` olur,
   - `deprovisioned_at` set edilir,
   - aktif refresh tokenlar revoke edilir.
+- Faz 97 tombstone/re-add kurallari:
+  - `deprovision_reason` ve `last_scim_external_id` saklanir.
+  - Ayni `externalId` ile `active=true` re-add mevcut SCIM kullanicisini reactivate eder ve `reactivated_at` set eder.
+  - Ayni email fakat farkli `externalId` otomatik linklenmez; conflict/manual review sinyali olarak ele alinir.
+  - Delta response'ta eksik kullanici deprovision sebebi degildir.
 
 ## Admin Group Mapping
 

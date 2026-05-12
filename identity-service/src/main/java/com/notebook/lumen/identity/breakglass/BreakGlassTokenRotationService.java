@@ -58,13 +58,21 @@ public class BreakGlassTokenRotationService {
         repository.findByStatusAndOldTokenHashFingerprint(
             BreakGlassTokenRotationEventStatus.REQUIRED, oldFingerprint);
     if (!existing.isEmpty()) {
-      auditMetadata("BREAK_GLASS_TOKEN_ROTATION_DUPLICATE_SUPPRESSED", existing.get(0).getId(), null, oldFingerprint, null, request);
+      auditMetadata(
+          "BREAK_GLASS_TOKEN_ROTATION_DUPLICATE_SUPPRESSED",
+          existing.get(0).getId(),
+          null,
+          oldFingerprint,
+          null,
+          request);
       return Optional.of(existing.get(0));
     }
-    long open = repository.countByStatus(BreakGlassTokenRotationEventStatus.REQUIRED)
-        + repository.countByStatus(BreakGlassTokenRotationEventStatus.ACKNOWLEDGED);
+    long open =
+        repository.countByStatus(BreakGlassTokenRotationEventStatus.REQUIRED)
+            + repository.countByStatus(BreakGlassTokenRotationEventStatus.ACKNOWLEDGED);
     if (open >= props.rotationMaxOpenEvents()) {
-      auditMetadata("BREAK_GLASS_TOKEN_ROTATION_LIMIT_REACHED", null, null, oldFingerprint, null, request);
+      auditMetadata(
+          "BREAK_GLASS_TOKEN_ROTATION_LIMIT_REACHED", null, null, oldFingerprint, null, request);
       throw BreakGlassException.rotationLimitExceeded();
     }
     Instant now = Instant.now();
@@ -81,14 +89,15 @@ public class BreakGlassTokenRotationService {
             now,
             now);
     repository.save(event);
-    auditMetadata("BREAK_GLASS_TOKEN_ROTATION_REQUIRED", event.getId(), null, oldFingerprint, null, request);
+    auditMetadata(
+        "BREAK_GLASS_TOKEN_ROTATION_REQUIRED", event.getId(), null, oldFingerprint, null, request);
     return Optional.of(event);
   }
 
   @Transactional(readOnly = true)
-  public BreakGlassRotationDtos.RotationEventListResponse list(String status, int page, int size, HttpServletRequest request) {
-    var pageable =
-        PageRequest.of(Math.max(page, 0), Math.min(Math.max(size, 1), 200));
+  public BreakGlassRotationDtos.RotationEventListResponse list(
+      String status, int page, int size, HttpServletRequest request) {
+    var pageable = PageRequest.of(Math.max(page, 0), Math.min(Math.max(size, 1), 200));
     org.springframework.data.domain.Page<BreakGlassTokenRotationEvent> rows;
     if (status == null || status.isBlank()) {
       rows = repository.findAllByOrderByRequiredAtDesc(pageable);
@@ -97,8 +106,9 @@ public class BreakGlassTokenRotationService {
           List.of(BreakGlassTokenRotationEventStatus.valueOf(status.trim().toUpperCase()));
       rows = repository.findByStatusInOrderByRequiredAtDesc(statuses, pageable);
     }
-    long openCount = repository.countByStatus(BreakGlassTokenRotationEventStatus.REQUIRED)
-        + repository.countByStatus(BreakGlassTokenRotationEventStatus.ACKNOWLEDGED);
+    long openCount =
+        repository.countByStatus(BreakGlassTokenRotationEventStatus.REQUIRED)
+            + repository.countByStatus(BreakGlassTokenRotationEventStatus.ACKNOWLEDGED);
     long requiredCount = repository.countByStatus(BreakGlassTokenRotationEventStatus.REQUIRED);
     auditMetadata("BREAK_GLASS_TOKEN_ROTATION_VIEWED", null, null, null, null, request);
     return new BreakGlassRotationDtos.RotationEventListResponse(
@@ -111,15 +121,23 @@ public class BreakGlassTokenRotationService {
   @Transactional(readOnly = true)
   public BreakGlassRotationDtos.RotationEventDetail detail(UUID id, HttpServletRequest request) {
     BreakGlassTokenRotationEvent e = getOrThrow(id);
-    auditMetadata("BREAK_GLASS_TOKEN_ROTATION_VIEWED", e.getId(), null, e.getOldTokenHashFingerprint(), e.getNewTokenHashFingerprint(), request);
+    auditMetadata(
+        "BREAK_GLASS_TOKEN_ROTATION_VIEWED",
+        e.getId(),
+        null,
+        e.getOldTokenHashFingerprint(),
+        e.getNewTokenHashFingerprint(),
+        request);
     return toDetail(e);
   }
 
   @Transactional(readOnly = true)
   public BreakGlassRotationDtos.RotationSummary summary() {
     boolean tracking = props.rotationTrackingEnabled();
-    long required = tracking ? repository.countByStatus(BreakGlassTokenRotationEventStatus.REQUIRED) : 0L;
-    long ack = tracking ? repository.countByStatus(BreakGlassTokenRotationEventStatus.ACKNOWLEDGED) : 0L;
+    long required =
+        tracking ? repository.countByStatus(BreakGlassTokenRotationEventStatus.REQUIRED) : 0L;
+    long ack =
+        tracking ? repository.countByStatus(BreakGlassTokenRotationEventStatus.ACKNOWLEDGED) : 0L;
     Instant oldest =
         tracking
             ? repository
@@ -143,7 +161,10 @@ public class BreakGlassTokenRotationService {
 
   @Transactional
   public BreakGlassRotationDtos.RotationEventDetail acknowledge(
-      UUID id, UUID actorUserId, BreakGlassRotationDtos.AcknowledgeRequest body, HttpServletRequest request) {
+      UUID id,
+      UUID actorUserId,
+      BreakGlassRotationDtos.AcknowledgeRequest body,
+      HttpServletRequest request) {
     if (!props.rotationApiEnabled()) {
       throw BreakGlassException.rotationApiDisabled();
     }
@@ -155,13 +176,22 @@ public class BreakGlassTokenRotationService {
     String reason = body == null || body.reason() == null ? "" : body.reason().trim();
     e.markAcknowledged(actorUserId, reason);
     repository.save(e);
-    auditMetadata("BREAK_GLASS_TOKEN_ROTATION_ACKNOWLEDGED", e.getId(), actorUserId, e.getOldTokenHashFingerprint(), null, request);
+    auditMetadata(
+        "BREAK_GLASS_TOKEN_ROTATION_ACKNOWLEDGED",
+        e.getId(),
+        actorUserId,
+        e.getOldTokenHashFingerprint(),
+        null,
+        request);
     return toDetail(e);
   }
 
   @Transactional
   public BreakGlassRotationDtos.RotationEventDetail verify(
-      UUID id, UUID actorUserId, BreakGlassRotationDtos.VerifyRequest body, HttpServletRequest request) {
+      UUID id,
+      UUID actorUserId,
+      BreakGlassRotationDtos.VerifyRequest body,
+      HttpServletRequest request) {
     if (!props.rotationApiEnabled()) {
       throw BreakGlassException.rotationApiDisabled();
     }
@@ -173,24 +203,45 @@ public class BreakGlassTokenRotationService {
     }
     String configuredHash = props.tokenHash();
     if (configuredHash == null || configuredHash.isBlank()) {
-      auditMetadata("BREAK_GLASS_TOKEN_ROTATION_VERIFY_FAILED", e.getId(), actorUserId, e.getOldTokenHashFingerprint(), null, request);
+      auditMetadata(
+          "BREAK_GLASS_TOKEN_ROTATION_VERIFY_FAILED",
+          e.getId(),
+          actorUserId,
+          e.getOldTokenHashFingerprint(),
+          null,
+          request);
       throw BreakGlassException.rotationNotChanged();
     }
     String currentFingerprint = fingerprint(configuredHash);
     if (currentFingerprint.equals(e.getOldTokenHashFingerprint())) {
-      auditMetadata("BREAK_GLASS_TOKEN_ROTATION_VERIFY_FAILED", e.getId(), actorUserId, e.getOldTokenHashFingerprint(), currentFingerprint, request);
+      auditMetadata(
+          "BREAK_GLASS_TOKEN_ROTATION_VERIFY_FAILED",
+          e.getId(),
+          actorUserId,
+          e.getOldTokenHashFingerprint(),
+          currentFingerprint,
+          request);
       throw BreakGlassException.rotationNotChanged();
     }
     String reason = body == null || body.reason() == null ? "" : body.reason().trim();
     e.markVerified(actorUserId, currentFingerprint, reason);
     repository.save(e);
-    auditMetadata("BREAK_GLASS_TOKEN_ROTATION_VERIFIED", e.getId(), actorUserId, e.getOldTokenHashFingerprint(), currentFingerprint, request);
+    auditMetadata(
+        "BREAK_GLASS_TOKEN_ROTATION_VERIFIED",
+        e.getId(),
+        actorUserId,
+        e.getOldTokenHashFingerprint(),
+        currentFingerprint,
+        request);
     return toDetail(e);
   }
 
   @Transactional
   public BreakGlassRotationDtos.RotationEventDetail close(
-      UUID id, UUID actorUserId, BreakGlassRotationDtos.CloseRequest body, HttpServletRequest request) {
+      UUID id,
+      UUID actorUserId,
+      BreakGlassRotationDtos.CloseRequest body,
+      HttpServletRequest request) {
     if (!props.rotationApiEnabled()) {
       throw BreakGlassException.rotationApiDisabled();
     }
@@ -202,7 +253,13 @@ public class BreakGlassTokenRotationService {
     String reason = body == null || body.reason() == null ? "" : body.reason().trim();
     e.markClosed(reason);
     repository.save(e);
-    auditMetadata("BREAK_GLASS_TOKEN_ROTATION_CLOSED", e.getId(), actorUserId, e.getOldTokenHashFingerprint(), e.getNewTokenHashFingerprint(), request);
+    auditMetadata(
+        "BREAK_GLASS_TOKEN_ROTATION_CLOSED",
+        e.getId(),
+        actorUserId,
+        e.getOldTokenHashFingerprint(),
+        e.getNewTokenHashFingerprint(),
+        request);
     return toDetail(e);
   }
 
@@ -267,7 +324,8 @@ public class BreakGlassTokenRotationService {
         e.getClosedAt());
   }
 
-  private static BreakGlassRotationDtos.RotationEventDetail toDetail(BreakGlassTokenRotationEvent e) {
+  private static BreakGlassRotationDtos.RotationEventDetail toDetail(
+      BreakGlassTokenRotationEvent e) {
     return new BreakGlassRotationDtos.RotationEventDetail(
         e.getId(),
         e.getCredentialMode(),

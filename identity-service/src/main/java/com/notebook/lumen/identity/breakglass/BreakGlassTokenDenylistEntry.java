@@ -64,14 +64,43 @@ public class BreakGlassTokenDenylistEntry {
     this.createdAt = createdAt;
   }
 
-  public UUID getId() { return id; }
-  public String getJti() { return jti; }
-  public String getSessionId() { return sessionId; }
-  public UUID getEventId() { return eventId; }
-  public UUID getRevokedByUserId() { return revokedByUserId; }
-  public Instant getRevokedAt() { return revokedAt; }
-  public Instant getExpiresAt() { return expiresAt; }
-  public String getReason() { return reason; }
-  public String getSource() { return source; }
-  public Instant getCreatedAt() { return createdAt; }
+  public UUID getId() {
+    return id;
+  }
+
+  public String getJti() {
+    return jti;
+  }
+
+  public String getSessionId() {
+    return sessionId;
+  }
+
+  public UUID getEventId() {
+    return eventId;
+  }
+
+  public UUID getRevokedByUserId() {
+    return revokedByUserId;
+  }
+
+  public Instant getRevokedAt() {
+    return revokedAt;
+  }
+
+  public Instant getExpiresAt() {
+    return expiresAt;
+  }
+
+  public String getReason() {
+    return reason;
+  }
+
+  public String getSource() {
+    return source;
+  }
+
+  public Instant getCreatedAt() {
+    return createdAt;
+  }
 }

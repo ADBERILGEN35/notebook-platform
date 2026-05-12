@@ -30,7 +30,9 @@ public final class BreakGlassException extends IdentityRuntimeException {
 
   public static BreakGlassException rateLimited() {
     return new BreakGlassException(
-        "BREAK_GLASS_RATE_LIMITED", HttpStatus.TOO_MANY_REQUESTS, "Break-glass attempts are rate limited");
+        "BREAK_GLASS_RATE_LIMITED",
+        HttpStatus.TOO_MANY_REQUESTS,
+        "Break-glass attempts are rate limited");
   }
 
   public static BreakGlassException reasonRequired() {
@@ -49,7 +51,9 @@ public final class BreakGlassException extends IdentityRuntimeException {
 
   public static BreakGlassException assertionReplayed() {
     return new BreakGlassException(
-        "BREAK_GLASS_ASSERTION_REPLAYED", HttpStatus.FORBIDDEN, "Break-glass assertion replay detected");
+        "BREAK_GLASS_ASSERTION_REPLAYED",
+        HttpStatus.FORBIDDEN,
+        "Break-glass assertion replay detected");
   }
 
   public static BreakGlassException rotationNotFound() {
@@ -87,4 +91,3 @@ public final class BreakGlassException extends IdentityRuntimeException {
         "Break-glass rotation open-event limit exceeded");
   }
 }
-

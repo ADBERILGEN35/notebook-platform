@@ -49,7 +49,7 @@ class AdminEnterpriseStatusControllerDirectTest {
             Instant.parse("2026-01-01T00:00:00Z"),
             new EnterpriseStatusFeatures(
                 new SsoStatus(false, 0, false, false, false),
-                new ScimStatus(false, false, false, false),
+                scimStatus(),
                 new MfaStatus("off", List.of(), false, false),
                 new SiemStatus(false, "noop", false, false, false),
                 new AdminRbacStatus(false, true, Map.of()),
@@ -104,5 +104,22 @@ class AdminEnterpriseStatusControllerDirectTest {
         .claim("email", "a@b.com")
         .claim("token_type", "access")
         .build();
+  }
+
+  private static ScimStatus scimStatus() {
+    return new ScimStatus(
+        false,
+        false,
+        false,
+        false,
+        "generic",
+        false,
+        "disabled",
+        false,
+        true,
+        true,
+        false,
+        true,
+        100);
   }
 }

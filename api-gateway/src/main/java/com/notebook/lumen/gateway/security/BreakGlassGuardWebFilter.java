@@ -139,7 +139,9 @@ public class BreakGlassGuardWebFilter implements WebFilter {
     if (method == null) {
       return false;
     }
-    if (HttpMethod.GET.equals(method) || HttpMethod.HEAD.equals(method) || HttpMethod.OPTIONS.equals(method)) {
+    if (HttpMethod.GET.equals(method)
+        || HttpMethod.HEAD.equals(method)
+        || HttpMethod.OPTIONS.equals(method)) {
       return false;
     }
     String path = exchange.getRequest().getPath().value();
@@ -155,4 +157,3 @@ public class BreakGlassGuardWebFilter implements WebFilter {
         && properties.allowedModes().stream().anyMatch(m -> mode.equalsIgnoreCase(m));
   }
 }
-

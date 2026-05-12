@@ -147,6 +147,14 @@
 - Active-note skip guardrail prevents background sync from touching currently edited note drafts.
 - Session-expired behavior stops batch immediately; no blind retries across auth failures.
 - Foreground-only runtime means sync is inactive when app is closed (no hidden worker behavior).
+
+## Faz 96 additions (Service Worker Background Sync research)
+
+- Service Worker Background Sync remains disabled and registration-disabled by default.
+- The POC is dry-run only and writes aggregate local diagnostics; it does not send remote draft PATCHes.
+- Memory-only offline encryption keys are not persisted or handed to the worker; locked encrypted
+  drafts are skipped with `encrypted_key_unavailable`.
+- Future worker remote writes require explicit CSRF/session, lock/lease and conflict-review design.
 ## Faz 34 Permission Snapshot Risk Notes
 
 - Snapshot staleness is accepted as eventual consistency.
@@ -177,7 +185,7 @@
 - Risk: IdP claim confusion (issuer/audience/group mismatch) could grant excess access.
 - Current mitigation: issuer + audience checks, state/nonce replay protection, verified email and
   allowed domain checks.
-- SCIM (Faz 61/76): static bearer for provisioning; group nesting validation limits membership cycles
+- SCIM (Faz 61/76/97): static bearer for provisioning; group nesting validation limits membership cycles; provider compatibility diagnostics never expose bearer tokens, raw SCIM payloads, or checkpoint token values
   and depth; bulk is off by default and is non-transactional—integrators must not assume atomic batch
   semantics.
 - Remaining gap: no manual secure account linking workflow for all enterprise edge cases.

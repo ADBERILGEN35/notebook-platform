@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.notebook.lumen.identity.audit.AuditService;
@@ -133,6 +134,141 @@ class ScimServiceTest {
             mock(HttpServletRequest.class));
 
     assertThat(patched.active()).isFalse();
+    assertThat(user.getDeprovisionedAt()).isNotNull();
+    assertThat(user.getDeprovisionReason()).isEqualTo("SCIM_ACTIVE_FALSE_OR_DELETE");
+    assertThat(user.getLastScimExternalId()).isEqualTo("ext-2");
+  }
+
+  @Test
+  void createUserReactivatesDeprovisionedExternalId() {
+    UserRepository userRepository = mock(UserRepository.class);
+    RefreshTokenRepository refreshTokenRepository = mock(RefreshTokenRepository.class);
+    ScimGroupMembershipRepository memberships = mock(ScimGroupMembershipRepository.class);
+    ScimGroupRepository groups = mock(ScimGroupRepository.class);
+    ScimGroupGraphValidation graphValidation = mock(ScimGroupGraphValidation.class);
+    AuditService auditService = mock(AuditService.class);
+    User existing =
+        new User(
+            UUID.randomUUID(),
+            "old@example.com",
+            "Old User",
+            null,
+            "pw",
+            UserStatus.ACTIVE,
+            Instant.now(),
+            null,
+            Instant.now(),
+            Instant.now(),
+            Instant.now(),
+            null,
+            UserSource.SCIM,
+            "ext-reactivate",
+            null);
+    existing.deactivateByScim(Instant.now());
+    when(userRepository.findByScimExternalId("ext-reactivate")).thenReturn(Optional.of(existing));
+    when(userRepository.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
+    when(memberships.findByMemberTypeAndMemberUser_Id(eq(ScimMemberType.USER), any()))
+        .thenReturn(List.of());
+
+    ScimService service =
+        new ScimService(
+            userRepository,
+            refreshTokenRepository,
+            memberships,
+            groups,
+            mock(PasswordEncoder.class),
+            auditService,
+            new ScimProperties(true, "token", "", true, "notebook-admins", true, 5, false, 100, 10),
+            graphValidation);
+
+    var response =
+        service.createUser(
+            new ScimUserRequest(
+                "new@example.com",
+                null,
+                "Reactivated User",
+                List.of(new ScimUserRequest.Email("new@example.com", "work", true)),
+                true,
+                "ext-reactivate",
+                List.of()),
+            mock(HttpServletRequest.class));
+
+    assertThat(response.active()).isTrue();
+    assertThat(response.userName()).isEqualTo("new@example.com");
+    assertThat(existing.getStatus()).isEqualTo(UserStatus.ACTIVE);
+    assertThat(existing.getReactivatedAt()).isNotNull();
+    assertThat(existing.getDeprovisionedAt()).isNull();
+    verify(auditService)
+        .record(eq("SCIM_USER_REACTIVATED"), any(), eq("USER"), eq(existing.getId()), any(), any());
+  }
+
+  @Test
+  void putUserRejectsDuplicateExternalId() {
+    UserRepository userRepository = mock(UserRepository.class);
+    User current =
+        new User(
+            UUID.randomUUID(),
+            "current@example.com",
+            "Current User",
+            null,
+            "pw",
+            UserStatus.ACTIVE,
+            Instant.now(),
+            null,
+            Instant.now(),
+            Instant.now(),
+            Instant.now(),
+            null,
+            UserSource.SCIM,
+            "ext-current",
+            null);
+    User other =
+        new User(
+            UUID.randomUUID(),
+            "other@example.com",
+            "Other User",
+            null,
+            "pw",
+            UserStatus.ACTIVE,
+            Instant.now(),
+            null,
+            Instant.now(),
+            Instant.now(),
+            Instant.now(),
+            null,
+            UserSource.SCIM,
+            "ext-other",
+            null);
+    when(userRepository.findById(current.getId())).thenReturn(Optional.of(current));
+    when(userRepository.findByScimExternalId("ext-other")).thenReturn(Optional.of(other));
+
+    ScimService service =
+        new ScimService(
+            userRepository,
+            mock(RefreshTokenRepository.class),
+            mock(ScimGroupMembershipRepository.class),
+            mock(ScimGroupRepository.class),
+            mock(PasswordEncoder.class),
+            mock(AuditService.class),
+            new ScimProperties(true, "token", "", true, "notebook-admins", true, 5, false, 100, 10),
+            mock(ScimGroupGraphValidation.class));
+
+    assertThatThrownBy(
+            () ->
+                service.putUser(
+                    current.getId(),
+                    new ScimUserRequest(
+                        "current@example.com",
+                        null,
+                        "Current User",
+                        List.of(new ScimUserRequest.Email("current@example.com", "work", true)),
+                        true,
+                        "ext-other",
+                        List.of()),
+                    mock(HttpServletRequest.class)))
+        .isInstanceOf(ScimException.class)
+        .satisfies(
+            ex -> assertThat(((ScimException) ex).getStatus()).isEqualTo(HttpStatus.CONFLICT));
   }
 
   @Test

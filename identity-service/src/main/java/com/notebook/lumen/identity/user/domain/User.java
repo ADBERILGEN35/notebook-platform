@@ -63,6 +63,15 @@ public class User {
   @Column(name = "deprovisioned_at", nullable = true)
   private Instant deprovisionedAt;
 
+  @Column(name = "deprovision_reason", nullable = true, length = 120)
+  private String deprovisionReason;
+
+  @Column(name = "last_scim_external_id", nullable = true, length = 255)
+  private String lastScimExternalId;
+
+  @Column(name = "reactivated_at", nullable = true)
+  private Instant reactivatedAt;
+
   protected User() {
     // JPA
   }
@@ -210,6 +219,18 @@ public class User {
     return deprovisionedAt;
   }
 
+  public String getDeprovisionReason() {
+    return deprovisionReason;
+  }
+
+  public String getLastScimExternalId() {
+    return lastScimExternalId;
+  }
+
+  public Instant getReactivatedAt() {
+    return reactivatedAt;
+  }
+
   public void setLastLoginAt(Instant lastLoginAt) {
     this.lastLoginAt = lastLoginAt;
   }
@@ -225,11 +246,15 @@ public class User {
   public void deactivateByScim(Instant now) {
     this.status = UserStatus.DISABLED;
     this.deprovisionedAt = now;
+    this.deprovisionReason = "SCIM_ACTIVE_FALSE_OR_DELETE";
+    this.lastScimExternalId = this.scimExternalId;
   }
 
   public void reactivateByScim() {
     this.status = UserStatus.ACTIVE;
     this.deprovisionedAt = null;
+    this.deprovisionReason = null;
+    this.reactivatedAt = Instant.now();
   }
 
   public void setName(String name) {

@@ -488,6 +488,109 @@ class AdminAuthorizationServiceTest {
     assertThat(service.ensureAdminRbacOverridesReload(withMfa)).isEmpty();
   }
 
+  @Test
+  void ensureScimDiagnosticsRead_allowsDedicatedPermission() {
+    AdminAuthorizationService service =
+        new AdminAuthorizationService(
+            new GatewayAdminProperties(
+                true,
+                false,
+                "off",
+                "webauthn,recovery_code",
+                "",
+                "",
+                new Audit(true),
+                new Enterprise(true)),
+            writeOff(),
+            rbacOn());
+    Instant now = Instant.now();
+    Jwt jwt =
+        new Jwt(
+            "token",
+            now.minusSeconds(10),
+            now.plusSeconds(300),
+            Map.of("alg", "RS256"),
+            Map.of(
+                "sub",
+                "user-scim",
+                "email",
+                "scim@example.com",
+                "platform_permissions",
+                List.of(PlatformAdminRbacConstants.PERM_SCIM_DIAGNOSTICS_READ),
+                "token_type",
+                "access"));
+    assertThat(service.ensureScimDiagnosticsRead(jwt)).isEmpty();
+  }
+
+  @Test
+  void ensureScimDiagnosticsRead_allowsIdentityReadFallback() {
+    AdminAuthorizationService service =
+        new AdminAuthorizationService(
+            new GatewayAdminProperties(
+                true,
+                false,
+                "off",
+                "webauthn,recovery_code",
+                "",
+                "",
+                new Audit(true),
+                new Enterprise(true)),
+            writeOff(),
+            rbacOn());
+    Instant now = Instant.now();
+    Jwt jwt =
+        new Jwt(
+            "token",
+            now.minusSeconds(10),
+            now.plusSeconds(300),
+            Map.of("alg", "RS256"),
+            Map.of(
+                "sub",
+                "user-scim",
+                "email",
+                "scim@example.com",
+                "platform_permissions",
+                List.of(PlatformAdminRbacConstants.PERM_IDENTITY_READ),
+                "token_type",
+                "access"));
+    assertThat(service.ensureScimDiagnosticsRead(jwt)).isEmpty();
+  }
+
+  @Test
+  void ensureScimDiagnosticsRead_requiresPermissionWhenEnforced() {
+    AdminAuthorizationService service =
+        new AdminAuthorizationService(
+            new GatewayAdminProperties(
+                true,
+                false,
+                "off",
+                "webauthn,recovery_code",
+                "",
+                "",
+                new Audit(true),
+                new Enterprise(true)),
+            writeOff(),
+            rbacOn());
+    Instant now = Instant.now();
+    Jwt jwt =
+        new Jwt(
+            "token",
+            now.minusSeconds(10),
+            now.plusSeconds(300),
+            Map.of("alg", "RS256"),
+            Map.of(
+                "sub",
+                "user-scim",
+                "email",
+                "scim@example.com",
+                "platform_permissions",
+                List.of(PlatformAdminRbacConstants.PERM_ENTERPRISE_STATUS_READ),
+                "token_type",
+                "access"));
+    assertThat(service.ensureScimDiagnosticsRead(jwt))
+        .contains(ErrorCode.ADMIN_PERMISSION_REQUIRED);
+  }
+
   private static Jwt jwt(String sub, String email, List<String> roles) {
     Instant now = Instant.now();
     return new Jwt(

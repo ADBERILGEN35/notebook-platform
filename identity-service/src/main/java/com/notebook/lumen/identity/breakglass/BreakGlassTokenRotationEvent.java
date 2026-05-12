@@ -88,23 +88,73 @@ public class BreakGlassTokenRotationEvent {
     this.updatedAt = updatedAt;
   }
 
-  public UUID getId() { return id; }
-  public String getRotationKey() { return rotationKey; }
-  public String getCredentialMode() { return credentialMode; }
-  public BreakGlassTokenRotationEventStatus getStatus() { return status; }
-  public UUID getTriggeredByEventId() { return triggeredByEventId; }
-  public String getTriggeredBySessionId() { return triggeredBySessionId; }
-  public String getOldTokenHashFingerprint() { return oldTokenHashFingerprint; }
-  public String getNewTokenHashFingerprint() { return newTokenHashFingerprint; }
-  public Instant getRequiredAt() { return requiredAt; }
-  public Instant getAcknowledgedAt() { return acknowledgedAt; }
-  public UUID getAcknowledgedByUserId() { return acknowledgedByUserId; }
-  public Instant getVerifiedAt() { return verifiedAt; }
-  public UUID getVerifiedByUserId() { return verifiedByUserId; }
-  public Instant getClosedAt() { return closedAt; }
-  public String getReason() { return reason; }
-  public Instant getCreatedAt() { return createdAt; }
-  public Instant getUpdatedAt() { return updatedAt; }
+  public UUID getId() {
+    return id;
+  }
+
+  public String getRotationKey() {
+    return rotationKey;
+  }
+
+  public String getCredentialMode() {
+    return credentialMode;
+  }
+
+  public BreakGlassTokenRotationEventStatus getStatus() {
+    return status;
+  }
+
+  public UUID getTriggeredByEventId() {
+    return triggeredByEventId;
+  }
+
+  public String getTriggeredBySessionId() {
+    return triggeredBySessionId;
+  }
+
+  public String getOldTokenHashFingerprint() {
+    return oldTokenHashFingerprint;
+  }
+
+  public String getNewTokenHashFingerprint() {
+    return newTokenHashFingerprint;
+  }
+
+  public Instant getRequiredAt() {
+    return requiredAt;
+  }
+
+  public Instant getAcknowledgedAt() {
+    return acknowledgedAt;
+  }
+
+  public UUID getAcknowledgedByUserId() {
+    return acknowledgedByUserId;
+  }
+
+  public Instant getVerifiedAt() {
+    return verifiedAt;
+  }
+
+  public UUID getVerifiedByUserId() {
+    return verifiedByUserId;
+  }
+
+  public Instant getClosedAt() {
+    return closedAt;
+  }
+
+  public String getReason() {
+    return reason;
+  }
+
+  public Instant getCreatedAt() {
+    return createdAt;
+  }
+
+  public Instant getUpdatedAt() {
+    return updatedAt;
+  }
 
   public void markAcknowledged(UUID actorUserId, String reason) {
     this.status = BreakGlassTokenRotationEventStatus.ACKNOWLEDGED;

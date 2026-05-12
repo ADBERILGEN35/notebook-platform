@@ -50,6 +50,7 @@ Canonical strings live in `common-security` (`PlatformAdminRbacConstants`).
 - **Workspace notification policies** (Faz 85) are **not** governed here: notification-service authorizes `PATCH` / `POST .../reset` on `/notification-policies/workspaces/{workspaceId}` using **workspace owner/admin** membership from workspace-service. Platform admin permissions alone do **not** grant workspace policy writes unless the user is also an owner/admin of that workspace.
 - Change requests: `admin:change-request:list`, `:create`, `:approve`, `:reject`, `:cancel`
 - Operation-specific creates: `admin:security:change-request:create`, `admin:merge:change-request:create`, `admin:scim:change-request:create`, `admin:siem:change-request:create`
+- SCIM diagnostics read: `admin:scim:diagnostics:read` (or `admin:identity:read` fallback on gateway diagnostics routes).
 - Identity read: `admin:identity:read`
 
 Full matrix: [`docs/admin-permission-matrix.md`](admin-permission-matrix.md).
@@ -69,6 +70,10 @@ When RBAC is enabled, identity-service maps **normalized lowercase** group ident
 
 - SSO: groups from the IdP claim (`SSO_GROUPS_CLAIM`), plus legacy `SSO_ADMIN_GROUPS` still promoting `PLATFORM_ADMIN` when matched.
 - SCIM: effective group keys from provisioning / nesting (`docs/scim-group-nesting.md`).
+
+## SCIM diagnostics permission (Faz 97)
+
+`GET /admin/identity/scim/compatibility/status`, `/sync-runs`, and `/sync-checkpoints` require `admin:identity:read` or `admin:scim:diagnostics:read`. These endpoints are read-only and never expose SCIM bearer tokens, raw payloads, or checkpoint token values.
 
 Environment keys (Helm: `config.adminRbacGroup*`):
 

@@ -47,7 +47,8 @@ public final class BreakGlassReviewDtos {
 
   public record RevokeTokenRequest(@NotBlank @Size(min = 10, max = 2000) String reason) {}
 
-  public record RevokeTokenResponse(boolean revoked, boolean alreadyExpired, boolean alreadyRevoked) {}
+  public record RevokeTokenResponse(
+      boolean revoked, boolean alreadyExpired, boolean alreadyRevoked) {}
 
   public record TokenRevokedStatusResponse(
       boolean revoked, String sessionId, Instant expiresAt, String source) {}

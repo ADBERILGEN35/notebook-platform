@@ -38,7 +38,15 @@ public class BreakGlassEventsProxyService {
   }
 
   public Mono<ResponseEntity<Object>> list(
-      String status, String mode, String from, String to, int page, int size, String adminUserId, String requestId, String gatewayPath) {
+      String status,
+      String mode,
+      String from,
+      String to,
+      int page,
+      int size,
+      String adminUserId,
+      String requestId,
+      String gatewayPath) {
     return Mono.defer(
         () -> {
           final String jwt;
@@ -62,7 +70,8 @@ public class BreakGlassEventsProxyService {
                   .accept(MediaType.APPLICATION_JSON)
                   .header(AuditProxyService.INTERNAL_AUTH_HEADER, "Bearer " + jwt)
                   .header(HDR_ADMIN_USER_ID, adminUserId);
-          if (requestId != null && !requestId.isBlank()) spec = spec.header("X-Request-Id", requestId);
+          if (requestId != null && !requestId.isBlank())
+            spec = spec.header("X-Request-Id", requestId);
           return spec.retrieve()
               .bodyToMono(Object.class)
               .map(body -> ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(body))
@@ -70,8 +79,10 @@ public class BreakGlassEventsProxyService {
         });
   }
 
-  public Mono<ResponseEntity<Object>> detail(UUID id, String adminUserId, String requestId, String path) {
-    return withAuthGet(baseUrl() + "/" + id, BREAK_GLASS_EVENTS_READ_SCOPE, adminUserId, requestId, path);
+  public Mono<ResponseEntity<Object>> detail(
+      UUID id, String adminUserId, String requestId, String path) {
+    return withAuthGet(
+        baseUrl() + "/" + id, BREAK_GLASS_EVENTS_READ_SCOPE, adminUserId, requestId, path);
   }
 
   public Mono<ResponseEntity<Object>> review(
@@ -92,7 +103,8 @@ public class BreakGlassEventsProxyService {
                   .contentType(MediaType.APPLICATION_JSON)
                   .header(AuditProxyService.INTERNAL_AUTH_HEADER, "Bearer " + jwt)
                   .header(HDR_ADMIN_USER_ID, adminUserId);
-          if (requestId != null && !requestId.isBlank()) spec = spec.header("X-Request-Id", requestId);
+          if (requestId != null && !requestId.isBlank())
+            spec = spec.header("X-Request-Id", requestId);
           return spec.bodyValue(body == null ? Map.of() : body)
               .retrieve()
               .bodyToMono(Object.class)
@@ -119,7 +131,8 @@ public class BreakGlassEventsProxyService {
                   .contentType(MediaType.APPLICATION_JSON)
                   .header(AuditProxyService.INTERNAL_AUTH_HEADER, "Bearer " + jwt)
                   .header(HDR_ADMIN_USER_ID, adminUserId);
-          if (requestId != null && !requestId.isBlank()) spec = spec.header("X-Request-Id", requestId);
+          if (requestId != null && !requestId.isBlank())
+            spec = spec.header("X-Request-Id", requestId);
           return spec.bodyValue(body == null ? Map.of() : body)
               .retrieve()
               .bodyToMono(Object.class)
@@ -145,7 +158,8 @@ public class BreakGlassEventsProxyService {
                   .accept(MediaType.APPLICATION_JSON)
                   .header(AuditProxyService.INTERNAL_AUTH_HEADER, "Bearer " + jwt)
                   .header(HDR_ADMIN_USER_ID, adminUserId);
-          if (requestId != null && !requestId.isBlank()) spec = spec.header("X-Request-Id", requestId);
+          if (requestId != null && !requestId.isBlank())
+            spec = spec.header("X-Request-Id", requestId);
           return spec.retrieve()
               .bodyToMono(Object.class)
               .map(body -> ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(body))
@@ -155,7 +169,9 @@ public class BreakGlassEventsProxyService {
 
   private static ResponseEntity<Object> mapException(Throwable e, String path, String requestId) {
     if (e instanceof WebClientResponseException w) {
-      return ResponseEntity.status(w.getStatusCode()).contentType(MediaType.APPLICATION_JSON).body(w.getResponseBodyAsString());
+      return ResponseEntity.status(w.getStatusCode())
+          .contentType(MediaType.APPLICATION_JSON)
+          .body(w.getResponseBodyAsString());
     }
     return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
         .contentType(MediaType.APPLICATION_JSON)

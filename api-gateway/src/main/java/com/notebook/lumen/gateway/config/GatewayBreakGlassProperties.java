@@ -12,4 +12,3 @@ public record GatewayBreakGlassProperties(
     @DefaultValue("false") boolean denylistCheckEnabled,
     @DefaultValue("true") boolean denylistFailClosed,
     @DefaultValue("30") int denylistCacheSeconds) {}
-

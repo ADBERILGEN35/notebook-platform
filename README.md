@@ -43,7 +43,7 @@ Public endpointler:
 
 Protected endpointlerde `Authorization: Bearer <accessToken>` zorunludur. Gateway tercihen identity-service JWKS endpointini `JWT_JWKS_URI` ile kullanir; yoksa `JWT_PUBLIC_KEY_PATH` veya `JWT_PUBLIC_KEY` fallback'i devam eder. Sadece `token_type=access` tokenlari kabul edilir.
 
-SCIM provisioning (`/scim/v2/**`, ayri bearer token) gateway uzerinden identity-service'e proxylanir; Faz 76 ile grup nesting ve opsiyonel Bulk MVP desteklenir (`docs/scim-provisioning.md`).
+SCIM provisioning (`/scim/v2/**`, ayri bearer token) gateway uzerinden identity-service'e proxylanir; Faz 76 ile grup nesting ve opsiyonel Bulk MVP desteklenir, Faz 97 ile provider compatibility diagnostics ve checkpoint/sync-run foundation eklenir (`docs/scim-provisioning.md`, `docs/scim-provider-compatibility.md`).
 
 Identity-service Faz 18 ile refresh token lifecycle hardening destekler:
 
@@ -370,6 +370,7 @@ Faz 60 adds Enterprise SSO foundation and admin identity hardening
 (`docs/enterprise-sso.md`, `docs/sso-admin-role-mapping.md`).
 Faz 61 adds SCIM provisioning and enterprise user lifecycle foundation
 (`docs/scim-provisioning.md`, `docs/enterprise-user-lifecycle.md`).
+Faz 97 adds SCIM provider compatibility diagnostics, delta/checkpoint design, and tombstone/re-add hardening without production delta sync rollout (`docs/scim-delta-sync-design.md`, `docs/scim-sync-diagnostics.md`).
 Faz 62 adds streaming SIEM push foundation with identity outbox/worker architecture
 (`docs/siem-streaming-push.md`, `docs/siem-event-schema.md`, `docs/siem-provider-generic-http.md`).
 Faz 63 adds a read-only **Enterprise Admin Console** (gateway `/admin/enterprise/status`, internal
@@ -412,3 +413,6 @@ trigger policies (`disabled/prompt/auto_safe`) while keeping production default 
 sync unchanged.
 Faz 75 adds **offline foreground background sync MVP**: app lifecycle triggers, prompt consent flow,
 auto-safe sequential batch sync and local summary banners/diagnostics, without service-worker rollout.
+Faz 96 adds **Service Worker Background Sync research/design + dry-run POC foundation** with
+production registration disabled, aggregate diagnostics only, and no remote worker writes — see
+`docs/service-worker-background-sync-research.md` and `docs/service-worker-background-sync-design.md`.

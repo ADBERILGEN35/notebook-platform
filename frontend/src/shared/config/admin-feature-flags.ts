@@ -135,6 +135,14 @@ export const isAdminRbacOverridesReloadUiEnabled = (): boolean =>
     false,
   )
 
+/** Faz 97: read-only SCIM provider compatibility and sync diagnostics. */
+export const isScimCompatibilityDiagnosticsUiEnabled = (): boolean =>
+  parseBool(
+    window.__NOTEBOOK_CONFIG__?.SCIM_COMPATIBILITY_DIAGNOSTICS_ENABLED ??
+      import.meta.env.VITE_SCIM_COMPATIBILITY_DIAGNOSTICS_ENABLED,
+    false,
+  )
+
 /** Faz 92: break-glass post-use review governance UI. */
 export const isBreakGlassReviewUiEnabled = (): boolean =>
   parseBool(

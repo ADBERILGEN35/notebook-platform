@@ -69,6 +69,9 @@ Cache policy:
 - Global offline banner appears when network is unavailable.
 - If note API fails and a cached copy exists, note page opens in offline read-only mode.
 - Faz 68 adds optional offline draft editing when `FRONTEND_OFFLINE_EDIT_ENABLED=true`; sync is still manual and gated by `FRONTEND_OFFLINE_SYNC_ENABLED`.
+- Faz 96 adds Service Worker Background Sync research and a dry-run-only diagnostics POC. Production
+  registration remains disabled by `FRONTEND_SW_BACKGROUND_SYNC_REGISTER_ENABLED=false`, and the
+  worker does not replay drafts or send remote writes.
 - Faz 70 adds rollout mode and sync hardening flags for production-safe staged rollout.
 - Faz 74 adds app-level foreground background sync **design/foundation** behind dedicated flags; production default remains disabled and no service-worker background sync is shipped.
 - Faz 75 adds foreground lifecycle-driven prompt/auto-safe MVP behavior while keeping background sync app-open only (no closed-app/background-worker execution).

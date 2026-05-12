@@ -36,7 +36,8 @@ public class InternalBreakGlassRotationController {
       @RequestParam(name = "page", defaultValue = "0") int page,
       @RequestParam(name = "size", defaultValue = "25") int size,
       HttpServletRequest request) {
-    authorizer.authorize(serviceAuthorization, AuditAdminAuthorizer.BREAK_GLASS_ROTATION_READ_SCOPE);
+    authorizer.authorize(
+        serviceAuthorization, AuditAdminAuthorizer.BREAK_GLASS_ROTATION_READ_SCOPE);
     return rotationService.list(status, page, size, request);
   }
 
@@ -45,40 +46,53 @@ public class InternalBreakGlassRotationController {
       @RequestHeader(AuditAdminAuthorizer.HEADER_NAME) String serviceAuthorization,
       @PathVariable UUID id,
       HttpServletRequest request) {
-    authorizer.authorize(serviceAuthorization, AuditAdminAuthorizer.BREAK_GLASS_ROTATION_READ_SCOPE);
+    authorizer.authorize(
+        serviceAuthorization, AuditAdminAuthorizer.BREAK_GLASS_ROTATION_READ_SCOPE);
     return rotationService.detail(id, request);
   }
 
-  @PostMapping(path = "/{id}/acknowledge", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+  @PostMapping(
+      path = "/{id}/acknowledge",
+      consumes = MediaType.APPLICATION_JSON_VALUE,
+      produces = MediaType.APPLICATION_JSON_VALUE)
   public BreakGlassRotationDtos.RotationEventDetail acknowledge(
       @RequestHeader(AuditAdminAuthorizer.HEADER_NAME) String serviceAuthorization,
       @RequestHeader(InternalAdminChangeRequestController.HEADER_ADMIN_USER_ID) String adminUserId,
       @PathVariable UUID id,
       @Valid @RequestBody BreakGlassRotationDtos.AcknowledgeRequest body,
       HttpServletRequest request) {
-    authorizer.authorize(serviceAuthorization, AuditAdminAuthorizer.BREAK_GLASS_ROTATION_MANAGE_SCOPE);
+    authorizer.authorize(
+        serviceAuthorization, AuditAdminAuthorizer.BREAK_GLASS_ROTATION_MANAGE_SCOPE);
     return rotationService.acknowledge(id, parseAdminUserId(adminUserId), body, request);
   }
 
-  @PostMapping(path = "/{id}/verify", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+  @PostMapping(
+      path = "/{id}/verify",
+      consumes = MediaType.APPLICATION_JSON_VALUE,
+      produces = MediaType.APPLICATION_JSON_VALUE)
   public BreakGlassRotationDtos.RotationEventDetail verify(
       @RequestHeader(AuditAdminAuthorizer.HEADER_NAME) String serviceAuthorization,
       @RequestHeader(InternalAdminChangeRequestController.HEADER_ADMIN_USER_ID) String adminUserId,
       @PathVariable UUID id,
       @Valid @RequestBody BreakGlassRotationDtos.VerifyRequest body,
       HttpServletRequest request) {
-    authorizer.authorize(serviceAuthorization, AuditAdminAuthorizer.BREAK_GLASS_ROTATION_MANAGE_SCOPE);
+    authorizer.authorize(
+        serviceAuthorization, AuditAdminAuthorizer.BREAK_GLASS_ROTATION_MANAGE_SCOPE);
     return rotationService.verify(id, parseAdminUserId(adminUserId), body, request);
   }
 
-  @PostMapping(path = "/{id}/close", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+  @PostMapping(
+      path = "/{id}/close",
+      consumes = MediaType.APPLICATION_JSON_VALUE,
+      produces = MediaType.APPLICATION_JSON_VALUE)
   public BreakGlassRotationDtos.RotationEventDetail close(
       @RequestHeader(AuditAdminAuthorizer.HEADER_NAME) String serviceAuthorization,
       @RequestHeader(InternalAdminChangeRequestController.HEADER_ADMIN_USER_ID) String adminUserId,
       @PathVariable UUID id,
       @Valid @RequestBody BreakGlassRotationDtos.CloseRequest body,
       HttpServletRequest request) {
-    authorizer.authorize(serviceAuthorization, AuditAdminAuthorizer.BREAK_GLASS_ROTATION_MANAGE_SCOPE);
+    authorizer.authorize(
+        serviceAuthorization, AuditAdminAuthorizer.BREAK_GLASS_ROTATION_MANAGE_SCOPE);
     return rotationService.close(id, parseAdminUserId(adminUserId), body, request);
   }
 

@@ -14,7 +14,8 @@ public final class BreakGlassDtos {
       @NotBlank @Size(min = 1, max = 10000) String assertion,
       @NotBlank @Size(min = 20, max = 2000) String reason) {}
 
-  public record BreakGlassWebauthnChallengeRequest(@NotBlank @Size(min = 20, max = 2000) String reason) {}
+  public record BreakGlassWebauthnChallengeRequest(
+      @NotBlank @Size(min = 20, max = 2000) String reason) {}
 
   public record BreakGlassWebauthnChallengeResponse(String challengeId, String challenge) {}
 
@@ -50,4 +51,3 @@ public final class BreakGlassDtos {
       java.time.Instant oldestRotationRequiredAt,
       java.time.Instant lastRotationVerifiedAt) {}
 }
-

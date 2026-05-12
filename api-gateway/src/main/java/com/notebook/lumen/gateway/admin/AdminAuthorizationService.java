@@ -235,12 +235,22 @@ public class AdminAuthorizationService {
     return ensureAdminPermission(jwt, PlatformAdminRbacConstants.PERM_RBAC_READ);
   }
 
+  public Optional<ErrorCode> ensureScimDiagnosticsRead(Jwt jwt) {
+    Optional<ErrorCode> direct =
+        ensureAdminPermission(jwt, PlatformAdminRbacConstants.PERM_SCIM_DIAGNOSTICS_READ);
+    if (direct.isEmpty()) {
+      return Optional.empty();
+    }
+    return ensureAdminPermission(jwt, PlatformAdminRbacConstants.PERM_IDENTITY_READ);
+  }
+
   public Optional<ErrorCode> ensureBreakGlassRead(Jwt jwt) {
     return ensureAdminPermission(jwt, PlatformAdminRbacConstants.PERM_BREAK_GLASS_READ);
   }
 
   public Optional<ErrorCode> ensureBreakGlassReview(Jwt jwt) {
-    Optional<ErrorCode> base = ensureAdminPermission(jwt, PlatformAdminRbacConstants.PERM_BREAK_GLASS_REVIEW);
+    Optional<ErrorCode> base =
+        ensureAdminPermission(jwt, PlatformAdminRbacConstants.PERM_BREAK_GLASS_REVIEW);
     if (base.isPresent()) {
       return base;
     }
@@ -251,7 +261,8 @@ public class AdminAuthorizationService {
   }
 
   public Optional<ErrorCode> ensureBreakGlassRevoke(Jwt jwt) {
-    Optional<ErrorCode> base = ensureAdminPermission(jwt, PlatformAdminRbacConstants.PERM_BREAK_GLASS_REVOKE);
+    Optional<ErrorCode> base =
+        ensureAdminPermission(jwt, PlatformAdminRbacConstants.PERM_BREAK_GLASS_REVOKE);
     if (base.isPresent()) {
       return base;
     }

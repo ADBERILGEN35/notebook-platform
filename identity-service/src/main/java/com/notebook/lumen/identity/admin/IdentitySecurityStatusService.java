@@ -48,7 +48,16 @@ public class IdentitySecurityStatusService {
             scimProperties.enabled(),
             scimProperties.groupsEnabled(),
             !scimProperties.adminGroupSet().isEmpty(),
-            scimProperties.authConfigured());
+            scimProperties.authConfigured(),
+            scimProperties.providerType(),
+            scimProperties.deltaSyncEnabled(),
+            scimProperties.deltaSyncMode(),
+            scimProperties.providerSupportsBulk(),
+            scimProperties.providerSupportsFiltering(),
+            scimProperties.providerSupportsPatch(),
+            scimProperties.providerSupportsNestedGroups(),
+            scimProperties.providerRateLimitAware(),
+            Math.max(1, scimProperties.providerMaxPageSize()));
     var mfa =
         new IdentitySecurityStatusResponse.Mfa(
             mfaProperties.enabled(), mfaProperties.webauthnEnabled());
@@ -85,7 +94,8 @@ public class IdentitySecurityStatusService {
             bg.openRotationEvents(),
             bg.oldestRotationRequiredAt(),
             bg.lastRotationVerifiedAt());
-    return new IdentitySecurityStatusResponse(sso, scim, mfa, siem, adminRbac, breakGlass, false, null);
+    return new IdentitySecurityStatusResponse(
+        sso, scim, mfa, siem, adminRbac, breakGlass, false, null);
   }
 
   private static IdentitySecurityStatusResponse.AdminRbac mapAdminRbac(

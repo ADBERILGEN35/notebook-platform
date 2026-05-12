@@ -90,7 +90,7 @@ audit:
     issuer: ${AUDIT_ADMIN_SERVICE_JWT_ISSUER:audit-admin}
     audience: ${AUDIT_ADMIN_SERVICE_JWT_AUDIENCE:identity-service}
     clock-skew-seconds: ${AUDIT_ADMIN_SERVICE_JWT_CLOCK_SKEW_SECONDS:5}
-    allowed-scopes: ${AUDIT_ADMIN_SERVICE_JWT_ALLOWED_SCOPES:internal:audit:read,internal:admin:status:read,internal:admin:change-requests:manage,internal:admin:rbac:read,internal:admin:rbac:overrides:reload,internal:admin:break-glass:events:read,internal:admin:break-glass:events:review,internal:admin:break-glass:rotation:read,internal:admin:break-glass:rotation:manage,internal:break-glass:token:check}
+    allowed-scopes: ${AUDIT_ADMIN_SERVICE_JWT_ALLOWED_SCOPES:internal:audit:read,internal:admin:status:read,internal:admin:change-requests:manage,internal:admin:rbac:read,internal:admin:rbac:overrides:reload,internal:admin:scim:diagnostics:read,internal:admin:break-glass:events:read,internal:admin:break-glass:events:review,internal:admin:break-glass:rotation:read,internal:admin:break-glass:rotation:manage,internal:break-glass:token:check}
 
 identity:
   break-glass:
@@ -214,6 +214,15 @@ identity:
     bulk-enabled: ${SCIM_BULK_ENABLED:false}
     bulk-max-operations: ${SCIM_BULK_MAX_OPERATIONS:100}
     bulk-fail-on-errors-max: ${SCIM_BULK_FAIL_ON_ERRORS_MAX:10}
+    provider-type: ${SCIM_PROVIDER_TYPE:generic}
+    delta-sync-enabled: ${SCIM_DELTA_SYNC_ENABLED:false}
+    delta-sync-mode: ${SCIM_DELTA_SYNC_MODE:disabled}
+    provider-supports-bulk: ${SCIM_PROVIDER_SUPPORTS_BULK:false}
+    provider-supports-filtering: ${SCIM_PROVIDER_SUPPORTS_FILTERING:true}
+    provider-supports-patch: ${SCIM_PROVIDER_SUPPORTS_PATCH:true}
+    provider-supports-nested-groups: ${SCIM_PROVIDER_SUPPORTS_NESTED_GROUPS:false}
+    provider-rate-limit-aware: ${SCIM_PROVIDER_RATE_LIMIT_AWARE:true}
+    provider-max-page-size: ${SCIM_PROVIDER_MAX_PAGE_SIZE:100}
   siem:
     push-enabled: ${SIEM_PUSH_ENABLED:false}
     provider: ${SIEM_PROVIDER:noop}

@@ -35,3 +35,7 @@ When `ADMIN_RBAC_ENABLED=true`, **effective** group keys are also matched agains
 - Not a graph database; deep/large graphs rely on Postgres and application validation.
 - Full SCIM PATCH for groups is limited to documented paths (`displayName`, `externalId`, `members`).
 - Cross-tenant/org SCIM is out of scope.
+
+## Provider compatibility note (Faz 97)
+
+Provider capability flag `SCIM_PROVIDER_SUPPORTS_NESTED_GROUPS` is diagnostic only. It does not enable provider-specific nested group import, IdP group mutation, or a scheduled sync engine. If a provider claims nested-group support while local `SCIM_GROUP_NESTING_ENABLED=false`, diagnostics returns `PROVIDER_NESTED_GROUPS_BUT_LOCAL_DISABLED`.

@@ -78,6 +78,15 @@
 - Confirm prompt mode requires explicit consent before batch sync.
 - Confirm auto-safe mode skips active-note/conflict/failed/locked drafts.
 - Keep production defaults: `OFFLINE_BACKGROUND_SYNC_ENABLED=false`, mode `disabled`.
+
+## Faz 96 readiness checks
+
+- Keep `FRONTEND_SW_BACKGROUND_SYNC_ENABLED=false` and `FRONTEND_SW_BACKGROUND_SYNC_REGISTER_ENABLED=false`
+  in production.
+- Treat Service Worker Background Sync as opportunistic because Safari/iOS and Firefox do not support it.
+- Keep `FRONTEND_SW_BACKGROUND_SYNC_DRY_RUN_ONLY=true` until auth, CSRF, encryption key and lock/lease
+  designs are explicitly approved.
+- Confirm SW diagnostics contain aggregate counters only and no raw note content.
 ## Faz 34 Readiness Notes
 
 - Configure `SEARCH_PERMISSION_SNAPSHOT_ENABLED`, `SEARCH_PERMISSION_RUNTIME_CHECK_ENABLED` and
@@ -133,3 +142,10 @@
 - SCIM group nesting flags (`SCIM_GROUP_NESTING_*`) and bulk flags (`SCIM_BULK_*`) pinned per environment; bulk remains **off** in prod by default.
 - Staging validates nested admin group → `PLATFORM_ADMIN` claim and cycle/depth rejection paths before enabling bulk.
 - Operators acknowledge **non-transactional** bulk semantics (`docs/scim-bulk-operations.md`).
+
+## Faz 97 readiness checks
+
+- `SCIM_DELTA_SYNC_ENABLED=false` and `SCIM_DELTA_SYNC_MODE=disabled` remain the production defaults.
+- Provider capability flags are diagnostics metadata only; they do not start scheduled sync or provider-specific API calls.
+- `FRONTEND_SCIM_COMPATIBILITY_DIAGNOSTICS_ENABLED=false` by default; enable only for read-only admin diagnostics validation.
+- Validate provider behavior against `docs/scim-provider-compatibility.md` before any future provider-specific delta POC.

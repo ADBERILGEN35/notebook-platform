@@ -65,7 +65,9 @@ public class BreakGlassController {
       @Valid @RequestBody BreakGlassDtos.BreakGlassOfflineSignedLoginRequest request,
       HttpServletRequest httpRequest) {
     return breakGlassService.loginOfflineSigned(
-        request == null ? "" : request.assertion(), request == null ? "" : request.reason(), httpRequest);
+        request == null ? "" : request.assertion(),
+        request == null ? "" : request.reason(),
+        httpRequest);
   }
 
   /**
@@ -102,4 +104,3 @@ public class BreakGlassController {
     return out;
   }
 }
-

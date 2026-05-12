@@ -21,6 +21,7 @@ public final class PlatformAdminRbacConstants {
         PERM_SECURITY_CHANGE_REQUEST_CREATE,
         PERM_MERGE_CHANGE_REQUEST_CREATE,
         PERM_SCIM_CHANGE_REQUEST_CREATE,
+        PERM_SCIM_DIAGNOSTICS_READ,
         PERM_SIEM_CHANGE_REQUEST_CREATE,
         PERM_IDENTITY_READ,
         PERM_RBAC_READ,
@@ -79,6 +80,7 @@ public final class PlatformAdminRbacConstants {
       "admin:security:change-request:create";
   public static final String PERM_MERGE_CHANGE_REQUEST_CREATE = "admin:merge:change-request:create";
   public static final String PERM_SCIM_CHANGE_REQUEST_CREATE = "admin:scim:change-request:create";
+  public static final String PERM_SCIM_DIAGNOSTICS_READ = "admin:scim:diagnostics:read";
   public static final String PERM_SIEM_CHANGE_REQUEST_CREATE = "admin:siem:change-request:create";
   public static final String PERM_IDENTITY_READ = "admin:identity:read";
   public static final String PERM_RBAC_READ = "admin:rbac:read";

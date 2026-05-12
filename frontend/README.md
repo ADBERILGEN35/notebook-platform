@@ -31,6 +31,7 @@ Runtime Docker/Kubernetes config:
 
 - `FRONTEND_API_BASE_URL` -> served via `/runtime-config.js`
 - Runtime value overrides `VITE_API_BASE_URL`
+- `FRONTEND_SCIM_COMPATIBILITY_DIAGNOSTICS_ENABLED=false` hides Faz 97 read-only SCIM provider diagnostics by default.
 
 ## Break-glass review UI (Faz 92)
 
@@ -123,6 +124,7 @@ Runtime Docker/Kubernetes config:
 - **Faz 79:** `/auth/me` may include `platformRoles` / `platformPermissions`; `src/features/admin/access/admin-permissions.ts` gates nav and actions (backend still authoritative). See `docs/admin-rbac.md`.
 - **Faz 88:** `FRONTEND_ADMIN_RBAC_OVERRIDES_STATUS_ENABLED` → `ADMIN_RBAC_OVERRIDES_STATUS_ENABLED` in `runtime-config.js` shows the read-only **GitOps RBAC overrides** card on `/app/admin/rbac` (no YAML upload). See `docs/admin-rbac-runtime-overrides.md`.
 - **Faz 89:** `FRONTEND_ADMIN_RBAC_OVERRIDES_RELOAD_ENABLED` → `ADMIN_RBAC_OVERRIDES_RELOAD_ENABLED` gates the **Reload manifest** control (requires `admin:rbac:override:reload` and backend `ADMIN_RBAC_OVERRIDES_RELOAD_ENABLED`). See `docs/admin-rbac-override-reload.md`.
+- **Faz 97:** `FRONTEND_SCIM_COMPATIBILITY_DIAGNOSTICS_ENABLED` shows provider capability, warning, checkpoint, and sync-run diagnostics on `/app/admin/enterprise/security`; no mutation UI and no token/raw payload rendering.
 
 ## Platform Admin Proxy (Faz 43)
 
@@ -334,6 +336,19 @@ When disabled, topbar bell and `/app/notifications` experience are hidden/blocke
 - `prompt` mode shows consent banner before running batch sync.
 - `auto_safe` mode runs eligible drafts sequentially and shows syncing/summary banners.
 - Current note being edited is skipped from background batch (`currently_editing` guardrail).
+
+## Service Worker Background Sync research/POC (Faz 96)
+
+- New flags default to production-safe values:
+  - `FRONTEND_SW_BACKGROUND_SYNC_ENABLED=false`
+  - `FRONTEND_SW_BACKGROUND_SYNC_DRY_RUN_ONLY=true`
+  - `FRONTEND_SW_BACKGROUND_SYNC_REGISTER_ENABLED=false`
+  - `FRONTEND_SW_BACKGROUND_SYNC_MAX_BATCH=3`
+  - `FRONTEND_SW_BACKGROUND_SYNC_REQUIRE_ENCRYPTION_KEY=false`
+- Settings shows support/registration/dry-run diagnostics and exposes a manual dry-run button only
+  when the POC flag is enabled.
+- The POC does not send remote `PATCH` requests from a service worker and does not silently resolve
+  conflicts. Foreground sync remains the primary path.
 
 ## Enterprise SSO login (Faz 60)
 

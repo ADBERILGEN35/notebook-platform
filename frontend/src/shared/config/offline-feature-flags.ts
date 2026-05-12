@@ -152,3 +152,37 @@ export const offlineBackgroundSyncRequireCharging = (): boolean =>
       import.meta.env.VITE_OFFLINE_BACKGROUND_SYNC_REQUIRE_CHARGING,
     false,
   )
+
+export const isSwBackgroundSyncEnabled = (): boolean =>
+  parseBool(
+    window.__NOTEBOOK_CONFIG__?.SW_BACKGROUND_SYNC_ENABLED ?? import.meta.env.VITE_SW_BACKGROUND_SYNC_ENABLED,
+    false,
+  )
+
+export const isSwBackgroundSyncDryRunOnly = (): boolean =>
+  parseBool(
+    window.__NOTEBOOK_CONFIG__?.SW_BACKGROUND_SYNC_DRY_RUN_ONLY ??
+      import.meta.env.VITE_SW_BACKGROUND_SYNC_DRY_RUN_ONLY,
+    true,
+  )
+
+export const isSwBackgroundSyncRegisterEnabled = (): boolean =>
+  parseBool(
+    window.__NOTEBOOK_CONFIG__?.SW_BACKGROUND_SYNC_REGISTER_ENABLED ??
+      import.meta.env.VITE_SW_BACKGROUND_SYNC_REGISTER_ENABLED,
+    false,
+  )
+
+export const swBackgroundSyncMaxBatch = (): number =>
+  parseNumber(
+    window.__NOTEBOOK_CONFIG__?.SW_BACKGROUND_SYNC_MAX_BATCH ??
+      import.meta.env.VITE_SW_BACKGROUND_SYNC_MAX_BATCH,
+    3,
+  )
+
+export const swBackgroundSyncRequireEncryptionKey = (): boolean =>
+  parseBool(
+    window.__NOTEBOOK_CONFIG__?.SW_BACKGROUND_SYNC_REQUIRE_ENCRYPTION_KEY ??
+      import.meta.env.VITE_SW_BACKGROUND_SYNC_REQUIRE_ENCRYPTION_KEY,
+    false,
+  )

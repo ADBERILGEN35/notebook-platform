@@ -1,8 +1,8 @@
 package com.notebook.lumen.identity.breakglass;
 
 import com.notebook.lumen.identity.admin.InternalAdminChangeRequestController;
-import com.notebook.lumen.identity.audit.AuditAdminAuthorizer;
 import com.notebook.lumen.identity.admin.changerequest.AdminChangeRequestException;
+import com.notebook.lumen.identity.audit.AuditAdminAuthorizer;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.time.Instant;
@@ -51,25 +51,33 @@ public class InternalBreakGlassAdminController {
     return eventService.detail(id);
   }
 
-  @PostMapping(path = "/{id}/review", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+  @PostMapping(
+      path = "/{id}/review",
+      consumes = MediaType.APPLICATION_JSON_VALUE,
+      produces = MediaType.APPLICATION_JSON_VALUE)
   public BreakGlassReviewDtos.EventDetailResponse review(
       @RequestHeader(AuditAdminAuthorizer.HEADER_NAME) String serviceAuthorization,
       @RequestHeader(InternalAdminChangeRequestController.HEADER_ADMIN_USER_ID) String adminUserId,
       @PathVariable UUID id,
       @Valid @RequestBody BreakGlassReviewDtos.ReviewRequest body,
       HttpServletRequest request) {
-    authorizer.authorize(serviceAuthorization, AuditAdminAuthorizer.BREAK_GLASS_EVENTS_REVIEW_SCOPE);
+    authorizer.authorize(
+        serviceAuthorization, AuditAdminAuthorizer.BREAK_GLASS_EVENTS_REVIEW_SCOPE);
     return eventService.review(id, parseAdminUserId(adminUserId), body, request);
   }
 
-  @PostMapping(path = "/{id}/revoke-token", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+  @PostMapping(
+      path = "/{id}/revoke-token",
+      consumes = MediaType.APPLICATION_JSON_VALUE,
+      produces = MediaType.APPLICATION_JSON_VALUE)
   public BreakGlassReviewDtos.RevokeTokenResponse revokeToken(
       @RequestHeader(AuditAdminAuthorizer.HEADER_NAME) String serviceAuthorization,
       @RequestHeader(InternalAdminChangeRequestController.HEADER_ADMIN_USER_ID) String adminUserId,
       @PathVariable UUID id,
       @Valid @RequestBody BreakGlassReviewDtos.RevokeTokenRequest body,
       HttpServletRequest request) {
-    authorizer.authorize(serviceAuthorization, AuditAdminAuthorizer.BREAK_GLASS_EVENTS_REVIEW_SCOPE);
+    authorizer.authorize(
+        serviceAuthorization, AuditAdminAuthorizer.BREAK_GLASS_EVENTS_REVIEW_SCOPE);
     return eventService.revokeToken(
         id,
         parseAdminUserId(adminUserId),
@@ -85,7 +93,8 @@ public class InternalBreakGlassAdminController {
     try {
       return Instant.parse(raw.trim());
     } catch (RuntimeException e) {
-      throw new AdminChangeRequestException("ADMIN_CHANGE_REQUEST_INVALID", HttpStatus.BAD_REQUEST, "Invalid timestamp");
+      throw new AdminChangeRequestException(
+          "ADMIN_CHANGE_REQUEST_INVALID", HttpStatus.BAD_REQUEST, "Invalid timestamp");
     }
   }
 

@@ -27,6 +27,15 @@ export const enterpriseStatusResponseSchema = z.object({
         groupsEnabled: z.boolean(),
         adminGroupsConfigured: z.boolean(),
         tokenConfigured: z.boolean(),
+        providerType: z.string().optional(),
+        deltaSyncEnabled: z.boolean().optional(),
+        deltaSyncMode: z.string().optional(),
+        bulkSupported: z.boolean().optional(),
+        filteringSupported: z.boolean().optional(),
+        patchSupported: z.boolean().optional(),
+        nestedGroupsSupported: z.boolean().optional(),
+        rateLimitAware: z.boolean().optional(),
+        maxPageSize: z.number().optional(),
       })
       .optional(),
     mfa: z

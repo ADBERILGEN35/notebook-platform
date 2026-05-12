@@ -113,8 +113,7 @@ public class AdminRbacController {
               OVERRIDES_RELOAD_PATH,
               PlatformAdminRbacConstants.PERM_RBAC_OVERRIDE_RELOAD));
     }
-    return proxyService.overridesReload(
-        body, jwt.getSubject(), requestId, OVERRIDES_RELOAD_PATH);
+    return proxyService.overridesReload(body, jwt.getSubject(), requestId, OVERRIDES_RELOAD_PATH);
   }
 
   private static ResponseEntity<Object> forbidden(ErrorCode code, String requestId, String path) {

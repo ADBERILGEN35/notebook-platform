@@ -81,7 +81,16 @@ record ScimStatus(
     boolean enabled,
     boolean groupsEnabled,
     boolean adminGroupsConfigured,
-    boolean tokenConfigured) {}
+    boolean tokenConfigured,
+    String providerType,
+    boolean deltaSyncEnabled,
+    String deltaSyncMode,
+    boolean bulkSupported,
+    boolean filteringSupported,
+    boolean patchSupported,
+    boolean nestedGroupsSupported,
+    boolean rateLimitAware,
+    int maxPageSize) {}
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 record MfaStatus(

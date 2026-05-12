@@ -118,31 +118,100 @@ public class BreakGlassAccessEvent {
     this.updatedAt = updatedAt;
   }
 
-  public UUID getId() { return id; }
-  public String getSessionId() { return sessionId; }
-  public String getMode() { return mode; }
-  public String getReasonHash() { return reasonHash; }
-  public String getReasonSummary() { return reasonSummary; }
-  public String getActorLabel() { return actorLabel; }
-  public BreakGlassAccessEventStatus getStatus() { return status; }
-  public Instant getIssuedAt() { return issuedAt; }
-  public Instant getExpiresAt() { return expiresAt; }
-  public UUID getReviewedByUserId() { return reviewedByUserId; }
-  public Instant getReviewedAt() { return reviewedAt; }
-  public String getReviewDecision() { return reviewDecision; }
-  public String getReviewReason() { return reviewReason; }
-  public String getSourceIpHash() { return sourceIpHash; }
-  public String getUserAgentHash() { return userAgentHash; }
-  public boolean isRotationRequired() { return rotationRequired; }
-  public boolean isNotificationSent() { return notificationSent; }
-  public String getTokenJti() { return tokenJti; }
-  public Instant getTokenRevokedAt() { return tokenRevokedAt; }
-  public UUID getTokenRevokedByUserId() { return tokenRevokedByUserId; }
-  public String getTokenRevocationReason() { return tokenRevocationReason; }
-  public Instant getCreatedAt() { return createdAt; }
-  public Instant getUpdatedAt() { return updatedAt; }
+  public UUID getId() {
+    return id;
+  }
 
-  public void markReviewed(UUID reviewerId, String decision, String reason, BreakGlassAccessEventStatus nextStatus) {
+  public String getSessionId() {
+    return sessionId;
+  }
+
+  public String getMode() {
+    return mode;
+  }
+
+  public String getReasonHash() {
+    return reasonHash;
+  }
+
+  public String getReasonSummary() {
+    return reasonSummary;
+  }
+
+  public String getActorLabel() {
+    return actorLabel;
+  }
+
+  public BreakGlassAccessEventStatus getStatus() {
+    return status;
+  }
+
+  public Instant getIssuedAt() {
+    return issuedAt;
+  }
+
+  public Instant getExpiresAt() {
+    return expiresAt;
+  }
+
+  public UUID getReviewedByUserId() {
+    return reviewedByUserId;
+  }
+
+  public Instant getReviewedAt() {
+    return reviewedAt;
+  }
+
+  public String getReviewDecision() {
+    return reviewDecision;
+  }
+
+  public String getReviewReason() {
+    return reviewReason;
+  }
+
+  public String getSourceIpHash() {
+    return sourceIpHash;
+  }
+
+  public String getUserAgentHash() {
+    return userAgentHash;
+  }
+
+  public boolean isRotationRequired() {
+    return rotationRequired;
+  }
+
+  public boolean isNotificationSent() {
+    return notificationSent;
+  }
+
+  public String getTokenJti() {
+    return tokenJti;
+  }
+
+  public Instant getTokenRevokedAt() {
+    return tokenRevokedAt;
+  }
+
+  public UUID getTokenRevokedByUserId() {
+    return tokenRevokedByUserId;
+  }
+
+  public String getTokenRevocationReason() {
+    return tokenRevocationReason;
+  }
+
+  public Instant getCreatedAt() {
+    return createdAt;
+  }
+
+  public Instant getUpdatedAt() {
+    return updatedAt;
+  }
+
+  public void markReviewed(
+      UUID reviewerId, String decision, String reason, BreakGlassAccessEventStatus nextStatus) {
     this.reviewedByUserId = reviewerId;
     this.reviewDecision = decision;
     this.reviewReason = reason;

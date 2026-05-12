@@ -16,7 +16,49 @@ public record ScimProperties(
     int groupNestingMaxDepth,
     boolean bulkEnabled,
     int bulkMaxOperations,
-    int bulkFailOnErrorsMax) {
+    int bulkFailOnErrorsMax,
+    String providerType,
+    boolean deltaSyncEnabled,
+    String deltaSyncMode,
+    boolean providerSupportsBulk,
+    boolean providerSupportsFiltering,
+    boolean providerSupportsPatch,
+    boolean providerSupportsNestedGroups,
+    boolean providerRateLimitAware,
+    int providerMaxPageSize) {
+
+  public ScimProperties(
+      boolean enabled,
+      String bearerToken,
+      String bearerTokenHash,
+      boolean groupsEnabled,
+      String adminGroups,
+      boolean groupNestingEnabled,
+      int groupNestingMaxDepth,
+      boolean bulkEnabled,
+      int bulkMaxOperations,
+      int bulkFailOnErrorsMax) {
+    this(
+        enabled,
+        bearerToken,
+        bearerTokenHash,
+        groupsEnabled,
+        adminGroups,
+        groupNestingEnabled,
+        groupNestingMaxDepth,
+        bulkEnabled,
+        bulkMaxOperations,
+        bulkFailOnErrorsMax,
+        "generic",
+        false,
+        "disabled",
+        false,
+        true,
+        true,
+        false,
+        true,
+        100);
+  }
 
   public boolean authConfigured() {
     return (bearerToken != null && !bearerToken.isBlank())

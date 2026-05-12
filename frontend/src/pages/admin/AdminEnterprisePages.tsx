@@ -1,6 +1,10 @@
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
-import { isEnterpriseAdminWriteEnabled } from '../../shared/config/admin-feature-flags'
+import { useQuery } from '@tanstack/react-query'
+import {
+  isEnterpriseAdminWriteEnabled,
+  isScimCompatibilityDiagnosticsUiEnabled,
+} from '../../shared/config/admin-feature-flags'
 import { PageHeader } from '../../shared/components/PageHeader'
 import { Card } from '../../shared/components/Card'
 import { LoadingState } from '../../shared/components/LoadingState'
@@ -9,6 +13,12 @@ import { PermissionDenied } from '../../shared/components/PermissionDenied'
 import { ApiError } from '../../shared/api/api-client'
 import { useEnterpriseStatus } from '../../features/admin/enterprise/use-enterprise-status'
 import type { EnterpriseStatusResponse, EnterpriseWarning, WarningSeverity } from '../../features/admin/enterprise/enterprise-schema'
+import {
+  fetchScimCompatibilityStatus,
+  fetchScimSyncRuns,
+  type ScimCompatibilityStatus,
+  type ScimSyncRunPage,
+} from '../../features/admin/enterprise/scim-diagnostics-api'
 import { isPwaEnabled } from '../../shared/config/offline-feature-flags'
 
 const DOCS = {
@@ -135,9 +145,15 @@ function readinessScore(warnings: EnterpriseWarning[]): number {
 function EnterpriseContent({
   data,
   mode,
+  scimDiagnostics,
+  scimRuns,
+  scimDiagnosticsError,
 }: {
   data: EnterpriseStatusResponse
   mode: 'overview' | 'security' | 'integrations'
+  scimDiagnostics?: ScimCompatibilityStatus
+  scimRuns?: ScimSyncRunPage
+  scimDiagnosticsError?: unknown
 }) {
   const { features, warnings } = data
   const w = warnings
@@ -215,7 +231,78 @@ function EnterpriseContent({
               <li>Groups: {features.scim.groupsEnabled ? 'on' : 'off'}</li>
               <li>Admin groups: {features.scim.adminGroupsConfigured ? 'configured' : 'not configured'}</li>
               <li>Token: {features.scim.tokenConfigured ? 'configured' : 'not configured'}</li>
+              <li>Provider: {features.scim.providerType ?? 'generic'}</li>
+              <li>Delta sync: {features.scim.deltaSyncMode ?? 'disabled'}</li>
             </ul>
+            {scimDiagnostics ? (
+              <div className="mt-3 space-y-3 border-t border-slate-200 pt-3">
+                <div>
+                  <p className="font-medium text-slate-800">Provider compatibility</p>
+                  <div className="mt-1 grid grid-cols-2 gap-1 text-[11px] text-slate-600">
+                    <span>Bulk: {scimDiagnostics.scimProvider.bulkSupported ? 'yes' : 'no'}</span>
+                    <span>Filtering: {scimDiagnostics.scimProvider.filteringSupported ? 'yes' : 'no'}</span>
+                    <span>Patch: {scimDiagnostics.scimProvider.patchSupported ? 'yes' : 'no'}</span>
+                    <span>Nested groups: {scimDiagnostics.scimProvider.nestedGroupsSupported ? 'yes' : 'no'}</span>
+                    <span>Rate-limit aware: {scimDiagnostics.scimProvider.rateLimitAware ? 'yes' : 'no'}</span>
+                    <span>Max page: {scimDiagnostics.scimProvider.maxPageSize}</span>
+                  </div>
+                  {scimDiagnostics.scimProvider.warnings.length ? (
+                    <p className="mt-1 text-[11px] text-amber-700">
+                      Warnings: {scimDiagnostics.scimProvider.warnings.join(', ')}
+                    </p>
+                  ) : null}
+                </div>
+                <div>
+                  <p className="font-medium text-slate-800">Checkpoints</p>
+                  {scimDiagnostics.checkpoints.length ? (
+                    <ul className="mt-1 space-y-1 text-[11px] text-slate-600">
+                      {scimDiagnostics.checkpoints.map((c) => (
+                        <li key={c.id}>
+                          {c.resourceType}: {c.status} · {c.syncMode} · last success {c.lastSuccessfulSyncAt ?? '-'}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="mt-1 text-[11px] text-slate-500">No checkpoints yet.</p>
+                  )}
+                </div>
+                <div>
+                  <p className="font-medium text-slate-800">Sync runs</p>
+                  {(scimRuns?.items ?? []).length ? (
+                    <div className="mt-1 overflow-x-auto">
+                      <table className="min-w-full text-[11px]">
+                        <thead className="text-left text-slate-500">
+                          <tr>
+                            <th className="pr-2">Provider</th>
+                            <th className="pr-2">Resource</th>
+                            <th className="pr-2">Mode</th>
+                            <th className="pr-2">Status</th>
+                            <th className="pr-2">Processed</th>
+                            <th className="pr-2">Errors</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {(scimRuns?.items ?? []).map((run) => (
+                            <tr key={run.id} className="border-t border-slate-100">
+                              <td className="pr-2">{run.provider}</td>
+                              <td className="pr-2">{run.resourceType}</td>
+                              <td className="pr-2">{run.syncMode}</td>
+                              <td className="pr-2">{run.status}</td>
+                              <td className="pr-2">{run.processedCount}</td>
+                              <td className="pr-2">{run.errorCount}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : (
+                    <p className="mt-1 text-[11px] text-slate-500">No sync runs recorded.</p>
+                  )}
+                </div>
+              </div>
+            ) : scimDiagnosticsError ? (
+              <p className="mt-2 text-[11px] text-amber-700">SCIM diagnostics unavailable or permission denied.</p>
+            ) : null}
           </FeatureCard>
         ) : null}
 
@@ -424,6 +511,19 @@ function EnterpriseContent({
 
 function EnterprisePageShell({ mode }: { mode: 'overview' | 'security' | 'integrations' }) {
   const q = useEnterpriseStatus()
+  const scimDiagnosticsEnabled = isScimCompatibilityDiagnosticsUiEnabled()
+  const scimDiagnosticsQuery = useQuery({
+    queryKey: ['admin', 'scim-compatibility'],
+    queryFn: fetchScimCompatibilityStatus,
+    enabled: scimDiagnosticsEnabled && mode === 'security',
+    retry: false,
+  })
+  const scimRunsQuery = useQuery({
+    queryKey: ['admin', 'scim-sync-runs'],
+    queryFn: fetchScimSyncRuns,
+    enabled: scimDiagnosticsEnabled && mode === 'security',
+    retry: false,
+  })
   const err = q.error instanceof ApiError ? q.error : null
   const showMfa = err?.errorCode === 'ADMIN_MFA_REQUIRED'
   const denied = err?.errorCode === 'ADMIN_ACCESS_DENIED'
@@ -483,7 +583,15 @@ function EnterprisePageShell({ mode }: { mode: 'overview' | 'security' | 'integr
 
       {q.isError && !showMfa && !denied && !disabled ? <ErrorAlert error={q.error} /> : null}
 
-      {q.data ? <EnterpriseContent data={q.data} mode={mode} /> : null}
+      {q.data ? (
+        <EnterpriseContent
+          data={q.data}
+          mode={mode}
+          scimDiagnostics={scimDiagnosticsQuery.data}
+          scimRuns={scimRunsQuery.data}
+          scimDiagnosticsError={scimDiagnosticsQuery.error ?? scimRunsQuery.error}
+        />
+      ) : null}
     </div>
   )
 }

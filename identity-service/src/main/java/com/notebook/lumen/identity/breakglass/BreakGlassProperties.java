@@ -68,12 +68,15 @@ public record BreakGlassProperties(
     if (rotationMaxOpenEvents < 1) {
       rotationMaxOpenEvents = 5;
     }
-    credentialMode = credentialMode == null || credentialMode.isBlank() ? "static-token" : credentialMode.trim();
-    approvalMode = approvalMode == null || approvalMode.isBlank() ? "disabled" : approvalMode.trim();
+    credentialMode =
+        credentialMode == null || credentialMode.isBlank() ? "static-token" : credentialMode.trim();
+    approvalMode =
+        approvalMode == null || approvalMode.isBlank() ? "disabled" : approvalMode.trim();
     tokenHash = tokenHash == null ? "" : tokenHash.trim();
     offlinePublicKeyPath = offlinePublicKeyPath == null ? "" : offlinePublicKeyPath.trim();
-    offlineAllowedIssuer = offlineAllowedIssuer == null ? "notebook-break-glass-offline" : offlineAllowedIssuer.trim();
-    offlineRequiredAudience = offlineRequiredAudience == null ? "identity-service" : offlineRequiredAudience.trim();
+    offlineAllowedIssuer =
+        offlineAllowedIssuer == null ? "notebook-break-glass-offline" : offlineAllowedIssuer.trim();
+    offlineRequiredAudience =
+        offlineRequiredAudience == null ? "identity-service" : offlineRequiredAudience.trim();
   }
 }
-
