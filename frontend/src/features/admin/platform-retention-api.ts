@@ -32,6 +32,7 @@ export const retentionPlanTargetSchema = z.object({
   riskLevel: z.string(),
   activeHoldKeys: z.array(z.string()),
   warnings: z.array(z.string()),
+  cutoff: z.string().nullable().optional(),
 })
 
 export const retentionPlanResponseSchema = z.object({

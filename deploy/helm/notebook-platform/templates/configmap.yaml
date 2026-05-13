@@ -370,6 +370,14 @@ data:
   GATEWAY_BREAK_GLASS_DENYLIST_CACHE_SECONDS: {{ .Values.config.gatewayBreakGlassDenylistCacheSeconds | quote }}
   PLATFORM_RETENTION_GOVERNANCE_ENABLED: {{ .Values.config.platformRetentionGovernanceEnabled | quote }}
   PLATFORM_LEGAL_HOLD_ENABLED: {{ .Values.config.platformLegalHoldEnabled | quote }}
+  CONTENT_RETENTION_DRY_RUN_ENABLED: {{ .Values.config.contentRetentionDryRunEnabled | quote }}
+  CONTENT_RETENTION_INTEGRATION_ENABLED: {{ .Values.config.contentRetentionIntegrationEnabled | quote }}
+  CONTENT_RETENTION_INTERNAL_URL: {{ .Values.config.contentRetentionInternalUrl | quote }}
+  CONTENT_RETENTION_INTERNAL_TIMEOUT_MS: {{ .Values.config.contentRetentionInternalTimeoutMs | quote }}
+  CONTENT_RETENTION_MAX_COUNT_QUERY_LIMIT: {{ .Values.config.contentRetentionMaxCountQueryLimit | quote }}
+  CONTENT_RETENTION_NOTE_VERSION_RETENTION_DAYS: {{ .Values.config.contentRetentionNoteVersionRetentionDays | quote }}
+  CONTENT_RETENTION_COMMENT_RETENTION_DAYS: {{ .Values.config.contentRetentionCommentRetentionDays | quote }}
+  CONTENT_RETENTION_SEARCH_DOCUMENT_RETENTION_DAYS: {{ .Values.config.contentRetentionSearchDocumentRetentionDays | quote }}
   SCIM_GROUP_NESTING_ENABLED: {{ .Values.config.scimGroupNestingEnabled | quote }}
   SCIM_GROUP_NESTING_MAX_DEPTH: {{ .Values.config.scimGroupNestingMaxDepth | quote }}
   SCIM_BULK_ENABLED: {{ .Values.config.scimBulkEnabled | quote }}

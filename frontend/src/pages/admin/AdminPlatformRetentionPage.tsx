@@ -207,6 +207,7 @@ export function AdminPlatformRetentionPage() {
           <thead className="border-b bg-slate-50 text-xs uppercase text-slate-500">
             <tr>
               <th className="px-3 py-2">Dry-run target</th>
+              <th className="px-3 py-2">Status</th>
               <th className="px-3 py-2">Eligible</th>
               <th className="px-3 py-2">Purgeable</th>
               <th className="px-3 py-2">Blocked</th>
@@ -217,12 +218,19 @@ export function AdminPlatformRetentionPage() {
             {(plan?.targets ?? []).map((t) => (
               <tr key={t.targetKey} className="border-b border-slate-100">
                 <td className="px-3 py-2 font-mono text-xs">{t.targetKey}</td>
+                <td className="px-3 py-2">
+                  <StatusBadge status={t.status} />
+                </td>
                 <td className="px-3 py-2">{t.eligibleCount ?? 'Not counted'}</td>
                 <td className="px-3 py-2">{t.purgeableCount}</td>
                 <td className="px-3 py-2">
-                  {t.blockedByLegalHold ? `Blocked (${t.activeHoldKeys.join(', ')})` : 'No'}
+                  {t.blockedByLegalHold
+                    ? `Blocked${t.activeHoldKeys?.length ? ` (${t.activeHoldKeys.join(', ')})` : ''}`
+                    : 'No'}
                 </td>
-                <td className="px-3 py-2 text-xs text-slate-600">{t.warnings.join(' ')}</td>
+                <td className="px-3 py-2 text-xs text-slate-600">
+                  <WarningChips warnings={t.warnings} />
+                </td>
               </tr>
             ))}
           </tbody>
@@ -294,5 +302,44 @@ function Summary({ label, value }: { label: string; value: number | string }) {
       <div className="text-xs uppercase text-slate-500">{label}</div>
       <div className="mt-1 text-xl font-semibold text-slate-900">{value}</div>
     </Card>
+  )
+}
+
+function StatusBadge({ status }: { status: string }) {
+  const style =
+    status === 'DRY_RUN_READY'
+      ? 'bg-emerald-50 text-emerald-800 ring-emerald-200'
+      : status === 'INVENTORY_ONLY'
+        ? 'bg-slate-100 text-slate-700 ring-slate-200'
+        : 'bg-amber-50 text-amber-800 ring-amber-200'
+  return (
+    <span className={`inline-flex rounded px-2 py-0.5 text-xs ring-1 ${style}`}>{status}</span>
+  )
+}
+
+const WARNING_TONE: Record<string, string> = {
+  CONTENT_RETENTION_LEGAL_HOLD_BLOCKED: 'bg-rose-50 text-rose-800 ring-rose-200',
+  CONTENT_RETENTION_QUERY_CAPPED: 'bg-amber-50 text-amber-800 ring-amber-200',
+  CONTENT_RETENTION_SERVICE_UNAVAILABLE: 'bg-rose-50 text-rose-800 ring-rose-200',
+  CONTENT_RETENTION_PARTIAL_LEGAL_HOLD_MAPPING: 'bg-amber-50 text-amber-800 ring-amber-200',
+  CONTENT_RETENTION_DRY_RUN_DISABLED: 'bg-slate-100 text-slate-700 ring-slate-200',
+  CONTENT_RETENTION_TARGET_INVENTORY_ONLY: 'bg-slate-100 text-slate-700 ring-slate-200',
+}
+
+function WarningChips({ warnings }: { warnings: string[] }) {
+  if (!warnings || warnings.length === 0) return <span>—</span>
+  return (
+    <div className="flex flex-wrap gap-1">
+      {warnings.map((w) => (
+        <span
+          key={w}
+          className={`inline-flex rounded px-2 py-0.5 text-xs ring-1 ${
+            WARNING_TONE[w] ?? 'bg-slate-100 text-slate-700 ring-slate-200'
+          }`}
+        >
+          {w}
+        </span>
+      ))}
+    </div>
   )
 }

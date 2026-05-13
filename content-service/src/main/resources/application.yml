@@ -133,3 +133,19 @@ audit:
     audience: ${AUDIT_ADMIN_SERVICE_JWT_AUDIENCE:content-service}
     clock-skew-seconds: ${AUDIT_ADMIN_SERVICE_JWT_CLOCK_SKEW_SECONDS:5}
     allowed-scopes: ${AUDIT_ADMIN_SERVICE_JWT_ALLOWED_SCOPES:internal:audit:read}
+
+content.retention:
+  dry-run-enabled: ${CONTENT_RETENTION_DRY_RUN_ENABLED:false}
+  max-count-query-limit: ${CONTENT_RETENTION_MAX_COUNT_QUERY_LIMIT:100000}
+  note-version-retention-days: ${CONTENT_RETENTION_NOTE_VERSION_RETENTION_DAYS:365}
+  comment-retention-days: ${CONTENT_RETENTION_COMMENT_RETENTION_DAYS:365}
+  search-document-retention-days: ${CONTENT_RETENTION_SEARCH_DOCUMENT_RETENTION_DAYS:90}
+  include-archived-notes-only: ${CONTENT_RETENTION_INCLUDE_ARCHIVED_NOTES_ONLY:false}
+  admin:
+    kid: ${CONTENT_RETENTION_ADMIN_SERVICE_JWT_KID:}
+    public-key: ${CONTENT_RETENTION_ADMIN_SERVICE_JWT_PUBLIC_KEY:}
+    public-key-path: ${CONTENT_RETENTION_ADMIN_SERVICE_JWT_PUBLIC_KEY_PATH:}
+    issuer: ${CONTENT_RETENTION_ADMIN_SERVICE_JWT_ISSUER:retention-admin}
+    audience: ${CONTENT_RETENTION_ADMIN_SERVICE_JWT_AUDIENCE:content-service}
+    clock-skew-seconds: ${CONTENT_RETENTION_ADMIN_SERVICE_JWT_CLOCK_SKEW_SECONDS:5}
+    allowed-scopes: ${CONTENT_RETENTION_ADMIN_SERVICE_JWT_ALLOWED_SCOPES:internal:admin:retention:read}

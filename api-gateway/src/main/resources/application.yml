@@ -184,6 +184,10 @@ gateway:
     platform-retention:
       enabled: ${PLATFORM_RETENTION_GOVERNANCE_ENABLED:false}
       legal-hold-enabled: ${PLATFORM_LEGAL_HOLD_ENABLED:false}
+      content:
+        enabled: ${CONTENT_RETENTION_INTEGRATION_ENABLED:false}
+        url: ${CONTENT_RETENTION_INTERNAL_URL:http://content-service:8083}
+        timeout-ms: ${CONTENT_RETENTION_INTERNAL_TIMEOUT_MS:3000}
     audit-export:
       enabled: ${GATEWAY_ADMIN_AUDIT_EXPORT_ENABLED:false}
       max-range-days: ${GATEWAY_ADMIN_AUDIT_EXPORT_MAX_RANGE_DAYS:31}

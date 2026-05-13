@@ -15,7 +15,12 @@
       "Bash(./gradlew :content-service:test --tests \"com.notebook.lumen.content.service.NoteMergeAnalyzeServiceTest\")",
       "Bash(./gradlew :content-service:test --tests \"com.notebook.lumen.content.service.NoteMergeApplyServiceTest\")",
       "Bash(./gradlew :content-service:test)",
-      "Bash(./gradlew :content-service:test --tests \"*Merge*\")"
+      "Bash(./gradlew :content-service:test --tests \"*Merge*\")",
+      "Bash(./gradlew :content-service:test --tests \"ContentRetentionPlanServiceTest\" --tests \"InternalContentRetentionControllerTest\")",
+      "Bash(./gradlew :api-gateway:test --tests \"AdminPlatformRetentionProxyServiceTest\" --tests \"AdminPlatformRetentionControllerTest\")",
+      "Bash(./gradlew :content-service:spotlessApply :api-gateway:spotlessApply)",
+      "Bash(./gradlew --stop)",
+      "Bash(./gradlew :content-service:spotlessCheck :api-gateway:spotlessCheck --no-daemon)"
     ]
   }
 }
