@@ -186,6 +186,7 @@
 - Current mitigation: issuer + audience checks, state/nonce replay protection, verified email and
   allowed domain checks.
 - SCIM (Faz 61/76/97): static bearer for provisioning; group nesting validation limits membership cycles; provider compatibility diagnostics never expose bearer tokens, raw SCIM payloads, or checkpoint token values
+- Platform retention governance (Faz 98): target inventory and dry-run planning only; no raw note content, no raw audit metadata dump, no destructive purge endpoint; platform legal hold writes require reason and admin MFA gate.
   and depth; bulk is off by default and is non-transactional—integrators must not assume atomic batch
   semantics.
 - Remaining gap: no manual secure account linking workflow for all enterprise edge cases.

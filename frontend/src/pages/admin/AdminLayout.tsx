@@ -8,6 +8,7 @@ import {
   PERM_NOTIFICATIONS_DEAD_LETTER_READ,
   PERM_NOTIFICATIONS_RETENTION_READ,
   PERM_NOTIFICATIONS_LEGAL_HOLD_READ,
+  PERM_RETENTION_READ,
   PERM_RBAC_READ,
   PERM_BREAK_GLASS_READ,
   PERM_BREAK_GLASS_ROTATION_READ,
@@ -21,6 +22,7 @@ import {
   isNotificationDeadLetterUiEnabled,
   isNotificationRetentionUiEnabled,
   isNotificationLegalHoldUiEnabled,
+  isPlatformRetentionGovernanceUiEnabled,
   isAdminRbacUiEnabled,
   isBreakGlassReviewUiEnabled,
   isBreakGlassRotationUiEnabled,
@@ -49,6 +51,9 @@ export function AdminLayout() {
   const showNotificationLegalHolds =
     isNotificationLegalHoldUiEnabled() &&
     (devNavOpen || hasPlatformPermission(user, PERM_NOTIFICATIONS_LEGAL_HOLD_READ))
+  const showPlatformRetention =
+    isPlatformRetentionGovernanceUiEnabled() &&
+    (devNavOpen || hasPlatformPermission(user, PERM_RETENTION_READ))
   const showAdminRbac =
     isAdminRbacUiEnabled() && (devNavOpen || hasPlatformPermission(user, PERM_RBAC_READ))
   const showBreakGlassReview =
@@ -149,6 +154,13 @@ export function AdminLayout() {
             <li>
               <NavLink to="/app/admin/notifications/legal-holds" className={linkClass}>
                 Legal holds
+              </NavLink>
+            </li>
+          ) : null}
+          {showPlatformRetention ? (
+            <li>
+              <NavLink to="/app/admin/retention/platform" className={linkClass}>
+                Platform retention
               </NavLink>
             </li>
           ) : null}

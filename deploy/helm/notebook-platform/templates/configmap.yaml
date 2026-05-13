@@ -368,6 +368,8 @@ data:
   GATEWAY_BREAK_GLASS_DENYLIST_CHECK_ENABLED: {{ .Values.config.gatewayBreakGlassDenylistCheckEnabled | quote }}
   GATEWAY_BREAK_GLASS_DENYLIST_FAIL_CLOSED: {{ .Values.config.gatewayBreakGlassDenylistFailClosed | quote }}
   GATEWAY_BREAK_GLASS_DENYLIST_CACHE_SECONDS: {{ .Values.config.gatewayBreakGlassDenylistCacheSeconds | quote }}
+  PLATFORM_RETENTION_GOVERNANCE_ENABLED: {{ .Values.config.platformRetentionGovernanceEnabled | quote }}
+  PLATFORM_LEGAL_HOLD_ENABLED: {{ .Values.config.platformLegalHoldEnabled | quote }}
   SCIM_GROUP_NESTING_ENABLED: {{ .Values.config.scimGroupNestingEnabled | quote }}
   SCIM_GROUP_NESTING_MAX_DEPTH: {{ .Values.config.scimGroupNestingMaxDepth | quote }}
   SCIM_BULK_ENABLED: {{ .Values.config.scimBulkEnabled | quote }}

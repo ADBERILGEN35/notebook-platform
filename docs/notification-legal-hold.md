@@ -2,6 +2,8 @@
 
 Notification-scoped **legal holds** block destructive retention purge for configured targets. This is **not** a platform-wide hold, audit-event hold, or object-storage lifecycle control.
 
+Faz 98 adds a separate platform-wide governance model (`docs/platform-legal-hold-model.md`). Existing notification legal holds remain the enforcement layer for notification purge until a future bridge is explicitly approved.
+
 ## Feature flags
 
 | Layer | Variable | Default |

@@ -143,6 +143,14 @@ export const isScimCompatibilityDiagnosticsUiEnabled = (): boolean =>
     false,
   )
 
+/** Faz 98: platform-wide retention governance inventory, dry-run plan, and legal holds. */
+export const isPlatformRetentionGovernanceUiEnabled = (): boolean =>
+  parseBool(
+    window.__NOTEBOOK_CONFIG__?.PLATFORM_RETENTION_GOVERNANCE_ENABLED ??
+      import.meta.env.VITE_PLATFORM_RETENTION_GOVERNANCE_ENABLED,
+    false,
+  )
+
 /** Faz 92: break-glass post-use review governance UI. */
 export const isBreakGlassReviewUiEnabled = (): boolean =>
   parseBool(

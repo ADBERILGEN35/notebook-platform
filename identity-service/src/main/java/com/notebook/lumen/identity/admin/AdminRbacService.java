@@ -177,6 +177,8 @@ public class AdminRbacService {
           perms.add(PlatformAdminRbacConstants.PERM_NOTIFICATIONS_RETENTION_RUN);
           perms.add(PlatformAdminRbacConstants.PERM_NOTIFICATIONS_LEGAL_HOLD_READ);
           perms.add(PlatformAdminRbacConstants.PERM_NOTIFICATIONS_LEGAL_HOLD_WRITE);
+          perms.add(PlatformAdminRbacConstants.PERM_RETENTION_READ);
+          perms.add(PlatformAdminRbacConstants.PERM_RETENTION_LEGAL_HOLD_WRITE);
           perms.add(PlatformAdminRbacConstants.PERM_BREAK_GLASS_READ);
           perms.add(PlatformAdminRbacConstants.PERM_BREAK_GLASS_REVIEW);
           perms.add(PlatformAdminRbacConstants.PERM_BREAK_GLASS_REVOKE);
@@ -213,6 +215,7 @@ public class AdminRbacService {
           perms.add(PlatformAdminRbacConstants.PERM_NOTIFICATIONS_DEAD_LETTER_READ);
           perms.add(PlatformAdminRbacConstants.PERM_NOTIFICATIONS_RETENTION_READ);
           perms.add(PlatformAdminRbacConstants.PERM_NOTIFICATIONS_LEGAL_HOLD_READ);
+          perms.add(PlatformAdminRbacConstants.PERM_RETENTION_READ);
           perms.add(PlatformAdminRbacConstants.PERM_BREAK_GLASS_READ);
         }
         default -> {

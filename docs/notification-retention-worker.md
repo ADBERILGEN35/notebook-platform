@@ -4,6 +4,8 @@ Foundation for **bounded, audited** deletion of notification subsystem rows that
 
 **Faz 84 — legal hold:** When `NOTIFICATION_LEGAL_HOLD_ENABLED=true`, active holds **block** purge for matching targets (`blockedByLegalHold`, `purgeableCount=0`, warnings on the plan). Destructive runs skip blocked kinds; see `docs/notification-legal-hold.md` and `docs/retention-governance.md`.
 
+**Faz 98 — platform governance:** Platform-wide retention inventory and dry-run planning are documented in `docs/platform-retention-governance.md`. Faz 98 does not call this worker and does not enable destructive purge.
+
 ## Defaults (safe)
 
 | Setting | Default | Meaning |

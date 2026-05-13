@@ -11,6 +11,7 @@ import com.notebook.lumen.gateway.config.GatewayAuthProperties;
 import com.notebook.lumen.gateway.config.GatewayBreakGlassProperties;
 import com.notebook.lumen.gateway.config.GatewayCorsProperties;
 import com.notebook.lumen.gateway.config.GatewayJwtProperties;
+import com.notebook.lumen.gateway.config.GatewayPlatformRetentionProperties;
 import com.notebook.lumen.gateway.config.GatewayRateLimitProperties;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -29,6 +30,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
   GatewayAuditProxyProperties.class,
   GatewayAuditExportProperties.class,
   GatewayAdminWriteProperties.class,
+  GatewayPlatformRetentionProperties.class,
   GatewayBreakGlassProperties.class
 })
 public class ApiGatewayApplication {

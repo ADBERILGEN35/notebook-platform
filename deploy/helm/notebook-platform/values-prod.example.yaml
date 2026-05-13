@@ -108,6 +108,8 @@ config:
   scimProviderSupportsNestedGroups: "false"
   scimProviderRateLimitAware: "true"
   scimProviderMaxPageSize: "100"
+  platformRetentionGovernanceEnabled: "false"
+  platformLegalHoldEnabled: "false"
   siemPushEnabled: "false"
   siemProvider: "noop"
   siemEndpointUrl: ""
@@ -218,6 +220,7 @@ frontend:
     FRONTEND_ADMIN_UI_DEV_OPEN: "false"
     FRONTEND_AUDIT_API_MODE: "real"
     FRONTEND_SCIM_COMPATIBILITY_DIAGNOSTICS_ENABLED: "false"
+    FRONTEND_PLATFORM_RETENTION_GOVERNANCE_ENABLED: "false"
   security:
     csp:
       enabled: true

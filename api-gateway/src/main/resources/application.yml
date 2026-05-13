@@ -181,6 +181,9 @@ gateway:
       notification-retention-path: ${GATEWAY_ADMIN_ENTERPRISE_NOTIFICATION_RETENTION_PATH:/internal/admin/notifications/retention}
       notification-legal-hold-path: ${GATEWAY_ADMIN_ENTERPRISE_NOTIFICATION_LEGAL_HOLD_PATH:/internal/admin/notifications/legal-holds}
       content-status-path: ${GATEWAY_ADMIN_ENTERPRISE_CONTENT_STATUS_PATH:/internal/admin/status/content}
+    platform-retention:
+      enabled: ${PLATFORM_RETENTION_GOVERNANCE_ENABLED:false}
+      legal-hold-enabled: ${PLATFORM_LEGAL_HOLD_ENABLED:false}
     audit-export:
       enabled: ${GATEWAY_ADMIN_AUDIT_EXPORT_ENABLED:false}
       max-range-days: ${GATEWAY_ADMIN_AUDIT_EXPORT_MAX_RANGE_DAYS:31}

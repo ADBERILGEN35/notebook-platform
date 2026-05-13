@@ -15,6 +15,10 @@ public class AuditAdminAuthorizer {
   public static final String RBAC_READ_SCOPE = "internal:admin:rbac:read";
   public static final String RBAC_OVERRIDE_RELOAD_SCOPE = "internal:admin:rbac:overrides:reload";
   public static final String SCIM_DIAGNOSTICS_READ_SCOPE = "internal:admin:scim:diagnostics:read";
+  public static final String PLATFORM_RETENTION_READ_SCOPE =
+      "internal:admin:retention:platform:read";
+  public static final String PLATFORM_LEGAL_HOLD_WRITE_SCOPE =
+      "internal:admin:retention:legal-hold:write";
   public static final String BREAK_GLASS_EVENTS_READ_SCOPE =
       "internal:admin:break-glass:events:read";
   public static final String BREAK_GLASS_EVENTS_REVIEW_SCOPE =

@@ -50,6 +50,7 @@ declare global {
       ADMIN_RBAC_OVERRIDES_STATUS_ENABLED?: boolean | string
       ADMIN_RBAC_OVERRIDES_RELOAD_ENABLED?: boolean | string
       SCIM_COMPATIBILITY_DIAGNOSTICS_ENABLED?: boolean | string
+      PLATFORM_RETENTION_GOVERNANCE_ENABLED?: boolean | string
       BREAK_GLASS_REVIEW_UI_ENABLED?: boolean | string
       BREAK_GLASS_REVOCATION_UI_ENABLED?: boolean | string
       /** Faz 94: break-glass static-token rotation governance UI. */

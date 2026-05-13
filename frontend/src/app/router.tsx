@@ -23,6 +23,7 @@ import { AdminNotificationAnalyticsPage } from '../pages/admin/AdminNotification
 import { AdminNotificationDeadLetterPage } from '../pages/admin/AdminNotificationDeadLetterPage'
 import { AdminNotificationRetentionPage } from '../pages/admin/AdminNotificationRetentionPage'
 import { AdminNotificationLegalHoldsPage } from '../pages/admin/AdminNotificationLegalHoldsPage'
+import { AdminPlatformRetentionPage } from '../pages/admin/AdminPlatformRetentionPage'
 import { AdminRbacPage } from '../pages/admin/AdminRbacPage'
 import { AdminBreakGlassPage } from '../pages/admin/AdminBreakGlassPage'
 import { AdminBreakGlassRotationPage } from '../pages/admin/AdminBreakGlassRotationPage'
@@ -94,6 +95,7 @@ export const router = createBrowserRouter([
               { path: 'notifications/dead-letter', element: <AdminNotificationDeadLetterPage /> },
               { path: 'notifications/retention', element: <AdminNotificationRetentionPage /> },
               { path: 'notifications/legal-holds', element: <AdminNotificationLegalHoldsPage /> },
+              { path: 'retention/platform', element: <AdminPlatformRetentionPage /> },
               { path: 'rbac', element: <AdminRbacPage /> },
               { path: 'security/break-glass', element: <AdminBreakGlassPage /> },
               { path: 'security/break-glass/rotation', element: <AdminBreakGlassRotationPage /> },

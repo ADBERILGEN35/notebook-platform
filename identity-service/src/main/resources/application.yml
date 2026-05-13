@@ -90,7 +90,7 @@ audit:
     issuer: ${AUDIT_ADMIN_SERVICE_JWT_ISSUER:audit-admin}
     audience: ${AUDIT_ADMIN_SERVICE_JWT_AUDIENCE:identity-service}
     clock-skew-seconds: ${AUDIT_ADMIN_SERVICE_JWT_CLOCK_SKEW_SECONDS:5}
-    allowed-scopes: ${AUDIT_ADMIN_SERVICE_JWT_ALLOWED_SCOPES:internal:audit:read,internal:admin:status:read,internal:admin:change-requests:manage,internal:admin:rbac:read,internal:admin:rbac:overrides:reload,internal:admin:scim:diagnostics:read,internal:admin:break-glass:events:read,internal:admin:break-glass:events:review,internal:admin:break-glass:rotation:read,internal:admin:break-glass:rotation:manage,internal:break-glass:token:check}
+    allowed-scopes: ${AUDIT_ADMIN_SERVICE_JWT_ALLOWED_SCOPES:internal:audit:read,internal:admin:status:read,internal:admin:change-requests:manage,internal:admin:rbac:read,internal:admin:rbac:overrides:reload,internal:admin:scim:diagnostics:read,internal:admin:retention:platform:read,internal:admin:retention:legal-hold:write,internal:admin:break-glass:events:read,internal:admin:break-glass:events:review,internal:admin:break-glass:rotation:read,internal:admin:break-glass:rotation:manage,internal:break-glass:token:check}
 
 identity:
   break-glass:
@@ -254,3 +254,6 @@ identity:
       service-name: ${IDENTITY_SERVICE_JWT_SERVICE_NAME:identity-service}
       ttl-seconds: ${IDENTITY_SERVICE_JWT_TTL_SECONDS:60}
       audience: ${IDENTITY_SERVICE_JWT_AUDIENCE:notification-service}
+  platform-retention:
+    enabled: ${PLATFORM_RETENTION_GOVERNANCE_ENABLED:false}
+    legal-hold-enabled: ${PLATFORM_LEGAL_HOLD_ENABLED:false}

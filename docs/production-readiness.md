@@ -149,3 +149,9 @@
 - Provider capability flags are diagnostics metadata only; they do not start scheduled sync or provider-specific API calls.
 - `FRONTEND_SCIM_COMPATIBILITY_DIAGNOSTICS_ENABLED=false` by default; enable only for read-only admin diagnostics validation.
 - Validate provider behavior against `docs/scim-provider-compatibility.md` before any future provider-specific delta POC.
+
+## Faz 98 readiness checks
+
+- `PLATFORM_RETENTION_GOVERNANCE_ENABLED=false`, `PLATFORM_LEGAL_HOLD_ENABLED=false`, and `FRONTEND_PLATFORM_RETENTION_GOVERNANCE_ENABLED=false` remain production defaults.
+- Platform retention plan is dry-run only; no content, audit, workspace, identity, or object-storage deletion scheduler exists.
+- Before any destructive implementation, define archive-before-delete behavior, tenant policy, eDiscovery expectations, and legal approval workflow.

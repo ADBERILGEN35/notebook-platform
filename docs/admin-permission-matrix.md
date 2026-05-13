@@ -45,6 +45,11 @@ Resolved when `ADMIN_RBAC_ENABLED=true`. `PLATFORM_ADMIN` adds **all** permissio
 | `GET /admin/notifications/legal-holds` | `admin:notifications:legal-hold:read` |
 | `POST /admin/notifications/legal-holds` | `admin:notifications:legal-hold:write` + admin-write MFA when required |
 | `POST /admin/notifications/legal-holds/{id}/release` | `admin:notifications:legal-hold:write` + admin-write MFA when required |
+| `GET /admin/retention/platform/targets` | `admin:retention:read` |
+| `GET /admin/retention/platform/plan` | `admin:retention:read` |
+| `GET /admin/retention/platform/legal-holds` | `admin:retention:read` |
+| `POST /admin/retention/platform/legal-holds` | `admin:retention:legal-hold:write` + admin-write MFA when required |
+| `POST /admin/retention/platform/legal-holds/{id}/release` | `admin:retention:legal-hold:write` + admin-write MFA when required |
 | `GET /admin/audit-events` | `admin:audit:read` |
 | `GET /admin/audit-events/export` | `admin:audit:export` |
 | `GET /admin/enterprise/change-requests` | `admin:change-request:list` |

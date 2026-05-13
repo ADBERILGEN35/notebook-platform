@@ -93,6 +93,8 @@ config:
   gatewayAdminEnabled: "true"
   gatewayAdminEnterpriseEnabled: "true"
   internalAdminStatusEnabled: "true"
+  platformRetentionGovernanceEnabled: "false"
+  platformLegalHoldEnabled: "false"
   notificationInternalAdminAnalyticsEnabled: "true"
   notificationDeadLetterAdminEnabled: "true"
   notificationLegalHoldEnabled: "true"
@@ -195,6 +197,7 @@ frontend:
     FRONTEND_NOTIFICATION_LEGAL_HOLD_ENABLED: "true"
     FRONTEND_AUDIT_API_MODE: "mock"
     FRONTEND_SCIM_COMPATIBILITY_DIAGNOSTICS_ENABLED: "false"
+    FRONTEND_PLATFORM_RETENTION_GOVERNANCE_ENABLED: "false"
   security:
     csp:
       enabled: false

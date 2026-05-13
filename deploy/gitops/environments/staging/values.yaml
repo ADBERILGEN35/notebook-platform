@@ -22,6 +22,8 @@ config:
   gatewayAuditExportMachineAuthRequiredScope: "admin:audit:export"
   gatewayAuditExportMachineAuthPublicKeyPath: "/etc/notebook/secrets/audit-export-machine/public.pem"
   gatewayAuditExportMachineAuthMaxTtlSeconds: "900"
+  platformRetentionGovernanceEnabled: "false"
+  platformLegalHoldEnabled: "false"
   gatewayAdminAllowedEmails: "admin.staging@example.com"
   adminRequireMfa: "false"
   gatewayAdminMfaMode: "warn"
@@ -207,6 +209,7 @@ frontend:
     FRONTEND_ADMIN_UI_DEV_OPEN: "false"
     FRONTEND_AUDIT_API_MODE: "real"
     FRONTEND_SCIM_COMPATIBILITY_DIAGNOSTICS_ENABLED: "false"
+    FRONTEND_PLATFORM_RETENTION_GOVERNANCE_ENABLED: "false"
   security:
     csp:
       enabled: true

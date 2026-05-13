@@ -32,6 +32,7 @@ Runtime Docker/Kubernetes config:
 - `FRONTEND_API_BASE_URL` -> served via `/runtime-config.js`
 - Runtime value overrides `VITE_API_BASE_URL`
 - `FRONTEND_SCIM_COMPATIBILITY_DIAGNOSTICS_ENABLED=false` hides Faz 97 read-only SCIM provider diagnostics by default.
+- `FRONTEND_PLATFORM_RETENTION_GOVERNANCE_ENABLED=false` hides Faz 98 platform retention governance by default.
 
 ## Break-glass review UI (Faz 92)
 
@@ -125,6 +126,7 @@ Runtime Docker/Kubernetes config:
 - **Faz 88:** `FRONTEND_ADMIN_RBAC_OVERRIDES_STATUS_ENABLED` → `ADMIN_RBAC_OVERRIDES_STATUS_ENABLED` in `runtime-config.js` shows the read-only **GitOps RBAC overrides** card on `/app/admin/rbac` (no YAML upload). See `docs/admin-rbac-runtime-overrides.md`.
 - **Faz 89:** `FRONTEND_ADMIN_RBAC_OVERRIDES_RELOAD_ENABLED` → `ADMIN_RBAC_OVERRIDES_RELOAD_ENABLED` gates the **Reload manifest** control (requires `admin:rbac:override:reload` and backend `ADMIN_RBAC_OVERRIDES_RELOAD_ENABLED`). See `docs/admin-rbac-override-reload.md`.
 - **Faz 97:** `FRONTEND_SCIM_COMPATIBILITY_DIAGNOSTICS_ENABLED` shows provider capability, warning, checkpoint, and sync-run diagnostics on `/app/admin/enterprise/security`; no mutation UI and no token/raw payload rendering.
+- **Faz 98:** `FRONTEND_PLATFORM_RETENTION_GOVERNANCE_ENABLED` shows `/app/admin/retention/platform`; destructive purge controls are not implemented.
 
 ## Platform Admin Proxy (Faz 43)
 

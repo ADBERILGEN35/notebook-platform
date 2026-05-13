@@ -229,6 +229,31 @@ public class AdminAuthorizationService {
         jwt, PlatformAdminRbacConstants.PERM_NOTIFICATIONS_LEGAL_HOLD_READ);
   }
 
+  public Optional<ErrorCode> ensurePlatformRetentionRead(Jwt jwt) {
+    return ensureAdminPermission(jwt, PlatformAdminRbacConstants.PERM_RETENTION_READ);
+  }
+
+  public Optional<ErrorCode> ensurePlatformLegalHoldWrite(Jwt jwt) {
+    if (!rbacProperties.enforce()) {
+      if (!isAdmin(jwt)) {
+        return Optional.of(ErrorCode.ADMIN_ACCESS_DENIED);
+      }
+      if (adminWriteRequiresMfa() && !hasVerifiedMfa(jwt)) {
+        return Optional.of(ErrorCode.ADMIN_WRITE_MFA_REQUIRED);
+      }
+      return Optional.empty();
+    }
+    Optional<ErrorCode> base =
+        ensureAdminPermission(jwt, PlatformAdminRbacConstants.PERM_RETENTION_LEGAL_HOLD_WRITE);
+    if (base.isPresent()) {
+      return base;
+    }
+    if (adminWriteRequiresMfa() && !hasVerifiedMfa(jwt)) {
+      return Optional.of(ErrorCode.ADMIN_WRITE_MFA_REQUIRED);
+    }
+    return Optional.empty();
+  }
+
   /** Create / release legal hold: dedicated permission plus admin-write MFA gate (Faz 84). */
   /** Faz 86: read-only admin RBAC directory (identity-sourced; no raw IdP claims). */
   public Optional<ErrorCode> ensureAdminRbacRead(Jwt jwt) {
