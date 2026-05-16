@@ -244,10 +244,8 @@ public class NoteMergeAnalyzeService {
       boolean localEdited = inLocal && !Objects.equals(baseSig, localSig);
       boolean remoteEdited = inRemote && !Objects.equals(baseSig, remoteSig);
 
-      MoveStatus localMove =
-          inLocal ? computeMove(baseIdx, localIdx, id) : MoveStatus.NONE;
-      MoveStatus remoteMove =
-          inRemote ? computeMove(baseIdx, remoteIdx, id) : MoveStatus.NONE;
+      MoveStatus localMove = inLocal ? computeMove(baseIdx, localIdx, id) : MoveStatus.NONE;
+      MoveStatus remoteMove = inRemote ? computeMove(baseIdx, remoteIdx, id) : MoveStatus.NONE;
 
       if (localEdited) localChanges.add("Changed block " + id);
       if (remoteEdited) remoteChanges.add("Server changed block " + id);
@@ -307,32 +305,23 @@ public class NoteMergeAnalyzeService {
         // Same-target move → treat as if only one side moved; remote already has it.
         plan.localMoves.remove(id);
       }
-      if (localMove == MoveStatus.PARENT_CHANGED
-          || remoteMove == MoveStatus.PARENT_CHANGED) {
+      if (localMove == MoveStatus.PARENT_CHANGED || remoteMove == MoveStatus.PARENT_CHANGED) {
         // Cross-parent moves are out of scope for safe auto-merge (Faz 95).
         conflicts.add(
             conflict(
-                "BLOCK_CROSS_PARENT_UNSUPPORTED",
-                id,
-                "Cross-parent move requires manual review"));
+                "BLOCK_CROSS_PARENT_UNSUPPORTED", id, "Cross-parent move requires manual review"));
         plan.localMoves.remove(id);
         continue;
       }
       if (localMove != MoveStatus.NONE && remoteEdited) {
         conflicts.add(
-            conflict(
-                "BLOCK_MOVED_AND_EDITED",
-                id,
-                "Server edited a block that you moved"));
+            conflict("BLOCK_MOVED_AND_EDITED", id, "Server edited a block that you moved"));
         plan.localMoves.remove(id);
         continue;
       }
       if (remoteMove != MoveStatus.NONE && localEdited) {
         conflicts.add(
-            conflict(
-                "BLOCK_MOVED_AND_EDITED",
-                id,
-                "You edited a block that the server moved"));
+            conflict("BLOCK_MOVED_AND_EDITED", id, "You edited a block that the server moved"));
         continue;
       }
       if (localEdited && remoteEdited && !Objects.equals(localSig, remoteSig)) {
@@ -354,8 +343,7 @@ public class NoteMergeAnalyzeService {
     for (String id : baseIdx.byId.keySet()) {
       if (!localIdx.byId.containsKey(id) && remoteIdx.byId.containsKey(id)) {
         // Local deleted, remote untouched → remove (only if base signature matches remote).
-        if (Objects.equals(
-            baseIdx.blockSignatures.get(id), remoteIdx.blockSignatures.get(id))) {
+        if (Objects.equals(baseIdx.blockSignatures.get(id), remoteIdx.blockSignatures.get(id))) {
           removeById(merged, id);
         }
         continue;
@@ -576,8 +564,7 @@ public class NoteMergeAnalyzeService {
     return "Reordered block " + id + " from position " + from + " to " + to;
   }
 
-  private String describeMoveServer(
-      String id, Index baseIdx, Index targetIdx, MoveStatus status) {
+  private String describeMoveServer(String id, Index baseIdx, Index targetIdx, MoveStatus status) {
     if (status == MoveStatus.PARENT_CHANGED) {
       return "moved block " + id + " to a different parent";
     }

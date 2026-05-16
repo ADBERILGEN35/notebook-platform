@@ -5,7 +5,6 @@ import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.servlet.http.HttpServletRequest;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -76,7 +75,8 @@ public class PlatformRetentionGovernanceService {
       out.add(planTarget(target, activeHolds, now));
     }
     List<String> warnings = new ArrayList<>();
-    warnings.add("Platform retention governance is dry-run only; no destructive purge endpoint exists.");
+    warnings.add(
+        "Platform retention governance is dry-run only; no destructive purge endpoint exists.");
     if (!dryRun) {
       warnings.add("dryRun=false requested but ignored by Faz 98 platform planner.");
     }
@@ -94,7 +94,8 @@ public class PlatformRetentionGovernanceService {
             "targetCount",
             out.size()));
     meterRegistry.counter("platform_retention_plan_generated_total").increment();
-    return new PlatformRetentionDtos.PlanResponse(now, true, List.copyOf(out), List.copyOf(warnings));
+    return new PlatformRetentionDtos.PlanResponse(
+        now, true, List.copyOf(out), List.copyOf(warnings));
   }
 
   public PlatformRetentionDtos.LegalHoldListResponse legalHolds(
@@ -103,7 +104,8 @@ public class PlatformRetentionGovernanceService {
         status
             .map(legalHoldRepository::findByStatusOrderByCreatedAtDesc)
             .orElseGet(legalHoldRepository::findAllByOrderByCreatedAtDesc);
-    return new PlatformRetentionDtos.LegalHoldListResponse(rows.stream().map(this::toHold).toList());
+    return new PlatformRetentionDtos.LegalHoldListResponse(
+        rows.stream().map(this::toHold).toList());
   }
 
   @Transactional
@@ -117,11 +119,13 @@ public class PlatformRetentionGovernanceService {
     PlatformLegalHoldScope scope =
         request.scope() == null ? PlatformLegalHoldScope.ALL_PLATFORM : request.scope();
     if (request.expiresAt() != null && !request.expiresAt().isAfter(Instant.now())) {
-      auditDenied("PLATFORM_LEGAL_HOLD_CREATE_DENIED", actorUserId, httpRequest, "EXPIRES_AT_INVALID");
+      auditDenied(
+          "PLATFORM_LEGAL_HOLD_CREATE_DENIED", actorUserId, httpRequest, "EXPIRES_AT_INVALID");
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "expiresAt must be in the future");
     }
     if (legalHoldRepository.existsByHoldKey(holdKey)) {
-      auditDenied("PLATFORM_LEGAL_HOLD_CREATE_DENIED", actorUserId, httpRequest, "DUPLICATE_HOLD_KEY");
+      auditDenied(
+          "PLATFORM_LEGAL_HOLD_CREATE_DENIED", actorUserId, httpRequest, "DUPLICATE_HOLD_KEY");
       throw new ResponseStatusException(HttpStatus.CONFLICT, "holdKey already exists");
     }
     PlatformLegalHold saved =
@@ -169,7 +173,8 @@ public class PlatformRetentionGovernanceService {
     PlatformLegalHold hold =
         legalHoldRepository
             .findById(id)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Legal hold not found"));
+            .orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Legal hold not found"));
     if (hold.getStatus() != PlatformLegalHoldStatus.ACTIVE) {
       auditDenied("PLATFORM_LEGAL_HOLD_RELEASE_DENIED", actorUserId, httpRequest, "NOT_ACTIVE");
       throw new ResponseStatusException(HttpStatus.CONFLICT, "Only ACTIVE holds can be released");
@@ -300,7 +305,8 @@ public class PlatformRetentionGovernanceService {
 
   private static String validateReason(String raw, String label) {
     if (raw == null || raw.trim().length() < 10) {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, label + " must be at least 10 characters");
+      throw new ResponseStatusException(
+          HttpStatus.BAD_REQUEST, label + " must be at least 10 characters");
     }
     return raw.trim().length() > MAX_REASON_LENGTH
         ? raw.trim().substring(0, MAX_REASON_LENGTH)

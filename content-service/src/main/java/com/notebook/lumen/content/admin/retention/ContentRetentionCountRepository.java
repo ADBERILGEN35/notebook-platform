@@ -9,13 +9,13 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Aggregate-only retention count queries. Each query is cutoff-bounded and uses LIMIT to cap
- * scan cost; callers receive {@link CountResult} indicating whether the cap was reached. No
- * note/comment body, title, or workspace identifier is read.
+ * Aggregate-only retention count queries. Each query is cutoff-bounded and uses LIMIT to cap scan
+ * cost; callers receive {@link CountResult} indicating whether the cap was reached. No note/comment
+ * body, title, or workspace identifier is read.
  *
- * <p>RLS note: count queries are admin-scope cross-workspace. The runtime role must have
- * BYPASSRLS or queries must run with {@code row_security=off}. Tests assume Testcontainers
- * default permissive role; production requires DBA setup.
+ * <p>RLS note: count queries are admin-scope cross-workspace. The runtime role must have BYPASSRLS
+ * or queries must run with {@code row_security=off}. Tests assume Testcontainers default permissive
+ * role; production requires DBA setup.
  */
 @Repository
 public class ContentRetentionCountRepository {
@@ -49,9 +49,7 @@ public class ContentRetentionCountRepository {
             + " WHERE "
             + column
             + " < ? LIMIT ?) AS bounded";
-    Long result =
-        jdbcTemplate.queryForObject(
-            sql, Long.class, Timestamp.from(cutoff), safeCap + 1);
+    Long result = jdbcTemplate.queryForObject(sql, Long.class, Timestamp.from(cutoff), safeCap + 1);
     long total = result == null ? 0 : result;
     boolean capped = total > safeCap;
     return new CountResult(capped ? safeCap : total, capped);

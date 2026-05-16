@@ -53,7 +53,8 @@ class AdminPlatformRetentionControllerTest {
         new AdminPlatformRetentionController(
             auth, new GatewayPlatformRetentionProperties(true, true), proxy);
 
-    StepVerifier.create(controller.createLegalHold(jwt(false), Map.of("reason", "valid reason"), "req-2"))
+    StepVerifier.create(
+            controller.createLegalHold(jwt(false), Map.of("reason", "valid reason"), "req-2"))
         .assertNext(
             response -> {
               assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);

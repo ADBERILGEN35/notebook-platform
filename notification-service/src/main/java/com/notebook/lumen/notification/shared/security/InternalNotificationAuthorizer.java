@@ -30,6 +30,7 @@ public class InternalNotificationAuthorizer {
       "internal:admin:notifications:legal-hold:read";
   public static final String ADMIN_NOTIFICATIONS_LEGAL_HOLD_WRITE_SCOPE =
       "internal:admin:notifications:legal-hold:write";
+  public static final String ADMIN_RETENTION_READ_SCOPE = "internal:admin:retention:read";
 
   private final NotificationProperties properties;
 

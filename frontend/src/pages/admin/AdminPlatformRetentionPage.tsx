@@ -324,6 +324,16 @@ const WARNING_TONE: Record<string, string> = {
   CONTENT_RETENTION_PARTIAL_LEGAL_HOLD_MAPPING: 'bg-amber-50 text-amber-800 ring-amber-200',
   CONTENT_RETENTION_DRY_RUN_DISABLED: 'bg-slate-100 text-slate-700 ring-slate-200',
   CONTENT_RETENTION_TARGET_INVENTORY_ONLY: 'bg-slate-100 text-slate-700 ring-slate-200',
+  NOTIFICATION_RETENTION_LEGAL_HOLD_BLOCKED: 'bg-rose-50 text-rose-800 ring-rose-200',
+  NOTIFICATION_RETENTION_QUERY_CAPPED: 'bg-amber-50 text-amber-800 ring-amber-200',
+  NOTIFICATION_RETENTION_SERVICE_UNAVAILABLE: 'bg-rose-50 text-rose-800 ring-rose-200',
+  NOTIFICATION_RETENTION_PARTIAL_LEGAL_HOLD_MAPPING: 'bg-amber-50 text-amber-800 ring-amber-200',
+  NOTIFICATION_RETENTION_DRY_RUN_DISABLED: 'bg-slate-100 text-slate-700 ring-slate-200',
+  NOTIFICATION_RETENTION_TARGET_INVENTORY_ONLY: 'bg-slate-100 text-slate-700 ring-slate-200',
+  NOTIFICATION_RETENTION_COUNT_FAILED: 'bg-rose-50 text-rose-800 ring-rose-200',
+  NOTIFICATION_RETENTION_DB_PERMISSION_DENIED: 'bg-rose-50 text-rose-800 ring-rose-200',
+  NOTIFICATION_RETENTION_DRY_RUN_FAILED: 'bg-rose-50 text-rose-800 ring-rose-200',
+  PLATFORM_RETENTION_NOTIFICATION_PLAN_INCLUDED: 'bg-emerald-50 text-emerald-800 ring-emerald-200',
 }
 
 function WarningChips({ warnings }: { warnings: string[] }) {

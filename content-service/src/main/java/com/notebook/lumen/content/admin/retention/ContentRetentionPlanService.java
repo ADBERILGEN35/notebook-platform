@@ -25,10 +25,13 @@ public class ContentRetentionPlanService {
 
   static final String WARN_DRY_RUN_DISABLED = "CONTENT_RETENTION_DRY_RUN_DISABLED";
   static final String WARN_LEGAL_HOLD_BLOCKED = "CONTENT_RETENTION_LEGAL_HOLD_BLOCKED";
-  static final String WARN_PARTIAL_LEGAL_HOLD_MAPPING = "CONTENT_RETENTION_PARTIAL_LEGAL_HOLD_MAPPING";
+  static final String WARN_PARTIAL_LEGAL_HOLD_MAPPING =
+      "CONTENT_RETENTION_PARTIAL_LEGAL_HOLD_MAPPING";
   static final String WARN_TARGET_INVENTORY_ONLY = "CONTENT_RETENTION_TARGET_INVENTORY_ONLY";
   static final String WARN_QUERY_CAPPED = "CONTENT_RETENTION_QUERY_CAPPED";
   static final String WARN_COUNT_FAILED = "CONTENT_RETENTION_COUNT_FAILED";
+  static final String WARN_DB_PERMISSION_DENIED = "CONTENT_RETENTION_DB_PERMISSION_DENIED";
+  static final String WARN_RLS_NOT_READY = "CONTENT_RETENTION_RLS_NOT_READY";
 
   static final String EVT_PLAN_GENERATED = "CONTENT_RETENTION_DRY_RUN_PLAN_GENERATED";
   static final String EVT_PLAN_FAILED = "CONTENT_RETENTION_DRY_RUN_FAILED";
@@ -71,7 +74,8 @@ public class ContentRetentionPlanService {
     }
 
     boolean partialMapping = activeHolds.stream().anyMatch(scope -> !scope.fullyBlocking());
-    boolean fullyBlocked = activeHolds.stream().anyMatch(ContentRetentionLegalHoldScope::fullyBlocking);
+    boolean fullyBlocked =
+        activeHolds.stream().anyMatch(ContentRetentionLegalHoldScope::fullyBlocking);
 
     for (ContentRetentionTargetKey target : ContentRetentionTargetKey.values()) {
       if (targetFilter.isPresent() && targetFilter.get() != target) continue;
@@ -101,10 +105,7 @@ public class ContentRetentionPlanService {
   }
 
   private ContentRetentionTargetView planTarget(
-      ContentRetentionTargetKey target,
-      Instant now,
-      boolean fullyBlocked,
-      boolean partialMapping) {
+      ContentRetentionTargetKey target, Instant now, boolean fullyBlocked, boolean partialMapping) {
     ContentRetentionTargetStatus status = target.defaultStatus();
     List<String> targetWarnings = new ArrayList<>();
 
@@ -128,18 +129,26 @@ public class ContentRetentionPlanService {
     try {
       count = runCount(target, cutoff);
     } catch (RuntimeException e) {
-      sample.stop(meterRegistry.timer("content_retention_count_duration_seconds", "target", target.key()));
+      sample.stop(
+          meterRegistry.timer("content_retention_count_duration_seconds", "target", target.key()));
+      String warningCode = classifyDbFailure(e);
       auditService.record(
           EVT_PLAN_FAILED,
           null,
           null,
           AGGREGATE,
           null,
-          Map.of("targetKey", target.key(), "errorClass", e.getClass().getSimpleName()));
+          Map.of(
+              "targetKey",
+              target.key(),
+              "errorClass",
+              e.getClass().getSimpleName(),
+              "warningCode",
+              warningCode));
       meterRegistry
           .counter("content_retention_dry_run_total", "target", target.key(), "result", "error")
           .increment();
-      targetWarnings.add(WARN_COUNT_FAILED);
+      targetWarnings.add(warningCode);
       return new ContentRetentionTargetView(
           target.key(),
           status,
@@ -150,7 +159,8 @@ public class ContentRetentionPlanService {
           fullyBlocked,
           List.copyOf(addLegalHoldWarning(targetWarnings, fullyBlocked, partialMapping)));
     }
-    sample.stop(meterRegistry.timer("content_retention_count_duration_seconds", "target", target.key()));
+    sample.stop(
+        meterRegistry.timer("content_retention_count_duration_seconds", "target", target.key()));
 
     if (count.capped()) {
       targetWarnings.add(WARN_QUERY_CAPPED);
@@ -205,5 +215,25 @@ public class ContentRetentionPlanService {
 
   private Map<String, Object> auditMetaDisabled() {
     return Map.of("dryRunEnabled", false, "targetCount", 0);
+  }
+
+  static String classifyDbFailure(Throwable e) {
+    Throwable cause = e;
+    int depth = 0;
+    while (cause != null && depth < 10) {
+      String className = cause.getClass().getName();
+      if (className.endsWith("PermissionDeniedDataAccessException")) {
+        return WARN_DB_PERMISSION_DENIED;
+      }
+      if (cause instanceof java.sql.SQLException sqle) {
+        String state = sqle.getSQLState();
+        if ("42501".equals(state)) {
+          return WARN_DB_PERMISSION_DENIED;
+        }
+      }
+      cause = cause.getCause();
+      depth++;
+    }
+    return WARN_COUNT_FAILED;
   }
 }

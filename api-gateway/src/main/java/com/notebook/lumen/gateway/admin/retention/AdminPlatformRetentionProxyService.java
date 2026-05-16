@@ -32,21 +32,26 @@ public class AdminPlatformRetentionProxyService {
 
   static final String WARN_CONTENT_UNAVAILABLE = "CONTENT_RETENTION_SERVICE_UNAVAILABLE";
   static final String WARN_CONTENT_INCLUDED = "PLATFORM_RETENTION_CONTENT_PLAN_INCLUDED";
+  static final String WARN_NOTIFICATION_UNAVAILABLE = "NOTIFICATION_RETENTION_SERVICE_UNAVAILABLE";
+  static final String WARN_NOTIFICATION_INCLUDED = "PLATFORM_RETENTION_NOTIFICATION_PLAN_INCLUDED";
 
   private final GatewayAuditProxyProperties auditProxyProperties;
   private final ServiceJwtSigner serviceJwtSigner;
   private final WebClient webClient;
   private final ContentRetentionClient contentRetentionClient;
+  private final NotificationRetentionClient notificationRetentionClient;
 
   public AdminPlatformRetentionProxyService(
       GatewayAuditProxyProperties auditProxyProperties,
       ServiceJwtSigner serviceJwtSigner,
       WebClient.Builder webClientBuilder,
-      ContentRetentionClient contentRetentionClient) {
+      ContentRetentionClient contentRetentionClient,
+      NotificationRetentionClient notificationRetentionClient) {
     this.auditProxyProperties = auditProxyProperties;
     this.serviceJwtSigner = serviceJwtSigner;
     this.webClient = webClientBuilder.build();
     this.contentRetentionClient = contentRetentionClient;
+    this.notificationRetentionClient = notificationRetentionClient;
   }
 
   public Mono<ResponseEntity<Object>> targets(String requestId, String path) {
@@ -63,9 +68,10 @@ public class AdminPlatformRetentionProxyService {
     String planUrl = ub.build(true).toUriString();
     String holdsUrl = baseUrl() + "/legal-holds?status=ACTIVE";
 
+    boolean holdsNeeded = contentRetentionClient.enabled() || notificationRetentionClient.enabled();
     Mono<Map<String, Object>> planMono = getMap(planUrl, READ_SCOPE, requestId);
     Mono<Map<String, Object>> holdsMono =
-        contentRetentionClient.enabled()
+        holdsNeeded
             ? getMap(holdsUrl, READ_SCOPE, requestId).onErrorReturn(Map.of())
             : Mono.just(Map.of());
 
@@ -74,24 +80,51 @@ public class AdminPlatformRetentionProxyService {
             tuple -> {
               Map<String, Object> plan = mutableMap(tuple.getT1());
               Set<String> holdScopes = extractHoldScopes(tuple.getT2());
-              if (!contentRetentionClient.enabled()) {
-                return Mono.just(planToOk(plan));
-              }
-              return contentRetentionClient
-                  .fetchPlan(holdScopes, requestId)
-                  .map(
-                      contentBody -> {
-                        mergeContentPlan(plan, contentBody);
-                        addWarning(plan, WARN_CONTENT_INCLUDED);
-                        return planToOk(plan);
-                      })
-                  .onErrorResume(
-                      e -> {
-                        addWarning(plan, WARN_CONTENT_UNAVAILABLE);
-                        return Mono.just(planToOk(plan));
-                      });
+              return mergeContent(plan, holdScopes, requestId)
+                  .flatMap(p -> mergeNotification(p, holdScopes, requestId));
             })
+        .map(AdminPlatformRetentionProxyService::planToOk)
         .onErrorResume(e -> Mono.just(mapException(e, path, requestId)));
+  }
+
+  private Mono<Map<String, Object>> mergeContent(
+      Map<String, Object> plan, Set<String> holdScopes, String requestId) {
+    if (!contentRetentionClient.enabled()) {
+      return Mono.just(plan);
+    }
+    return contentRetentionClient
+        .fetchPlan(holdScopes, requestId)
+        .map(
+            contentBody -> {
+              mergeContentPlan(plan, contentBody);
+              addWarning(plan, WARN_CONTENT_INCLUDED);
+              return plan;
+            })
+        .onErrorResume(
+            e -> {
+              addWarning(plan, WARN_CONTENT_UNAVAILABLE);
+              return Mono.just(plan);
+            });
+  }
+
+  private Mono<Map<String, Object>> mergeNotification(
+      Map<String, Object> plan, Set<String> holdScopes, String requestId) {
+    if (!notificationRetentionClient.enabled()) {
+      return Mono.just(plan);
+    }
+    return notificationRetentionClient
+        .fetchPlan(holdScopes, requestId)
+        .map(
+            notificationBody -> {
+              mergeNotificationPlan(plan, notificationBody);
+              addWarning(plan, WARN_NOTIFICATION_INCLUDED);
+              return plan;
+            })
+        .onErrorResume(
+            e -> {
+              addWarning(plan, WARN_NOTIFICATION_UNAVAILABLE);
+              return Mono.just(plan);
+            });
   }
 
   private Mono<Map<String, Object>> getMap(String url, String scope, String requestId) {
@@ -134,8 +167,7 @@ public class AdminPlatformRetentionProxyService {
   }
 
   @SuppressWarnings("unchecked")
-  static void mergeContentPlan(
-      Map<String, Object> plan, Map<String, Object> contentBody) {
+  static void mergeContentPlan(Map<String, Object> plan, Map<String, Object> contentBody) {
     if (plan == null || contentBody == null) return;
     Object planTargetsObj = plan.get("targets");
     Object contentTargetsObj = contentBody.get("targets");
@@ -176,6 +208,56 @@ public class AdminPlatformRetentionProxyService {
             mutable.put("status", contentRow.get("status"));
           }
           mergeWarnings(mutable, contentRow.get("warnings"));
+        }
+      }
+      mergedTargets.add(mutable);
+    }
+    plan.put("targets", mergedTargets);
+  }
+
+  @SuppressWarnings("unchecked")
+  static void mergeNotificationPlan(
+      Map<String, Object> plan, Map<String, Object> notificationBody) {
+    if (plan == null || notificationBody == null) return;
+    Object planTargetsObj = plan.get("targets");
+    Object notificationTargetsObj = notificationBody.get("targets");
+    if (!(planTargetsObj instanceof List<?> planTargets)
+        || !(notificationTargetsObj instanceof List<?> notificationTargets)) {
+      return;
+    }
+    Map<String, Map<String, Object>> notificationByKey = new LinkedHashMap<>();
+    for (Object t : notificationTargets) {
+      if (t instanceof Map<?, ?> row) {
+        Object key = row.get("targetKey");
+        if (key != null) {
+          notificationByKey.put(key.toString(), (Map<String, Object>) row);
+        }
+      }
+    }
+    List<Object> mergedTargets = new ArrayList<>();
+    for (Object t : planTargets) {
+      if (!(t instanceof Map<?, ?> row)) {
+        mergedTargets.add(t);
+        continue;
+      }
+      Map<String, Object> mutable = mutableMap((Map<String, Object>) row);
+      Object key = mutable.get("targetKey");
+      if (key != null) {
+        Map<String, Object> notificationRow = notificationByKey.get(key.toString());
+        if (notificationRow != null) {
+          for (String field :
+              List.of(
+                  "eligibleCount",
+                  "purgeableCount",
+                  "blockedByLegalHold",
+                  "status",
+                  "defaultRetentionDays",
+                  "cutoff")) {
+            if (notificationRow.containsKey(field)) {
+              mutable.put(field, notificationRow.get(field));
+            }
+          }
+          mergeWarnings(mutable, notificationRow.get("warnings"));
         }
       }
       mergedTargets.add(mutable);
@@ -254,7 +336,8 @@ public class AdminPlatformRetentionProxyService {
                   .uri(url)
                   .accept(MediaType.APPLICATION_JSON)
                   .header(AuditProxyService.INTERNAL_AUTH_HEADER, "Bearer " + jwt);
-          if (requestId != null && !requestId.isBlank()) spec = spec.header("X-Request-Id", requestId);
+          if (requestId != null && !requestId.isBlank())
+            spec = spec.header("X-Request-Id", requestId);
           return spec.retrieve()
               .bodyToMono(Object.class)
               .map(body -> ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(body))
@@ -284,11 +367,14 @@ public class AdminPlatformRetentionProxyService {
                   .accept(MediaType.APPLICATION_JSON)
                   .header(AuditProxyService.INTERNAL_AUTH_HEADER, "Bearer " + jwt)
                   .header(ACTOR_HEADER, actorUserId);
-          if (requestId != null && !requestId.isBlank()) spec = spec.header("X-Request-Id", requestId);
+          if (requestId != null && !requestId.isBlank())
+            spec = spec.header("X-Request-Id", requestId);
           return spec.bodyValue(body == null ? Map.of() : body)
               .retrieve()
               .bodyToMono(Object.class)
-              .map(response -> ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(response))
+              .map(
+                  response ->
+                      ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(response))
               .onErrorResume(e -> Mono.just(mapException(e, gatewayPath, requestId)));
         });
   }

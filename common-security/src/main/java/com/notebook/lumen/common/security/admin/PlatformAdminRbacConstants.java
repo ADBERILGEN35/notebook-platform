@@ -106,8 +106,7 @@ public final class PlatformAdminRbacConstants {
   public static final String PERM_NOTIFICATIONS_LEGAL_HOLD_WRITE =
       "admin:notifications:legal-hold:write";
   public static final String PERM_RETENTION_READ = "admin:retention:read";
-  public static final String PERM_RETENTION_LEGAL_HOLD_WRITE =
-      "admin:retention:legal-hold:write";
+  public static final String PERM_RETENTION_LEGAL_HOLD_WRITE = "admin:retention:legal-hold:write";
   public static final String PERM_BREAK_GLASS_READ = "admin:break-glass:read";
   public static final String PERM_BREAK_GLASS_REVIEW = "admin:break-glass:review";
   public static final String PERM_BREAK_GLASS_REVOKE = "admin:break-glass:revoke";

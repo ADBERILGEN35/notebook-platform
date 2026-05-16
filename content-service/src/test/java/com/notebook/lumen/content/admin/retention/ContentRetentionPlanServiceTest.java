@@ -3,7 +3,6 @@ package com.notebook.lumen.content.admin.retention;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -32,8 +31,7 @@ class ContentRetentionPlanServiceTest {
     countRepository = mock(ContentRetentionCountRepository.class);
     auditService = mock(AuditService.class);
     meterRegistry = new SimpleMeterRegistry();
-    properties =
-        new ContentRetentionProperties(true, 100_000, 365, 365, 90, false);
+    properties = new ContentRetentionProperties(true, 100_000, 365, 365, 90, false);
   }
 
   @Test
@@ -108,9 +106,7 @@ class ContentRetentionPlanServiceTest {
 
     ContentRetentionPlanResponse response =
         service.buildPlan(
-            Optional.empty(),
-            EnumSet.of(ContentRetentionLegalHoldScope.CONTENT),
-            Optional.of(now));
+            Optional.empty(), EnumSet.of(ContentRetentionLegalHoldScope.CONTENT), Optional.of(now));
 
     assertThat(byKey(response, "content.note_versions").purgeableCount()).isZero();
     assertThat(byKey(response, "content.note_versions").blockedByLegalHold()).isTrue();
@@ -154,8 +150,88 @@ class ContentRetentionPlanServiceTest {
 
     assertThat(byKey(response, "content.note_versions").warnings())
         .contains("CONTENT_RETENTION_QUERY_CAPPED");
-    assertThat(meterRegistry.find("content_retention_count_capped_total").counter())
-        .isNotNull();
+    assertThat(meterRegistry.find("content_retention_count_capped_total").counter()).isNotNull();
+  }
+
+  @Test
+  void dbPermissionDenied_mapsToSafeWarning() {
+    when(countRepository.countNoteVersionsBefore(any(Instant.class), anyInt()))
+        .thenThrow(
+            new org.springframework.dao.PermissionDeniedDataAccessException(
+                "permission denied for table note_versions", null));
+    when(countRepository.countCommentsBefore(any(Instant.class), anyInt()))
+        .thenReturn(new CountResult(0, false));
+    when(countRepository.countSearchDocumentsBefore(any(Instant.class), anyInt()))
+        .thenReturn(new CountResult(0, false));
+    ContentRetentionPlanService service = service(properties);
+
+    ContentRetentionPlanResponse response =
+        service.buildPlan(Optional.empty(), Set.of(), Optional.of(now));
+
+    ContentRetentionTargetView versions = byKey(response, "content.note_versions");
+    assertThat(versions.warnings()).contains("CONTENT_RETENTION_DB_PERMISSION_DENIED");
+    assertThat(versions.warnings()).doesNotContain("CONTENT_RETENTION_COUNT_FAILED");
+    assertThat(versions.eligibleCount()).isNull();
+    assertThat(versions.purgeableCount()).isZero();
+  }
+
+  @Test
+  void genericRuntimeException_keepsCountFailedWarning() {
+    when(countRepository.countNoteVersionsBefore(any(Instant.class), anyInt()))
+        .thenThrow(new IllegalStateException("transient failure"));
+    when(countRepository.countCommentsBefore(any(Instant.class), anyInt()))
+        .thenReturn(new CountResult(0, false));
+    when(countRepository.countSearchDocumentsBefore(any(Instant.class), anyInt()))
+        .thenReturn(new CountResult(0, false));
+    ContentRetentionPlanService service = service(properties);
+
+    ContentRetentionPlanResponse response =
+        service.buildPlan(Optional.empty(), Set.of(), Optional.of(now));
+
+    ContentRetentionTargetView versions = byKey(response, "content.note_versions");
+    assertThat(versions.warnings()).contains("CONTENT_RETENTION_COUNT_FAILED");
+    assertThat(versions.warnings()).doesNotContain("CONTENT_RETENTION_DB_PERMISSION_DENIED");
+  }
+
+  @Test
+  void dbPermissionDenied_doesNotLeakRawMessage() {
+    String sensitiveMessage = "permission denied: sensitive table notebook_secret leaked";
+    when(countRepository.countNoteVersionsBefore(any(Instant.class), anyInt()))
+        .thenThrow(
+            new org.springframework.dao.PermissionDeniedDataAccessException(
+                sensitiveMessage, null));
+    when(countRepository.countCommentsBefore(any(Instant.class), anyInt()))
+        .thenReturn(new CountResult(0, false));
+    when(countRepository.countSearchDocumentsBefore(any(Instant.class), anyInt()))
+        .thenReturn(new CountResult(0, false));
+    ContentRetentionPlanService service = service(properties);
+
+    ContentRetentionPlanResponse response =
+        service.buildPlan(Optional.empty(), Set.of(), Optional.of(now));
+
+    ContentRetentionTargetView versions = byKey(response, "content.note_versions");
+    assertThat(versions.warnings()).noneMatch(w -> w.contains("notebook_secret"));
+    assertThat(versions.warnings()).noneMatch(w -> w.contains("sensitive"));
+  }
+
+  @Test
+  void sqlStateInsufficientPrivilege_mapsToPermissionDenied() {
+    java.sql.SQLException sqlException = new java.sql.SQLException("permission denied", "42501");
+    org.springframework.jdbc.UncategorizedSQLException wrapped =
+        new org.springframework.jdbc.UncategorizedSQLException(
+            "task", "SELECT count(*)", sqlException);
+    when(countRepository.countNoteVersionsBefore(any(Instant.class), anyInt())).thenThrow(wrapped);
+    when(countRepository.countCommentsBefore(any(Instant.class), anyInt()))
+        .thenReturn(new CountResult(0, false));
+    when(countRepository.countSearchDocumentsBefore(any(Instant.class), anyInt()))
+        .thenReturn(new CountResult(0, false));
+    ContentRetentionPlanService service = service(properties);
+
+    ContentRetentionPlanResponse response =
+        service.buildPlan(Optional.empty(), Set.of(), Optional.of(now));
+
+    ContentRetentionTargetView versions = byKey(response, "content.note_versions");
+    assertThat(versions.warnings()).contains("CONTENT_RETENTION_DB_PERMISSION_DENIED");
   }
 
   @Test

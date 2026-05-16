@@ -2,7 +2,7 @@ package com.notebook.lumen.gateway.admin.retention;
 
 import com.notebook.lumen.common.security.servicejwt.ServiceJwtSigner;
 import com.notebook.lumen.gateway.admin.audit.AuditProxyService;
-import com.notebook.lumen.gateway.config.GatewayContentRetentionProperties;
+import com.notebook.lumen.gateway.config.GatewayNotificationRetentionProperties;
 import java.time.Duration;
 import java.util.Collection;
 import java.util.Map;
@@ -13,17 +13,17 @@ import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Mono;
 
 @Component
-public class ContentRetentionClient {
+public class NotificationRetentionClient {
 
   static final String READ_SCOPE = "internal:admin:retention:read";
-  static final String CONTENT_AUDIENCE = "content-service";
+  static final String NOTIFICATION_AUDIENCE = "notification-service";
 
-  private final GatewayContentRetentionProperties properties;
+  private final GatewayNotificationRetentionProperties properties;
   private final ServiceJwtSigner serviceJwtSigner;
   private final WebClient webClient;
 
-  public ContentRetentionClient(
-      GatewayContentRetentionProperties properties,
+  public NotificationRetentionClient(
+      GatewayNotificationRetentionProperties properties,
       ServiceJwtSigner serviceJwtSigner,
       WebClient.Builder webClientBuilder) {
     this.properties = properties;
@@ -49,7 +49,7 @@ public class ContentRetentionClient {
         () -> {
           String jwt;
           try {
-            jwt = serviceJwtSigner.sign(CONTENT_AUDIENCE, READ_SCOPE);
+            jwt = serviceJwtSigner.sign(NOTIFICATION_AUDIENCE, READ_SCOPE);
           } catch (RuntimeException e) {
             return Mono.error(e);
           }
@@ -70,9 +70,9 @@ public class ContentRetentionClient {
 
   private String baseUrl() {
     String base = properties.url();
-    if (base == null || base.isBlank()) base = "http://content-service:8083";
+    if (base == null || base.isBlank()) base = "http://notification-service:8084";
     while (base.endsWith("/")) base = base.substring(0, base.length() - 1);
-    return base + "/internal/admin/retention/content/plan";
+    return base + "/internal/admin/retention/notification/plan";
   }
 
   private static final org.springframework.core.ParameterizedTypeReference<Map<String, Object>>

@@ -97,7 +97,7 @@ notification:
       issuer: ${AUDIT_ADMIN_SERVICE_JWT_ISSUER:audit-admin}
       audience: ${AUDIT_ADMIN_SERVICE_JWT_NOTIFICATION_AUDIENCE:notification-service}
       clock-skew-seconds: ${AUDIT_ADMIN_SERVICE_JWT_CLOCK_SKEW_SECONDS:5}
-      allowed-scopes: ${AUDIT_ADMIN_SERVICE_JWT_NOTIFICATION_ALLOWED_SCOPES:internal:admin:status:read,internal:admin:notifications:analytics:read,internal:admin:notifications:dead-letter:read,internal:admin:notifications:dead-letter:requeue,internal:admin:notifications:retention:read,internal:admin:notifications:retention:run,internal:admin:notifications:legal-hold:read,internal:admin:notifications:legal-hold:write}
+      allowed-scopes: ${AUDIT_ADMIN_SERVICE_JWT_NOTIFICATION_ALLOWED_SCOPES:internal:admin:status:read,internal:admin:notifications:analytics:read,internal:admin:notifications:dead-letter:read,internal:admin:notifications:dead-letter:requeue,internal:admin:notifications:retention:read,internal:admin:notifications:retention:run,internal:admin:notifications:legal-hold:read,internal:admin:notifications:legal-hold:write,internal:admin:retention:read}
     trusted-notification-client:
       kid: ${TRUSTED_SERVICE_WORKSPACE_SERVICE_KID:}
       public-key: ${TRUSTED_SERVICE_WORKSPACE_SERVICE_PUBLIC_KEY:}
@@ -136,6 +136,15 @@ notification:
     max-delete-per-run: ${NOTIFICATION_RETENTION_MAX_DELETE_PER_RUN:10000}
     dead-letter-requeue-request-retention-days: ${NOTIFICATION_DEAD_LETTER_REQUEUE_REQUEST_RETENTION_DAYS:90}
     digest-sent-retention-days: ${NOTIFICATION_DIGEST_SENT_RETENTION_DAYS:90}
+    email-terminal-retention-days: ${NOTIFICATION_EMAIL_TERMINAL_RETENTION_DAYS:90}
+  platform-retention:
+    dry-run-counts-enabled: ${NOTIFICATION_RETENTION_DRY_RUN_COUNTS_ENABLED:false}
+    max-count-query-limit: ${NOTIFICATION_RETENTION_MAX_COUNT_QUERY_LIMIT:100000}
+    analytics-retention-days: ${NOTIFICATION_ANALYTICS_RETENTION_DAYS:90}
+    fanout-sent-retention-days: ${NOTIFICATION_FANOUT_SENT_RETENTION_DAYS:7}
+    fanout-dead-retention-days: ${NOTIFICATION_FANOUT_DEAD_RETENTION_DAYS:90}
+    dead-letter-requeue-retention-days: ${NOTIFICATION_DEAD_LETTER_REQUEUE_REQUEST_RETENTION_DAYS:90}
+    digest-terminal-retention-days: ${NOTIFICATION_DIGEST_SENT_RETENTION_DAYS:90}
     email-terminal-retention-days: ${NOTIFICATION_EMAIL_TERMINAL_RETENTION_DAYS:90}
   in-app:
     enabled: ${NOTIFICATIONS_IN_APP_ENABLED:true}

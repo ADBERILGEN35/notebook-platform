@@ -3,8 +3,8 @@ package com.notebook.lumen.identity.admin.retention;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -32,6 +32,93 @@ class PlatformRetentionGovernanceServiceTest {
   }
 
   @Test
+  void registryMarksContentDryRunReadyTargets() {
+    var service = service(repository(), new PlatformRetentionProperties(true, true));
+
+    var targets = service.targets(mock(HttpServletRequest.class));
+
+    assertThat(targets.targets())
+        .filteredOn(
+            t ->
+                t.targetKey().equals("content.note_versions")
+                    || t.targetKey().equals("content.comments")
+                    || t.targetKey().equals("content.search_documents"))
+        .hasSize(3)
+        .allMatch(t -> t.status() == RetentionTargetStatus.DRY_RUN_READY);
+
+    assertThat(targets.targets())
+        .filteredOn(
+            t ->
+                t.targetKey().equals("content.workspaces")
+                    || t.targetKey().equals("content.notebooks")
+                    || t.targetKey().equals("content.notes")
+                    || t.targetKey().equals("content.attachments_media"))
+        .hasSize(4)
+        .allMatch(t -> t.status() == RetentionTargetStatus.INVENTORY_ONLY);
+  }
+
+  @Test
+  void registryContentTargetsForbidPurge() {
+    var service = service(repository(), new PlatformRetentionProperties(true, true));
+
+    var targets = service.targets(mock(HttpServletRequest.class));
+
+    assertThat(targets.targets())
+        .filteredOn(t -> t.targetKey().startsWith("content."))
+        .isNotEmpty()
+        .allMatch(t -> !t.destructivePurgeSupported())
+        .allMatch(PlatformRetentionDtos.TargetResponse::legalHoldSupported);
+  }
+
+  @Test
+  void registryDryRunReadyContentTargetsSupportDryRun() {
+    var service = service(repository(), new PlatformRetentionProperties(true, true));
+
+    var targets = service.targets(mock(HttpServletRequest.class));
+
+    assertThat(targets.targets())
+        .filteredOn(t -> t.status() == RetentionTargetStatus.DRY_RUN_READY)
+        .filteredOn(t -> t.targetKey().startsWith("content."))
+        .hasSize(3)
+        .allMatch(PlatformRetentionDtos.TargetResponse::dryRunSupported);
+  }
+
+  @Test
+  void registryIncludesNotificationDryRunReadyTargets() {
+    var service = service(repository(), new PlatformRetentionProperties(true, true));
+
+    var targets = service.targets(mock(HttpServletRequest.class));
+
+    assertThat(targets.targets())
+        .filteredOn(t -> t.targetKey().startsWith("notification."))
+        .hasSize(6)
+        .allMatch(t -> t.status() == RetentionTargetStatus.DRY_RUN_READY)
+        .allMatch(t -> !t.destructivePurgeSupported())
+        .allMatch(PlatformRetentionDtos.TargetResponse::dryRunSupported)
+        .allMatch(PlatformRetentionDtos.TargetResponse::legalHoldSupported);
+    assertThat(targets.targets())
+        .extracting(PlatformRetentionDtos.TargetResponse::targetKey)
+        .contains(
+            "notification.analytics_hourly",
+            "notification.fanout_outbox_sent",
+            "notification.fanout_outbox_dead",
+            "notification.dead_letter_requeue_requests",
+            "notification.digest_items_terminal",
+            "notification.email_notifications_terminal");
+  }
+
+  @Test
+  void planEmitsDryRunReadyStatusForContentVersions() {
+    var service = service(repository(), new PlatformRetentionProperties(true, true));
+
+    var plan = service.plan("content.note_versions", true, mock(HttpServletRequest.class));
+
+    assertThat(plan.targets()).hasSize(1);
+    assertThat(plan.targets().get(0).status()).isEqualTo(RetentionTargetStatus.DRY_RUN_READY);
+    assertThat(plan.targets().get(0).blockedByLegalHold()).isFalse();
+  }
+
+  @Test
   void activeAllPlatformHoldBlocksLegalHoldTargets() {
     PlatformLegalHoldRepository repository = repository();
     when(repository.findByStatusOrderByCreatedAtDesc(PlatformLegalHoldStatus.ACTIVE))
@@ -51,7 +138,8 @@ class PlatformRetentionGovernanceServiceTest {
     var plan = service.plan(null, true, mock(HttpServletRequest.class));
 
     assertThat(plan.dryRun()).isTrue();
-    assertThat(plan.targets()).anyMatch(t -> t.blockedByLegalHold() && t.activeHoldKeys().contains("case-all"));
+    assertThat(plan.targets())
+        .anyMatch(t -> t.blockedByLegalHold() && t.activeHoldKeys().contains("case-all"));
     assertThat(plan.targets()).allMatch(t -> t.purgeableCount() == 0);
   }
 
@@ -75,7 +163,8 @@ class PlatformRetentionGovernanceServiceTest {
     var plan = service.plan(null, true, mock(HttpServletRequest.class));
 
     assertThat(plan.targets())
-        .filteredOn(t -> t.targetKey().startsWith("content.") || t.targetKey().startsWith("search."))
+        .filteredOn(
+            t -> t.targetKey().startsWith("content.") || t.targetKey().startsWith("search."))
         .allMatch(PlatformRetentionDtos.PlanTargetResponse::blockedByLegalHold);
     assertThat(plan.targets())
         .filteredOn(t -> t.targetKey().startsWith("identity."))
@@ -145,7 +234,8 @@ class PlatformRetentionGovernanceServiceTest {
             null);
     when(repository.findById(hold.getId())).thenReturn(Optional.of(hold));
     when(repository.save(any(PlatformLegalHold.class))).thenAnswer(inv -> inv.getArgument(0));
-    when(repository.findByStatusOrderByCreatedAtDesc(PlatformLegalHoldStatus.ACTIVE)).thenReturn(List.of());
+    when(repository.findByStatusOrderByCreatedAtDesc(PlatformLegalHoldStatus.ACTIVE))
+        .thenReturn(List.of());
     AuditService auditService = mock(AuditService.class);
     var service =
         new PlatformRetentionGovernanceService(
@@ -178,7 +268,8 @@ class PlatformRetentionGovernanceServiceTest {
 
   private static PlatformLegalHoldRepository repository() {
     PlatformLegalHoldRepository repository = mock(PlatformLegalHoldRepository.class);
-    when(repository.findByStatusOrderByCreatedAtDesc(PlatformLegalHoldStatus.ACTIVE)).thenReturn(List.of());
+    when(repository.findByStatusOrderByCreatedAtDesc(PlatformLegalHoldStatus.ACTIVE))
+        .thenReturn(List.of());
     return repository;
   }
 }

@@ -42,8 +42,7 @@ public class ContentRetentionAdminAuthorizer {
           .verify(bearerToken(serviceAuthorization), REQUIRED_SCOPE);
     } catch (ServiceJwtValidationException e) {
       if (e.insufficientScope()) {
-        throw new ContentException(
-            HttpStatus.FORBIDDEN, "RETENTION_ACCESS_DENIED", e.getMessage());
+        throw new ContentException(HttpStatus.FORBIDDEN, "RETENTION_ACCESS_DENIED", e.getMessage());
       }
       throw new ContentException(HttpStatus.UNAUTHORIZED, e.errorCode(), e.getMessage());
     } catch (RuntimeException e) {

@@ -1,7 +1,8 @@
-package com.notebook.lumen.content.admin.retention;
+package com.notebook.lumen.notification.admin.platformretention;
 
-import com.notebook.lumen.content.admin.retention.ContentRetentionPlanDtos.ContentRetentionPlanResponse;
-import com.notebook.lumen.content.shared.exception.ContentException;
+import com.notebook.lumen.notification.admin.platformretention.NotificationPlatformRetentionDtos.NotificationPlatformRetentionPlanResponse;
+import com.notebook.lumen.notification.shared.exception.NotificationException;
+import com.notebook.lumen.notification.shared.security.InternalNotificationAuthorizer;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.EnumSet;
@@ -16,57 +17,59 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/internal/admin/retention/content")
-public class InternalContentRetentionController {
+@RequestMapping("/internal/admin/retention/notification")
+public class InternalNotificationPlatformRetentionController {
 
-  private final ContentRetentionAdminAuthorizer authorizer;
-  private final ContentRetentionPlanService planService;
+  private final InternalNotificationAuthorizer authorizer;
+  private final NotificationPlatformRetentionPlanService planService;
 
-  public InternalContentRetentionController(
-      ContentRetentionAdminAuthorizer authorizer, ContentRetentionPlanService planService) {
+  public InternalNotificationPlatformRetentionController(
+      InternalNotificationAuthorizer authorizer,
+      NotificationPlatformRetentionPlanService planService) {
     this.authorizer = authorizer;
     this.planService = planService;
   }
 
   @GetMapping(path = "/plan", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ContentRetentionPlanResponse plan(
-      @RequestHeader(value = ContentRetentionAdminAuthorizer.HEADER_NAME, required = false)
+  public NotificationPlatformRetentionPlanResponse plan(
+      @RequestHeader(value = InternalNotificationAuthorizer.HEADER_NAME, required = false)
           String serviceAuthorization,
       @RequestParam(name = "dryRun", defaultValue = "true") boolean dryRun,
       @RequestParam(name = "target", required = false) String target,
       @RequestParam(name = "legalHoldScopes", required = false) String legalHoldScopes,
       @RequestParam(name = "generatedAt", required = false) Instant generatedAt) {
-    authorizer.authorize(serviceAuthorization);
+    authorizer.authorize(
+        serviceAuthorization, InternalNotificationAuthorizer.ADMIN_RETENTION_READ_SCOPE);
     if (!dryRun) {
-      throw new ContentException(
+      throw new NotificationException(
           HttpStatus.BAD_REQUEST,
           "RETENTION_DRY_RUN_ONLY",
-          "Content retention plan endpoint supports dry-run only");
+          "Notification retention plan endpoint supports dry-run only");
     }
-    Optional<ContentRetentionTargetKey> targetFilter =
+    Optional<NotificationPlatformRetentionTargetKey> targetFilter =
         target == null || target.isBlank()
             ? Optional.empty()
-            : ContentRetentionTargetKey.fromKey(target)
+            : NotificationPlatformRetentionTargetKey.fromKey(target)
                 .or(
                     () -> {
-                      throw new ContentException(
+                      throw new NotificationException(
                           HttpStatus.BAD_REQUEST,
                           "RETENTION_TARGET_UNKNOWN",
                           "Unknown target: " + target);
                     });
-    Set<ContentRetentionLegalHoldScope> scopes = parseScopes(legalHoldScopes);
+    Set<NotificationPlatformRetentionLegalHoldScope> scopes = parseScopes(legalHoldScopes);
     return planService.buildPlan(targetFilter, scopes, Optional.ofNullable(generatedAt));
   }
 
-  private Set<ContentRetentionLegalHoldScope> parseScopes(String raw) {
+  private Set<NotificationPlatformRetentionLegalHoldScope> parseScopes(String raw) {
     if (raw == null || raw.isBlank()) return Set.of();
-    Set<ContentRetentionLegalHoldScope> parsed =
-        EnumSet.noneOf(ContentRetentionLegalHoldScope.class);
+    Set<NotificationPlatformRetentionLegalHoldScope> parsed =
+        EnumSet.noneOf(NotificationPlatformRetentionLegalHoldScope.class);
     for (String part : Arrays.asList(raw.split(","))) {
       String token = part.trim();
       if (token.isEmpty()) continue;
       String head = token.contains(":") ? token.substring(0, token.indexOf(':')) : token;
-      ContentRetentionLegalHoldScope.fromString(head).ifPresent(parsed::add);
+      NotificationPlatformRetentionLegalHoldScope.fromString(head).ifPresent(parsed::add);
     }
     return parsed;
   }

@@ -37,6 +37,12 @@ Foundation for **bounded, audited** deletion of notification subsystem rows that
 
 **Never** deleted by this worker: `PENDING`, `SENDING`, digest `PENDING`, in-app `user_notifications`, platform audit events, object storage.
 
+## Faz 102 platform retention dry-run counts (ayrı endpoint)
+
+Faz 102 platform-wide retention governance contract'ı için **ayrı** bir endpoint ekler: `GET /internal/admin/retention/notification/plan` (scope `internal:admin:retention:read`, audience `notification-service`). Bu, bu sayfadaki Faz 83 worker'ından ve `/internal/admin/notifications/retention/*` endpoint'lerinden bağımsızdır — worker schedule, purge limits, manuel run davranışı ve Faz 84 plan response'u **değişmez**. Platform endpoint'i aggregate-only, dry-run-only, legal-hold aware count görünürlüğü sağlar ve gateway `/admin/retention/platform/plan` tarafından identity registry planına merge edilir. Detay: [`platform-retention-governance.md`](platform-retention-governance.md) → "Faz 102 Notification-service Integration". Feature flag `NOTIFICATION_RETENTION_DRY_RUN_COUNTS_ENABLED` default `false`.
+
+**Faz 103 — RLS production runbook:** Bu Faz 102 platform endpoint'inin production'da RLS altında güvenle açılması (dedicated retention DB role, preflight SQL, smoke script, rollback, prod checklist) [`notification-retention-rls-production-runbook.md`](notification-retention-rls-production-runbook.md)'de tanımlanır. Operatör notu: yukarıdaki Faz 83 `/internal/admin/notifications/retention/*` worker endpoint'i ile bu Faz 102 `/internal/admin/retention/notification/plan` platform endpoint'i **ayrı**dır — runbook bölüm 2 farkı netleştirir. Faz 103 production kodu değiştirmez.
+
 ## Internal API
 
 - `GET /internal/admin/notifications/retention/plan?dryRun=true` — service JWT `internal:admin:notifications:retention:read`

@@ -20,7 +20,30 @@
       "Bash(./gradlew :api-gateway:test --tests \"AdminPlatformRetentionProxyServiceTest\" --tests \"AdminPlatformRetentionControllerTest\")",
       "Bash(./gradlew :content-service:spotlessApply :api-gateway:spotlessApply)",
       "Bash(./gradlew --stop)",
-      "Bash(./gradlew :content-service:spotlessCheck :api-gateway:spotlessCheck --no-daemon)"
+      "Bash(./gradlew :content-service:spotlessCheck :api-gateway:spotlessCheck --no-daemon)",
+      "Bash(./gradlew :identity-service:spotlessApply :api-gateway:spotlessApply)",
+      "Bash(./gradlew :identity-service:test --tests \"com.notebook.lumen.identity.admin.retention.PlatformRetentionGovernanceServiceTest\")",
+      "Bash(./gradlew :api-gateway:test --tests \"com.notebook.lumen.gateway.admin.retention.AdminPlatformRetentionProxyServiceTest\")",
+      "Bash(bash scripts/helm-template-check.sh)",
+      "Bash(./gradlew :identity-service:test --tests \"com.notebook.lumen.identity.admin.retention.*\")",
+      "Bash(./gradlew :content-service:test --tests \"com.notebook.lumen.content.admin.retention.ContentRetentionPlanServiceTest\")",
+      "Bash(chmod +x /mnt/c/Users/ADBERILGEN/Documents/project/notebook-platform/scripts/retention/content-retention-dry-run-smoke.sh)",
+      "Bash(bash -n /mnt/c/Users/ADBERILGEN/Documents/project/notebook-platform/scripts/retention/content-retention-dry-run-smoke.sh)",
+      "Bash(bash /mnt/c/Users/ADBERILGEN/Documents/project/notebook-platform/scripts/check-no-secrets.sh)",
+      "Bash(./gradlew :content-service:test --tests \"com.notebook.lumen.content.admin.retention.*\")",
+      "Bash(./gradlew spotlessApply -q)",
+      "Bash(./gradlew spotlessApply --no-daemon -q)",
+      "Bash(./gradlew :notification-service:test --tests \"com.notebook.lumen.notification.admin.platformretention.*\" -x spotlessJava -x spotlessCheck --no-daemon)",
+      "Bash(./gradlew :identity-service:test --tests \"*PlatformRetentionGovernanceServiceTest*\" :api-gateway:test --tests \"*AdminPlatformRetentionProxyServiceTest*\" -x spotlessJava -x spotlessCheck --no-daemon)",
+      "Bash(./gradlew :notification-service:properties --no-daemon -q)",
+      "Bash(./gradlew spotlessApply --no-daemon --no-build-cache --no-configuration-cache --rerun-tasks -q)",
+      "Bash(./gradlew spotlessCheck :notification-service:test :api-gateway:test :identity-service:test --tests \"com.notebook.lumen.notification.admin.platformretention.*\" --tests \"*AdminPlatformRetentionProxyServiceTest*\" --tests \"*PlatformRetentionGovernanceServiceTest*\" --no-daemon --no-build-cache --no-configuration-cache)",
+      "Bash(./gradlew :api-gateway:test --tests \"*AdminPlatformRetentionProxyServiceTest\" --tests \"*AdminPlatformRetentionControllerTest\" --no-daemon --no-build-cache --no-configuration-cache)",
+      "Bash(bash -n scripts/retention/notification-retention-dry-run-smoke.sh)",
+      "Bash(bash *)",
+      "Read(//tmp/**)",
+      "Bash(python3 -)",
+      "Bash(./gradlew :notification-service:test --tests \"*platformretention*\" --no-build-cache --no-configuration-cache)"
     ]
   }
 }
