@@ -3,6 +3,8 @@ package com.notebook.lumen.search.admin.retention;
 import java.sql.Timestamp;
 import java.time.Instant;
 import javax.sql.DataSource;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Propagation;
@@ -13,17 +15,19 @@ public class SearchRetentionCountRepository {
 
   private final JdbcTemplate jdbcTemplate;
 
-  public SearchRetentionCountRepository(DataSource dataSource) {
-    this.jdbcTemplate = new JdbcTemplate(dataSource);
+  public SearchRetentionCountRepository(
+      DataSource dataSource,
+      @Autowired(required = false)
+          @Qualifier(SearchRetentionJdbcTemplateConfig.RETENTION_JDBC_TEMPLATE_BEAN)
+          JdbcTemplate retentionJdbcTemplate) {
+    this.jdbcTemplate =
+        retentionJdbcTemplate != null ? retentionJdbcTemplate : new JdbcTemplate(dataSource);
   }
 
   @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
   public CountResult countArchivedDocumentsBefore(Instant cutoff, int cap) {
     return cappedCount(
-        "search_documents",
-        "archived_at IS NOT NULL AND archived_at < ?",
-        cutoff,
-        cap);
+        "search_documents", "archived_at IS NOT NULL AND archived_at < ?", cutoff, cap);
   }
 
   @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
@@ -38,8 +42,7 @@ public class SearchRetentionCountRepository {
           LIMIT ?
         ) AS bounded
         """;
-    Long result =
-        jdbcTemplate.queryForObject(sql, Long.class, Timestamp.from(cutoff), safeCap + 1);
+    Long result = jdbcTemplate.queryForObject(sql, Long.class, Timestamp.from(cutoff), safeCap + 1);
     long total = result == null ? 0 : result;
     boolean capped = total > safeCap;
     return new CountResult(capped ? safeCap : total, capped);

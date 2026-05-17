@@ -1,0 +1,18 @@
+# Faz 118 — OPTIONAL dev overlay (example only; no real credentials in Git).
+#
+# Use with secrets.existingSecret populated out-of-band for dev clusters.
+
+config:
+  scimProviderType: "generic"
+  scimDeltaProviderPocEnabled: "true"
+  scimDeltaDryRunOnly: "true"
+  scimDeltaRemoteFetchEnabled: "false"
+  scimDeltaRemoteBaseUrl: ""
+  scimDeltaRemoteMaxPageSize: "100"
+
+scimDeltaRemoteFetch:
+  bearerTokenFromSecret:
+    enabled: false
+    existingSecret: notebook-platform-dev-secrets
+    secretKey: scim-delta-remote-bearer-token
+    optional: true

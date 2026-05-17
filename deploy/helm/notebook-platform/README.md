@@ -56,6 +56,25 @@ helm upgrade --install notebook-platform deploy/helm/notebook-platform \
 Do not use `values-prod.example.yaml` as-is. Copy it to an untracked values file and wire real image
 tags, hosts and secret references.
 
+## Retention datasource (Faz 110 — ops template)
+
+Optional `retentionDatasource.<service>` blocks wire `*_RETENTION_DATASOURCE_*` env vars from
+`existingSecret` key references when `enabled: true`. **Default is disabled for all environments.**
+When enabled (Faz 111), retention count queries use a dedicated Hikari pool; normal `DB_*`
+credentials and user-facing paths are unchanged.
+
+- Values: `values.yaml` → `retentionDatasource`
+- Example: `examples/retention-datasource/README.md`
+- Ops handoff: `docs/retention-datasource-ops-handoff.md`
+
+## SCIM delta remote fetch (Faz 118 — sandbox wiring)
+
+Optional `scimDeltaRemoteFetch.bearerTokenFromSecret` injects `SCIM_DELTA_REMOTE_BEARER_TOKEN` on identity-service via `secretKeyRef`. **Default disabled.** Token never in `values.yaml` or ConfigMap.
+
+- Values: `values.yaml` → `scimDeltaRemoteFetch`
+- Examples: `examples/scim-delta-remote-fetch/` (okta / entra / generic)
+- Evidence: `scripts/scim/scim-delta-evidence-formats.md`
+
 ## Image References
 
 Each service supports tag-based and digest-based image references:

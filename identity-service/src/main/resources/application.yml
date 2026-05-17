@@ -223,6 +223,17 @@ identity:
     provider-supports-nested-groups: ${SCIM_PROVIDER_SUPPORTS_NESTED_GROUPS:false}
     provider-rate-limit-aware: ${SCIM_PROVIDER_RATE_LIMIT_AWARE:true}
     provider-max-page-size: ${SCIM_PROVIDER_MAX_PAGE_SIZE:100}
+    delta-provider-poc-enabled: ${SCIM_DELTA_PROVIDER_POC_ENABLED:false}
+    delta-dry-run-only: ${SCIM_DELTA_DRY_RUN_ONLY:true}
+    delta-remote-fetch-enabled: ${SCIM_DELTA_REMOTE_FETCH_ENABLED:false}
+    delta-http-timeout-ms: ${SCIM_DELTA_HTTP_TIMEOUT_MS:3000}
+    delta-max-retry-after-seconds: ${SCIM_DELTA_MAX_RETRY_AFTER_SECONDS:300}
+    delta-backoff-base-seconds: ${SCIM_DELTA_BACKOFF_BASE_SECONDS:30}
+    delta-remote-base-url: ${SCIM_DELTA_REMOTE_BASE_URL:}
+    delta-remote-token-secret-name: ${SCIM_DELTA_REMOTE_TOKEN_SECRET_NAME:}
+    delta-remote-token-secret-key: ${SCIM_DELTA_REMOTE_TOKEN_SECRET_KEY:}
+    delta-remote-bearer-token: ${SCIM_DELTA_REMOTE_BEARER_TOKEN:}
+    delta-remote-max-page-size: ${SCIM_DELTA_REMOTE_MAX_PAGE_SIZE:100}
   siem:
     push-enabled: ${SIEM_PUSH_ENABLED:false}
     provider: ${SIEM_PROVIDER:noop}

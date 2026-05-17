@@ -5,6 +5,7 @@ import com.notebook.lumen.notification.admin.deadletter.InternalDeadLetterAdminP
 import com.notebook.lumen.notification.admin.deadletter.NotificationDeadLetterProperties;
 import com.notebook.lumen.notification.admin.legalhold.InternalLegalHoldAdminProperties;
 import com.notebook.lumen.notification.admin.legalhold.NotificationLegalHoldProperties;
+import com.notebook.lumen.notification.admin.platformretention.NotificationPlatformRetentionDataSourceProperties;
 import com.notebook.lumen.notification.admin.platformretention.NotificationPlatformRetentionProperties;
 import com.notebook.lumen.notification.admin.retention.InternalRetentionAdminProperties;
 import com.notebook.lumen.notification.admin.retention.NotificationRetentionProperties;
@@ -29,7 +30,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
   NotificationRetentionProperties.class,
   InternalLegalHoldAdminProperties.class,
   NotificationLegalHoldProperties.class,
-  NotificationPlatformRetentionProperties.class
+  NotificationPlatformRetentionProperties.class,
+  NotificationPlatformRetentionDataSourceProperties.class
 })
 public class NotificationServiceApplication {
   public static void main(String[] args) {

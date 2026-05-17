@@ -89,6 +89,10 @@ Response'ta snippet, body, query text, `content_text`, indexed content yok. Smok
 - Faz 109: search domain satırı job summary + sanitized artifact (`retention-staging-smoke-evidence`).
 - Optional SQL: `check-search-retention-rls-readiness.sql` (manual `psql`).
 
+### Dedicated retention datasource (Faz 110)
+
+Helm `retentionDatasource.search` → `SEARCH_RETENTION_DATASOURCE_*` (Faz 111 dedicated pool when enabled). Staging E2E: [`staging-dedicated-retention-e2e-checklist.md`](../scripts/retention/staging-dedicated-retention-e2e-checklist.md). **Faz 113:** actuator `searchRetentionDataSourceHealth`. **Faz 114:** staging E2E evidence formats — [`retention-staging-e2e-evidence-formats.md`](../scripts/retention/retention-staging-e2e-evidence-formats.md). See [`retention-datasource-ops-handoff.md`](retention-datasource-ops-handoff.md).
+
 ## 13. Related Docs
 
 - [`platform-retention-governance.md`](platform-retention-governance.md) (Faz 106)

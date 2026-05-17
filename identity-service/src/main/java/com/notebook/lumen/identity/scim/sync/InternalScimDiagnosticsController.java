@@ -11,7 +11,12 @@ import java.util.List;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import com.notebook.lumen.identity.scim.sync.ScimSyncDiagnosticsDtos.DeltaReadinessResponse;
+import com.notebook.lumen.identity.scim.sync.ScimSyncDiagnosticsDtos.DryRunPocRequest;
+import com.notebook.lumen.identity.scim.sync.ScimSyncDiagnosticsDtos.DryRunPocResponse;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -24,14 +29,17 @@ public class InternalScimDiagnosticsController {
   private final InternalAdminStatusProperties statusProperties;
   private final AuditAdminAuthorizer authorizer;
   private final ScimSyncDiagnosticsService service;
+  private final ScimDeltaSyncPocService deltaPocService;
 
   public InternalScimDiagnosticsController(
       InternalAdminStatusProperties statusProperties,
       AuditAdminAuthorizer authorizer,
-      ScimSyncDiagnosticsService service) {
+      ScimSyncDiagnosticsService service,
+      ScimDeltaSyncPocService deltaPocService) {
     this.statusProperties = statusProperties;
     this.authorizer = authorizer;
     this.service = service;
+    this.deltaPocService = deltaPocService;
   }
 
   @GetMapping(path = "/compatibility/status", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -66,6 +74,25 @@ public class InternalScimDiagnosticsController {
           String serviceAuthorization) {
     authorize(serviceAuthorization);
     return service.checkpoints();
+  }
+
+  @GetMapping(path = "/delta/readiness", produces = MediaType.APPLICATION_JSON_VALUE)
+  public DeltaReadinessResponse deltaReadiness(
+      @RequestHeader(value = AuditAdminAuthorizer.HEADER_NAME, required = false)
+          String serviceAuthorization,
+      HttpServletRequest request) {
+    authorize(serviceAuthorization);
+    return deltaPocService.deltaReadiness(request);
+  }
+
+  @PostMapping(path = "/delta/dry-run", produces = MediaType.APPLICATION_JSON_VALUE)
+  public DryRunPocResponse deltaDryRun(
+      @RequestHeader(value = AuditAdminAuthorizer.HEADER_NAME, required = false)
+          String serviceAuthorization,
+      @RequestBody(required = false) DryRunPocRequest body,
+      HttpServletRequest request) {
+    authorize(serviceAuthorization);
+    return deltaPocService.executeDryRun(body, request);
   }
 
   private void authorize(String serviceAuthorization) {

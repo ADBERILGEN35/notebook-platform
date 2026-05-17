@@ -1,6 +1,7 @@
 package com.notebook.lumen.search;
 
 import com.notebook.lumen.search.admin.retention.SearchRetentionAdminProperties;
+import com.notebook.lumen.search.admin.retention.SearchRetentionDataSourceProperties;
 import com.notebook.lumen.search.admin.retention.SearchRetentionProperties;
 import com.notebook.lumen.search.shared.config.SearchProperties;
 import org.springframework.boot.SpringApplication;
@@ -12,7 +13,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableConfigurationProperties({
   SearchProperties.class,
   SearchRetentionProperties.class,
-  SearchRetentionAdminProperties.class
+  SearchRetentionAdminProperties.class,
+  SearchRetentionDataSourceProperties.class
 })
 @EnableScheduling
 public class SearchServiceApplication {

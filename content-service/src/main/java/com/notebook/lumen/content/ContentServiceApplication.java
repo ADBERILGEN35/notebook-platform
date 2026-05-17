@@ -2,6 +2,7 @@ package com.notebook.lumen.content;
 
 import com.notebook.lumen.content.admin.InternalAdminStatusProperties;
 import com.notebook.lumen.content.admin.retention.ContentRetentionAdminProperties;
+import com.notebook.lumen.content.admin.retention.ContentRetentionDataSourceProperties;
 import com.notebook.lumen.content.admin.retention.ContentRetentionProperties;
 import com.notebook.lumen.content.audit.AuditAdminProperties;
 import com.notebook.lumen.content.config.ContentProperties;
@@ -17,7 +18,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
   AuditAdminProperties.class,
   InternalAdminStatusProperties.class,
   ContentRetentionProperties.class,
-  ContentRetentionAdminProperties.class
+  ContentRetentionAdminProperties.class,
+  ContentRetentionDataSourceProperties.class
 })
 public class ContentServiceApplication {
 

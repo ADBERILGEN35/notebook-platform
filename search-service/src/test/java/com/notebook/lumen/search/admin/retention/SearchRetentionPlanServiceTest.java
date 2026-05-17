@@ -106,8 +106,7 @@ class SearchRetentionPlanServiceTest {
     return new SearchRetentionPlanService(props, countRepository, auditService, meterRegistry);
   }
 
-  private static SearchRetentionTargetView byKey(
-      SearchRetentionPlanResponse response, String key) {
+  private static SearchRetentionTargetView byKey(SearchRetentionPlanResponse response, String key) {
     return response.targets().stream()
         .filter(t -> key.equals(t.targetKey()))
         .findFirst()

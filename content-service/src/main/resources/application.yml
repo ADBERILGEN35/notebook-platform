@@ -135,6 +135,11 @@ audit:
     allowed-scopes: ${AUDIT_ADMIN_SERVICE_JWT_ALLOWED_SCOPES:internal:audit:read}
 
 content.retention:
+  datasource:
+    enabled: ${CONTENT_RETENTION_DATASOURCE_ENABLED:false}
+    url: ${CONTENT_RETENTION_DATASOURCE_URL:}
+    username: ${CONTENT_RETENTION_DATASOURCE_USERNAME:}
+    password: ${CONTENT_RETENTION_DATASOURCE_PASSWORD:}
   dry-run-enabled: ${CONTENT_RETENTION_DRY_RUN_ENABLED:false}
   max-count-query-limit: ${CONTENT_RETENTION_MAX_COUNT_QUERY_LIMIT:100000}
   note-version-retention-days: ${CONTENT_RETENTION_NOTE_VERSION_RETENTION_DAYS:365}

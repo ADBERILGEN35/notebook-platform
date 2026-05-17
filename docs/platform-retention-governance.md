@@ -449,6 +449,54 @@ Observability CI: [`validate-retention-observability.sh`](../scripts/retention/v
 
 Orchestrator: [`run-retention-staging-smoke.sh`](../scripts/retention/run-retention-staging-smoke.sh) + [`write-retention-staging-report.py`](../scripts/retention/write-retention-staging-report.py). Secret yoksa tüm domainler `skipped`, overall message `skipped: missing staging secrets`. Ham API body ve token artifact/log'a yazılmaz.
 
+## Faz 110 Retention datasource (Helm ops template)
+
+Dedicated retention DB connection for cross-workspace aggregate counts. **Faz 111:** retention count repositories optionally use dedicated Hikari pool when `*_RETENTION_DATASOURCE_ENABLED=true`; default off.
+
+| Kaynak | İçerik |
+|--------|--------|
+| Helm values | `retentionDatasource.content\|notification\|workspace\|search` — `enabled`, `existingSecret`, `urlKey`, `usernameKey`, `passwordKey` |
+| Ops handoff | [`retention-datasource-ops-handoff.md`](retention-datasource-ops-handoff.md) — DBA role örnekleri (migration değil), privilege listesi, BYPASSRLS matrisi, preflight/smoke sırası, rollback |
+| Example | [`deploy/helm/notebook-platform/examples/retention-datasource/README.md`](../deploy/helm/notebook-platform/examples/retention-datasource/README.md) |
+
+Dry-run/integration flag'lerinden ayrı tutulur; prod default hepsi `false`.
+
+## Faz 112 Staging dedicated datasource rollout
+
+| Path | Staging GitOps |
+|------|----------------|
+| Conservative default | `retentionDatasource.*.enabled: false` in [`staging/values.yaml`](../deploy/gitops/environments/staging/values.yaml) |
+| Enable overlay (example only) | [`retention-datasource-enable.overlay.example.yaml`](../deploy/gitops/environments/staging/retention-datasource-enable.overlay.example.yaml) — requires secret keys before merge |
+
+E2E: [`scripts/retention/staging-dedicated-retention-e2e-checklist.md`](../scripts/retention/staging-dedicated-retention-e2e-checklist.md). Smoke evidence: Faz 109 `retention-staging-smoke-evidence` artifact + job summary.
+
+## Faz 113 Retention datasource health (service-local)
+
+| Servis | Actuator component | Safe fields |
+|--------|-------------------|-------------|
+| content-service | `contentRetentionDataSourceHealth` | `lastCheckStatus`, `warningCodes`, booleans — no JDBC/secrets |
+| notification-service | `notificationRetentionDataSourceHealth` | same |
+| workspace-service | `workspaceRetentionDataSourceHealth` | same |
+| search-service | `searchRetentionDataSourceHealth` | same |
+
+- **Not in gateway plan:** platform retention `serviceSummaries` unchanged; operators use per-service `/actuator/health` (authorized) or cluster tooling.
+- **Default prod/staging Git:** `enabled=false` → `DISABLED` + `RETENTION_DATASOURCE_DISABLED` (component UP).
+- **After dedicated enable:** connectivity via `Connection.isValid(2)`; failures are symbolic only.
+
+Spec: [`phases/phase-113.md`](phases/phase-113.md).
+
+## Faz 114 Staging dedicated datasource evidence closure
+
+| Kaynak | İçerik |
+|--------|--------|
+| E2E + green gates | [`staging-dedicated-retention-e2e-checklist.md`](../scripts/retention/staging-dedicated-retention-e2e-checklist.md) |
+| Change request checklist | [`staging-retention-change-request-evidence-checklist.md`](../scripts/retention/staging-retention-change-request-evidence-checklist.md) |
+| Evidence formats | [`retention-staging-e2e-evidence-formats.md`](../scripts/retention/retention-staging-e2e-evidence-formats.md) |
+
+Evidence is **sanitized summary only** (actuator `lastCheckStatus`, smoke domain status, PASS/FAIL preflight, Grafana panel notes). Attach CI artifact `retention-staging-smoke-evidence` after `workflow_dispatch` + `run_staging_smoke=true`. No JDBC, tokens, raw SQL, or API bodies in tickets.
+
+Spec: [`phases/phase-114.md`](phases/phase-114.md).
+
 ### Smoke env
 
 - `API_BASE_URL`, `ADMIN_ACCESS_TOKEN`

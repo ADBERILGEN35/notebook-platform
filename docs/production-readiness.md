@@ -231,3 +231,71 @@
 - Domain status: `passed`, `expected-gap`, `readiness-gap`, `privacy-failure`, `shape-failure`, `skipped`. Missing secrets → overall `skipped`, message `skipped: missing staging secrets`, exit 0.
 - Artifact validation step (`validate-retention-staging-artifact.sh`): `json.tool` + forbidden token/body grep; no `ADMIN_ACCESS_TOKEN`, Bearer, raw JSON bodies, or PII field names.
 - `retention-smoke-fixtures` unchanged (required on PR/main); staging job still opt-in only.
+
+## Faz 110 readiness checks (retention datasource ops template)
+
+- Helm `retentionDatasource.<service>.enabled` defaults **`false`** (prod/dev/staging). No JDBC passwords in chart values or GitOps.
+- **Faz 111 runtime binding:** When `*_RETENTION_DATASOURCE_ENABLED=true` with complete URL/username/password, retention count repositories use dedicated Hikari pool; `enabled=false` (default) keeps primary runtime `DataSource`. Incomplete config fails fast at startup (secret values not logged).
+- DBA handoff (roles, SELECT-only, BYPASSRLS matrix, preflight/smoke order, rollback): [`retention-datasource-ops-handoff.md`](retention-datasource-ops-handoff.md).
+- Checklist before production enable:
+  - [ ] Dedicated retention role created per service (or documented shared strategy) — **not** via Flyway in this repo
+  - [ ] ExternalSecret / `existingSecret` keys for `urlKey`, `usernameKey`, `passwordKey` per service
+  - [ ] `retentionDatasource.<service>.enabled: true` only in target env after secrets exist
+  - [ ] Preflight SQL (content → notification → workspace → search) passes
+  - [ ] Gateway smoke `EXPECT_*_RETENTION_READY=true` exit 0
+  - [ ] Dry-run + integration flags enabled only after above
+  - [ ] Rollback plan: datasource disabled → integration false → dry-run false
+- Helm example: [`deploy/helm/notebook-platform/examples/retention-datasource/README.md`](../deploy/helm/notebook-platform/examples/retention-datasource/README.md).
+
+## Faz 112 readiness checks (staging dedicated datasource E2E)
+
+- **Staging active values:** `deploy/gitops/environments/staging/values.yaml` — `retentionDatasource.*.enabled: false` (conservative default). Workspace/search dry-run integration flags aligned with content/notification for gateway smoke.
+- **Enable overlay (not applied without secrets):** `retention-datasource-enable.overlay.example.yaml` — merge only after ExternalSecret keys in `notebook-platform-secrets`.
+- **E2E checklist:** [`scripts/retention/staging-dedicated-retention-e2e-checklist.md`](../scripts/retention/staging-dedicated-retention-e2e-checklist.md) — Helm render, preflight SQL, pod env, gateway smoke, Faz 109 artifact, `serviceSummaries`, Grafana, rollback.
+- **CI:** `Retention Readiness` workflow `workflow_dispatch` + `run_staging_smoke=true` → artifact `retention-staging-smoke-evidence` (requires `RETENTION_STAGING_*` repo secrets).
+- **Production:** no `enabled: true` in prod GitOps; no credentials in Git.
+
+## Faz 113 readiness checks (retention datasource health)
+
+- **Mechanism:** Spring Boot Actuator `HealthIndicator` per service (`contentRetentionDataSourceHealth`, `notificationRetentionDataSourceHealth`, `workspaceRetentionDataSourceHealth`, `searchRetentionDataSourceHealth`). No new internal admin HTTP API; gateway plan contract unchanged.
+- **Default (`enabled=false`):** `lastCheckStatus=DISABLED`, `fallbackToPrimary=true`, warning `RETENTION_DATASOURCE_DISABLED`, component health **UP**.
+- **Dedicated enabled + secrets:** expect `lastCheckStatus=UP` and `usingDedicatedDatasource=true` after overlay; connection failure → `DOWN` + `RETENTION_DATASOURCE_CONNECTION_FAILED` only (no JDBC/exception text in JSON).
+- **Fail-fast unchanged:** `enabled=true` without url/username/password → pod does not start (Faz 111).
+- **Privacy:** health output must not contain URL, credentials, host, DB name, raw SQL errors, or retention row content.
+- **Staging E2E:** optional actuator step in [`staging-dedicated-retention-e2e-checklist.md`](../scripts/retention/staging-dedicated-retention-e2e-checklist.md).
+- Ops reference: [`retention-datasource-ops-handoff.md`](retention-datasource-ops-handoff.md) Faz 113 section.
+
+## Faz 114 readiness checks (staging E2E evidence closure)
+
+- **Scope:** runbook/evidence only — no backend/frontend code or production toggle changes.
+- **Green staging rollout:** documented in [`staging-dedicated-retention-e2e-checklist.md`](../scripts/retention/staging-dedicated-retention-e2e-checklist.md) (preflight pass, actuator UP ×4, smoke passed ×4, validated artifact, metrics reviewed, rollback drill).
+- **Change request bundle:** [`staging-retention-change-request-evidence-checklist.md`](../scripts/retention/staging-retention-change-request-evidence-checklist.md); formats in [`retention-staging-e2e-evidence-formats.md`](../scripts/retention/retention-staging-e2e-evidence-formats.md).
+- **Template:** `bash scripts/retention/generate-retention-e2e-evidence-template.sh` (no secrets in output).
+- **Live staging:** not executed in repo CI without `RETENTION_STAGING_*` secrets; fixture + skip path remains valid.
+
+## Faz 115 readiness checks (SCIM delta POC)
+
+- **Defaults:** `SCIM_DELTA_PROVIDER_POC_ENABLED=false`, `SCIM_DELTA_DRY_RUN_ONLY=true`, `SCIM_PROVIDER_TYPE=generic`.
+- **No production scheduler** or remote IdP fetch; dry-run records diagnostic `scim_sync_runs` only with `deprovisionedCount=0`.
+- **Diagnostics:** `GET /admin/identity/scim/delta/readiness`; **POC dry-run:** `POST /admin/identity/scim/delta/dry-run` (identity POC flag required).
+- **Safety:** `SCIM_DELTA_MISSING_USER_IGNORED` in warnings; no raw SCIM payload or bearer token in responses.
+- **UI:** `FRONTEND_SCIM_DELTA_PROVIDER_POC_UI_ENABLED=false` (requires compatibility diagnostics flag).
+- Docs: [`scim-sync-diagnostics.md`](scim-sync-diagnostics.md), [`scim-provider-compatibility.md`](scim-provider-compatibility.md), [`phase-115.md`](phases/phase-115.md).
+
+## Faz 116 readiness checks (SCIM delta rate-limit)
+
+- **Remote fetch default off:** `SCIM_DELTA_REMOTE_FETCH_ENABLED=false` — diagnostic simulation only via dry-run request fields.
+- **Retry-After:** parsed to bounded seconds; capped at `SCIM_DELTA_MAX_RETRY_AFTER_SECONDS`; raw header never returned.
+- **Error classes:** symbolic only in API (`RATE_LIMITED`, `PROVIDER_UNAVAILABLE`, etc.).
+- **No automatic retry loop** in this phase; `nextRecommendedAttemptAt` is advisory.
+- **No scheduler, no IdP mutation, no deprovision from missing delta.**
+- Spec: [`phase-116.md`](phases/phase-116.md).
+
+## Faz 118 readiness checks (SCIM delta secret wiring + sandbox evidence)
+
+- **Remote fetch default off:** production and chart defaults keep `SCIM_DELTA_REMOTE_FETCH_ENABLED=false`.
+- **Secret wiring:** `SCIM_DELTA_REMOTE_BEARER_TOKEN` via Helm `scimDeltaRemoteFetch.bearerTokenFromSecret` + `secretKeyRef`; no token in ConfigMap or GitOps values.
+- **Example overlays only:** Okta/Entra/generic under `deploy/helm/notebook-platform/examples/scim-delta-remote-fetch/`; staging/dev GitOps examples have placeholders (`<sandbox-host>`), no credentials.
+- **Evidence:** `scripts/scim/scim-delta-evidence-formats.md`, `generate-scim-delta-evidence-template.sh`, `scim-delta-remote-fetch-smoke.sh` (sanitized JSON; privacy violation = highest-priority failure).
+- **No scheduler, no multi-page loop, no IdP mutation, no deprovision from missing delta.**
+- Spec: [`phase-118.md`](phases/phase-118.md).

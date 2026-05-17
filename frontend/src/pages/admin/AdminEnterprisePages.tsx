@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import {
   isEnterpriseAdminWriteEnabled,
   isScimCompatibilityDiagnosticsUiEnabled,
+  isScimDeltaProviderPocUiEnabled,
 } from '../../shared/config/admin-feature-flags'
 import { PageHeader } from '../../shared/components/PageHeader'
 import { Card } from '../../shared/components/Card'
@@ -15,8 +16,10 @@ import { useEnterpriseStatus } from '../../features/admin/enterprise/use-enterpr
 import type { EnterpriseStatusResponse, EnterpriseWarning, WarningSeverity } from '../../features/admin/enterprise/enterprise-schema'
 import {
   fetchScimCompatibilityStatus,
+  fetchScimDeltaReadiness,
   fetchScimSyncRuns,
   type ScimCompatibilityStatus,
+  type ScimDeltaReadiness,
   type ScimSyncRunPage,
 } from '../../features/admin/enterprise/scim-diagnostics-api'
 import { isPwaEnabled } from '../../shared/config/offline-feature-flags'
@@ -142,18 +145,68 @@ function readinessScore(warnings: EnterpriseWarning[]): number {
   return Math.max(0, Math.min(100, score))
 }
 
+function ScimDeltaReadinessCard({
+  readiness,
+  error,
+}: {
+  readiness?: ScimDeltaReadiness
+  error?: unknown
+}) {
+  if (error) {
+    return (
+      <p className="mt-2 text-[11px] text-amber-700">Delta readiness unavailable or permission denied.</p>
+    )
+  }
+  if (!readiness) return null
+  return (
+    <div className="mt-3 space-y-2 border-t border-slate-200 pt-3">
+      <p className="font-medium text-slate-800">Provider delta readiness (POC)</p>
+      <div className="grid grid-cols-2 gap-1 text-[11px] text-slate-600">
+        <span>POC enabled: {readiness.deltaPocEnabled ? 'yes' : 'no'}</span>
+        <span>Dry-run only: {readiness.dryRunOnly ? 'yes' : 'no'}</span>
+        <span>Strategy: {readiness.selectedStrategy}</span>
+        <span>Source: {readiness.deltaSource}</span>
+        <span>Filtering: {readiness.supportsFiltering ? 'yes' : 'no'}</span>
+        <span>Pagination: {readiness.supportsPagination ? 'yes' : 'no'}</span>
+        <span>Patch: {readiness.supportsPatch ? 'yes' : 'no'}</span>
+        <span>Retry-After: {readiness.supportsRetryAfter ? 'yes' : 'no'}</span>
+        <span>Capability aligned: {readiness.capabilityAligned ? 'yes' : 'no'}</span>
+        <span>Remote fetch: {readiness.remoteFetchEnabled ? 'enabled' : 'disabled'}</span>
+        <span>Remote configured: {readiness.remoteFetchConfigured ? 'yes' : 'no'}</span>
+        <span>Remote attempted: {readiness.remoteFetchAttempted ? 'yes' : 'no'}</span>
+        <span>Fetched count: {readiness.fetchedResourceCount}</span>
+        <span>Next cursor: {readiness.nextCursorPresent ? 'present' : 'none'}</span>
+        <span>HTTP timeout: {readiness.httpTimeoutMs}ms</span>
+        <span>Backoff base: {readiness.backoffBaseSeconds}s</span>
+        <span>Provider error: {readiness.providerErrorClass}</span>
+        <span>Retry-After observed: {readiness.retryAfterObserved ? 'yes' : 'no'}</span>
+        <span>Retry-After seconds: {readiness.retryAfterSeconds ?? 'n/a'}</span>
+        <span>Last dry-run: {readiness.lastDryRunStatus}</span>
+      </div>
+      <p className="text-[11px] text-slate-600">{readiness.deprovisionSemantics}</p>
+      {readiness.warnings.length ? (
+        <p className="text-[11px] text-amber-700">Warnings: {readiness.warnings.join(', ')}</p>
+      ) : null}
+    </div>
+  )
+}
+
 function EnterpriseContent({
   data,
   mode,
   scimDiagnostics,
   scimRuns,
+  scimDeltaReadiness,
   scimDiagnosticsError,
+  scimDeltaReadinessError,
 }: {
   data: EnterpriseStatusResponse
   mode: 'overview' | 'security' | 'integrations'
   scimDiagnostics?: ScimCompatibilityStatus
   scimRuns?: ScimSyncRunPage
+  scimDeltaReadiness?: ScimDeltaReadiness
   scimDiagnosticsError?: unknown
+  scimDeltaReadinessError?: unknown
 }) {
   const { features, warnings } = data
   const w = warnings
@@ -303,6 +356,7 @@ function EnterpriseContent({
             ) : scimDiagnosticsError ? (
               <p className="mt-2 text-[11px] text-amber-700">SCIM diagnostics unavailable or permission denied.</p>
             ) : null}
+            <ScimDeltaReadinessCard readiness={scimDeltaReadiness} error={scimDeltaReadinessError} />
           </FeatureCard>
         ) : null}
 
@@ -512,6 +566,7 @@ function EnterpriseContent({
 function EnterprisePageShell({ mode }: { mode: 'overview' | 'security' | 'integrations' }) {
   const q = useEnterpriseStatus()
   const scimDiagnosticsEnabled = isScimCompatibilityDiagnosticsUiEnabled()
+  const scimDeltaPocEnabled = isScimDeltaProviderPocUiEnabled()
   const scimDiagnosticsQuery = useQuery({
     queryKey: ['admin', 'scim-compatibility'],
     queryFn: fetchScimCompatibilityStatus,
@@ -522,6 +577,12 @@ function EnterprisePageShell({ mode }: { mode: 'overview' | 'security' | 'integr
     queryKey: ['admin', 'scim-sync-runs'],
     queryFn: fetchScimSyncRuns,
     enabled: scimDiagnosticsEnabled && mode === 'security',
+    retry: false,
+  })
+  const scimDeltaReadinessQuery = useQuery({
+    queryKey: ['admin', 'scim-delta-readiness'],
+    queryFn: fetchScimDeltaReadiness,
+    enabled: scimDeltaPocEnabled && mode === 'security',
     retry: false,
   })
   const err = q.error instanceof ApiError ? q.error : null
@@ -589,7 +650,9 @@ function EnterprisePageShell({ mode }: { mode: 'overview' | 'security' | 'integr
           mode={mode}
           scimDiagnostics={scimDiagnosticsQuery.data}
           scimRuns={scimRunsQuery.data}
+          scimDeltaReadiness={scimDeltaReadinessQuery.data}
           scimDiagnosticsError={scimDiagnosticsQuery.error ?? scimRunsQuery.error}
+          scimDeltaReadinessError={scimDeltaReadinessQuery.error}
         />
       ) : null}
     </div>

@@ -19,6 +19,9 @@ spec:
         app.kubernetes.io/part-of: notebook-platform
       annotations:
         {{- include "notebook-platform.podAnnotations" . | nindent 8 }}
+        {{- if .Values.scimDeltaRemoteFetch.bearerTokenFromSecret.enabled }}
+        notebook.platform/scim-delta-remote-bearer-secret: {{ include "notebook-platform.scimDeltaRemoteSecretName" . | quote }}
+        {{- end }}
     spec:
       serviceAccountName: {{ include "notebook-platform.serviceAccountName" . }}
       securityContext:
@@ -69,6 +72,7 @@ spec:
                   name: {{ include "notebook-platform.secretName" . }}
                   key: scim-bearer-token
                   optional: true
+            {{- include "notebook-platform.scimDeltaRemoteBearerEnv" . | nindent 12 }}
             - name: SIEM_BEARER_TOKEN
               valueFrom:
                 secretKeyRef:

@@ -149,8 +149,7 @@ public class WorkspaceRetentionPlanService {
               "warningCode",
               warningCode));
       meterRegistry
-          .counter(
-              "workspace_retention_dry_run_total", "target", target.key(), "result", "error")
+          .counter("workspace_retention_dry_run_total", "target", target.key(), "result", "error")
           .increment();
       targetWarnings.add(warningCode);
       return new WorkspaceRetentionTargetView(

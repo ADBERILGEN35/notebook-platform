@@ -117,6 +117,90 @@ app.kubernetes.io/component: {{ .component }}
   readOnly: true
 {{- end -}}
 
+{{- define "notebook-platform.retentionDatasourceSecretName" -}}
+{{- $cfg := .cfg -}}
+{{- $root := .root -}}
+{{- if $cfg.existingSecret -}}
+{{- $cfg.existingSecret -}}
+{{- else -}}
+{{- include "notebook-platform.secretName" $root -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Optional retention DB env (Faz 110). When enabled=false, only *_RETENTION_DATASOURCE_ENABLED=false
+is set — no secret refs, normal runtime datasource unchanged.
+*/}}
+{{- define "notebook-platform.retentionDatasourceEnv" -}}
+{{- $root := .root -}}
+{{- $serviceKey := .serviceKey -}}
+{{- $envPrefix := .envPrefix -}}
+{{- $cfg := index $root.Values.retentionDatasource $serviceKey -}}
+- name: {{ $envPrefix }}_RETENTION_DATASOURCE_ENABLED
+  value: {{ ternary "true" "false" $cfg.enabled | quote }}
+{{- if $cfg.enabled }}
+- name: {{ $envPrefix }}_RETENTION_DATASOURCE_URL
+  valueFrom:
+    secretKeyRef:
+      name: {{ include "notebook-platform.retentionDatasourceSecretName" (dict "root" $root "cfg" $cfg) | quote }}
+      key: {{ required (printf "retentionDatasource.%s.urlKey is required when enabled" $serviceKey) $cfg.urlKey | quote }}
+      optional: false
+- name: {{ $envPrefix }}_RETENTION_DATASOURCE_USERNAME
+  valueFrom:
+    secretKeyRef:
+      name: {{ include "notebook-platform.retentionDatasourceSecretName" (dict "root" $root "cfg" $cfg) | quote }}
+      key: {{ required (printf "retentionDatasource.%s.usernameKey is required when enabled" $serviceKey) $cfg.usernameKey | quote }}
+      optional: false
+- name: {{ $envPrefix }}_RETENTION_DATASOURCE_PASSWORD
+  valueFrom:
+    secretKeyRef:
+      name: {{ include "notebook-platform.retentionDatasourceSecretName" (dict "root" $root "cfg" $cfg) | quote }}
+      key: {{ required (printf "retentionDatasource.%s.passwordKey is required when enabled" $serviceKey) $cfg.passwordKey | quote }}
+      optional: false
+{{- end }}
+{{- end -}}
+
+{{- define "notebook-platform.scimDeltaRemoteSecretName" -}}
+{{- $cfg := .Values.scimDeltaRemoteFetch.bearerTokenFromSecret -}}
+{{- if $cfg.existingSecret -}}
+{{- $cfg.existingSecret -}}
+{{- else -}}
+{{- include "notebook-platform.secretName" . -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+SCIM delta remote bearer (Faz 118). Injected only when bearerTokenFromSecret.enabled=true.
+Never place token literals in ConfigMap or values.yaml.
+*/}}
+{{- define "notebook-platform.scimDeltaRemoteBearerEnv" -}}
+{{- $cfg := .Values.scimDeltaRemoteFetch.bearerTokenFromSecret -}}
+{{- if $cfg.enabled -}}
+- name: SCIM_DELTA_REMOTE_BEARER_TOKEN
+  valueFrom:
+    secretKeyRef:
+      name: {{ include "notebook-platform.scimDeltaRemoteSecretName" . | quote }}
+      key: {{ required "scimDeltaRemoteFetch.bearerTokenFromSecret.secretKey is required when enabled" $cfg.secretKey | quote }}
+      optional: {{ ternary "true" "false" ($cfg.optional | default true) }}
+{{- end -}}
+{{- end -}}
+
+{{- define "notebook-platform.scimDeltaRemoteTokenSecretNameConfig" -}}
+{{- if .Values.scimDeltaRemoteFetch.bearerTokenFromSecret.enabled -}}
+{{- include "notebook-platform.scimDeltaRemoteSecretName" . -}}
+{{- else -}}
+{{- .Values.config.scimDeltaRemoteTokenSecretName -}}
+{{- end -}}
+{{- end -}}
+
+{{- define "notebook-platform.scimDeltaRemoteTokenSecretKeyConfig" -}}
+{{- if .Values.scimDeltaRemoteFetch.bearerTokenFromSecret.enabled -}}
+{{- .Values.scimDeltaRemoteFetch.bearerTokenFromSecret.secretKey -}}
+{{- else -}}
+{{- .Values.config.scimDeltaRemoteTokenSecretKey -}}
+{{- end -}}
+{{- end -}}
+
 {{- define "notebook-platform.otelSecretEnv" -}}
 - name: OTEL_EXPORTER_OTLP_HEADERS
   valueFrom:

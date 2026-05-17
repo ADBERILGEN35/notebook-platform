@@ -277,3 +277,11 @@ autoscaling:
     minReplicas: 2
     maxReplicas: 5
     targetCPUUtilizationPercentage: 70
+
+# Faz 110: retentionDatasource MUST stay disabled in prod until DBA + future runtime binding.
+# Never commit credentials. See docs/retention-datasource-ops-handoff.md
+# retentionDatasource:
+#   content: { enabled: false }
+#   notification: { enabled: false }
+#   workspace: { enabled: false }
+#   search: { enabled: false }

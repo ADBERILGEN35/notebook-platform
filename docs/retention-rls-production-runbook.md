@@ -164,6 +164,15 @@ Exit codes: `0` ok / expected gap; `2` readiness; `3` privacy; `4` shape. Ham re
 - **Faz 109 evidence:** job summary tablosu + artifact `retention-staging-smoke-evidence` (sanitized JSON/Markdown). Content satırı status: `passed` / `expected-gap` / `readiness-gap` / `privacy-failure` / `shape-failure` / `skipped`.
 - Optional SQL preflight: `check-retention-rls-readiness.sql` (manual `psql`, not in CI).
 
+### Dedicated retention datasource (Faz 110)
+
+- Helm ops template: `retentionDatasource.content` → env `CONTENT_RETENTION_DATASOURCE_*` (default **disabled**).
+- **Faz 111 runtime binding:** `CONTENT_RETENTION_DATASOURCE_ENABLED=true` + complete env switches retention count SQL to dedicated pool; default `false` uses `DB_RUNTIME_*`. Startup fails if enabled but config incomplete.
+- **Faz 112 staging:** overlay + E2E checklist — [`staging-dedicated-retention-e2e-checklist.md`](../scripts/retention/staging-dedicated-retention-e2e-checklist.md); staging values keep datasource disabled until ExternalSecret keys exist.
+- **Faz 113 health:** Actuator component `contentRetentionDataSourceHealth` — safe `lastCheckStatus` / `warningCodes` only (no JDBC/secrets). See ops handoff Faz 113 section.
+- **Faz 114 evidence:** Staging enable CR bundle — [`staging-retention-change-request-evidence-checklist.md`](../scripts/retention/staging-retention-change-request-evidence-checklist.md); green gates in [`staging-dedicated-retention-e2e-checklist.md`](../scripts/retention/staging-dedicated-retention-e2e-checklist.md).
+- Ops handoff (DBA roles, secrets, preflight/smoke order, rollback): [`retention-datasource-ops-handoff.md`](retention-datasource-ops-handoff.md).
+
 ## 10. Rollback / Disable
 
 Sorun durumunda hızlı geri dönüş GitOps üzerinden:

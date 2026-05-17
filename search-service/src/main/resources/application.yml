@@ -101,6 +101,11 @@ search:
       clock-skew-seconds: ${TRUSTED_SERVICE_WORKSPACE_CLIENT_CLOCK_SKEW_SECONDS:5}
       allowed-scopes: ${TRUSTED_SERVICE_WORKSPACE_CLIENT_ALLOWED_SCOPES:internal:search:permission:write}
   retention:
+    datasource:
+      enabled: ${SEARCH_RETENTION_DATASOURCE_ENABLED:false}
+      url: ${SEARCH_RETENTION_DATASOURCE_URL:}
+      username: ${SEARCH_RETENTION_DATASOURCE_USERNAME:}
+      password: ${SEARCH_RETENTION_DATASOURCE_PASSWORD:}
     dry-run-counts-enabled: ${SEARCH_RETENTION_DRY_RUN_COUNTS_ENABLED:false}
     max-count-query-limit: ${SEARCH_RETENTION_MAX_COUNT_QUERY_LIMIT:100000}
     stale-document-retention-days: ${SEARCH_RETENTION_STALE_DOCUMENT_RETENTION_DAYS:90}

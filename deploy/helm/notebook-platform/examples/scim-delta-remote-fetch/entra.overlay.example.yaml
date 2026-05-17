@@ -1,0 +1,16 @@
+# EXAMPLE ONLY — Microsoft Entra ID (Azure AD) sandbox SCIM delta remote fetch (Faz 118).
+
+config:
+  scimProviderType: "azure-ad"
+  scimDeltaProviderPocEnabled: "true"
+  scimDeltaDryRunOnly: "true"
+  scimDeltaRemoteFetchEnabled: "true"
+  scimDeltaRemoteBaseUrl: "https://<tenant-host>/scim/v2"
+  scimDeltaRemoteMaxPageSize: "100"
+
+scimDeltaRemoteFetch:
+  bearerTokenFromSecret:
+    enabled: true
+    existingSecret: ""
+    secretKey: "scim-delta-remote-bearer-token"
+    optional: true

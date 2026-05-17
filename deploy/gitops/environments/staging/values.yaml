@@ -28,6 +28,10 @@ config:
   contentRetentionIntegrationEnabled: "true"
   notificationRetentionDryRunCountsEnabled: "true"
   notificationRetentionIntegrationEnabled: "true"
+  workspaceRetentionDryRunCountsEnabled: "true"
+  workspaceRetentionIntegrationEnabled: "true"
+  searchRetentionDryRunCountsEnabled: "true"
+  searchRetentionIntegrationEnabled: "true"
   gatewayAdminAllowedEmails: "admin.staging@example.com"
   adminRequireMfa: "false"
   gatewayAdminMfaMode: "warn"
@@ -257,3 +261,32 @@ serviceMonitor:
 
 autoscaling:
   enabled: false
+
+# Faz 112: dedicated retention datasource — conservative default (enabled=false).
+# Enable only after ExternalSecret keys exist; merge retention-datasource-enable.overlay.example.yaml
+# See scripts/retention/staging-dedicated-retention-e2e-checklist.md
+retentionDatasource:
+  content:
+    enabled: false
+    existingSecret: ""
+    urlKey: content-retention-datasource-url
+    usernameKey: content-retention-datasource-username
+    passwordKey: content-retention-datasource-password
+  notification:
+    enabled: false
+    existingSecret: ""
+    urlKey: notification-retention-datasource-url
+    usernameKey: notification-retention-datasource-username
+    passwordKey: notification-retention-datasource-password
+  workspace:
+    enabled: false
+    existingSecret: ""
+    urlKey: workspace-retention-datasource-url
+    usernameKey: workspace-retention-datasource-username
+    passwordKey: workspace-retention-datasource-password
+  search:
+    enabled: false
+    existingSecret: ""
+    urlKey: search-retention-datasource-url
+    usernameKey: search-retention-datasource-username
+    passwordKey: search-retention-datasource-password

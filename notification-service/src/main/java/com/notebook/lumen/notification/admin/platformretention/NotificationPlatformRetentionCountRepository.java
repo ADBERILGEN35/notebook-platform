@@ -3,6 +3,8 @@ package com.notebook.lumen.notification.admin.platformretention;
 import java.sql.Timestamp;
 import java.time.Instant;
 import javax.sql.DataSource;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Propagation;
@@ -23,8 +25,13 @@ public class NotificationPlatformRetentionCountRepository {
 
   private final JdbcTemplate jdbcTemplate;
 
-  public NotificationPlatformRetentionCountRepository(DataSource dataSource) {
-    this.jdbcTemplate = new JdbcTemplate(dataSource);
+  public NotificationPlatformRetentionCountRepository(
+      DataSource dataSource,
+      @Autowired(required = false)
+          @Qualifier(NotificationPlatformRetentionJdbcTemplateConfig.RETENTION_JDBC_TEMPLATE_BEAN)
+          JdbcTemplate retentionJdbcTemplate) {
+    this.jdbcTemplate =
+        retentionJdbcTemplate != null ? retentionJdbcTemplate : new JdbcTemplate(dataSource);
   }
 
   @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)

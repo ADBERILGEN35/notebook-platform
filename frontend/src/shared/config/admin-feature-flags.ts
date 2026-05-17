@@ -143,6 +143,15 @@ export const isScimCompatibilityDiagnosticsUiEnabled = (): boolean =>
     false,
   )
 
+/** Faz 115: provider-specific delta sync POC readiness (read-only + optional dry-run trigger). */
+export const isScimDeltaProviderPocUiEnabled = (): boolean =>
+  isScimCompatibilityDiagnosticsUiEnabled() &&
+  parseBool(
+    window.__NOTEBOOK_CONFIG__?.SCIM_DELTA_PROVIDER_POC_UI_ENABLED ??
+      import.meta.env.VITE_SCIM_DELTA_PROVIDER_POC_UI_ENABLED,
+    false,
+  )
+
 /** Faz 98: platform-wide retention governance inventory, dry-run plan, and legal holds. */
 export const isPlatformRetentionGovernanceUiEnabled = (): boolean =>
   parseBool(

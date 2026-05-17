@@ -76,3 +76,48 @@ export async function fetchScimSyncRuns(): Promise<ScimSyncRunPage> {
   if (!parsed.success) throw new Error('Invalid SCIM sync runs response')
   return parsed.data
 }
+
+export const scimDeltaReadinessSchema = z.object({
+  providerType: z.string(),
+  deltaPocEnabled: z.boolean(),
+  dryRunOnly: z.boolean(),
+  selectedStrategy: z.string(),
+  deltaSource: z.string(),
+  supportsFiltering: z.boolean(),
+  supportsPagination: z.boolean(),
+  supportsPatch: z.boolean(),
+  supportsRetryAfter: z.boolean(),
+  capabilityAligned: z.boolean(),
+  deprovisionSemantics: z.string(),
+  lastCheckpoint: z.object({
+    resourceType: z.string(),
+    checkpointPresent: z.boolean(),
+    status: z.string(),
+    lastSuccessfulSyncAt: z.string().nullable().optional(),
+  }),
+  lastDryRunStatus: z.string(),
+  remoteFetchEnabled: z.boolean(),
+  remoteFetchConfigured: z.boolean(),
+  remoteFetchAttempted: z.boolean(),
+  fetchedResourceCount: z.number(),
+  pageObserved: z.number(),
+  nextCursorPresent: z.boolean(),
+  rateLimitAware: z.boolean(),
+  retryAfterObserved: z.boolean(),
+  retryAfterSeconds: z.number().nullable().optional(),
+  retryAfterCapped: z.boolean().nullable().optional(),
+  nextRecommendedAttemptAt: z.string().nullable().optional(),
+  providerErrorClass: z.string(),
+  backoffBaseSeconds: z.number(),
+  httpTimeoutMs: z.number(),
+  warnings: z.array(z.string()),
+})
+
+export type ScimDeltaReadiness = z.infer<typeof scimDeltaReadinessSchema>
+
+export async function fetchScimDeltaReadiness(): Promise<ScimDeltaReadiness> {
+  const raw = await apiRequest<unknown>('/admin/identity/scim/delta/readiness', { method: 'GET' })
+  const parsed = scimDeltaReadinessSchema.safeParse(raw)
+  if (!parsed.success) throw new Error('Invalid SCIM delta readiness response')
+  return parsed.data
+}

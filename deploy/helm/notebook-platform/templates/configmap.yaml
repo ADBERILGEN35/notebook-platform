@@ -412,6 +412,16 @@ data:
   SCIM_PROVIDER_SUPPORTS_NESTED_GROUPS: {{ .Values.config.scimProviderSupportsNestedGroups | quote }}
   SCIM_PROVIDER_RATE_LIMIT_AWARE: {{ .Values.config.scimProviderRateLimitAware | quote }}
   SCIM_PROVIDER_MAX_PAGE_SIZE: {{ .Values.config.scimProviderMaxPageSize | quote }}
+  SCIM_DELTA_PROVIDER_POC_ENABLED: {{ .Values.config.scimDeltaProviderPocEnabled | quote }}
+  SCIM_DELTA_DRY_RUN_ONLY: {{ .Values.config.scimDeltaDryRunOnly | quote }}
+  SCIM_DELTA_REMOTE_FETCH_ENABLED: {{ .Values.config.scimDeltaRemoteFetchEnabled | quote }}
+  SCIM_DELTA_HTTP_TIMEOUT_MS: {{ .Values.config.scimDeltaHttpTimeoutMs | quote }}
+  SCIM_DELTA_MAX_RETRY_AFTER_SECONDS: {{ .Values.config.scimDeltaMaxRetryAfterSeconds | quote }}
+  SCIM_DELTA_BACKOFF_BASE_SECONDS: {{ .Values.config.scimDeltaBackoffBaseSeconds | quote }}
+  SCIM_DELTA_REMOTE_BASE_URL: {{ .Values.config.scimDeltaRemoteBaseUrl | quote }}
+  SCIM_DELTA_REMOTE_TOKEN_SECRET_NAME: {{ include "notebook-platform.scimDeltaRemoteTokenSecretNameConfig" . | quote }}
+  SCIM_DELTA_REMOTE_TOKEN_SECRET_KEY: {{ include "notebook-platform.scimDeltaRemoteTokenSecretKeyConfig" . | quote }}
+  SCIM_DELTA_REMOTE_MAX_PAGE_SIZE: {{ .Values.config.scimDeltaRemoteMaxPageSize | quote }}
   SIEM_PUSH_ENABLED: {{ .Values.config.siemPushEnabled | quote }}
   SIEM_PROVIDER: {{ .Values.config.siemProvider | quote }}
   SIEM_ENDPOINT_URL: {{ .Values.config.siemEndpointUrl | quote }}

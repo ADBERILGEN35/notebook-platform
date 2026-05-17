@@ -1,0 +1,17 @@
+# EXAMPLE ONLY — Okta sandbox SCIM delta remote fetch wiring (Faz 118).
+# Do not commit real tokens. Populate bearer via Secret/ExternalSecret only.
+
+config:
+  scimProviderType: "okta"
+  scimDeltaProviderPocEnabled: "true"
+  scimDeltaDryRunOnly: "true"
+  scimDeltaRemoteFetchEnabled: "true"
+  scimDeltaRemoteBaseUrl: "https://<okta-org>.okta.com/scim/v2"
+  scimDeltaRemoteMaxPageSize: "100"
+
+scimDeltaRemoteFetch:
+  bearerTokenFromSecret:
+    enabled: true
+    existingSecret: ""
+    secretKey: "scim-delta-remote-bearer-token"
+    optional: true

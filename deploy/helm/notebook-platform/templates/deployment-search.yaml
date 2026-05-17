@@ -86,6 +86,7 @@ spec:
                   name: {{ include "notebook-platform.secretName" . }}
                   key: {{ .Values.search.opensearch.passwordSecretKey | quote }}
                   optional: true
+            {{- include "notebook-platform.retentionDatasourceEnv" (dict "root" . "serviceKey" "search" "envPrefix" "SEARCH") | nindent 12 }}
           readinessProbe:
             httpGet:
               path: {{ .Values.probes.readiness.path }}

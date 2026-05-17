@@ -78,6 +78,20 @@ Identity service metrics:
 
 Do not add userId or email labels.
 
+## Remote fetch POC (Faz 117–118)
+
+- Single-page read-only GET on manual dry-run when `SCIM_DELTA_REMOTE_FETCH_ENABLED=true` and runtime bearer + base URL are set.
+- K8s wiring (Faz 118): `SCIM_DELTA_REMOTE_BEARER_TOKEN` from `existingSecret` / ExternalSecret; token not in GitOps values.
+- No production scheduler, no multi-page loop (future phase), no provider mutation.
+- Evidence bundle: sanitized JSON — see `scripts/scim/scim-delta-evidence-formats.md`.
+
+## Faz 115 POC (implemented)
+
+- `ScimDeltaStrategyResolver` selects strategy per `SCIM_PROVIDER_TYPE` and capability flags.
+- `GET /internal/admin/scim/delta/readiness` exposes read-only diagnostics.
+- `POST /internal/admin/scim/delta/dry-run` records diagnostic sync run + checkpoint; **no IdP fetch**, **no deprovision**.
+- Defaults: `SCIM_DELTA_PROVIDER_POC_ENABLED=false`, `SCIM_DELTA_DRY_RUN_ONLY=true`.
+
 ## Future production requirements
 
 - Provider certification tests with Okta, Entra ID, Google Workspace, OneLogin, and Generic SCIM 2.0.

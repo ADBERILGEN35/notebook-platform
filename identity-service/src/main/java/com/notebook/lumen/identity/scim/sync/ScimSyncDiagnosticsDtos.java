@@ -53,7 +53,11 @@ public final class ScimSyncDiagnosticsDtos {
       long errorCount,
       String lastErrorCode,
       String lastErrorSummary,
-      String requestId) {}
+      String requestId,
+      String providerErrorClass,
+      Integer retryAfterSeconds,
+      Boolean retryAfterCapped,
+      Instant nextRecommendedAttemptAt) {}
 
   public record SyncRunPageResponse(
       List<SyncRunResponse> items, int page, int size, long totalElements, int totalPages) {}
@@ -64,4 +68,72 @@ public final class ScimSyncDiagnosticsDtos {
       Map<String, Long> counts,
       String errorCode,
       String errorSummary) {}
+
+  public record DeltaReadinessResponse(
+      String providerType,
+      boolean deltaPocEnabled,
+      boolean dryRunOnly,
+      String selectedStrategy,
+      String deltaSource,
+      boolean supportsFiltering,
+      boolean supportsPagination,
+      boolean supportsPatch,
+      boolean supportsRetryAfter,
+      boolean capabilityAligned,
+      String deprovisionSemantics,
+      LastCheckpointSummary lastCheckpoint,
+      String lastDryRunStatus,
+      boolean remoteFetchEnabled,
+      boolean remoteFetchConfigured,
+      boolean remoteFetchAttempted,
+      int fetchedResourceCount,
+      int pageObserved,
+      boolean nextCursorPresent,
+      boolean rateLimitAware,
+      boolean retryAfterObserved,
+      Integer retryAfterSeconds,
+      Boolean retryAfterCapped,
+      Instant nextRecommendedAttemptAt,
+      String providerErrorClass,
+      int backoffBaseSeconds,
+      int httpTimeoutMs,
+      List<String> warnings) {}
+
+  public record LastCheckpointSummary(
+      ScimResourceType resourceType,
+      boolean checkpointPresent,
+      ScimSyncCheckpointStatus status,
+      Instant lastSuccessfulSyncAt) {}
+
+  public record DryRunPocRequest(
+      ScimResourceType resourceType,
+      boolean observedRetryAfter,
+      Integer retryAfterSeconds,
+      Integer simulatedHttpStatus,
+      String simulatedRetryAfter,
+      Boolean simulatedTimeout,
+      Boolean simulatedBadResponse) {}
+
+  public record DryRunPocResponse(
+      String providerType,
+      boolean dryRunOnly,
+      String selectedStrategy,
+      String lastDryRunStatus,
+      SyncRunResponse run,
+      CheckpointResponse checkpoint,
+      boolean remoteFetchEnabled,
+      boolean remoteFetchConfigured,
+      boolean remoteFetchAttempted,
+      int fetchedResourceCount,
+      int pageObserved,
+      boolean nextCursorPresent,
+      boolean rateLimitAware,
+      boolean retryAfterObserved,
+      Integer retryAfterSeconds,
+      Boolean retryAfterCapped,
+      Instant nextRecommendedAttemptAt,
+      String providerErrorClass,
+      int backoffBaseSeconds,
+      int httpTimeoutMs,
+      List<String> warnings) {}
 }

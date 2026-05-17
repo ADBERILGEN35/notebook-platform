@@ -9,6 +9,8 @@ Requires internal service authorization with scope `internal:admin:scim:diagnost
 - `GET /internal/admin/scim/compatibility/status`
 - `GET /internal/admin/scim/sync-runs`
 - `GET /internal/admin/scim/sync-checkpoints`
+- `GET /internal/admin/scim/delta/readiness` (Faz 115)
+- `POST /internal/admin/scim/delta/dry-run` (Faz 115 POC — diagnostic run only)
 
 Compatibility response includes:
 
@@ -30,8 +32,67 @@ Requires `admin:identity:read` or `admin:scim:diagnostics:read`.
 - `GET /admin/identity/scim/compatibility/status`
 - `GET /admin/identity/scim/sync-runs`
 - `GET /admin/identity/scim/sync-checkpoints`
+- `GET /admin/identity/scim/delta/readiness`
+- `POST /admin/identity/scim/delta/dry-run` (requires `SCIM_DELTA_PROVIDER_POC_ENABLED=true` on identity-service)
 
 Gateway maps service errors to bounded admin errors and does not expose internal service JWT details.
+
+## Delta readiness (Faz 115)
+
+`DeltaReadinessResponse` fields (safe only):
+
+- `providerType`, `deltaPocEnabled`, `dryRunOnly`, `selectedStrategy`, `deltaSource`
+- `supportsFiltering`, `supportsPagination`, `supportsPatch`, `supportsRetryAfter`, `capabilityAligned`
+- `deprovisionSemantics` (one-line policy text, no PII)
+- `lastCheckpoint` — resource type, `checkpointPresent`, status, timestamps (no token value)
+- `lastDryRunStatus`, `warnings`
+
+Warning codes include:
+
+- `SCIM_DELTA_PROVIDER_UNSUPPORTED`
+- `SCIM_DELTA_DRY_RUN_ONLY`
+- `SCIM_DELTA_FILTERING_UNAVAILABLE`
+- `SCIM_DELTA_RETRY_AFTER_OBSERVED`
+- `SCIM_DELTA_CHECKPOINT_STALE`
+- `SCIM_DELTA_MISSING_USER_IGNORED`
+- `SCIM_DELTA_RATE_LIMITED`
+- `SCIM_DELTA_RAW_PAYLOAD_SUPPRESSED`
+- `SCIM_DELTA_REMOTE_FETCH_DISABLED` / `SCIM_DELTA_REMOTE_FETCH_NOT_CONFIGURED` (Faz 117)
+- `SCIM_DELTA_REMOTE_FETCH_ATTEMPTED` / `SCIM_DELTA_PROVIDER_RESPONSE_SANITIZED` (Faz 117)
+
+## Delta remote fetch (Faz 117–118)
+
+When `SCIM_DELTA_REMOTE_FETCH_ENABLED=true` and base URL + bearer token are configured, **manual dry-run only** may issue a single bounded **GET** to the provider. Response bodies are discarded after aggregate extraction (`fetchedResourceCount`, `nextCursorPresent`, `pageObserved`). No POST/PATCH/PUT/DELETE; no user/group DB mutation; no raw payload/token/Authorization in API, audit, or logs.
+
+Additional readiness/dry-run fields: `remoteFetchConfigured`, `remoteFetchAttempted`, `fetchedResourceCount`, `pageObserved`, `nextCursorPresent`.
+
+### Secret wiring (Faz 118)
+
+- Bearer token **never** in Git, ConfigMap, or API responses.
+- Helm `scimDeltaRemoteFetch.bearerTokenFromSecret.enabled=true` injects `SCIM_DELTA_REMOTE_BEARER_TOKEN` via `secretKeyRef` on identity-service.
+- ConfigMap exposes secret **name/key refs only** (`SCIM_DELTA_REMOTE_TOKEN_SECRET_NAME`, `SCIM_DELTA_REMOTE_TOKEN_SECRET_KEY`) for `remoteFetchConfigured` diagnostics.
+- Examples: `deploy/helm/notebook-platform/examples/scim-delta-remote-fetch/`
+- Sandbox evidence: `scripts/scim/scim-delta-evidence-formats.md`, `scripts/scim/scim-delta-remote-fetch-smoke.sh`
+
+Dry-run POC creates a `scim_sync_runs` row with `deprovisionedCount=0` and optional checkpoint touch. It does **not** call the IdP or mutate SCIM users/groups.
+
+## Rate-limit / Retry-After (Faz 116)
+
+Readiness and dry-run responses include (sanitized):
+
+- `remoteFetchEnabled`, `rateLimitAware`, `retryAfterObserved`, `retryAfterSeconds`, `retryAfterCapped`
+- `nextRecommendedAttemptAt`, `providerErrorClass`, `backoffBaseSeconds`, `httpTimeoutMs`
+
+Config:
+
+- `SCIM_DELTA_REMOTE_FETCH_ENABLED=false` (default)
+- `SCIM_DELTA_HTTP_TIMEOUT_MS=3000`
+- `SCIM_DELTA_MAX_RETRY_AFTER_SECONDS=300`
+- `SCIM_DELTA_BACKOFF_BASE_SECONDS=30`
+
+Dry-run simulation fields (no raw header in response): `simulatedHttpStatus`, `simulatedRetryAfter`, `simulatedTimeout`, `simulatedBadResponse`.
+
+Additional warnings: `SCIM_DELTA_REMOTE_FETCH_DISABLED`, `SCIM_DELTA_RETRY_AFTER_CAPPED`, `SCIM_DELTA_PROVIDER_TIMEOUT`, `SCIM_DELTA_PROVIDER_UNAVAILABLE`, `SCIM_DELTA_PROVIDER_AUTH_FAILED`, `SCIM_DELTA_PROVIDER_BAD_RESPONSE`, `SCIM_DELTA_BACKOFF_RECOMMENDED`.
 
 ## Frontend
 

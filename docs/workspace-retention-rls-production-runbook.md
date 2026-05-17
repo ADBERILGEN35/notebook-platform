@@ -96,3 +96,7 @@ Response/log'da workspace name, invitation email, user email, token hash yok. Ba
 - Live staging (opt-in): `retention-staging-smoke` with secrets `RETENTION_STAGING_API_BASE_URL`, `RETENTION_STAGING_ADMIN_ACCESS_TOKEN`. See [`.github/workflows/retention-readiness.yml`](../.github/workflows/retention-readiness.yml).
 - Faz 109: workspace domain satırı job summary ve `retention-staging-smoke-evidence` artifact içinde (sanitized).
 - Optional SQL: `check-workspace-retention-rls-readiness.sql` (manual `psql`, not in CI).
+
+### Dedicated retention datasource (Faz 110)
+
+Helm `retentionDatasource.workspace` → `WORKSPACE_RETENTION_DATASOURCE_*` (Faz 111 dedicated pool when enabled). Staging E2E: [`staging-dedicated-retention-e2e-checklist.md`](../scripts/retention/staging-dedicated-retention-e2e-checklist.md). **Faz 113:** actuator `workspaceRetentionDataSourceHealth`. **Faz 114:** staging evidence checklist — [`staging-retention-change-request-evidence-checklist.md`](../scripts/retention/staging-retention-change-request-evidence-checklist.md). See [`retention-datasource-ops-handoff.md`](retention-datasource-ops-handoff.md).

@@ -58,6 +58,20 @@ class AdminScimDiagnosticsControllerTest {
         .verifyComplete();
   }
 
+  @Test
+  void deltaReadinessRequiresScimDiagnosticsPermission() {
+    AdminAuthorizationService auth = mock(AdminAuthorizationService.class);
+    AdminScimDiagnosticsProxyService proxy = mock(AdminScimDiagnosticsProxyService.class);
+    when(auth.ensureScimDiagnosticsRead(any()))
+        .thenReturn(Optional.of(ErrorCode.ADMIN_PERMISSION_REQUIRED));
+    var controller = new AdminScimDiagnosticsController(auth, proxy);
+
+    StepVerifier.create(controller.deltaReadiness(jwt(), "req-delta"))
+        .assertNext(response -> assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN))
+        .verifyComplete();
+    verifyNoInteractions(proxy);
+  }
+
   private static Jwt jwt() {
     return Jwt.withTokenValue("t")
         .headers(h -> h.put("alg", "none"))

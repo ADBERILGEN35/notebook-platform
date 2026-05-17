@@ -85,6 +85,7 @@ spec:
                   name: {{ include "notebook-platform.secretName" . }}
                   key: workspace-internal-api-token-secondary
                   optional: true
+            {{- include "notebook-platform.retentionDatasourceEnv" (dict "root" . "serviceKey" "content" "envPrefix" "CONTENT") | nindent 12 }}
           readinessProbe:
             httpGet:
               path: {{ .Values.probes.readiness.path }}

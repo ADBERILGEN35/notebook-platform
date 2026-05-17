@@ -1,0 +1,43 @@
+# Faz 112 — OPTIONAL overlay (do not commit as active values without secret manager keys).
+#
+# Merge into staging only after:
+#   1. DBA retention roles + SELECT grants (see docs/retention-datasource-ops-handoff.md)
+#   2. ExternalSecret (or existingSecret) populated with the key names below
+#   3. Helm render + pod env verification (CONTENT_RETENTION_DATASOURCE_ENABLED=true, etc.)
+#
+# Apply via Argo CD additional value file, helm -f, or copy blocks into values.yaml.
+# NEVER commit JDBC passwords or real connection strings to Git.
+#
+# Prerequisite: staging secrets.targetSecretName (default notebook-platform-secrets) must contain:
+#   content-retention-datasource-url|username|password
+#   notification-retention-datasource-*
+#   workspace-retention-datasource-*
+#   search-retention-datasource-*
+#
+# See: externalsecret-retention-keys.example.yaml
+
+retentionDatasource:
+  content:
+    enabled: true
+    existingSecret: notebook-platform-secrets
+    urlKey: content-retention-datasource-url
+    usernameKey: content-retention-datasource-username
+    passwordKey: content-retention-datasource-password
+  notification:
+    enabled: true
+    existingSecret: notebook-platform-secrets
+    urlKey: notification-retention-datasource-url
+    usernameKey: notification-retention-datasource-username
+    passwordKey: notification-retention-datasource-password
+  workspace:
+    enabled: true
+    existingSecret: notebook-platform-secrets
+    urlKey: workspace-retention-datasource-url
+    usernameKey: workspace-retention-datasource-username
+    passwordKey: workspace-retention-datasource-password
+  search:
+    enabled: true
+    existingSecret: notebook-platform-secrets
+    urlKey: search-retention-datasource-url
+    usernameKey: search-retention-datasource-username
+    passwordKey: search-retention-datasource-password

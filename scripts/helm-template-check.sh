@@ -26,6 +26,15 @@ helm template notebook-platform "$CHART_DIR" \
 helm template notebook-platform "$CHART_DIR" \
   --set autoscaling.enabled=true \
   >/tmp/notebook-platform-hpa.yaml
+helm template notebook-platform "$CHART_DIR" \
+  --set retentionDatasource.content.enabled=true \
+  --set retentionDatasource.notification.enabled=true \
+  --set retentionDatasource.workspace.enabled=true \
+  --set retentionDatasource.search.enabled=true \
+  >/tmp/notebook-platform-retention-datasource.yaml
+helm template notebook-platform "$CHART_DIR" \
+  -f "$CHART_DIR/examples/scim-delta-remote-fetch/okta.overlay.example.yaml" \
+  >/tmp/notebook-platform-scim-delta-okta.yaml
 
 echo "Helm chart rendered successfully:"
 echo "  /tmp/notebook-platform-default.yaml"
@@ -34,3 +43,5 @@ echo "  /tmp/notebook-platform-prod.yaml"
 echo "  /tmp/notebook-platform-external-secrets.yaml"
 echo "  /tmp/notebook-platform-existing-secret.yaml"
 echo "  /tmp/notebook-platform-hpa.yaml"
+echo "  /tmp/notebook-platform-retention-datasource.yaml"
+echo "  /tmp/notebook-platform-scim-delta-okta.yaml"

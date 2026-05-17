@@ -1,0 +1,18 @@
+{
+  "generatedAt": "1970-01-01T00:00:00Z",
+  "evidenceStatus": "skipped",
+  "skipReason": "missing_gateway_or_admin_token",
+  "providerType": "unknown",
+  "selectedStrategy": "NONE",
+  "remoteFetchEnabled": false,
+  "remoteFetchConfigured": false,
+  "remoteFetchAttempted": false,
+  "dryRunOnly": true,
+  "fetchedResourceCount": 0,
+  "pageObserved": 0,
+  "nextCursorPresent": false,
+  "providerErrorClass": "NONE",
+  "retryAfterSeconds": null,
+  "nextRecommendedAttemptAt": null,
+  "warnings": ["SCIM_DELTA_REMOTE_FETCH_NOT_CONFIGURED"]
+}

@@ -15,6 +15,11 @@ Faz 97 provider-specific production delta sync rollout yapmaz. Bu matrix, enterp
 | `SCIM_PROVIDER_SUPPORTS_NESTED_GROUPS` | `false` |
 | `SCIM_PROVIDER_RATE_LIMIT_AWARE` | `true` |
 | `SCIM_PROVIDER_MAX_PAGE_SIZE` | `100` |
+| `SCIM_DELTA_PROVIDER_POC_ENABLED` | `false` |
+| `SCIM_DELTA_DRY_RUN_ONLY` | `true` |
+| `SCIM_DELTA_REMOTE_FETCH_ENABLED` | `false` |
+| `SCIM_DELTA_REMOTE_BASE_URL` | empty |
+| `SCIM_DELTA_REMOTE_MAX_PAGE_SIZE` | `100` |
 
 ## Compatibility matrix
 
@@ -47,6 +52,30 @@ The diagnostics status reports warning codes only, never tokens or raw SCIM payl
 - `RATE_LIMIT_AWARENESS_DISABLED`
 - `PROVIDER_NESTED_GROUPS_BUT_LOCAL_DISABLED`
 
+## Faz 115 delta POC strategies
+
+| Provider | POC strategy when `SCIM_DELTA_PROVIDER_POC_ENABLED=true` | Deprovision semantics |
+|----------|----------------------------------------------------------|------------------------|
+| Okta | `LAST_MODIFIED_FILTER` if filtering enabled; else `FULL_SYNC_FALLBACK` | `active=false` or explicit DELETE only; missing from delta page does not deprovision |
+| Entra / azure-ad | `CURSOR_CHECKPOINT` if filtering enabled; else fallback | Missing from pagination/delta is not deletion; `active=false` or DELETE only |
+| generic | `DISABLED` unless `SCIM_DELTA_SYNC_ENABLED` + filtering; else `FULL_SYNC_FALLBACK` | Missing-from-delta never deprovisions locally |
+
+### Known quirks (operations)
+
+- **Okta:** Group Push is source-of-truth oriented; validate filter profiles per app; rate limits apply to management APIs.
+- **Entra:** Strict filter grammar; whitespace/compound filters may be rejected; bulk unsupported in service provider config.
+- **Generic:** Unknown IdP behavior — keep POC disabled until tenant validation.
+
+## Faz 118 sandbox remote fetch wiring
+
+| Provider | Example overlay | Secret key (default) | Notes |
+|----------|-----------------|----------------------|--------|
+| Okta | `examples/scim-delta-remote-fetch/okta.overlay.example.yaml` | `scim-delta-remote-bearer-token` | lastModified filter diagnostic GET |
+| Entra | `entra.overlay.example.yaml` | same | `$top` / cursor diagnostic GET |
+| Generic | `generic.overlay.example.yaml` | same | count/startIndex fallback GET |
+
+Bearer token via Kubernetes `secretKeyRef` / ExternalSecret only — never in Git values. Sandbox evidence: `scripts/scim/scim-delta-remote-fetch-smoke.sh`.
+
 ## Rollout rule
 
-Provider-specific delta sync requires explicit future approval, tenant-level validation, rate-limit testing, and a decision on provider cursor versus `lastModified` filter behavior. Faz 97 only exposes read-only compatibility diagnostics and local checkpoint/run tracking foundation.
+Provider-specific delta sync requires explicit future approval, tenant-level validation, rate-limit testing, and a decision on provider cursor versus `lastModified` filter behavior. Faz 115–118 add POC diagnostics, optional read-only single-page GET on manual dry-run, and secret wiring examples — **no production scheduler**.

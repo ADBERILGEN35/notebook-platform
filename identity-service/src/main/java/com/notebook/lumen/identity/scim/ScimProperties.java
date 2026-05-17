@@ -25,7 +25,18 @@ public record ScimProperties(
     boolean providerSupportsPatch,
     boolean providerSupportsNestedGroups,
     boolean providerRateLimitAware,
-    int providerMaxPageSize) {
+    int providerMaxPageSize,
+    boolean deltaProviderPocEnabled,
+    boolean deltaDryRunOnly,
+    boolean deltaRemoteFetchEnabled,
+    int deltaHttpTimeoutMs,
+    int deltaMaxRetryAfterSeconds,
+    int deltaBackoffBaseSeconds,
+    String deltaRemoteBaseUrl,
+    String deltaRemoteTokenSecretName,
+    String deltaRemoteTokenSecretKey,
+    String deltaRemoteBearerToken,
+    int deltaRemoteMaxPageSize) {
 
   public ScimProperties(
       boolean enabled,
@@ -57,7 +68,47 @@ public record ScimProperties(
         true,
         false,
         true,
+        100,
+        false,
+        true,
+        false,
+        3000,
+        300,
+        30,
+        "",
+        "",
+        "",
+        "",
         100);
+  }
+
+  public boolean deltaRemoteBaseUrlConfigured() {
+    return deltaRemoteBaseUrl != null && !deltaRemoteBaseUrl.isBlank();
+  }
+
+  public boolean deltaRemoteBearerTokenPresent() {
+    return deltaRemoteBearerToken != null && !deltaRemoteBearerToken.isBlank();
+  }
+
+  public boolean deltaRemoteTokenSecretRefsPresent() {
+    return deltaRemoteTokenSecretName != null
+        && !deltaRemoteTokenSecretName.isBlank()
+        && deltaRemoteTokenSecretKey != null
+        && !deltaRemoteTokenSecretKey.isBlank();
+  }
+
+  /** True when flag is on and URL plus token material (bearer or secret refs) are set. */
+  public boolean deltaRemoteFetchConfigured() {
+    return deltaRemoteFetchEnabled()
+        && deltaRemoteBaseUrlConfigured()
+        && (deltaRemoteBearerTokenPresent() || deltaRemoteTokenSecretRefsPresent());
+  }
+
+  /** True when a live GET may be issued (bearer token required at runtime). */
+  public boolean deltaRemoteFetchRuntimeReady() {
+    return deltaRemoteFetchEnabled()
+        && deltaRemoteBaseUrlConfigured()
+        && deltaRemoteBearerTokenPresent();
   }
 
   public boolean authConfigured() {

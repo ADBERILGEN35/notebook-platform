@@ -96,6 +96,7 @@ spec:
                   name: {{ include "notebook-platform.secretName" . }}
                   key: email-webhook-secret
                   optional: true
+            {{- include "notebook-platform.retentionDatasourceEnv" (dict "root" . "serviceKey" "notification" "envPrefix" "NOTIFICATION") | nindent 12 }}
           readinessProbe:
             httpGet:
               path: {{ .Values.probes.readiness.path }}

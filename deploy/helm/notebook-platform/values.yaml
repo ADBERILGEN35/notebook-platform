@@ -253,6 +253,16 @@ config:
   scimProviderSupportsNestedGroups: "false"
   scimProviderRateLimitAware: "true"
   scimProviderMaxPageSize: "100"
+  scimDeltaProviderPocEnabled: "false"
+  scimDeltaDryRunOnly: "true"
+  scimDeltaRemoteFetchEnabled: "false"
+  scimDeltaHttpTimeoutMs: "3000"
+  scimDeltaMaxRetryAfterSeconds: "300"
+  scimDeltaBackoffBaseSeconds: "30"
+  scimDeltaRemoteBaseUrl: ""
+  scimDeltaRemoteTokenSecretName: ""
+  scimDeltaRemoteTokenSecretKey: ""
+  scimDeltaRemoteMaxPageSize: "100"
   siemPushEnabled: "false"
   siemProvider: "noop"
   siemEndpointUrl: ""
@@ -458,6 +468,46 @@ externalRedis:
   host: "redis.example.internal"
   port: "6379"
   tlsEnabled: false
+
+# Dedicated retention datasource (Faz 110 Helm / Faz 111 runtime binding).
+# Default disabled everywhere (including prod). When enabled, services use a separate Hikari pool
+# for retention count repositories only; normal DB_* runtime datasource is unchanged.
+# Never put JDBC passwords or usernames here — use existingSecret + ExternalSecret keys.
+retentionDatasource:
+  content:
+    enabled: false
+    existingSecret: ""
+    urlKey: "content-retention-datasource-url"
+    usernameKey: "content-retention-datasource-username"
+    passwordKey: "content-retention-datasource-password"
+  notification:
+    enabled: false
+    existingSecret: ""
+    urlKey: "notification-retention-datasource-url"
+    usernameKey: "notification-retention-datasource-username"
+    passwordKey: "notification-retention-datasource-password"
+  workspace:
+    enabled: false
+    existingSecret: ""
+    urlKey: "workspace-retention-datasource-url"
+    usernameKey: "workspace-retention-datasource-username"
+    passwordKey: "workspace-retention-datasource-password"
+  search:
+    enabled: false
+    existingSecret: ""
+    urlKey: "search-retention-datasource-url"
+    usernameKey: "search-retention-datasource-username"
+    passwordKey: "search-retention-datasource-password"
+
+# SCIM delta remote fetch bearer token (Faz 118). Token value NEVER in Git/ConfigMap.
+# When bearerTokenFromSecret.enabled=true, identity-service receives SCIM_DELTA_REMOTE_BEARER_TOKEN
+# via secretKeyRef. ConfigMap carries secret name/key refs only (for configured diagnostics).
+scimDeltaRemoteFetch:
+  bearerTokenFromSecret:
+    enabled: false
+    existingSecret: ""
+    secretKey: "scim-delta-remote-bearer-token"
+    optional: true
 
 search:
   provider: postgres
@@ -815,6 +865,7 @@ frontend:
     FRONTEND_ADMIN_RBAC_OVERRIDES_STATUS_ENABLED: "false"
     FRONTEND_ADMIN_RBAC_OVERRIDES_RELOAD_ENABLED: "false"
     FRONTEND_SCIM_COMPATIBILITY_DIAGNOSTICS_ENABLED: "false"
+    FRONTEND_SCIM_DELTA_PROVIDER_POC_UI_ENABLED: "false"
     FRONTEND_PLATFORM_RETENTION_GOVERNANCE_ENABLED: "false"
     FRONTEND_BREAK_GLASS_REVIEW_UI_ENABLED: "false"
     FRONTEND_BREAK_GLASS_REVOCATION_UI_ENABLED: "false"

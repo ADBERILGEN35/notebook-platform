@@ -1,0 +1,16 @@
+# EXAMPLE ONLY — Generic SCIM provider delta remote fetch (Faz 118).
+
+config:
+  scimProviderType: "generic"
+  scimDeltaProviderPocEnabled: "true"
+  scimDeltaDryRunOnly: "true"
+  scimDeltaRemoteFetchEnabled: "true"
+  scimDeltaRemoteBaseUrl: "https://<idp-host>/scim/v2"
+  scimDeltaRemoteMaxPageSize: "100"
+
+scimDeltaRemoteFetch:
+  bearerTokenFromSecret:
+    enabled: true
+    existingSecret: ""
+    secretKey: "scim-delta-remote-bearer-token"
+    optional: true

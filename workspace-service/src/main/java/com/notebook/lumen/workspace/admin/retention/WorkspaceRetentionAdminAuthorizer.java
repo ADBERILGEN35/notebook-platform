@@ -49,8 +49,7 @@ public class WorkspaceRetentionAdminAuthorizer {
 
   private String bearerToken(String value) {
     if (!value.startsWith("Bearer ")) {
-      throw Exceptions.unauthorized(
-          "INVALID_SERVICE_JWT", "Service authorization must be Bearer");
+      throw Exceptions.unauthorized("INVALID_SERVICE_JWT", "Service authorization must be Bearer");
     }
     return value.substring("Bearer ".length()).trim();
   }

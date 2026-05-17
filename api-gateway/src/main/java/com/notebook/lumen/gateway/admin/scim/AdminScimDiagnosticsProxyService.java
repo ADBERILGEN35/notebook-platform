@@ -5,6 +5,7 @@ import com.notebook.lumen.gateway.admin.audit.AuditProxyService;
 import com.notebook.lumen.gateway.config.GatewayAuditProxyProperties;
 import com.notebook.lumen.gateway.error.ErrorCode;
 import java.time.Instant;
+import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -39,6 +40,40 @@ public class AdminScimDiagnosticsProxyService {
 
   public Mono<ResponseEntity<Object>> syncCheckpoints(String requestId, String gatewayPath) {
     return get(baseUrl() + "/sync-checkpoints", requestId, gatewayPath);
+  }
+
+  public Mono<ResponseEntity<Object>> deltaReadiness(String requestId, String gatewayPath) {
+    return get(baseUrl() + "/delta/readiness", requestId, gatewayPath);
+  }
+
+  public Mono<ResponseEntity<Object>> deltaDryRun(
+      Object body, String requestId, String gatewayPath) {
+    return Mono.defer(
+        () -> {
+          final String jwt;
+          try {
+            jwt = serviceJwtSigner.sign(IDENTITY_AUDIENCE, SCIM_DIAGNOSTICS_SCOPE);
+          } catch (RuntimeException e) {
+            return Mono.just(jwtFailure(requestId, gatewayPath));
+          }
+          WebClient.RequestBodySpec spec =
+              webClient
+                  .post()
+                  .uri(baseUrl() + "/delta/dry-run")
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .accept(MediaType.APPLICATION_JSON)
+                  .header(AuditProxyService.INTERNAL_AUTH_HEADER, "Bearer " + jwt);
+          if (requestId != null && !requestId.isBlank()) {
+            spec = spec.header("X-Request-Id", requestId);
+          }
+          return spec.bodyValue(body == null ? Map.of() : body)
+              .retrieve()
+              .bodyToMono(Object.class)
+              .map(
+                  response ->
+                      ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(response))
+              .onErrorResume(e -> Mono.just(mapException(e, gatewayPath, requestId)));
+        });
   }
 
   public Mono<ResponseEntity<Object>> syncRuns(

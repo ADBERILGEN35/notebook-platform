@@ -9,7 +9,12 @@ on:
   workflow_dispatch:
     inputs:
       run_staging_smoke:
-        description: Run live staging retention smoke (requires RETENTION_STAGING_* secrets)
+        description: |
+          Run live staging retention smoke (requires RETENTION_STAGING_* secrets).
+          After dedicated retention datasource rollout, run post-merge; attach artifact
+          retention-staging-smoke-evidence to the change request (Faz 114). See
+          scripts/retention/staging-dedicated-retention-e2e-checklist.md and
+          scripts/retention/staging-retention-change-request-evidence-checklist.md
         required: false
         type: boolean
         default: false

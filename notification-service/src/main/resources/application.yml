@@ -138,6 +138,11 @@ notification:
     digest-sent-retention-days: ${NOTIFICATION_DIGEST_SENT_RETENTION_DAYS:90}
     email-terminal-retention-days: ${NOTIFICATION_EMAIL_TERMINAL_RETENTION_DAYS:90}
   platform-retention:
+    datasource:
+      enabled: ${NOTIFICATION_RETENTION_DATASOURCE_ENABLED:false}
+      url: ${NOTIFICATION_RETENTION_DATASOURCE_URL:}
+      username: ${NOTIFICATION_RETENTION_DATASOURCE_USERNAME:}
+      password: ${NOTIFICATION_RETENTION_DATASOURCE_PASSWORD:}
     dry-run-counts-enabled: ${NOTIFICATION_RETENTION_DRY_RUN_COUNTS_ENABLED:false}
     max-count-query-limit: ${NOTIFICATION_RETENTION_MAX_COUNT_QUERY_LIMIT:100000}
     analytics-retention-days: ${NOTIFICATION_ANALYTICS_RETENTION_DAYS:90}

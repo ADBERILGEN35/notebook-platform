@@ -3,6 +3,8 @@ package com.notebook.lumen.content.admin.retention;
 import java.sql.Timestamp;
 import java.time.Instant;
 import javax.sql.DataSource;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Propagation;
@@ -22,8 +24,13 @@ public class ContentRetentionCountRepository {
 
   private final JdbcTemplate jdbcTemplate;
 
-  public ContentRetentionCountRepository(DataSource dataSource) {
-    this.jdbcTemplate = new JdbcTemplate(dataSource);
+  public ContentRetentionCountRepository(
+      DataSource dataSource,
+      @Autowired(required = false)
+          @Qualifier(ContentRetentionJdbcTemplateConfig.RETENTION_JDBC_TEMPLATE_BEAN)
+          JdbcTemplate retentionJdbcTemplate) {
+    this.jdbcTemplate =
+        retentionJdbcTemplate != null ? retentionJdbcTemplate : new JdbcTemplate(dataSource);
   }
 
   @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)

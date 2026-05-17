@@ -14,6 +14,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -24,6 +26,8 @@ public class AdminScimDiagnosticsController {
   static final String STATUS_PATH = "/admin/identity/scim/compatibility/status";
   static final String RUNS_PATH = "/admin/identity/scim/sync-runs";
   static final String CHECKPOINTS_PATH = "/admin/identity/scim/sync-checkpoints";
+  static final String DELTA_READINESS_PATH = "/admin/identity/scim/delta/readiness";
+  static final String DELTA_DRY_RUN_PATH = "/admin/identity/scim/delta/dry-run";
 
   private final AdminAuthorizationService authorizationService;
   private final AdminScimDiagnosticsProxyService proxyService;
@@ -51,6 +55,29 @@ public class AdminScimDiagnosticsController {
     Optional<ErrorCode> denial = authorizationService.ensureScimDiagnosticsRead(jwt);
     if (denial.isPresent()) return Mono.just(forbidden(denial.get(), requestId, CHECKPOINTS_PATH));
     return proxyService.syncCheckpoints(requestId, CHECKPOINTS_PATH);
+  }
+
+  @GetMapping(path = DELTA_READINESS_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
+  public Mono<ResponseEntity<Object>> deltaReadiness(
+      @AuthenticationPrincipal Jwt jwt,
+      @RequestHeader(name = GatewayHeaders.REQUEST_ID, required = false) String requestId) {
+    Optional<ErrorCode> denial = authorizationService.ensureScimDiagnosticsRead(jwt);
+    if (denial.isPresent()) {
+      return Mono.just(forbidden(denial.get(), requestId, DELTA_READINESS_PATH));
+    }
+    return proxyService.deltaReadiness(requestId, DELTA_READINESS_PATH);
+  }
+
+  @PostMapping(path = DELTA_DRY_RUN_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
+  public Mono<ResponseEntity<Object>> deltaDryRun(
+      @AuthenticationPrincipal Jwt jwt,
+      @RequestBody(required = false) Map<String, Object> body,
+      @RequestHeader(name = GatewayHeaders.REQUEST_ID, required = false) String requestId) {
+    Optional<ErrorCode> denial = authorizationService.ensureScimDiagnosticsRead(jwt);
+    if (denial.isPresent()) {
+      return Mono.just(forbidden(denial.get(), requestId, DELTA_DRY_RUN_PATH));
+    }
+    return proxyService.deltaDryRun(body, requestId, DELTA_DRY_RUN_PATH);
   }
 
   @GetMapping(path = RUNS_PATH, produces = MediaType.APPLICATION_JSON_VALUE)

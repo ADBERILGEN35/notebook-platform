@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { scimCompatibilityStatusSchema, scimSyncRunPageSchema } from './scim-diagnostics-api'
+import {
+  scimCompatibilityStatusSchema,
+  scimDeltaReadinessSchema,
+  scimSyncRunPageSchema,
+} from './scim-diagnostics-api'
 
 describe('scim diagnostics schemas', () => {
   it('parses compatibility status without token or raw payload fields', () => {
@@ -68,5 +72,50 @@ describe('scim diagnostics schemas', () => {
 
     expect(parsed.success).toBe(true)
     expect(parsed.success ? parsed.data.items[0].processedCount : 0).toBe(10)
+  })
+
+  it('parses delta readiness without token or raw payload', () => {
+    const parsed = scimDeltaReadinessSchema.safeParse({
+      providerType: 'okta',
+      deltaPocEnabled: true,
+      dryRunOnly: true,
+      selectedStrategy: 'LAST_MODIFIED_FILTER',
+      deltaSource: 'lastModified-filter-poc:okta',
+      supportsFiltering: true,
+      supportsPagination: true,
+      supportsPatch: true,
+      supportsRetryAfter: true,
+      capabilityAligned: true,
+      deprovisionSemantics: 'missing from delta does not deprovision',
+      lastCheckpoint: {
+        resourceType: 'USER',
+        checkpointPresent: false,
+        status: 'IDLE',
+        lastSuccessfulSyncAt: null,
+      },
+      lastDryRunStatus: 'COMPLETED',
+      remoteFetchEnabled: false,
+      remoteFetchConfigured: false,
+      remoteFetchAttempted: false,
+      fetchedResourceCount: 0,
+      pageObserved: 0,
+      nextCursorPresent: false,
+      rateLimitAware: true,
+      retryAfterObserved: false,
+      retryAfterSeconds: null,
+      retryAfterCapped: false,
+      nextRecommendedAttemptAt: null,
+      providerErrorClass: 'NONE',
+      backoffBaseSeconds: 30,
+      httpTimeoutMs: 3000,
+      warnings: [
+        'SCIM_DELTA_DRY_RUN_ONLY',
+        'SCIM_DELTA_MISSING_USER_IGNORED',
+        'SCIM_DELTA_REMOTE_FETCH_DISABLED',
+      ],
+    })
+
+    expect(parsed.success).toBe(true)
+    expect(JSON.stringify(parsed.success ? parsed.data : {})).not.toMatch(/token|Bearer|rawPayload/i)
   })
 })

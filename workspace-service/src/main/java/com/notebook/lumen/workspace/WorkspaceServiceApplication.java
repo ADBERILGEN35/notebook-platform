@@ -1,6 +1,7 @@
 package com.notebook.lumen.workspace;
 
 import com.notebook.lumen.workspace.admin.retention.WorkspaceRetentionAdminProperties;
+import com.notebook.lumen.workspace.admin.retention.WorkspaceRetentionDataSourceProperties;
 import com.notebook.lumen.workspace.admin.retention.WorkspaceRetentionProperties;
 import com.notebook.lumen.workspace.audit.AuditAdminProperties;
 import com.notebook.lumen.workspace.config.WorkspaceProperties;
@@ -13,7 +14,8 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
   WorkspaceProperties.class,
   AuditAdminProperties.class,
   WorkspaceRetentionProperties.class,
-  WorkspaceRetentionAdminProperties.class
+  WorkspaceRetentionAdminProperties.class,
+  WorkspaceRetentionDataSourceProperties.class
 })
 public class WorkspaceServiceApplication {
 

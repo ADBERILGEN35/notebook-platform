@@ -35,6 +35,9 @@ jobs:
       - name: Validate Helm templates
         run: scripts/helm-template-check.sh
 
+      - name: SCIM delta remote fetch fixtures
+        run: bash scripts/scim/ci-scim-delta-remote-fetch-fixtures.sh
+
       - name: Run checks
         run: ./gradlew --no-daemon clean check
 

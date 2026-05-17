@@ -1,0 +1,23 @@
+# Faz 118 — OPTIONAL staging overlay (do not enable without Secret Manager keys).
+#
+# Merge only after:
+#   1. Sandbox IdP SCIM app + bearer token in secret manager
+#   2. ExternalSecret (see externalsecret-scim-delta-keys.example.yaml)
+#   3. Helm render shows SCIM_DELTA_REMOTE_BEARER_TOKEN secretKeyRef (no token literal)
+#
+# NEVER commit real bearer tokens or production IdP credentials.
+
+config:
+  scimProviderType: "okta"
+  scimDeltaProviderPocEnabled: "true"
+  scimDeltaDryRunOnly: "true"
+  scimDeltaRemoteFetchEnabled: "true"
+  scimDeltaRemoteBaseUrl: "https://<sandbox-okta-org>.okta.com/scim/v2"
+  scimDeltaRemoteMaxPageSize: "100"
+
+scimDeltaRemoteFetch:
+  bearerTokenFromSecret:
+    enabled: true
+    existingSecret: notebook-platform-secrets
+    secretKey: scim-delta-remote-bearer-token
+    optional: true

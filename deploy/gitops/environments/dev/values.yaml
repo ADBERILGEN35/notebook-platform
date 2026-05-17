@@ -194,3 +194,15 @@ serviceMonitor:
 
 autoscaling:
   enabled: false
+
+# Faz 110: dedicated retention datasource (ops template; future runtime binding).
+# Do not commit JDBC passwords. Populate via ExternalSecret / existingSecret key refs only.
+# retentionDatasource:
+#   content:
+#     enabled: false
+#   notification:
+#     enabled: false
+#   workspace:
+#     enabled: false
+#   search:
+#     enabled: false

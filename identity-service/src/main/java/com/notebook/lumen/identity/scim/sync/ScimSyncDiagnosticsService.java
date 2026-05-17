@@ -293,7 +293,21 @@ public class ScimSyncDiagnosticsService {
         c.getUpdatedAt());
   }
 
+  public SyncRunResponse toRunResponse(ScimSyncRun r) {
+    return toRun(r);
+  }
+
   private SyncRunResponse toRun(ScimSyncRun r) {
+    var metadata = ScimDeltaRunMetadataCodec.decode(r.getLastErrorSummary());
+    String providerErrorClass = r.getLastErrorCode();
+    Integer retryAfterSeconds = null;
+    Boolean retryAfterCapped = null;
+    Instant nextRecommendedAttemptAt = null;
+    if (metadata.isPresent()) {
+      retryAfterSeconds = metadata.get().retryAfterSeconds();
+      retryAfterCapped = metadata.get().retryAfterCapped();
+      nextRecommendedAttemptAt = metadata.get().nextRecommendedAttemptAt();
+    }
     return new SyncRunResponse(
         r.getId(),
         r.getProvider(),
@@ -310,7 +324,11 @@ public class ScimSyncDiagnosticsService {
         r.getErrorCount(),
         r.getLastErrorCode(),
         r.getLastErrorSummary(),
-        r.getRequestId());
+        r.getRequestId(),
+        providerErrorClass,
+        retryAfterSeconds,
+        retryAfterCapped,
+        nextRecommendedAttemptAt);
   }
 
   private String provider() {

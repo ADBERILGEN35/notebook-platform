@@ -169,6 +169,10 @@ Ham API response body CI log'una yazılmaz.
 - Faz 109: GitHub job summary + artifact `retention-staging-smoke-evidence` — notification domain satırı sanitized status/exit/message içerir.
 - Optional SQL: `check-notification-retention-rls-readiness.sql` (manual `psql`).
 
+### Dedicated retention datasource (Faz 110)
+
+Helm `retentionDatasource.notification` → `NOTIFICATION_RETENTION_DATASOURCE_*` (Faz 111: dedicated pool for platform retention counts when enabled). Staging rollout: [`staging-dedicated-retention-e2e-checklist.md`](../scripts/retention/staging-dedicated-retention-e2e-checklist.md). **Faz 113:** actuator `notificationRetentionDataSourceHealth` (safe diagnostics, no JDBC in JSON). **Faz 114:** staging CR evidence — [`retention-staging-e2e-evidence-formats.md`](../scripts/retention/retention-staging-e2e-evidence-formats.md). See [`retention-datasource-ops-handoff.md`](retention-datasource-ops-handoff.md).
+
 Production enable için `EXPECT_NOTIFICATION_RETENTION_READY=true` ile exit 0 zorunlu.
 
 ## 10. Rollback / Disable

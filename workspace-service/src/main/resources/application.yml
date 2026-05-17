@@ -114,6 +114,11 @@ workspace:
       audience: ${WORKSPACE_SERVICE_JWT_SEARCH_AUDIENCE:search-service}
 
 workspace.retention:
+  datasource:
+    enabled: ${WORKSPACE_RETENTION_DATASOURCE_ENABLED:false}
+    url: ${WORKSPACE_RETENTION_DATASOURCE_URL:}
+    username: ${WORKSPACE_RETENTION_DATASOURCE_USERNAME:}
+    password: ${WORKSPACE_RETENTION_DATASOURCE_PASSWORD:}
   dry-run-counts-enabled: ${WORKSPACE_RETENTION_DRY_RUN_COUNTS_ENABLED:false}
   max-count-query-limit: ${WORKSPACE_RETENTION_MAX_COUNT_QUERY_LIMIT:100000}
   expired-invitation-retention-days: ${WORKSPACE_RETENTION_EXPIRED_INVITATION_RETENTION_DAYS:90}
