@@ -371,7 +371,7 @@ Faz 60 adds Enterprise SSO foundation and admin identity hardening
 Faz 61 adds SCIM provisioning and enterprise user lifecycle foundation
 (`docs/scim-provisioning.md`, `docs/enterprise-user-lifecycle.md`).
 Faz 97 adds SCIM provider compatibility diagnostics, delta/checkpoint design, and tombstone/re-add hardening without production delta sync rollout (`docs/scim-delta-sync-design.md`, `docs/scim-sync-diagnostics.md`).
-Faz 98 adds platform-wide retention/legal-hold inventory and dry-run governance without destructive purge rollout (`docs/platform-retention-governance.md`, `docs/platform-retention-target-inventory.md`, `docs/platform-legal-hold-model.md`).
+Faz 98 adds platform-wide retention/legal-hold inventory and dry-run governance without destructive purge rollout (`docs/platform-retention-governance.md`, `docs/platform-retention-target-inventory.md`, `docs/platform-legal-hold-model.md`). Faz 105–107 add platform retention Grafana/metrics, workspace/search dry-run count merge (Faz 106), and RLS preflight/smoke runbooks (Faz 107) (`docs/platform-retention-dashboard-readiness.md`, `docs/phases/phase-105-summary.md`, `docs/phases/phase-106-summary.md`, `docs/phases/phase-107-summary.md`).
 Faz 62 adds streaming SIEM push foundation with identity outbox/worker architecture
 (`docs/siem-streaming-push.md`, `docs/siem-event-schema.md`, `docs/siem-provider-generic-http.md`).
 Faz 63 adds a read-only **Enterprise Admin Console** (gateway `/admin/enterprise/status`, internal

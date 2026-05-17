@@ -224,6 +224,72 @@ describe('AdminPlatformRetentionPage', () => {
     expect(screen.getAllByText('340').length).toBeGreaterThanOrEqual(1)
   })
 
+  it('renders service readiness cards with status badges and no purge action', async () => {
+    vi.spyOn(platformRetentionApi, 'fetchPlatformRetentionTargets').mockResolvedValue({
+      generatedAt: '2026-05-16T00:00:00Z',
+      targets: [],
+    })
+    vi.spyOn(platformRetentionApi, 'fetchPlatformRetentionPlan').mockResolvedValue({
+      generatedAt: '2026-05-16T10:00:00Z',
+      dryRun: true,
+      warnings: ['NOTIFICATION_RETENTION_SERVICE_UNAVAILABLE'],
+      targets: [],
+      serviceSummaries: [
+        {
+          service: 'content-service',
+          dataClass: 'CONTENT',
+          status: 'READY',
+          totalTargets: 3,
+          dryRunReadyTargets: 3,
+          inventoryOnlyTargets: 0,
+          unavailableTargets: 0,
+          blockedTargets: 0,
+          cappedTargets: 0,
+          warningCount: 1,
+          warnings: ['PLATFORM_RETENTION_CONTENT_PLAN_INCLUDED'],
+        },
+        {
+          service: 'notification-service',
+          dataClass: 'NOTIFICATION',
+          status: 'UNAVAILABLE',
+          totalTargets: 6,
+          dryRunReadyTargets: 0,
+          inventoryOnlyTargets: 6,
+          unavailableTargets: 0,
+          blockedTargets: 0,
+          cappedTargets: 0,
+          warningCount: 1,
+          warnings: ['NOTIFICATION_RETENTION_SERVICE_UNAVAILABLE'],
+        },
+        {
+          service: 'identity-service',
+          dataClass: 'IDENTITY',
+          status: 'BLOCKED_BY_HOLD',
+          totalTargets: 4,
+          dryRunReadyTargets: 1,
+          inventoryOnlyTargets: 3,
+          unavailableTargets: 0,
+          blockedTargets: 1,
+          cappedTargets: 0,
+          warningCount: 0,
+          warnings: [],
+        },
+      ],
+    })
+    vi.spyOn(platformRetentionApi, 'fetchPlatformLegalHolds').mockResolvedValue({ items: [] })
+
+    render(<AdminPlatformRetentionPage />)
+
+    await waitFor(() => expect(platformRetentionApi.fetchPlatformRetentionPlan).toHaveBeenCalled())
+    expect(screen.getByText('Service readiness')).toBeInTheDocument()
+    expect(screen.getByText('content-service')).toBeInTheDocument()
+    expect(screen.getByText('READY')).toBeInTheDocument()
+    expect(screen.getByText('UNAVAILABLE')).toBeInTheDocument()
+    expect(screen.getByText('BLOCKED_BY_HOLD')).toBeInTheDocument()
+    expect(screen.getAllByText('View targets').length).toBe(3)
+    expect(screen.queryByText('Future gated')).not.toBeInTheDocument()
+  })
+
   it('validates create legal hold reason before calling the API', async () => {
     vi.spyOn(platformRetentionApi, 'fetchPlatformRetentionTargets').mockResolvedValue({
       generatedAt: '2026-05-13T00:00:00Z',

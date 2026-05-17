@@ -17,6 +17,9 @@ docker-compose*.log
 /sbom/
 /provenance/
 
+# Retention staging smoke CI output (local / Actions artifact source)
+/retention-staging-smoke-out/
+
 # Local secrets
 .env
 .env.*

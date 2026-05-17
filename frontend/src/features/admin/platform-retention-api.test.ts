@@ -85,6 +85,54 @@ describe('platform retention schemas', () => {
     }
   })
 
+  it('parses plan with optional service summaries and no raw domain data', () => {
+    const parsed = retentionPlanResponseSchema.safeParse({
+      generatedAt: '2026-05-16T10:00:00Z',
+      dryRun: true,
+      warnings: ['PLATFORM_RETENTION_NOTIFICATION_PLAN_INCLUDED'],
+      targets: [],
+      serviceSummaries: [
+        {
+          service: 'notification-service',
+          dataClass: 'NOTIFICATION',
+          status: 'PARTIAL',
+          totalTargets: 6,
+          dryRunReadyTargets: 5,
+          inventoryOnlyTargets: 1,
+          unavailableTargets: 0,
+          blockedTargets: 1,
+          cappedTargets: 0,
+          warningCount: 2,
+          warnings: [
+            'NOTIFICATION_RETENTION_LEGAL_HOLD_BLOCKED',
+            'PLATFORM_RETENTION_NOTIFICATION_PLAN_INCLUDED',
+          ],
+        },
+      ],
+    })
+    expect(parsed.success).toBe(true)
+    if (parsed.success) {
+      expect(parsed.data.serviceSummaries?.[0].status).toBe('PARTIAL')
+      expect(parsed.data.serviceSummaries?.[0].blockedTargets).toBe(1)
+      const serialized = JSON.stringify(parsed.data)
+      expect(serialized).not.toContain('noteBody')
+      expect(serialized).not.toContain('contentBlocks')
+      expect(serialized).not.toContain('recipient')
+      expect(serialized).not.toContain('email')
+    }
+  })
+
+  it('parses plan without service summaries (backward compatible)', () => {
+    const parsed = retentionPlanResponseSchema.safeParse({
+      generatedAt: '2026-05-16T10:00:00Z',
+      dryRun: true,
+      warnings: [],
+      targets: [],
+    })
+    expect(parsed.success).toBe(true)
+    expect(parsed.success ? parsed.data.serviceSummaries : 'x').toBeUndefined()
+  })
+
   it('parses legal hold list without reasons', () => {
     const parsed = platformLegalHoldListSchema.safeParse({
       items: [

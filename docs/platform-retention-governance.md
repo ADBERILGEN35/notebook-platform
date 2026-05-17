@@ -313,3 +313,166 @@ Prod'da `NOTIFICATION_RETENTION_DRY_RUN_COUNTS_ENABLED=true` ve `NOTIFICATION_RE
 7. Governance change-request approve edilmiş olmalı.
 
 Prod default `false` korunur; production enable ayrı GitOps PR ve onay gerektirir.
+
+## Faz 104 Service Summary ve Dashboard Readiness
+
+Faz 104 platform retention plan response'una servis-bazlı aggregate readiness özeti ekler. Yeni endpoint, destructive aksiyon, scheduler veya yeni count implementation yoktur; mevcut merged target list'ten türetilen additive, backward-compatible bir alandır.
+
+### Response contract
+
+`GET /admin/retention/platform/plan` mevcut `targets[]` + `warnings[]`'a ek olarak **optional** `serviceSummaries[]` döner. Her özet: `service`, `dataClass`, `status`, `totalTargets`, `dryRunReadyTargets`, `inventoryOnlyTargets`, `unavailableTargets`, `blockedTargets`, `cappedTargets`, `warningCount`, `warnings[]`. Mevcut `targets` contract'ı değişmez.
+
+### Status precedence
+
+`ERROR > UNAVAILABLE > DISABLED > BLOCKED_BY_HOLD > PARTIAL > READY > INVENTORY_ONLY`. Hesaplama, UI yorumu, panel/alert önerileri: [`platform-retention-dashboard-readiness.md`](platform-retention-dashboard-readiness.md).
+
+### Gateway davranışı
+
+Gateway `AdminPlatformRetentionProxyService` identity + content + notification merge sonrası `applyServiceSummaries` ile özet üretir; target'ın `service` alanından gruplar (eksikse targetKey prefix), plan-level prefix'li warning'leri ilgili servise dedupe map'ler. Summary raw domain data içermez; admin permission gate ve dry-run-only kısıtı değişmez.
+
+### Scope dışı (Faz 104)
+
+- Destructive purge / scheduler / delete yok.
+- Yeni target count implementation yok (workspace/search hâlâ `INVENTORY_ONLY`).
+- Yeni gateway metric kodu eklenmedi; dashboard mevcut bounded `*_retention_*` metric'lerini kullanır (readiness doc'ta dokümante).
+- Tenant-specific retention policy / eDiscovery export yok.
+
+## Faz 105 Metrics + Grafana Dashboard
+
+Faz 105 Faz 104 `serviceSummaries` türetimini production observability seviyesine taşır: gateway aggregation layer'da bounded-cardinality Micrometer counter'ları, Grafana dashboard JSON ve ayrı Prometheus alert dosyası eklenir. Yeni endpoint, contract değişikliği, destructive aksiyon, scheduler veya yeni count implementation yoktur.
+
+### Emit edilen metric'ler
+
+`PlatformRetentionMetricsPublisher` (`@Component`, `MeterRegistry`) `applyServiceSummaries` sonrası çağrılır:
+
+- `platform_retention_service_summary_total{service,status}`
+- `platform_retention_service_targets_total{service,target_status}`
+- `platform_retention_service_warnings_total{service,warning_code}`
+- `platform_retention_plan_generated_total{result}` (`success`/`error`)
+- `platform_retention_service_blocked_targets_total{service}`
+- `platform_retention_service_capped_targets_total{service}`
+
+### Cardinality / privacy
+
+Tüm label'lar sabit allowlist'e map'lenir; dışı → `unknown` (`warning_code` için `UNKNOWN_WARNING`). Ham/target-prefix'li warning kodu normalize edilir. `userId`/`email`/`workspaceId`/`noteId`/`requestId`/raw `targetKey`/legal-hold key label'ı yoktur. `audit.*`/`security.*` target'ları `service="identity-service"` altında raporlanır (registry-authoritative; ayrı `audit-security` service label'ı yok — `dataClass` `serviceSummaries` içinde korunur). Metric emission plan'ı mutate etmez, exception fırlatmaz; plan generation fail'de yalnız `result="error"` emit edilir. Detay/label tabloları: [`platform-retention-dashboard-readiness.md`](platform-retention-dashboard-readiness.md) §4a/§5.
+
+### Dashboard + alerts
+
+- Grafana: `observability/grafana/dashboards/platform-retention-readiness.json` (uid `platform-retention-readiness`, runbook link'leri gömülü).
+- Prometheus: `observability/prometheus/alerts/platform-retention-readiness.yml` — ayrı dosya, `notebook-platform-alerts.yml` değişmez. `PlatformRetentionServiceUnavailable` (warning), `PlatformRetentionCappedCounts` (warning), `PlatformRetentionBlockedByLegalHoldHigh` (info — legal hold beklenen governance, page etmez).
+
+### Scope dışı (Faz 105)
+
+- Destructive purge / scheduler / delete / yeni count implementation yok.
+- Workspace/search target dry-run count (Faz 106'da eklendi), tenant-specific policy, eDiscovery export yok.
+- Full production alert tuning yok (alert'ler örnek/başlangıç eşikleri).
+
+## Faz 106 Workspace/Search Retention Dry-run Counts
+
+Faz 106 workspace-service ve search-service için aggregate-only dry-run count katmanı ekler. Gateway platform planner bu planları merge eder; Faz 105 `serviceSummaries` ve metrics publisher otomatik olarak `search-service` / `workspace-service` label'larını kapsar (yeni gateway metric publisher yok).
+
+### Search-service internal API
+
+- `GET /internal/admin/retention/search/plan` — Service JWT scope `internal:admin:retention:read`.
+- Target'lar: `search.documents_stale` (`DRY_RUN_READY`), `search.reindex_jobs_terminal` (`DRY_RUN_READY`), `search.indexing_failures_terminal` / `search.documents_active` (`INVENTORY_ONLY`). Registry umbrella `search.documents` `INVENTORY_ONLY` kalır.
+
+### Workspace-service internal API
+
+- `GET /internal/admin/retention/workspace/plan` — aynı scope.
+- Target'lar: `workspace.invitations_expired`, `workspace.audit_like_events` (`DRY_RUN_READY`); `workspace.membership_inactive` ve core entity registry satırları (`INVENTORY_ONLY` — inactive lifecycle kolonu yok).
+
+### Legal-hold mapping
+
+- Search: `ALL_PLATFORM`, `CONTENT` → full block; `WORKSPACE`/`NOTE`/`USER` → warning-only (`SEARCH_RETENTION_PARTIAL_LEGAL_HOLD_MAPPING`).
+- Workspace: `ALL_PLATFORM`, `WORKSPACE` → full block; `CONTENT`/`NOTE`/`USER` → warning-only.
+
+### Gateway merge
+
+Sıra: identity plan → legal holds → content → notification → **search** → **workspace** → `applyServiceSummaries` → Faz 105 metrics. Unavailable: `SEARCH_RETENTION_SERVICE_UNAVAILABLE`, `WORKSPACE_RETENTION_SERVICE_UNAVAILABLE`. Included: `PLATFORM_RETENTION_SEARCH_PLAN_INCLUDED`, `PLATFORM_RETENTION_WORKSPACE_PLAN_INCLUDED`.
+
+### Config (defaults `false`)
+
+| Component | Env |
+|-----------|-----|
+| search-service | `SEARCH_RETENTION_DRY_RUN_COUNTS_ENABLED`, `SEARCH_RETENTION_MAX_COUNT_QUERY_LIMIT`, `SEARCH_RETENTION_STALE_DOCUMENT_RETENTION_DAYS`, `SEARCH_RETENTION_TERMINAL_JOB_RETENTION_DAYS` |
+| workspace-service | `WORKSPACE_RETENTION_DRY_RUN_COUNTS_ENABLED`, `WORKSPACE_RETENTION_MAX_COUNT_QUERY_LIMIT`, `WORKSPACE_RETENTION_EXPIRED_INVITATION_RETENTION_DAYS`, `WORKSPACE_RETENTION_AUDIT_EVENT_RETENTION_DAYS` |
+| gateway | `SEARCH_RETENTION_INTEGRATION_ENABLED`, `SEARCH_RETENTION_INTERNAL_URL`, `WORKSPACE_RETENTION_INTEGRATION_ENABLED`, `WORKSPACE_RETENTION_INTERNAL_URL` |
+
+GitOps dev: dry-run + integration `true`; prod `false`.
+
+### Metrics (service-local)
+
+`search_retention_*` / `workspace_retention_*` counter'ları bounded `target` label ile; gateway Faz 105 publisher değişmez (allowlist'e `search-service`, `workspace-service` eklendi).
+
+### Scope dışı (Faz 106)
+
+- Destructive purge, delete, scheduler, tenant policy, yeni Flyway migration (mevcut index'ler kullanılır).
+- `search.indexing_failures_terminal` ayrı tablo olmadığı için inventory-only.
+- Frontend yeni sayfa yok; mevcut platform retention UI data-driven kalır.
+
+## Faz 107 Workspace/Search Retention RLS Preflight + Smoke
+
+Faz 106 workspace/search dry-run count katmanının production enable öncesi operasyon paketi. **Production kodu değişmez**; read-only SQL preflight, gateway smoke script'leri ve runbook'lar eklenir.
+
+### Runbook ve scriptler
+
+| Domain | Preflight SQL | Smoke | Runbook |
+|--------|---------------|-------|---------|
+| Workspace | [`scripts/retention/check-workspace-retention-rls-readiness.sql`](../scripts/retention/check-workspace-retention-rls-readiness.sql) | [`workspace-retention-dry-run-smoke.sh`](../scripts/retention/workspace-retention-dry-run-smoke.sh) | [`workspace-retention-rls-production-runbook.md`](workspace-retention-rls-production-runbook.md) |
+| Search | [`scripts/retention/check-search-retention-rls-readiness.sql`](../scripts/retention/check-search-retention-rls-readiness.sql) | [`search-retention-dry-run-smoke.sh`](../scripts/retention/search-retention-dry-run-smoke.sh) | [`search-retention-rls-production-runbook.md`](search-retention-rls-production-runbook.md) |
+
+Fixture matrisi (CI/local): [`scripts/retention/test-workspace-search-retention-smoke-fixtures.sh`](../scripts/retention/test-workspace-search-retention-smoke-fixtures.sh), [`test-content-notification-retention-smoke-fixtures.sh`](../scripts/retention/test-content-notification-retention-smoke-fixtures.sh) — `RETENTION_SMOKE_FIXTURE_FILE` ile live gateway gerekmez.
+
+## Faz 108 Retention CI (Preflight + Smoke)
+
+Workflow: [`.github/workflows/retention-readiness.yml`](../.github/workflows/retention-readiness.yml).
+
+| Job | Ne zaman | Secret | Davranış |
+|-----|----------|--------|----------|
+| `retention-smoke-fixtures` | PR + `main` push | Yok | Zorunlu gate: [`ci-retention-smoke-fixtures.sh`](../scripts/retention/ci-retention-smoke-fixtures.sh) |
+| `retention-staging-smoke` | `staging` push veya `workflow_dispatch` + `run_staging_smoke` | `RETENTION_STAGING_API_BASE_URL`, `RETENTION_STAGING_ADMIN_ACCESS_TOKEN` | Yoksa skip (0); varsa [`run-retention-staging-smoke.sh`](../scripts/retention/run-retention-staging-smoke.sh) |
+
+Staging env: `API_BASE_URL`, `ADMIN_ACCESS_TOKEN`, `EXPECT_CONTENT_RETENTION_READY`, `EXPECT_NOTIFICATION_RETENTION_READY`, `EXPECT_WORKSPACE_RETENTION_READY`, `EXPECT_SEARCH_RETENTION_READY`. Token ve ham response body CI log'una yazılmaz.
+
+Opsiyonel SQL preflight (CI'da koşulmaz; runbook adımı): content/notification/workspace/search `check-*-retention-rls-readiness.sql`.
+
+Observability CI: [`validate-retention-observability.sh`](../scripts/retention/validate-retention-observability.sh) — `platform-retention-readiness.json` + `platform-retention-readiness.yml`.
+
+## Faz 109 Staging smoke evidence
+
+| Çıktı | Açıklama |
+|-------|----------|
+| GitHub Step Summary | [`render-retention-staging-github-summary.sh`](../scripts/retention/render-retention-staging-github-summary.sh) — domain tablosu |
+| JSON | `retention-staging-smoke-results.json` — machine-readable |
+| Markdown | `retention-staging-smoke-summary.md` — insan okunur özet |
+| Artifact | `retention-staging-smoke-evidence` (Actions upload) |
+
+Orchestrator: [`run-retention-staging-smoke.sh`](../scripts/retention/run-retention-staging-smoke.sh) + [`write-retention-staging-report.py`](../scripts/retention/write-retention-staging-report.py). Secret yoksa tüm domainler `skipped`, overall message `skipped: missing staging secrets`. Ham API body ve token artifact/log'a yazılmaz.
+
+### Smoke env
+
+- `API_BASE_URL`, `ADMIN_ACCESS_TOKEN`
+- `EXPECT_WORKSPACE_RETENTION_READY` / `EXPECT_SEARCH_RETENTION_READY` (default `false`)
+
+### Smoke exit codes
+
+| Kod | Anlam |
+|-----|--------|
+| `0` | Başarılı veya beklenen pre-rollout gap (`EXPECT_*=false`) |
+| `2` | Service unavailable / dry-run disabled / DB permission (expect true iken) |
+| `3` | Privacy guardrail (workspace name, emails, search body/snippet/query token'ları) |
+| `4` | Schema/shape mismatch |
+
+Workspace readiness gap warnings: `WORKSPACE_RETENTION_SERVICE_UNAVAILABLE`, `WORKSPACE_RETENTION_DRY_RUN_DISABLED`, `WORKSPACE_RETENTION_DB_PERMISSION_DENIED`, `WORKSPACE_RETENTION_RLS_NOT_READY` (reserved).
+
+Search: `SEARCH_RETENTION_*` aynı set.
+
+### Prod enable önkoşulları (özet)
+
+1. Dedicated retention DB role (`notebook_workspace_retention`, `notebook_search_retention`) + `SELECT`-only grants.
+2. Preflight SQL beklenen çıktı.
+3. Smoke `EXPECT_*_RETENTION_READY=true` ile exit `0`.
+4. Service JWT trust + Faz 105 dashboard gözlemi.
+5. GitOps rollback PR hazır; governance onayı.
+
+Prod default `WORKSPACE_RETENTION_*` / `SEARCH_RETENTION_*` integration ve dry-run flags `false` kalır.

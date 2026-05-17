@@ -1,0 +1,130 @@
+{
+  "uid": "platform-retention-readiness",
+  "title": "Platform Retention Readiness",
+  "schemaVersion": 39,
+  "version": 1,
+  "timezone": "browser",
+  "refresh": "1m",
+  "tags": ["notebook-platform", "retention", "phase-105"],
+  "links": [
+    {
+      "title": "Retention dashboard readiness runbook",
+      "type": "link",
+      "url": "https://github.com/notebook-platform/notebook-platform/blob/master/docs/platform-retention-dashboard-readiness.md",
+      "targetBlank": true
+    },
+    {
+      "title": "Platform retention governance",
+      "type": "link",
+      "url": "https://github.com/notebook-platform/notebook-platform/blob/master/docs/platform-retention-governance.md",
+      "targetBlank": true
+    }
+  ],
+  "templating": {
+    "list": [
+      {
+        "name": "service",
+        "type": "query",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "query": "label_values(platform_retention_service_summary_total, service)",
+        "refresh": 1,
+        "includeAll": true,
+        "multi": true
+      }
+    ]
+  },
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "Retention service status by service",
+      "description": "Aggregate readiness status emitted per plan generation. No PII / no user/workspace/note labels.",
+      "gridPos": {"x": 0, "y": 0, "w": 12, "h": 8},
+      "targets": [
+        {
+          "expr": "sum by (service, status) (increase(platform_retention_service_summary_total{service=~\"$service\"}[1h]))",
+          "legendFormat": "{{service}} / {{status}}"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Dry-run ready target count by service",
+      "gridPos": {"x": 12, "y": 0, "w": 12, "h": 8},
+      "targets": [
+        {
+          "expr": "sum by (service) (increase(platform_retention_service_targets_total{service=~\"$service\",target_status=\"DRY_RUN_READY\"}[1h]))",
+          "legendFormat": "{{service}}"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Inventory-only target count by service",
+      "gridPos": {"x": 0, "y": 8, "w": 12, "h": 8},
+      "targets": [
+        {
+          "expr": "sum by (service) (increase(platform_retention_service_targets_total{service=~\"$service\",target_status=\"INVENTORY_ONLY\"}[1h]))",
+          "legendFormat": "{{service}}"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Legal-hold blocked target count by service",
+      "gridPos": {"x": 12, "y": 8, "w": 12, "h": 8},
+      "targets": [
+        {
+          "expr": "sum by (service) (increase(platform_retention_service_blocked_targets_total{service=~\"$service\"}[1h]))",
+          "legendFormat": "{{service}}"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Service unavailable warning count",
+      "gridPos": {"x": 0, "y": 16, "w": 8, "h": 7},
+      "targets": [
+        {
+          "expr": "sum by (service) (increase(platform_retention_service_warnings_total{service=~\"$service\",warning_code=\"SERVICE_UNAVAILABLE\"}[1h]))",
+          "legendFormat": "{{service}}"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Capped count warning count",
+      "gridPos": {"x": 8, "y": 16, "w": 8, "h": 7},
+      "targets": [
+        {
+          "expr": "sum by (service) (increase(platform_retention_service_warnings_total{service=~\"$service\",warning_code=\"COUNT_CAPPED\"}[1h]))",
+          "legendFormat": "{{service}}"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Plan generation result count",
+      "gridPos": {"x": 16, "y": 16, "w": 8, "h": 7},
+      "targets": [
+        {
+          "expr": "sum by (result) (increase(platform_retention_plan_generated_total[1h]))",
+          "legendFormat": "{{result}}"
+        }
+      ]
+    },
+    {
+      "type": "table",
+      "title": "Last known readiness by service / status",
+      "description": "Most recent aggregate readiness snapshot. Aggregate-only counters; no high-cardinality labels.",
+      "gridPos": {"x": 0, "y": 23, "w": 24, "h": 8},
+      "targets": [
+        {
+          "expr": "sum by (service, status) (increase(platform_retention_service_summary_total{service=~\"$service\"}[6h]))",
+          "legendFormat": "{{service}} / {{status}}",
+          "format": "table",
+          "instant": true
+        }
+      ]
+    }
+  ]
+}

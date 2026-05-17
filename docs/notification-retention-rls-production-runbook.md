@@ -160,6 +160,15 @@ Exit kodları:
 | `3` | Privacy guardrail ihlali (forbidden token response'ta) |
 | `4` | Schema/shape mismatch (eksik key, hatalı tip) |
 
+Ham API response body CI log'una yazılmaz.
+
+### CI (Faz 108 / Faz 109)
+
+- Fixture: `test-content-notification-retention-smoke-fixtures.sh` in job `retention-smoke-fixtures`.
+- Live staging: `retention-staging-smoke` (opt-in). Workflow: [`.github/workflows/retention-readiness.yml`](../.github/workflows/retention-readiness.yml).
+- Faz 109: GitHub job summary + artifact `retention-staging-smoke-evidence` — notification domain satırı sanitized status/exit/message içerir.
+- Optional SQL: `check-notification-retention-rls-readiness.sql` (manual `psql`).
+
 Production enable için `EXPECT_NOTIFICATION_RETENTION_READY=true` ile exit 0 zorunlu.
 
 ## 10. Rollback / Disable

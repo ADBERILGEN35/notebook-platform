@@ -179,3 +179,55 @@
 - Backend (Faz 102) maps `PermissionDeniedDataAccessException` / SQLState `42501` to `NOTIFICATION_RETENTION_DB_PERMISSION_DENIED` instead of raw SQL leakage; raw SQL state or message never reaches the admin response. Faz 103 adds no production code.
 - The Faz 83 retention worker (`/internal/admin/notifications/retention/*`) and the Faz 102 platform endpoint (`/internal/admin/retention/notification/plan`) are distinct and run side by side; worker schedule, purge limits and Faz 84 legal-hold behavior are unchanged. Destructive purge is still not implemented.
 - Runbook: [`docs/notification-retention-rls-production-runbook.md`](notification-retention-rls-production-runbook.md).
+
+## Faz 104 readiness checks
+
+- Platform retention plan response now returns an **optional, additive** `serviceSummaries[]` field; the existing `targets[]` contract is unchanged and clients that ignore the field keep working.
+- `serviceSummaries` is aggregate-only: it carries registry status, counts, legal-hold flags and symbolic warning codes only — no note/comment/notification body, recipient/user email, workspace/note/user id, or legal-hold reason.
+- Service summary `status` follows precedence `ERROR > UNAVAILABLE > DISABLED > BLOCKED_BY_HOLD > PARTIAL > READY > INVENTORY_ONLY`; operators interpret `UNAVAILABLE`/`ERROR` as an RLS/integration readiness gap (see Faz 101/103 runbooks).
+- With production defaults (`*_DRY_RUN_*_ENABLED=false`, `*_INTEGRATION_ENABLED=false`), content/notification summaries are expected to be `DISABLED`/`INVENTORY_ONLY`; this is normal and must not page.
+- No new gateway metric code was added in Faz 104; dashboards/alerts use existing bounded `content_retention_*`, `notification_retention_*`, `platform_retention_*` series. Future bounded summary metrics are specified (not implemented) in the readiness doc.
+- Admin permission gate (`admin:retention:read`, `PLATFORM_RETENTION_GOVERNANCE_ENABLED`) and dry-run-only constraint are unchanged; no destructive purge.
+- Dashboard/observability reference: [`docs/platform-retention-dashboard-readiness.md`](platform-retention-dashboard-readiness.md).
+
+## Faz 105 readiness checks
+
+- Api-gateway now emits bounded-cardinality counters (`platform_retention_service_summary_total`, `platform_retention_service_targets_total`, `platform_retention_service_warnings_total`, `platform_retention_plan_generated_total`, `platform_retention_service_blocked_targets_total`, `platform_retention_service_capped_targets_total`) after `serviceSummaries` is computed.
+- All label values are mapped onto fixed allowlists (`service`/`status`/`target_status`/`warning_code`); unrecognised values collapse to `unknown` / `UNKNOWN_WARNING`. No `userId`/`email`/`workspaceId`/`noteId`/`requestId`/raw `targetKey`/legal-hold-key labels. `audit.*`/`security.*` targets report under `service="identity-service"` (registry-authoritative); there is no separate `audit-security` service label.
+- Metrics emission never mutates the plan and never throws; on plan-generation failure only `platform_retention_plan_generated_total{result="error"}` is emitted. Response contract (`targets[]`/`serviceSummaries[]`) is unchanged.
+- Grafana dashboard: [`observability/grafana/dashboards/platform-retention-readiness.json`](../observability/grafana/dashboards/platform-retention-readiness.json) (uid `platform-retention-readiness`). Prometheus rules: [`observability/prometheus/alerts/platform-retention-readiness.yml`](../observability/prometheus/alerts/platform-retention-readiness.yml) (separate file; `notebook-platform-alerts.yml` untouched). `PlatformRetentionBlockedByLegalHoldHigh` is `severity: info` — legal hold is expected governance and must not page.
+- No destructive purge/scheduler/delete; dry-run-only and admin permission gate unchanged. Detail: [`docs/platform-retention-dashboard-readiness.md`](platform-retention-dashboard-readiness.md) §4a/§5.
+
+## Faz 106 readiness checks
+
+- `WORKSPACE_RETENTION_DRY_RUN_COUNTS_ENABLED=false` and `WORKSPACE_RETENTION_INTEGRATION_ENABLED=false` remain production defaults; `SEARCH_RETENTION_*` likewise. Dev may enable per `deploy/gitops/environments/dev/values.yaml`.
+- Workspace dry-run targets: `workspace.invitations_expired`, `workspace.audit_like_events` (`DRY_RUN_READY` when enabled); core entity registry rows remain `INVENTORY_ONLY`.
+- Search dry-run targets: `search.documents_stale`, `search.reindex_jobs_terminal` (`DRY_RUN_READY`); `search.indexing_failures_terminal` inventory-only (no failure table).
+- Gateway merges workspace/search plans into platform plan; Faz 105 metrics include `workspace-service` and `search-service` in bounded allowlist.
+- Destructive purge/delete still not implemented.
+
+## Faz 107 readiness checks
+
+- Faz 107 adds **no production code**; operational preflight/smoke/runbook for Faz 106 workspace/search retention dry-run counts.
+- Before production enable, run read-only preflight: `scripts/retention/check-workspace-retention-rls-readiness.sql`, `scripts/retention/check-search-retention-rls-readiness.sql` (migration owner; dedicated roles `notebook_workspace_retention`, `notebook_search_retention` with `SELECT`-only).
+- Run gateway smoke: `workspace-retention-dry-run-smoke.sh`, `search-retention-dry-run-smoke.sh` with `EXPECT_WORKSPACE_RETENTION_READY=true` / `EXPECT_SEARCH_RETENTION_READY=true`; exit `0` required. Exit `2` blocks enable; exit `3` (privacy) and exit `4` (shape) block under any expectation.
+- Runbooks: [`docs/workspace-retention-rls-production-runbook.md`](workspace-retention-rls-production-runbook.md), [`docs/search-retention-rls-production-runbook.md`](search-retention-rls-production-runbook.md).
+- Smoke scripts must not leak workspace name, invitation/user email, search body/snippet/query, or raw indexed content (exit `3` guardrail).
+- `WORKSPACE_RETENTION_RLS_NOT_READY` / `SEARCH_RETENTION_RLS_NOT_READY` are reserved symbolic codes (backend may not emit; smoke treats them as readiness gap when expect true).
+- Observability: `workspace_retention_*` / `search_retention_*` service metrics and Faz 105 `platform_retention_service_summary_total{service=...}` dashboards should be reviewed before enable.
+
+## Faz 108 readiness checks
+
+- CI workflow [`.github/workflows/retention-readiness.yml`](../.github/workflows/retention-readiness.yml): **`retention-smoke-fixtures`** runs on every pull request and `main` push (no secrets): bash syntax check, content/notification/workspace/search fixture matrices, Grafana JSON + Prometheus YAML validation, `check-no-secrets.sh`.
+- **`retention-staging-smoke`** is opt-in only (`staging` branch push or manual `workflow_dispatch` with `run_staging_smoke=true`). Requires repository secrets `RETENTION_STAGING_API_BASE_URL` and `RETENTION_STAGING_ADMIN_ACCESS_TOKEN`; missing secrets → graceful skip (exit 0), not a failing gate. Never logs the token or raw API response bodies.
+- Staging smoke runs four scripts in order: `content-retention-dry-run-smoke.sh`, `notification-retention-dry-run-smoke.sh`, `workspace-retention-dry-run-smoke.sh`, `search-retention-dry-run-smoke.sh` with `EXPECT_*_RETENTION_READY` defaulting to `true` (override via repo variables `RETENTION_EXPECT_*_READY`).
+- Optional pre-rollout SQL (not wired in CI): `check-retention-rls-readiness.sql`, `check-notification-retention-rls-readiness.sql`, `check-workspace-retention-rls-readiness.sql`, `check-search-retention-rls-readiness.sql` — run manually with `psql` before production enable.
+- Aggregated staging exit: privacy `3` > shape `4` > readiness `2`. Production defaults and destructive purge constraints unchanged.
+
+## Faz 109 readiness checks
+
+- Staging smoke produces sanitized evidence: `retention-staging-smoke-results.json` and `retention-staging-smoke-summary.md` under `retention-staging-smoke-out/` (not committed; uploaded as artifact `retention-staging-smoke-evidence`).
+- GitHub Actions **job summary** tablo: domain (`content`, `notification`, `workspace`, `search`) × status × exit × expect × kısa message.
+- Domain status: `passed`, `expected-gap`, `readiness-gap`, `privacy-failure`, `shape-failure`, `skipped`. Missing secrets → overall `skipped`, message `skipped: missing staging secrets`, exit 0.
+- Artifact validation step (`validate-retention-staging-artifact.sh`): `json.tool` + forbidden token/body grep; no `ADMIN_ACCESS_TOKEN`, Bearer, raw JSON bodies, or PII field names.
+- `retention-smoke-fixtures` unchanged (required on PR/main); staging job still opt-in only.

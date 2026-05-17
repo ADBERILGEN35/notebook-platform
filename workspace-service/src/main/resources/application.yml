@@ -113,6 +113,20 @@ workspace:
       ttl-seconds: ${WORKSPACE_SERVICE_JWT_TTL_SECONDS:60}
       audience: ${WORKSPACE_SERVICE_JWT_SEARCH_AUDIENCE:search-service}
 
+workspace.retention:
+  dry-run-counts-enabled: ${WORKSPACE_RETENTION_DRY_RUN_COUNTS_ENABLED:false}
+  max-count-query-limit: ${WORKSPACE_RETENTION_MAX_COUNT_QUERY_LIMIT:100000}
+  expired-invitation-retention-days: ${WORKSPACE_RETENTION_EXPIRED_INVITATION_RETENTION_DAYS:90}
+  audit-event-retention-days: ${WORKSPACE_RETENTION_AUDIT_EVENT_RETENTION_DAYS:365}
+  admin:
+    kid: ${WORKSPACE_RETENTION_ADMIN_SERVICE_JWT_KID:}
+    public-key: ${WORKSPACE_RETENTION_ADMIN_SERVICE_JWT_PUBLIC_KEY:}
+    public-key-path: ${WORKSPACE_RETENTION_ADMIN_SERVICE_JWT_PUBLIC_KEY_PATH:}
+    issuer: ${WORKSPACE_RETENTION_ADMIN_SERVICE_JWT_ISSUER:retention-admin}
+    audience: ${WORKSPACE_RETENTION_ADMIN_SERVICE_JWT_AUDIENCE:workspace-service}
+    clock-skew-seconds: ${WORKSPACE_RETENTION_ADMIN_SERVICE_JWT_CLOCK_SKEW_SECONDS:5}
+    allowed-scopes: ${WORKSPACE_RETENTION_ADMIN_SERVICE_JWT_ALLOWED_SCOPES:internal:admin:retention:read}
+
 audit:
   admin:
     kid: ${AUDIT_ADMIN_SERVICE_JWT_KID:}

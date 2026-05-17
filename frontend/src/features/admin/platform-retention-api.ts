@@ -35,11 +35,26 @@ export const retentionPlanTargetSchema = z.object({
   cutoff: z.string().nullable().optional(),
 })
 
+export const retentionServiceSummarySchema = z.object({
+  service: z.string(),
+  dataClass: z.string(),
+  status: z.string(),
+  totalTargets: z.number(),
+  dryRunReadyTargets: z.number(),
+  inventoryOnlyTargets: z.number(),
+  unavailableTargets: z.number(),
+  blockedTargets: z.number(),
+  cappedTargets: z.number(),
+  warningCount: z.number(),
+  warnings: z.array(z.string()),
+})
+
 export const retentionPlanResponseSchema = z.object({
   generatedAt: z.string(),
   dryRun: z.boolean(),
   targets: z.array(retentionPlanTargetSchema),
   warnings: z.array(z.string()),
+  serviceSummaries: z.array(retentionServiceSummarySchema).optional(),
 })
 
 export const platformLegalHoldSchema = z.object({
@@ -61,6 +76,7 @@ export const platformLegalHoldListSchema = z.object({
 
 export type RetentionTargetsResponse = z.infer<typeof retentionTargetsResponseSchema>
 export type RetentionPlanResponse = z.infer<typeof retentionPlanResponseSchema>
+export type RetentionServiceSummary = z.infer<typeof retentionServiceSummarySchema>
 export type PlatformLegalHoldList = z.infer<typeof platformLegalHoldListSchema>
 
 export async function fetchPlatformRetentionTargets(): Promise<RetentionTargetsResponse> {

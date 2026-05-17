@@ -127,6 +127,52 @@ class AdminPlatformRetentionProxyServiceTest {
   }
 
   @Test
+  void mergeSearchPlanOverridesSearchTargetFields() {
+    Map<String, Object> plan = new LinkedHashMap<>();
+    Map<String, Object> stale = new LinkedHashMap<>();
+    stale.put("targetKey", "search.documents_stale");
+    stale.put("status", "INVENTORY_ONLY");
+    stale.put("eligibleCount", null);
+    stale.put("purgeableCount", 0);
+    stale.put("blockedByLegalHold", false);
+    stale.put("warnings", new java.util.ArrayList<>());
+    plan.put("targets", new java.util.ArrayList<>(List.of(stale)));
+
+    Map<String, Object> search =
+        Map.of(
+            "targets",
+            List.of(
+                Map.of(
+                    "targetKey",
+                    "search.documents_stale",
+                    "status",
+                    "DRY_RUN_READY",
+                    "eligibleCount",
+                    88,
+                    "purgeableCount",
+                    88,
+                    "blockedByLegalHold",
+                    false,
+                    "warnings",
+                    List.of())));
+
+    AdminPlatformRetentionProxyService.mergeSearchPlan(plan, search);
+
+    @SuppressWarnings("unchecked")
+    List<Map<String, Object>> targets = (List<Map<String, Object>>) plan.get("targets");
+    assertThat(targets.get(0).get("eligibleCount")).isEqualTo(88);
+    assertThat(targets.get(0).get("status")).isEqualTo("DRY_RUN_READY");
+  }
+
+  @Test
+  void serviceFromKey_mapsWorkspaceAndSearchPrefixes() {
+    assertThat(AdminPlatformRetentionProxyService.serviceFromKey("search.documents_stale"))
+        .isEqualTo("search-service");
+    assertThat(AdminPlatformRetentionProxyService.serviceFromKey("workspace.invitations_expired"))
+        .isEqualTo("workspace-service");
+  }
+
+  @Test
   void mergeNotificationPlanOverridesNotificationTargetFields() {
     Map<String, Object> plan = new LinkedHashMap<>();
     Map<String, Object> fanoutSent = new LinkedHashMap<>();
@@ -251,6 +297,171 @@ class AdminPlatformRetentionProxyServiceTest {
     @SuppressWarnings("unchecked")
     List<Object> warnings = (List<Object>) plan.get("warnings");
     assertThat(warnings).containsExactly("X", "NOTIFICATION_RETENTION_SERVICE_UNAVAILABLE");
+  }
+
+  @SuppressWarnings("unchecked")
+  private static List<Map<String, Object>> summariesOf(Map<String, Object> plan) {
+    AdminPlatformRetentionProxyService.applyServiceSummaries(plan);
+    return (List<Map<String, Object>>) plan.get("serviceSummaries");
+  }
+
+  private static Map<String, Object> target(
+      String targetKey, String service, String status, boolean blocked, List<String> warnings) {
+    Map<String, Object> row = new LinkedHashMap<>();
+    row.put("targetKey", targetKey);
+    row.put("service", service);
+    row.put("status", status);
+    row.put("blockedByLegalHold", blocked);
+    row.put("warnings", new java.util.ArrayList<>(warnings));
+    return row;
+  }
+
+  private static Map<String, Object> findSummary(
+      List<Map<String, Object>> summaries, String service) {
+    return summaries.stream()
+        .filter(s -> service.equals(s.get("service")))
+        .findFirst()
+        .orElseThrow();
+  }
+
+  @Test
+  void serviceSummariesAggregateContentTargetsAsReady() {
+    Map<String, Object> plan = new LinkedHashMap<>();
+    plan.put(
+        "targets",
+        new java.util.ArrayList<>(
+            List.of(
+                target(
+                    "content.note_versions", "content-service", "DRY_RUN_READY", false, List.of()),
+                target("content.comments", "content-service", "DRY_RUN_READY", false, List.of()))));
+
+    Map<String, Object> content = findSummary(summariesOf(plan), "content-service");
+
+    assertThat(content.get("dataClass")).isEqualTo("CONTENT");
+    assertThat(content.get("status")).isEqualTo("READY");
+    assertThat(content.get("totalTargets")).isEqualTo(2);
+    assertThat(content.get("dryRunReadyTargets")).isEqualTo(2);
+    assertThat(content.get("inventoryOnlyTargets")).isEqualTo(0);
+    assertThat(content.get("blockedTargets")).isEqualTo(0);
+  }
+
+  @Test
+  void serviceSummaryPartialWhenMixedReadyAndInventory() {
+    Map<String, Object> plan = new LinkedHashMap<>();
+    plan.put(
+        "targets",
+        new java.util.ArrayList<>(
+            List.of(
+                target(
+                    "notification.fanout_outbox_sent",
+                    "notification-service",
+                    "DRY_RUN_READY",
+                    false,
+                    List.of()),
+                target(
+                    "notification.notes",
+                    "notification-service",
+                    "INVENTORY_ONLY",
+                    false,
+                    List.of()))));
+
+    Map<String, Object> n = findSummary(summariesOf(plan), "notification-service");
+
+    assertThat(n.get("status")).isEqualTo("PARTIAL");
+    assertThat(n.get("dryRunReadyTargets")).isEqualTo(1);
+    assertThat(n.get("inventoryOnlyTargets")).isEqualTo(1);
+  }
+
+  @Test
+  void serviceSummaryReflectsLegalHoldBlock() {
+    Map<String, Object> plan = new LinkedHashMap<>();
+    plan.put(
+        "targets",
+        new java.util.ArrayList<>(
+            List.of(
+                target(
+                    "notification.fanout_outbox_sent",
+                    "notification-service",
+                    "DRY_RUN_READY",
+                    true,
+                    List.of("NOTIFICATION_RETENTION_LEGAL_HOLD_BLOCKED")))));
+
+    Map<String, Object> n = findSummary(summariesOf(plan), "notification-service");
+
+    assertThat(n.get("status")).isEqualTo("BLOCKED_BY_HOLD");
+    assertThat(n.get("blockedTargets")).isEqualTo(1);
+  }
+
+  @Test
+  void serviceSummaryReflectsServiceUnavailablePlanWarning() {
+    Map<String, Object> plan = new LinkedHashMap<>();
+    plan.put(
+        "targets",
+        new java.util.ArrayList<>(
+            List.of(
+                target(
+                    "content.note_versions",
+                    "content-service",
+                    "INVENTORY_ONLY",
+                    false,
+                    List.of()))));
+    plan.put(
+        "warnings", new java.util.ArrayList<>(List.of("CONTENT_RETENTION_SERVICE_UNAVAILABLE")));
+
+    Map<String, Object> content = findSummary(summariesOf(plan), "content-service");
+
+    assertThat(content.get("status")).isEqualTo("UNAVAILABLE");
+    @SuppressWarnings("unchecked")
+    List<Object> contentWarnings = (List<Object>) content.get("warnings");
+    assertThat(contentWarnings).contains("CONTENT_RETENTION_SERVICE_UNAVAILABLE");
+  }
+
+  @Test
+  void serviceSummaryDedupesWarningsAndCountsCapped() {
+    Map<String, Object> plan = new LinkedHashMap<>();
+    plan.put(
+        "targets",
+        new java.util.ArrayList<>(
+            List.of(
+                target(
+                    "notification.digest_items_terminal",
+                    "notification-service",
+                    "DRY_RUN_READY",
+                    false,
+                    List.of(
+                        "NOTIFICATION_RETENTION_QUERY_CAPPED",
+                        "NOTIFICATION_RETENTION_QUERY_CAPPED")))));
+    plan.put(
+        "warnings",
+        new java.util.ArrayList<>(List.of("PLATFORM_RETENTION_NOTIFICATION_PLAN_INCLUDED")));
+
+    Map<String, Object> n = findSummary(summariesOf(plan), "notification-service");
+
+    @SuppressWarnings("unchecked")
+    List<Object> warnings = (List<Object>) n.get("warnings");
+    assertThat(warnings)
+        .containsExactly(
+            "NOTIFICATION_RETENTION_QUERY_CAPPED", "PLATFORM_RETENTION_NOTIFICATION_PLAN_INCLUDED");
+    assertThat(n.get("warningCount")).isEqualTo(2);
+    assertThat(n.get("cappedTargets")).isEqualTo(1);
+  }
+
+  @Test
+  void applyServiceSummariesKeepsExistingTargetsContractIntact() {
+    Map<String, Object> plan = new LinkedHashMap<>();
+    Map<String, Object> noteVersions =
+        target("content.note_versions", "content-service", "DRY_RUN_READY", false, List.of());
+    noteVersions.put("eligibleCount", 1200);
+    plan.put("targets", new java.util.ArrayList<>(List.of(noteVersions)));
+
+    AdminPlatformRetentionProxyService.applyServiceSummaries(plan);
+
+    @SuppressWarnings("unchecked")
+    List<Map<String, Object>> targets = (List<Map<String, Object>>) plan.get("targets");
+    assertThat(targets).hasSize(1);
+    assertThat(targets.get(0).get("targetKey")).isEqualTo("content.note_versions");
+    assertThat(targets.get(0).get("eligibleCount")).isEqualTo(1200);
+    assertThat(plan).containsKey("serviceSummaries");
   }
 
   @Test

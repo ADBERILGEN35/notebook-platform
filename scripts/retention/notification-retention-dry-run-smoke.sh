@@ -36,15 +36,20 @@ EXPECT_READY="${EXPECT_NOTIFICATION_RETENTION_READY:-false}"
 response_file="$(mktemp)"
 trap 'rm -f "$response_file"' EXIT
 
-echo "Calling $API_BASE_URL/admin/retention/platform/plan ..."
-http_status="$(curl -sS -o "$response_file" -w "%{http_code}" \
-  -H "Authorization: Bearer $ADMIN_ACCESS_TOKEN" \
-  -H "Accept: application/json" \
-  "$API_BASE_URL/admin/retention/platform/plan?dryRun=true")"
+if [[ -n "${RETENTION_SMOKE_FIXTURE_FILE:-}" ]]; then
+  cp "$RETENTION_SMOKE_FIXTURE_FILE" "$response_file"
+  http_status="200"
+  echo "Using fixture $RETENTION_SMOKE_FIXTURE_FILE (no live gateway call)"
+else
+  echo "Calling $API_BASE_URL/admin/retention/platform/plan ..."
+  http_status="$(curl -sS -o "$response_file" -w "%{http_code}" \
+    -H "Authorization: Bearer $ADMIN_ACCESS_TOKEN" \
+    -H "Accept: application/json" \
+    "$API_BASE_URL/admin/retention/platform/plan?dryRun=true")"
+fi
 
 if [[ "$http_status" != "200" ]]; then
-  echo "Unexpected HTTP status $http_status (schema/contract failure)" >&2
-  cat "$response_file" >&2
+  echo "Unexpected HTTP status $http_status (schema/contract failure; response body withheld)" >&2
   exit 4
 fi
 

@@ -100,6 +100,19 @@ search:
       audience: ${TRUSTED_SERVICE_WORKSPACE_CLIENT_AUDIENCE:search-service}
       clock-skew-seconds: ${TRUSTED_SERVICE_WORKSPACE_CLIENT_CLOCK_SKEW_SECONDS:5}
       allowed-scopes: ${TRUSTED_SERVICE_WORKSPACE_CLIENT_ALLOWED_SCOPES:internal:search:permission:write}
+  retention:
+    dry-run-counts-enabled: ${SEARCH_RETENTION_DRY_RUN_COUNTS_ENABLED:false}
+    max-count-query-limit: ${SEARCH_RETENTION_MAX_COUNT_QUERY_LIMIT:100000}
+    stale-document-retention-days: ${SEARCH_RETENTION_STALE_DOCUMENT_RETENTION_DAYS:90}
+    terminal-job-retention-days: ${SEARCH_RETENTION_TERMINAL_JOB_RETENTION_DAYS:90}
+    admin:
+      kid: ${SEARCH_RETENTION_ADMIN_SERVICE_JWT_KID:}
+      public-key: ${SEARCH_RETENTION_ADMIN_SERVICE_JWT_PUBLIC_KEY:}
+      public-key-path: ${SEARCH_RETENTION_ADMIN_SERVICE_JWT_PUBLIC_KEY_PATH:}
+      issuer: ${SEARCH_RETENTION_ADMIN_SERVICE_JWT_ISSUER:retention-admin}
+      audience: ${SEARCH_RETENTION_ADMIN_SERVICE_JWT_AUDIENCE:search-service}
+      clock-skew-seconds: ${SEARCH_RETENTION_ADMIN_SERVICE_JWT_CLOCK_SKEW_SECONDS:5}
+      allowed-scopes: ${SEARCH_RETENTION_ADMIN_SERVICE_JWT_ALLOWED_SCOPES:internal:admin:retention:read}
   reindex:
     worker-enabled: ${SEARCH_REINDEX_WORKER_ENABLED:true}
     batch-size: ${SEARCH_REINDEX_BATCH_SIZE:100}

@@ -43,7 +43,14 @@
       "Bash(bash *)",
       "Read(//tmp/**)",
       "Bash(python3 -)",
-      "Bash(./gradlew :notification-service:test --tests \"*platformretention*\" --no-build-cache --no-configuration-cache)"
+      "Bash(./gradlew :notification-service:test --tests \"*platformretention*\" --no-build-cache --no-configuration-cache)",
+      "Bash(./gradlew :api-gateway:spotlessApply :api-gateway:test --tests \"*AdminPlatformRetention*\" --no-build-cache --no-configuration-cache)",
+      "Bash(npx vitest *)",
+      "Bash(./gradlew :api-gateway:spotlessApply --no-build-cache --no-configuration-cache -q)",
+      "Bash(python3 -m json.tool observability/grafana/dashboards/platform-retention-readiness.json)",
+      "Bash(python3 -c \"import yaml,sys; d=yaml.safe_load\\(open\\('observability/prometheus/alerts/platform-retention-readiness.yml'\\)\\); print\\('PROM_YAML_OK groups=%d rules=%d' % \\(len\\(d['groups']\\), len\\(d['groups'][0]['rules']\\)\\)\\)\")",
+      "Bash(./gradlew :api-gateway:test --tests \"*AdminPlatformRetention*\" --tests \"*PlatformRetentionMetricsPublisher*\" --no-build-cache --no-configuration-cache)",
+      "Bash(echo \"SPOTLESS_EXIT=$?\")"
     ]
   }
 }

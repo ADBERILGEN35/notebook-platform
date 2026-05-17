@@ -1,0 +1,38 @@
+groups:
+  - name: platform-retention-readiness.rules
+    rules:
+      - alert: PlatformRetentionServiceUnavailable
+        expr: |
+          sum by (service) (
+            increase(platform_retention_service_summary_total{status="UNAVAILABLE"}[15m])
+          ) > 0
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Platform retention service unavailable for {{ $labels.service }}"
+          description: "Gateway could not reach the retention plan endpoint for {{ $labels.service }}; identity plan is preserved but the gap should be reviewed against the RLS readiness runbook."
+
+      - alert: PlatformRetentionCappedCounts
+        expr: |
+          sum by (service) (
+            increase(platform_retention_service_warnings_total{warning_code="COUNT_CAPPED"}[6h])
+          ) > 0
+        for: 30m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Platform retention dry-run counts capped for {{ $labels.service }}"
+          description: "Capped count warnings are recurring for {{ $labels.service }}; verify the count guardrail cap is sized correctly and not masking growth."
+
+      - alert: PlatformRetentionBlockedByLegalHoldHigh
+        expr: |
+          sum by (service) (
+            increase(platform_retention_service_blocked_targets_total[1h])
+          ) > 0
+        for: 1h
+        labels:
+          severity: info
+        annotations:
+          summary: "Platform retention targets blocked by legal hold for {{ $labels.service }}"
+          description: "Legal hold may be intentional governance behaviour. Informational only; escalate manually only if product policy says the hold scope is unexpected."

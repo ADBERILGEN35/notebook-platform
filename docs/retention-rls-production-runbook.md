@@ -4,7 +4,10 @@ Faz 99'da content-service'e eklenen aggregate-only retention dry-run count akı�
 
 Bu runbook destructive bir aksiyon önermez. Content delete, audit purge, object storage lifecycle ve eDiscovery export kapsam dışıdır.
 
-> **See also:** notification-service retention dry-run akışının production RLS runbook'u ayrı bir dökümandır: [`notification-retention-rls-production-runbook.md`](notification-retention-rls-production-runbook.md) (Faz 103, aynı patern; dedicated role `notebook_notification_retention`).
+> **See also:**
+> - notification-service: [`notification-retention-rls-production-runbook.md`](notification-retention-rls-production-runbook.md) (Faz 103; role `notebook_notification_retention`)
+> - workspace-service: [`workspace-retention-rls-production-runbook.md`](workspace-retention-rls-production-runbook.md) (Faz 107; role `notebook_workspace_retention`)
+> - search-service: [`search-retention-rls-production-runbook.md`](search-retention-rls-production-runbook.md) (Faz 107; role `notebook_search_retention`)
 
 ## 1. Amaç ve Kapsam
 
@@ -138,8 +141,9 @@ Script: [`scripts/retention/content-retention-dry-run-smoke.sh`](../scripts/rete
 Çalıştırma:
 
 ```bash
-BASE_URL=https://api.example.com \
-ACCESS_TOKEN="<admin JWT with admin:retention:read>" \
+export API_BASE_URL=https://api.example.com
+export ADMIN_ACCESS_TOKEN='<admin JWT with admin:retention:read>'
+export EXPECT_CONTENT_RETENTION_READY=true
 bash scripts/retention/content-retention-dry-run-smoke.sh
 ```
 
@@ -148,12 +152,17 @@ Script:
 - `/admin/retention/platform/plan?dryRun=true` çağırır.
 - Content target'ların (`content.note_versions`, `content.comments`, `content.search_documents`) plan'da göründüğünü doğrular.
 - `eligibleCount`, `purgeableCount` shape'lerini kontrol eder.
-- Response içinde `contentBlocks`, `noteBody`, `commentBody`, `userEmail`, `noteTitle` substring'lerinin geçmediğini doğrular.
-- Backend Faz 101 guardrail warning'lerini yakalar:
-  - `CONTENT_RETENTION_SERVICE_UNAVAILABLE` → exit 2 (degraded).
-  - `CONTENT_RETENTION_DB_PERMISSION_DENIED` veya `CONTENT_RETENTION_RLS_NOT_READY` → exit 3 (readiness gap).
+- Response içinde `contentBlocks`, `noteBody`, `commentBody`, `userEmail`, `noteTitle` substring'lerinin geçmediğini doğrular (exit `3` privacy).
+- Readiness gap warnings (`CONTENT_RETENTION_SERVICE_UNAVAILABLE`, `CONTENT_RETENTION_DRY_RUN_DISABLED`, `CONTENT_RETENTION_DB_PERMISSION_DENIED`, `CONTENT_RETENTION_RLS_NOT_READY`) → exit `2` when `EXPECT_CONTENT_RETENTION_READY=true`.
 
-Exit 0 dışında her durum production enable'ı bloke eder.
+Exit codes: `0` ok / expected gap; `2` readiness; `3` privacy; `4` shape. Ham response body loglanmaz.
+
+### CI (Faz 108 / Faz 109)
+
+- Fixture (no secret): `test-content-notification-retention-smoke-fixtures.sh` via workflow job `retention-smoke-fixtures`.
+- Live staging: `retention-staging-smoke` job (opt-in; secrets `RETENTION_STAGING_API_BASE_URL`, `RETENTION_STAGING_ADMIN_ACCESS_TOKEN`). See [`.github/workflows/retention-readiness.yml`](../.github/workflows/retention-readiness.yml).
+- **Faz 109 evidence:** job summary tablosu + artifact `retention-staging-smoke-evidence` (sanitized JSON/Markdown). Content satırı status: `passed` / `expected-gap` / `readiness-gap` / `privacy-failure` / `shape-failure` / `skipped`.
+- Optional SQL preflight: `check-retention-rls-readiness.sql` (manual `psql`, not in CI).
 
 ## 10. Rollback / Disable
 

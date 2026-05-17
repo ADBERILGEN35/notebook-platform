@@ -8,6 +8,7 @@ import com.notebook.lumen.gateway.error.ErrorResponse;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -34,24 +35,37 @@ public class AdminPlatformRetentionProxyService {
   static final String WARN_CONTENT_INCLUDED = "PLATFORM_RETENTION_CONTENT_PLAN_INCLUDED";
   static final String WARN_NOTIFICATION_UNAVAILABLE = "NOTIFICATION_RETENTION_SERVICE_UNAVAILABLE";
   static final String WARN_NOTIFICATION_INCLUDED = "PLATFORM_RETENTION_NOTIFICATION_PLAN_INCLUDED";
+  static final String WARN_SEARCH_UNAVAILABLE = "SEARCH_RETENTION_SERVICE_UNAVAILABLE";
+  static final String WARN_SEARCH_INCLUDED = "PLATFORM_RETENTION_SEARCH_PLAN_INCLUDED";
+  static final String WARN_WORKSPACE_UNAVAILABLE = "WORKSPACE_RETENTION_SERVICE_UNAVAILABLE";
+  static final String WARN_WORKSPACE_INCLUDED = "PLATFORM_RETENTION_WORKSPACE_PLAN_INCLUDED";
 
   private final GatewayAuditProxyProperties auditProxyProperties;
   private final ServiceJwtSigner serviceJwtSigner;
   private final WebClient webClient;
   private final ContentRetentionClient contentRetentionClient;
   private final NotificationRetentionClient notificationRetentionClient;
+  private final SearchRetentionClient searchRetentionClient;
+  private final WorkspaceRetentionClient workspaceRetentionClient;
+  private final PlatformRetentionMetricsPublisher metricsPublisher;
 
   public AdminPlatformRetentionProxyService(
       GatewayAuditProxyProperties auditProxyProperties,
       ServiceJwtSigner serviceJwtSigner,
       WebClient.Builder webClientBuilder,
       ContentRetentionClient contentRetentionClient,
-      NotificationRetentionClient notificationRetentionClient) {
+      NotificationRetentionClient notificationRetentionClient,
+      SearchRetentionClient searchRetentionClient,
+      WorkspaceRetentionClient workspaceRetentionClient,
+      PlatformRetentionMetricsPublisher metricsPublisher) {
     this.auditProxyProperties = auditProxyProperties;
     this.serviceJwtSigner = serviceJwtSigner;
     this.webClient = webClientBuilder.build();
     this.contentRetentionClient = contentRetentionClient;
     this.notificationRetentionClient = notificationRetentionClient;
+    this.searchRetentionClient = searchRetentionClient;
+    this.workspaceRetentionClient = workspaceRetentionClient;
+    this.metricsPublisher = metricsPublisher;
   }
 
   public Mono<ResponseEntity<Object>> targets(String requestId, String path) {
@@ -68,7 +82,11 @@ public class AdminPlatformRetentionProxyService {
     String planUrl = ub.build(true).toUriString();
     String holdsUrl = baseUrl() + "/legal-holds?status=ACTIVE";
 
-    boolean holdsNeeded = contentRetentionClient.enabled() || notificationRetentionClient.enabled();
+    boolean holdsNeeded =
+        contentRetentionClient.enabled()
+            || notificationRetentionClient.enabled()
+            || searchRetentionClient.enabled()
+            || workspaceRetentionClient.enabled();
     Mono<Map<String, Object>> planMono = getMap(planUrl, READ_SCOPE, requestId);
     Mono<Map<String, Object>> holdsMono =
         holdsNeeded
@@ -81,10 +99,22 @@ public class AdminPlatformRetentionProxyService {
               Map<String, Object> plan = mutableMap(tuple.getT1());
               Set<String> holdScopes = extractHoldScopes(tuple.getT2());
               return mergeContent(plan, holdScopes, requestId)
-                  .flatMap(p -> mergeNotification(p, holdScopes, requestId));
+                  .flatMap(p -> mergeNotification(p, holdScopes, requestId))
+                  .flatMap(p -> mergeSearch(p, holdScopes, requestId))
+                  .flatMap(p -> mergeWorkspace(p, holdScopes, requestId))
+                  .map(
+                      p -> {
+                        applyServiceSummaries(p);
+                        metricsPublisher.publish(p);
+                        return p;
+                      });
             })
         .map(AdminPlatformRetentionProxyService::planToOk)
-        .onErrorResume(e -> Mono.just(mapException(e, path, requestId)));
+        .onErrorResume(
+            e -> {
+              metricsPublisher.recordPlanGenerationFailure();
+              return Mono.just(mapException(e, path, requestId));
+            });
   }
 
   private Mono<Map<String, Object>> mergeContent(
@@ -123,6 +153,46 @@ public class AdminPlatformRetentionProxyService {
         .onErrorResume(
             e -> {
               addWarning(plan, WARN_NOTIFICATION_UNAVAILABLE);
+              return Mono.just(plan);
+            });
+  }
+
+  private Mono<Map<String, Object>> mergeSearch(
+      Map<String, Object> plan, Set<String> holdScopes, String requestId) {
+    if (!searchRetentionClient.enabled()) {
+      return Mono.just(plan);
+    }
+    return searchRetentionClient
+        .fetchPlan(holdScopes, requestId)
+        .map(
+            searchBody -> {
+              mergeSearchPlan(plan, searchBody);
+              addWarning(plan, WARN_SEARCH_INCLUDED);
+              return plan;
+            })
+        .onErrorResume(
+            e -> {
+              addWarning(plan, WARN_SEARCH_UNAVAILABLE);
+              return Mono.just(plan);
+            });
+  }
+
+  private Mono<Map<String, Object>> mergeWorkspace(
+      Map<String, Object> plan, Set<String> holdScopes, String requestId) {
+    if (!workspaceRetentionClient.enabled()) {
+      return Mono.just(plan);
+    }
+    return workspaceRetentionClient
+        .fetchPlan(holdScopes, requestId)
+        .map(
+            workspaceBody -> {
+              mergeWorkspacePlan(plan, workspaceBody);
+              addWarning(plan, WARN_WORKSPACE_INCLUDED);
+              return plan;
+            })
+        .onErrorResume(
+            e -> {
+              addWarning(plan, WARN_WORKSPACE_UNAVAILABLE);
               return Mono.just(plan);
             });
   }
@@ -266,6 +336,66 @@ public class AdminPlatformRetentionProxyService {
   }
 
   @SuppressWarnings("unchecked")
+  static void mergeSearchPlan(Map<String, Object> plan, Map<String, Object> searchBody) {
+    mergeRetentionServicePlan(plan, searchBody);
+  }
+
+  @SuppressWarnings("unchecked")
+  static void mergeWorkspacePlan(Map<String, Object> plan, Map<String, Object> workspaceBody) {
+    mergeRetentionServicePlan(plan, workspaceBody);
+  }
+
+  @SuppressWarnings("unchecked")
+  private static void mergeRetentionServicePlan(
+      Map<String, Object> plan, Map<String, Object> serviceBody) {
+    if (plan == null || serviceBody == null) return;
+    Object planTargetsObj = plan.get("targets");
+    Object serviceTargetsObj = serviceBody.get("targets");
+    if (!(planTargetsObj instanceof List<?> planTargets)
+        || !(serviceTargetsObj instanceof List<?> serviceTargets)) {
+      return;
+    }
+    Map<String, Map<String, Object>> serviceByKey = new LinkedHashMap<>();
+    for (Object t : serviceTargets) {
+      if (t instanceof Map<?, ?> row) {
+        Object key = row.get("targetKey");
+        if (key != null) {
+          serviceByKey.put(key.toString(), (Map<String, Object>) row);
+        }
+      }
+    }
+    List<Object> mergedTargets = new ArrayList<>();
+    for (Object t : planTargets) {
+      if (!(t instanceof Map<?, ?> row)) {
+        mergedTargets.add(t);
+        continue;
+      }
+      Map<String, Object> mutable = mutableMap((Map<String, Object>) row);
+      Object key = mutable.get("targetKey");
+      if (key != null) {
+        Map<String, Object> serviceRow = serviceByKey.get(key.toString());
+        if (serviceRow != null) {
+          for (String field :
+              List.of(
+                  "eligibleCount",
+                  "purgeableCount",
+                  "blockedByLegalHold",
+                  "status",
+                  "defaultRetentionDays",
+                  "cutoff")) {
+            if (serviceRow.containsKey(field)) {
+              mutable.put(field, serviceRow.get(field));
+            }
+          }
+          mergeWarnings(mutable, serviceRow.get("warnings"));
+        }
+      }
+      mergedTargets.add(mutable);
+    }
+    plan.put("targets", mergedTargets);
+  }
+
+  @SuppressWarnings("unchecked")
   private static void mergeWarnings(Map<String, Object> target, Object extra) {
     if (!(extra instanceof List<?> extraWarnings) || extraWarnings.isEmpty()) return;
     Object existing = target.get("warnings");
@@ -289,6 +419,223 @@ public class AdminPlatformRetentionProxyService {
     }
     if (!merged.contains(warning)) merged.add(warning);
     plan.put("warnings", merged);
+  }
+
+  /**
+   * Derives an aggregate-only, per-service readiness summary from the merged target list and
+   * plan-level warnings, and writes it under the optional {@code serviceSummaries} key. The
+   * existing {@code targets} contract is left untouched (additive, backward-compatible). No raw
+   * domain data is read; only registry-level status, counts, legal-hold flags and symbolic warning
+   * codes are aggregated.
+   */
+  @SuppressWarnings("unchecked")
+  static void applyServiceSummaries(Map<String, Object> plan) {
+    if (plan == null) {
+      return;
+    }
+    Object targetsObj = plan.get("targets");
+    if (!(targetsObj instanceof List<?> targets)) {
+      return;
+    }
+    Map<String, ServiceSummaryAccumulator> byService = new LinkedHashMap<>();
+    for (Object t : targets) {
+      if (!(t instanceof Map<?, ?> rowRaw)) {
+        continue;
+      }
+      Map<String, Object> row = (Map<String, Object>) rowRaw;
+      String targetKey = str(row.get("targetKey"));
+      String serviceRaw = str(row.get("service"));
+      String service = serviceRaw.isBlank() ? serviceFromKey(targetKey) : serviceRaw;
+      ServiceSummaryAccumulator acc =
+          byService.computeIfAbsent(
+              service, s -> new ServiceSummaryAccumulator(s, dataClassFromKey(targetKey)));
+      acc.total++;
+      String status = str(row.get("status"));
+      if ("DRY_RUN_READY".equals(status)) {
+        acc.dryRunReady++;
+      } else if ("INVENTORY_ONLY".equals(status)) {
+        acc.inventoryOnly++;
+      } else if ("UNAVAILABLE".equals(status)) {
+        acc.unavailable++;
+      }
+      if (Boolean.TRUE.equals(row.get("blockedByLegalHold"))) {
+        acc.blocked++;
+      }
+      boolean capped = false;
+      if (row.get("warnings") instanceof List<?> tw) {
+        for (Object w : tw) {
+          if (w == null) {
+            continue;
+          }
+          String code = w.toString();
+          acc.warnings.add(code);
+          if (isCappedCode(code)) {
+            capped = true;
+          }
+        }
+      }
+      if (capped) {
+        acc.capped++;
+      }
+    }
+    if (plan.get("warnings") instanceof List<?> planWarnings) {
+      for (Object w : planWarnings) {
+        if (w == null) {
+          continue;
+        }
+        String code = w.toString();
+        String service = serviceForWarning(code);
+        ServiceSummaryAccumulator acc = service == null ? null : byService.get(service);
+        if (acc != null) {
+          acc.warnings.add(code);
+        }
+      }
+    }
+    List<Map<String, Object>> summaries = new ArrayList<>();
+    for (ServiceSummaryAccumulator acc : byService.values()) {
+      summaries.add(acc.toMap());
+    }
+    plan.put("serviceSummaries", summaries);
+  }
+
+  private static String str(Object value) {
+    return value == null ? "" : value.toString();
+  }
+
+  static String serviceFromKey(String targetKey) {
+    if (targetKey.startsWith("content.")) {
+      return "content-service";
+    }
+    if (targetKey.startsWith("notification.")) {
+      return "notification-service";
+    }
+    if (targetKey.startsWith("search.")) {
+      return "search-service";
+    }
+    if (targetKey.startsWith("workspace.")) {
+      return "workspace-service";
+    }
+    if (targetKey.startsWith("identity.")
+        || targetKey.startsWith("audit.")
+        || targetKey.startsWith("security.")) {
+      return "identity-service";
+    }
+    return "platform";
+  }
+
+  static String dataClassFromKey(String targetKey) {
+    if (targetKey.startsWith("content.") || targetKey.startsWith("workspace.")) {
+      return "CONTENT";
+    }
+    if (targetKey.startsWith("search.")) {
+      return "CONTENT";
+    }
+    if (targetKey.startsWith("notification.")) {
+      return "NOTIFICATION";
+    }
+    if (targetKey.startsWith("identity.")) {
+      return "IDENTITY";
+    }
+    if (targetKey.startsWith("audit.") || targetKey.startsWith("security.")) {
+      return "AUDIT_SECURITY";
+    }
+    return "PLATFORM";
+  }
+
+  private static String serviceForWarning(String code) {
+    if (code.startsWith("CONTENT_RETENTION_") || code.startsWith("PLATFORM_RETENTION_CONTENT_")) {
+      return "content-service";
+    }
+    if (code.startsWith("NOTIFICATION_RETENTION_")
+        || code.startsWith("PLATFORM_RETENTION_NOTIFICATION_")) {
+      return "notification-service";
+    }
+    if (code.startsWith("SEARCH_RETENTION_") || code.startsWith("PLATFORM_RETENTION_SEARCH_")) {
+      return "search-service";
+    }
+    if (code.startsWith("WORKSPACE_RETENTION_")
+        || code.startsWith("PLATFORM_RETENTION_WORKSPACE_")) {
+      return "workspace-service";
+    }
+    if (code.startsWith("IDENTITY_RETENTION_")
+        || code.startsWith("AUDIT_RETENTION_")
+        || code.startsWith("PLATFORM_RETENTION_IDENTITY_")) {
+      return "identity-service";
+    }
+    return null;
+  }
+
+  private static boolean isErrorCode(String code) {
+    return code.endsWith("_COUNT_FAILED")
+        || code.endsWith("_DB_PERMISSION_DENIED")
+        || code.endsWith("_DRY_RUN_FAILED");
+  }
+
+  private static boolean isCappedCode(String code) {
+    return code.endsWith("_QUERY_CAPPED") || code.endsWith("_COUNT_CAPPED");
+  }
+
+  /**
+   * Status precedence (spec Faz 104): {@code ERROR > UNAVAILABLE > DISABLED > BLOCKED_BY_HOLD >
+   * PARTIAL > READY > INVENTORY_ONLY}.
+   */
+  static String computeServiceStatus(ServiceSummaryAccumulator a) {
+    if (a.warnings.stream().anyMatch(AdminPlatformRetentionProxyService::isErrorCode)) {
+      return "ERROR";
+    }
+    if (a.unavailable > 0
+        || a.warnings.stream().anyMatch(w -> w.endsWith("_SERVICE_UNAVAILABLE"))) {
+      return "UNAVAILABLE";
+    }
+    if (a.warnings.stream().anyMatch(w -> w.endsWith("_DRY_RUN_DISABLED"))) {
+      return "DISABLED";
+    }
+    if (a.blocked > 0 || a.warnings.stream().anyMatch(w -> w.endsWith("_LEGAL_HOLD_BLOCKED"))) {
+      return "BLOCKED_BY_HOLD";
+    }
+    if (a.dryRunReady > 0 && a.inventoryOnly > 0) {
+      return "PARTIAL";
+    }
+    if (a.dryRunReady > 0) {
+      return "READY";
+    }
+    if (a.total > 0 && a.inventoryOnly == a.total) {
+      return "INVENTORY_ONLY";
+    }
+    return "PARTIAL";
+  }
+
+  static final class ServiceSummaryAccumulator {
+    final String service;
+    final String dataClass;
+    final Set<String> warnings = new LinkedHashSet<>();
+    int total;
+    int dryRunReady;
+    int inventoryOnly;
+    int unavailable;
+    int blocked;
+    int capped;
+
+    ServiceSummaryAccumulator(String service, String dataClass) {
+      this.service = service;
+      this.dataClass = dataClass;
+    }
+
+    Map<String, Object> toMap() {
+      Map<String, Object> m = new LinkedHashMap<>();
+      m.put("service", service);
+      m.put("dataClass", dataClass);
+      m.put("status", computeServiceStatus(this));
+      m.put("totalTargets", total);
+      m.put("dryRunReadyTargets", dryRunReady);
+      m.put("inventoryOnlyTargets", inventoryOnly);
+      m.put("unavailableTargets", unavailable);
+      m.put("blockedTargets", blocked);
+      m.put("cappedTargets", capped);
+      m.put("warningCount", warnings.size());
+      m.put("warnings", new ArrayList<>(warnings));
+      return m;
+    }
   }
 
   private static Map<String, Object> mutableMap(Map<String, Object> source) {

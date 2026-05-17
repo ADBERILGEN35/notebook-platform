@@ -192,6 +192,14 @@ gateway:
         enabled: ${NOTIFICATION_RETENTION_INTEGRATION_ENABLED:false}
         url: ${NOTIFICATION_RETENTION_INTERNAL_URL:http://notification-service:8084}
         timeout-ms: ${NOTIFICATION_RETENTION_INTERNAL_TIMEOUT_MS:3000}
+      search:
+        enabled: ${SEARCH_RETENTION_INTEGRATION_ENABLED:false}
+        url: ${SEARCH_RETENTION_INTERNAL_URL:http://search-service:8085}
+        timeout-ms: ${SEARCH_RETENTION_INTERNAL_TIMEOUT_MS:3000}
+      workspace:
+        enabled: ${WORKSPACE_RETENTION_INTEGRATION_ENABLED:false}
+        url: ${WORKSPACE_RETENTION_INTERNAL_URL:http://workspace-service:8082}
+        timeout-ms: ${WORKSPACE_RETENTION_INTERNAL_TIMEOUT_MS:3000}
     audit-export:
       enabled: ${GATEWAY_ADMIN_AUDIT_EXPORT_ENABLED:false}
       max-range-days: ${GATEWAY_ADMIN_AUDIT_EXPORT_MAX_RANGE_DAYS:31}

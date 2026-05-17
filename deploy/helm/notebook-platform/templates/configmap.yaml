@@ -384,6 +384,20 @@ data:
   NOTIFICATION_RETENTION_INTEGRATION_ENABLED: {{ .Values.config.notificationRetentionIntegrationEnabled | quote }}
   NOTIFICATION_RETENTION_INTERNAL_URL: {{ .Values.config.notificationRetentionInternalUrl | quote }}
   NOTIFICATION_RETENTION_INTERNAL_TIMEOUT_MS: {{ .Values.config.notificationRetentionInternalTimeoutMs | quote }}
+  SEARCH_RETENTION_DRY_RUN_COUNTS_ENABLED: {{ .Values.config.searchRetentionDryRunCountsEnabled | quote }}
+  SEARCH_RETENTION_MAX_COUNT_QUERY_LIMIT: {{ .Values.config.searchRetentionMaxCountQueryLimit | quote }}
+  SEARCH_RETENTION_STALE_DOCUMENT_RETENTION_DAYS: {{ .Values.config.searchRetentionStaleDocumentRetentionDays | quote }}
+  SEARCH_RETENTION_TERMINAL_JOB_RETENTION_DAYS: {{ .Values.config.searchRetentionTerminalJobRetentionDays | quote }}
+  SEARCH_RETENTION_INTEGRATION_ENABLED: {{ .Values.config.searchRetentionIntegrationEnabled | quote }}
+  SEARCH_RETENTION_INTERNAL_URL: {{ .Values.config.searchRetentionInternalUrl | quote }}
+  SEARCH_RETENTION_INTERNAL_TIMEOUT_MS: {{ .Values.config.searchRetentionInternalTimeoutMs | quote }}
+  WORKSPACE_RETENTION_DRY_RUN_COUNTS_ENABLED: {{ .Values.config.workspaceRetentionDryRunCountsEnabled | quote }}
+  WORKSPACE_RETENTION_MAX_COUNT_QUERY_LIMIT: {{ .Values.config.workspaceRetentionMaxCountQueryLimit | quote }}
+  WORKSPACE_RETENTION_EXPIRED_INVITATION_RETENTION_DAYS: {{ .Values.config.workspaceRetentionExpiredInvitationRetentionDays | quote }}
+  WORKSPACE_RETENTION_AUDIT_EVENT_RETENTION_DAYS: {{ .Values.config.workspaceRetentionAuditEventRetentionDays | quote }}
+  WORKSPACE_RETENTION_INTEGRATION_ENABLED: {{ .Values.config.workspaceRetentionIntegrationEnabled | quote }}
+  WORKSPACE_RETENTION_INTERNAL_URL: {{ .Values.config.workspaceRetentionInternalUrl | quote }}
+  WORKSPACE_RETENTION_INTERNAL_TIMEOUT_MS: {{ .Values.config.workspaceRetentionInternalTimeoutMs | quote }}
   SCIM_GROUP_NESTING_ENABLED: {{ .Values.config.scimGroupNestingEnabled | quote }}
   SCIM_GROUP_NESTING_MAX_DEPTH: {{ .Values.config.scimGroupNestingMaxDepth | quote }}
   SCIM_BULK_ENABLED: {{ .Values.config.scimBulkEnabled | quote }}

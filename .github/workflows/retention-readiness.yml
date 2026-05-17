@@ -1,0 +1,73 @@
+name: Retention Readiness
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - staging
+  workflow_dispatch:
+    inputs:
+      run_staging_smoke:
+        description: Run live staging retention smoke (requires RETENTION_STAGING_* secrets)
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  retention-smoke-fixtures:
+    name: retention-smoke-fixtures
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run retention fixture matrix and observability validation
+        run: bash scripts/retention/ci-retention-smoke-fixtures.sh
+
+  retention-staging-smoke:
+    name: retention-staging-smoke
+    runs-on: ubuntu-latest
+    if: |
+      (github.event_name == 'push' && github.ref == 'refs/heads/staging') ||
+      (github.event_name == 'workflow_dispatch' && inputs.run_staging_smoke == true)
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Staging retention dry-run smoke
+        id: staging_smoke
+        env:
+          RETENTION_STAGING_SMOKE_OUTPUT_DIR: retention-staging-smoke-out
+          API_BASE_URL: ${{ secrets.RETENTION_STAGING_API_BASE_URL }}
+          ADMIN_ACCESS_TOKEN: ${{ secrets.RETENTION_STAGING_ADMIN_ACCESS_TOKEN }}
+          EXPECT_CONTENT_RETENTION_READY: ${{ vars.RETENTION_EXPECT_CONTENT_READY || 'true' }}
+          EXPECT_NOTIFICATION_RETENTION_READY: ${{ vars.RETENTION_EXPECT_NOTIFICATION_READY || 'true' }}
+          EXPECT_WORKSPACE_RETENTION_READY: ${{ vars.RETENTION_EXPECT_WORKSPACE_READY || 'true' }}
+          EXPECT_SEARCH_RETENTION_READY: ${{ vars.RETENTION_EXPECT_SEARCH_READY || 'true' }}
+        run: bash scripts/retention/run-retention-staging-smoke.sh
+
+      - name: Validate staging smoke artifact
+        if: always()
+        env:
+          RETENTION_STAGING_SMOKE_OUTPUT_DIR: retention-staging-smoke-out
+        run: bash scripts/retention/validate-retention-staging-artifact.sh
+
+      - name: Render GitHub job summary
+        if: always()
+        env:
+          RETENTION_STAGING_SMOKE_OUTPUT_DIR: retention-staging-smoke-out
+        run: bash scripts/retention/render-retention-staging-github-summary.sh
+
+      - name: Upload staging smoke evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: retention-staging-smoke-evidence
+          path: |
+            retention-staging-smoke-out/retention-staging-smoke-results.json
+            retention-staging-smoke-out/retention-staging-smoke-summary.md
+          if-no-files-found: warn
