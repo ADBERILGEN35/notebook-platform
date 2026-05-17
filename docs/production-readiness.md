@@ -299,3 +299,163 @@
 - **Evidence:** `scripts/scim/scim-delta-evidence-formats.md`, `generate-scim-delta-evidence-template.sh`, `scim-delta-remote-fetch-smoke.sh` (sanitized JSON; privacy violation = highest-priority failure).
 - **No scheduler, no multi-page loop, no IdP mutation, no deprovision from missing delta.**
 - Spec: [`phase-118.md`](phases/phase-118.md).
+
+## Faz 119 readiness checks (SCIM delta multi-page loop)
+
+- **Multi-page default off:** `SCIM_DELTA_REMOTE_MULTI_PAGE_ENABLED=false`, `SCIM_DELTA_REMOTE_MAX_PAGES=1`.
+- **Bounds:** `SCIM_DELTA_REMOTE_MAX_RESOURCES=500`, `SCIM_DELTA_REMOTE_MAX_PAGE_SIZE`, HTTP timeout/backoff from Faz 116–117.
+- **Manual dry-run only** — no scheduler; GET-only; loop stops on 429/5xx/timeout/bad JSON (advisory backoff only).
+- **No raw cursor/next URL** in API, logs, or evidence JSON.
+- **No deprovision / DB user mutation** from delta pages.
+- Spec: [`phase-119.md`](phases/phase-119.md).
+
+## Faz 120 readiness checks (SCIM delta sandbox certification)
+
+- **No production scheduler** or provider mutation in this phase (docs/scripts only).
+- **Evidence schema:** `scim-delta-evidence-v1` + validator + certification checklist for Okta, Entra, generic.
+- **Blockers documented:** token/body/cursor leak, non-GET, missing-from-delta deprovision, unbounded pagination.
+- **CI:** `ci-scim-delta-remote-fetch-fixtures.sh` validates fixtures + privacy rejection; no live IdP.
+- **Manual sandbox:** operators run smoke + checklist per provider before scheduler approval.
+- Docs: [`scim-delta-sandbox-evidence.md`](scim-delta-sandbox-evidence.md), [`scim-delta-provider-certification.md`](scim-delta-provider-certification.md), [`phase-120.md`](phases/phase-120.md).
+
+## Faz 121 readiness checks (SCIM delta staging evidence gate)
+
+- **Workflow:** `.github/workflows/scim-delta-readiness.yml` — fixtures on PR/main; live sandbox only `staging` + `workflow_dispatch`.
+- **Artifacts:** `scim-delta-sandbox-evidence.json`, checklist markdown, summary markdown.
+- **Skip without secrets:** exit `0`, `certificationResult=skipped`.
+- **Privacy:** exit `3`; blocked certification exit `5`.
+- **CR handoff:** attach workflow artifacts + signed checklist; no raw IdP payloads.
+- Spec: [`phase-121.md`](phases/phase-121.md).
+
+## Faz 122 readiness checks (break-glass revocation)
+
+- **Revocation:** `BREAK_GLASS_REVOCATION_ENABLED` + gateway denylist check before production drills.
+- **API:** `/admin/security/break-glass/sessions` — list/revoke/revoke-all; MFA on writes.
+- **Privacy:** no token/JWT in UI, logs, or audit payloads.
+- Spec: [`phase-122.md`](phases/phase-122.md).
+
+## Faz 123 readiness checks (break-glass revocation staging drill)
+
+- **Drill:** `scripts/security/run-break-glass-revocation-evidence.sh`; artifacts JSON + summary (sanitized).
+- **Workflow:** `.github/workflows/break-glass-revocation-readiness.yml` — fixtures on PR/main; live drill `workflow_dispatch` only.
+- **Skip without secrets:** `result=skipped`, exit `0`.
+- **Pass criteria:** revoked break-glass JWT → gateway `401` + `BREAK_GLASS_TOKEN_REVOKED`.
+- Spec: [`phase-123.md`](phases/phase-123.md).
+
+## Faz 124 — Backend final readiness (security review)
+
+**Verdict:** [`READY_WITH_PREPROD_BLOCKERS`](backend-production-readiness-review.md) (2026-05-17).
+
+| Area | Status |
+|------|--------|
+| Chart dangerous defaults | **PASS** — CI `ci-backend-production-readiness-review.sh` |
+| Committed secrets scan | **PASS** — `check-no-secrets.sh` |
+| Readiness workflows (fixtures) | **PASS** — retention, SCIM delta, break-glass revocation |
+| Targeted backend tests | **PASS** — BreakGlass / Scim / Admin |
+| Live staging evidence | **PENDING** — PP-1 SCIM sandbox, PP-2 BG drill, PP-3 retention datasource E2E |
+
+**Documents:** [`backend-production-readiness-review.md`](backend-production-readiness-review.md), [`backend-production-readiness-checklist.md`](backend-production-readiness-checklist.md), [`phase-124.md`](phases/phase-124.md).
+
+**Production flag enablement:** **NO-GO** until pre-prod blockers closed per flag family (see review § Open blockers).
+
+## Faz 125 — Backend pre-prod evidence bundle + approval gate
+
+- **Bundle:** `scripts/security/build-backend-preprod-evidence-bundle.sh` → `backend-preprod-evidence-bundle.json` + `backend-preprod-evidence-summary.md`.
+- **Gate:** [`backend-production-approval-gate.md`](backend-production-approval-gate.md) — PP-1 certified, PP-2 passed, PP-3 pass or `not_required`.
+- **Workflow:** `.github/workflows/backend-preprod-evidence-bundle.yml` — `workflow_dispatch` only; no secrets; uploads `backend-preprod-evidence-bundle` artifact.
+- **CI:** `scripts/security/ci-backend-preprod-evidence-bundle.sh` on PR/main (fixture matrix).
+- **Live staging:** Still required for production flag flip; empty/missing inputs → `NO_GO` by design.
+- Spec: [`phase-125.md`](phases/phase-125.md).
+
+## Faz 126 — Backend production flag flip plan + rollback matrix
+
+- **Plan:** [`backend-production-flag-flip-plan.md`](backend-production-flag-flip-plan.md) — wave order, per-flag prerequisites, forbidden combinations.
+- **Rollback:** [`backend-production-rollback-matrix.md`](backend-production-rollback-matrix.md) — GitOps revert, Argo rollback, pod restart, denylist TTL.
+- **CR template:** [`backend-production-change-request-template.md`](backend-production-change-request-template.md) — ties to pre-prod bundle `GO`.
+- **CI guard:** `scripts/security/validate-production-flag-plan.sh` + `ci-production-flag-plan.sh` (chart + prod overlay PASS; unsafe fixture FAIL).
+- **No production enables committed** in this phase.
+- Spec: [`phase-126.md`](phases/phase-126.md).
+
+## Faz 127 — Backend RC readiness gate (final CI smoke)
+
+- **Script:** `scripts/security/ci-backend-rc-readiness.sh` — secrets, dangerous defaults, flag plan, fixtures, targeted Gradle, Helm.
+- **Workflow:** `.github/workflows/backend-rc-readiness.yml` — `main` + `workflow_dispatch` full; PR lightweight (Gradle/Helm skip).
+- **Artifacts:** `backend-rc-readiness-results.json`, `backend-rc-readiness-summary.md`.
+- **Verdicts:** `PASS` | `PASS_WITH_ENVIRONMENT_SKIPS` | `FAIL`.
+- **Not in gate:** Docker/Testcontainers (`docker-ci` separate), frontend toolchain.
+- **Production flags:** not enabled by this phase.
+- Spec: [`phase-127.md`](phases/phase-127.md).
+
+## Faz 128 — Backend Docker CI (full Gradle + Testcontainers)
+
+- **Script:** `scripts/security/ci-backend-docker-check.sh` — Docker required on CI; full `check` + `rlsIntegrationTest` (configurable via `BACKEND_DOCKER_GRADLE_TASKS`).
+- **Workflow:** `.github/workflows/backend-docker-ci.yml` — `main` + `workflow_dispatch`; **not** default PR required.
+- **Artifacts:** `backend-docker-ci-results.json`, `backend-docker-ci-summary.md`.
+- **Verdicts:** `PASS` | `ENVIRONMENT_SKIPPED` (local allow-skip only) | `FAIL`.
+- **RC gate (Faz 127):** fast/targeted; Docker CI complements before production deploy.
+- Spec: [`phase-128.md`](phases/phase-128.md).
+
+## Faz 129 — Docker CI green (spotless + binding fix)
+
+- **Spotless:** `:api-gateway:spotlessApply` / `spotlessCheck` — import order + test line wrap only.
+- **Identity:** `ScimProperties.withLegacyDefaults` restores Spring `@ConfigurationProperties` record binding; test call sites updated.
+- **Docker CI:** `ci-backend-docker-check.sh` → **PASS** (`check` + `rlsIntegrationTest`, Docker + Testcontainers).
+- **RC gate:** `PASS_WITH_ENVIRONMENT_SKIPS` when helm skipped locally.
+- **Runtime behavior:** unchanged (formatting + DI wiring only).
+- Spec: [`phase-129.md`](phases/phase-129.md).
+
+## Faz 130 — Backend staging PP evidence execution + bundle GO preparation
+
+- **Runbook:** [`backend-staging-pp-evidence-execution-plan.md`](backend-staging-pp-evidence-execution-plan.md) — order PP-1 (SCIM) → PP-2 (break-glass drill) → PP-3 (retention smoke, if dedicated datasource in prod CR scope) → pre-prod bundle.
+- **Input preparer:** `scripts/security/prepare-backend-preprod-evidence-inputs.sh` + `ci-prepare-backend-preprod-evidence-inputs.sh`.
+- **Bundle GO:** PP-1 `certified` + PP-2 `passed` (`BREAK_GLASS_TOKEN_REVOKED`) + PP-3 `not_required` or all domains `passed`; privacy/shape issues → `NO_GO`.
+- **CR attach:** bundle summary/JSON, PP artifacts, `backend-rc-readiness-summary.md`, `backend-docker-ci-summary.md`.
+- **Live staging:** operator-driven via `workflow_dispatch`; **not executed in Faz 130 dev/review** — do not treat fixture bundle as production GO.
+- **Production flags:** not enabled.
+- Spec: [`phase-130.md`](phases/phase-130.md).
+
+## Faz 131 — Backend RC sign-off package + freeze checklist
+
+- **Sign-off:** [`backend-release-candidate-signoff.md`](backend-release-candidate-signoff.md) — RC ID, SHA/tags, RC/Docker/PP verdicts, risks, approvers, final decision rules.
+- **Freeze:** [`backend-release-freeze-checklist.md`](backend-release-freeze-checklist.md) — no post-freeze features, no unapproved prod flags, artifact attachment, ops owners.
+- **Template:** `scripts/security/generate-backend-rc-signoff-template.sh` (placeholder-only; default **NO_GO**).
+- **CI:** `scripts/security/ci-generate-backend-rc-signoff-template.sh` on PR/main.
+- **Live staging PP / production GO bundle:** still **not run** in Faz 131 dev — sign-off remains **NO_GO** until operator evidence attached.
+- **Production flags:** not enabled.
+- Spec: [`phase-131.md`](phases/phase-131.md).
+
+## Faz 132 — Backend live staging PP evidence run
+
+- **Checklist:** [`backend-live-staging-pp-evidence-run-checklist.md`](backend-live-staging-pp-evidence-run-checklist.md) — PP-1/PP-2 dispatch, pass criteria, bundle, sign-off update.
+- **Orchestrator:** `scripts/security/run-backend-live-staging-pp-evidence.sh` + `check-staging-pp-secrets.sh`.
+- **CI:** `ci-run-backend-live-staging-pp-evidence.sh` (fixture → GO, missing → NO_GO).
+- **Live staging in dev/review:** **NOT_RUN** — GitHub/local staging secrets not configured.
+- **Production flags:** not enabled.
+- Spec: [`phase-132.md`](phases/phase-132.md).
+
+## Faz 133 — Staging PP secrets setup + workflow dispatch
+
+- **Setup:** [`backend-staging-pp-secrets-setup.md`](backend-staging-pp-secrets-setup.md) — GitHub secrets, staging overlays, dispatch, download, bundle.
+- **Probe:** `check-staging-pp-secrets.sh` (`--check-github`, `--json`).
+- **Download:** `download-backend-pp-artifacts.sh` (`gh run download`).
+- **Orchestrator:** `--probe-only`, `--dispatch-github`, `--downloads-base`.
+- **Live dispatch in dev/review:** **NOT_RUN** until repo secrets configured.
+- **Production flags:** not enabled.
+- Spec: [`phase-133.md`](phases/phase-133.md).
+
+## Faz 134 — Staging PP secrets governance + rotation
+
+- **Governance:** [`backend-staging-pp-secrets-governance.md`](backend-staging-pp-secrets-governance.md) — owner, TTL, rotation, cleanup, incidents.
+- **Catalog:** `check-staging-pp-secrets.sh --print-required`.
+- **Live workflows:** still **NOT_RUN** until secrets provisioned per governance.
+- **Production flags:** not enabled.
+- Spec: [`phase-134.md`](phases/phase-134.md).
+
+## Faz 135 — Live PP evidence orchestrator finalization
+
+- **Orchestrator:** `run-backend-live-staging-pp-evidence.sh` — `--probe-only`, `--dispatch-github`, `--download-artifacts`, `--build-bundle`, `--all`.
+- **Layout:** `pp-input/scim/`, `pp-input/breakglass/`, `pp-input/retention/`.
+- **Outputs:** run report, bundle JSON/summary, `download-manifest.json`.
+- **MISSING_SECRET:** dispatch skipped; bundle **NO_GO**.
+- **Live run:** **NOT_RUN** in dev until secrets provisioned.
+- Spec: [`phase-135.md`](phases/phase-135.md).

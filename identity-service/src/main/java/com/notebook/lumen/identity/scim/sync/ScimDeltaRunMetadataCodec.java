@@ -52,6 +52,22 @@ final class ScimDeltaRunMetadataCodec {
       if (!sb.isEmpty()) sb.append(';');
       sb.append("nextCursorPresent=true");
     }
+    if (diagnostics.pagesObserved() > 0) {
+      if (!sb.isEmpty()) sb.append(';');
+      sb.append("pagesObserved=").append(diagnostics.pagesObserved());
+    }
+    if (diagnostics.stoppedReason() != null && !diagnostics.stoppedReason().isBlank()) {
+      if (!sb.isEmpty()) sb.append(';');
+      sb.append("stoppedReason=").append(diagnostics.stoppedReason());
+    }
+    if (diagnostics.pageLimitReached()) {
+      if (!sb.isEmpty()) sb.append(';');
+      sb.append("pageLimitReached=true");
+    }
+    if (diagnostics.resourceLimitReached()) {
+      if (!sb.isEmpty()) sb.append(';');
+      sb.append("resourceLimitReached=true");
+    }
     String encoded = sb.toString();
     return encoded.isEmpty() ? null : encoded.substring(0, Math.min(512, encoded.length()));
   }
@@ -86,5 +102,6 @@ final class ScimDeltaRunMetadataCodec {
     return Optional.of(new DecodedMetadata(retryAfterSeconds, retryAfterCapped, nextAttempt));
   }
 
-  record DecodedMetadata(Integer retryAfterSeconds, boolean retryAfterCapped, Instant nextRecommendedAttemptAt) {}
+  record DecodedMetadata(
+      Integer retryAfterSeconds, boolean retryAfterCapped, Instant nextRecommendedAttemptAt) {}
 }

@@ -23,6 +23,7 @@ import {
   type ScimSyncRunPage,
 } from '../../features/admin/enterprise/scim-diagnostics-api'
 import { isPwaEnabled } from '../../shared/config/offline-feature-flags'
+import { BreakGlassActiveSessionsPanel } from '../../features/admin/breakglass/BreakGlassActiveSessionsPanel'
 
 const DOCS = {
   enterpriseConsole: 'docs/enterprise-admin-console.md',
@@ -175,6 +176,11 @@ function ScimDeltaReadinessCard({
         <span>Remote configured: {readiness.remoteFetchConfigured ? 'yes' : 'no'}</span>
         <span>Remote attempted: {readiness.remoteFetchAttempted ? 'yes' : 'no'}</span>
         <span>Fetched count: {readiness.fetchedResourceCount}</span>
+        <span>Pages observed: {readiness.pagesObserved}</span>
+        <span>Multi-page: {readiness.remoteMultiPageEnabled ? 'enabled' : 'disabled'}</span>
+        <span>Stopped: {readiness.stoppedReason}</span>
+        <span>Page limit: {readiness.pageLimitReached ? 'reached' : 'no'}</span>
+        <span>Resource limit: {readiness.resourceLimitReached ? 'reached' : 'no'}</span>
         <span>Next cursor: {readiness.nextCursorPresent ? 'present' : 'none'}</span>
         <span>HTTP timeout: {readiness.httpTimeoutMs}ms</span>
         <span>Backoff base: {readiness.backoffBaseSeconds}s</span>
@@ -423,6 +429,7 @@ function EnterpriseContent({
               <li>Reason required: {features.breakGlass.requireReason ? 'yes' : 'no'}</li>
               <li>Require MFA: {features.breakGlass.requireMfa ? 'yes' : 'no'}</li>
             </ul>
+            {show.security ? <BreakGlassActiveSessionsPanel /> : null}
           </FeatureCard>
         ) : null}
 

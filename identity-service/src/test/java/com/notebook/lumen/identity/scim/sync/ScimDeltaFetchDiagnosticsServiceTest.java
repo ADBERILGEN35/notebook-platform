@@ -1,12 +1,11 @@
 package com.notebook.lumen.identity.scim.sync;
 
 import static org.assertj.core.api.Assertions.assertThat;
-
 import static org.mockito.Mockito.mock;
 
 import com.notebook.lumen.identity.scim.ScimProperties;
 import com.notebook.lumen.identity.scim.sync.ScimSyncDiagnosticsDtos.DryRunPocRequest;
-import com.notebook.lumen.identity.scim.sync.delta.ScimDeltaProviderClient;
+import com.notebook.lumen.identity.scim.sync.delta.ScimDeltaMultiPageRemoteFetcher;
 import com.notebook.lumen.identity.scim.sync.delta.ScimDeltaProviderRequestBuilder;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -18,7 +17,8 @@ class ScimDeltaFetchDiagnosticsServiceTest {
     var service = newService(properties(false));
     var readiness = service.evaluateReadiness(List.of());
     assertThat(readiness.remoteFetchEnabled()).isFalse();
-    assertThat(readiness.warnings()).contains(ScimProviderResponseClassifier.WARNING_REMOTE_FETCH_DISABLED);
+    assertThat(readiness.warnings())
+        .contains(ScimProviderResponseClassifier.WARNING_REMOTE_FETCH_DISABLED);
   }
 
   @Test
@@ -26,14 +26,7 @@ class ScimDeltaFetchDiagnosticsServiceTest {
     var service = newService(properties(false));
     var diag =
         service.evaluateDryRun(
-            new DryRunPocRequest(
-                ScimResourceType.USER,
-                false,
-                null,
-                429,
-                "120",
-                false,
-                false),
+            new DryRunPocRequest(ScimResourceType.USER, false, null, 429, "120", false, false),
             List.of());
 
     assertThat(diag.providerErrorClass()).isEqualTo(ScimProviderErrorClass.RATE_LIMITED);
@@ -49,8 +42,8 @@ class ScimDeltaFetchDiagnosticsServiceTest {
     var service = newService(properties(false));
     var diag =
         service.evaluateDryRun(
-            new DryRunPocRequest(
-                ScimResourceType.USER, false, null, 503, null, false, false), List.of());
+            new DryRunPocRequest(ScimResourceType.USER, false, null, 503, null, false, false),
+            List.of());
     String encoded = service.runErrorSummary(diag);
     assertThat(encoded).doesNotContain("secret");
     assertThat(service.runErrorCode(diag)).isEqualTo("PROVIDER_UNAVAILABLE");
@@ -58,7 +51,9 @@ class ScimDeltaFetchDiagnosticsServiceTest {
 
   private static ScimDeltaFetchDiagnosticsService newService(ScimProperties properties) {
     return new ScimDeltaFetchDiagnosticsService(
-        properties, mock(ScimDeltaProviderClient.class), new ScimDeltaProviderRequestBuilder());
+        properties,
+        mock(ScimDeltaMultiPageRemoteFetcher.class),
+        new ScimDeltaProviderRequestBuilder());
   }
 
   private static ScimProperties properties(boolean remoteFetch) {
@@ -92,6 +87,10 @@ class ScimDeltaFetchDiagnosticsServiceTest {
         "",
         "",
         "",
-        100);
+        100,
+        false,
+        1,
+        500,
+        0);
   }
 }

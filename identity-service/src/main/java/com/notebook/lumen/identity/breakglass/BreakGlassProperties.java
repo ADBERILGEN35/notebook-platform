@@ -18,6 +18,8 @@ public record BreakGlassProperties(
     @DefaultValue("false") boolean revocationEnabled,
     @DefaultValue("true") boolean revokeOnReject,
     @DefaultValue("24") int denylistRetentionHours,
+    @DefaultValue("30") int revocationCacheTtlSeconds,
+    @DefaultValue("false") boolean revocationCleanupEnabled,
     /** Expected token hash (recommended format: sha256:hex). */
     @DefaultValue("") String tokenHash,
     @DefaultValue("") String offlinePublicKeyPath,
@@ -52,6 +54,9 @@ public record BreakGlassProperties(
     }
     if (denylistRetentionHours < 1) {
       denylistRetentionHours = 24;
+    }
+    if (revocationCacheTtlSeconds < 1) {
+      revocationCacheTtlSeconds = 30;
     }
     if (staticTokenMaxFailuresPerWindow < 1) {
       staticTokenMaxFailuresPerWindow = 5;

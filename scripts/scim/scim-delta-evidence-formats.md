@@ -1,6 +1,14 @@
-# SCIM delta remote fetch — evidence formats (Faz 118)
+# SCIM delta remote fetch — evidence formats (Faz 118–120)
 
 Sanitized evidence for change requests and sandbox validation. **Never** attach raw SCIM list responses, bearer tokens, `Authorization` headers, or IdP PII.
+
+Canonical docs: [`docs/scim-delta-sandbox-evidence.md`](../../docs/scim-delta-sandbox-evidence.md), [`docs/scim-delta-provider-certification.md`](../../docs/scim-delta-provider-certification.md).
+
+Validate JSON:
+
+```bash
+bash scripts/scim/validate-scim-delta-evidence.sh path/to/scim-delta-remote-fetch-evidence.json
+```
 
 ## Manual dry-run evidence (JSON)
 
@@ -8,7 +16,9 @@ File: `scim-delta-remote-fetch-evidence.json`
 
 | Field | Type | Notes |
 |-------|------|--------|
+| `evidenceSchemaVersion` | string | `scim-delta-evidence-v1` |
 | `generatedAt` | ISO-8601 UTC | Script timestamp |
+| `certificationHints` | object | Faz 120 derived PASS/REVIEW hints |
 | `evidenceStatus` | string | `passed` \| `skipped` \| `failed` \| `privacy_violation` |
 | `skipReason` | string? | e.g. `missing_gateway_or_admin_token`, `remote_fetch_disabled` |
 | `providerType` | string | From readiness/dry-run API |
@@ -18,7 +28,11 @@ File: `scim-delta-remote-fetch-evidence.json`
 | `remoteFetchAttempted` | boolean | GET was attempted |
 | `dryRunOnly` | boolean | Must remain `true` for POC |
 | `fetchedResourceCount` | number | Aggregate only |
-| `pageObserved` | number | Pages observed (POC: single page) |
+| `pagesObserved` | number | Bounded GET pages observed |
+| `remoteMultiPageEnabled` | boolean | Config flag |
+| `stoppedReason` | string | e.g. `NO_NEXT_CURSOR`, `PAGE_LIMIT_REACHED` |
+| `pageLimitReached` | boolean | Max pages bound hit |
+| `resourceLimitReached` | boolean | Max aggregate resources bound hit |
 | `nextCursorPresent` | boolean | Cursor/pagination hint only |
 | `providerErrorClass` | string | Faz 116 classifier |
 | `retryAfterSeconds` | number? | Bounded seconds only |

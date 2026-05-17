@@ -20,6 +20,12 @@ docker-compose*.log
 # Retention staging smoke CI output (local / Actions artifact source)
 /retention-staging-smoke-out/
 
+# Backend readiness CI output (local / Actions artifact source)
+/backend-rc-readiness-out/
+/backend-preprod-evidence-out/
+/live-pp-evidence-out/
+/backend-docker-ci-out/
+
 # Local secrets
 .env
 .env.*

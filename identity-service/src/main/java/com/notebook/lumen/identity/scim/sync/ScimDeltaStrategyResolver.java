@@ -115,17 +115,20 @@ public class ScimDeltaStrategyResolver {
     };
   }
 
-  private static String describeDeltaSource(ScimDeltaProviderKind kind, ScimDeltaSyncStrategy strategy) {
+  private static String describeDeltaSource(
+      ScimDeltaProviderKind kind, ScimDeltaSyncStrategy strategy) {
     return switch (strategy) {
-      case DISABLED -> "disabled";
-      case LAST_MODIFIED_FILTER -> "lastModified-filter-poc";
-      case CURSOR_CHECKPOINT -> "cursor-checkpoint-poc";
-      case FULL_SYNC_FALLBACK -> "full-sync-fallback-poc";
-    }
-      + ":" + kind.configValue();
+          case DISABLED -> "disabled";
+          case LAST_MODIFIED_FILTER -> "lastModified-filter-poc";
+          case CURSOR_CHECKPOINT -> "cursor-checkpoint-poc";
+          case FULL_SYNC_FALLBACK -> "full-sync-fallback-poc";
+        }
+        + ":"
+        + kind.configValue();
   }
 
-  private static boolean capabilityAligned(ScimDeltaSyncStrategy strategy, ScimProperties properties) {
+  private static boolean capabilityAligned(
+      ScimDeltaSyncStrategy strategy, ScimProperties properties) {
     return switch (strategy) {
       case DISABLED, FULL_SYNC_FALLBACK -> true;
       case LAST_MODIFIED_FILTER, CURSOR_CHECKPOINT -> properties.providerSupportsFiltering();

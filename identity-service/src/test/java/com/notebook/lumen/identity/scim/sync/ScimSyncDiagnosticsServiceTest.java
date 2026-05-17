@@ -63,7 +63,11 @@ class ScimSyncDiagnosticsServiceTest {
                 "",
                 "",
                 "",
-                100),
+                100,
+                false,
+                1,
+                500,
+                0),
             checkpointRepository,
             runRepository,
             auditService,
@@ -117,7 +121,8 @@ class ScimSyncDiagnosticsServiceTest {
     SimpleMeterRegistry meterRegistry = new SimpleMeterRegistry();
     ScimSyncDiagnosticsService service =
         new ScimSyncDiagnosticsService(
-            new ScimProperties(true, "token", "", true, "notebook-admins", true, 5, false, 100, 10),
+            ScimProperties.withLegacyDefaults(
+                true, "token", "", true, "notebook-admins", true, 5, false, 100, 10),
             checkpointRepository,
             runRepository,
             auditService,
@@ -172,7 +177,8 @@ class ScimSyncDiagnosticsServiceTest {
       ScimSyncRunRepository runRepository,
       AuditService auditService) {
     return new ScimSyncDiagnosticsService(
-        new ScimProperties(true, "token", "", true, "notebook-admins", true, 5, false, 100, 10),
+        ScimProperties.withLegacyDefaults(
+            true, "token", "", true, "notebook-admins", true, 5, false, 100, 10),
         checkpointRepository,
         runRepository,
         auditService,

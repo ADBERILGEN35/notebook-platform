@@ -15,7 +15,13 @@ public enum ScimDeltaProviderKind {
     String normalized = providerType.trim().toLowerCase(Locale.ROOT);
     return switch (normalized) {
       case "okta" -> OKTA;
-      case "azure-ad", "azure_ad", "entra", "entra-id", "entra_id", "microsoft-entra", "microsoft_entra" ->
+      case "azure-ad",
+          "azure_ad",
+          "entra",
+          "entra-id",
+          "entra_id",
+          "microsoft-entra",
+          "microsoft_entra" ->
           AZURE_AD;
       default -> GENERIC;
     };

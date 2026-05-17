@@ -399,11 +399,54 @@ Browser calls `GET /admin/enterprise/status` and (when enabled) change-request r
 **Faz 79** adds signed JWT `platform_permissions` for least-privilege admin; gateway must not trust client-supplied permission headers.
 No SCIM/SIEM/OIDC secrets are returned — see `docs/enterprise-admin-console.md`.
 
-## Break-glass revocation notes (Faz 93)
+## Break-glass revocation notes (Faz 93–123)
 
 - Break-glass JWT includes unique `jti` and session/event references so active tokens can be revoked before expiry.
+- Faz 123 adds a **staging drill + sanitized evidence gate** (`docs/break-glass-revocation-staging-drill.md`) proving revoke → gateway `BREAK_GLASS_TOKEN_REVOKED` before production denylist enforcement.
 - Denylist rows store metadata only (no raw token material).
 - Gateway denylist lookup supports fail-closed behavior to avoid allowing unverifiable high-risk emergency tokens.
+
+## Faz 124 — Final security review (residual risk posture)
+
+**Review:** [`backend-production-readiness-review.md`](backend-production-readiness-review.md).
+
+### Closed / mitigated (since Faz 90)
+
+| Risk | Mitigation |
+|------|------------|
+| Break-glass token leakage via API/logs | No token in status/UI; hash-only static config |
+| Unbounded SCIM delta fetch | Page/resource caps; multi-page off by default |
+| Retention count on primary DB under RLS | Optional dedicated datasource + dry-run only |
+| Admin secret exposure via enterprise status | Secret-safe aggregation; permission matrix |
+| Emergency token replay (offline) | Assertion `jti` replay guard |
+
+### Residual risks (tracked)
+
+| ID | Severity | Item |
+|----|----------|------|
+| PP-1..3 | Pre-prod blocker | Live staging evidence not in repo CI (operators must run dispatch workflows) |
+| H-1 | High | Full RLS staged rollout in real cluster |
+| H-2 | High | Admin MFA enforce vs warn per environment |
+| A-1 | Accepted | No SCIM production scheduler until explicit approval phase |
+
+### Production defaults (verified)
+
+Chart defaults keep break-glass, SCIM delta remote fetch, retention datasource, and GitOps PR disabled; CI script enforces on every PR (`scripts/security/ci-backend-production-readiness-review.sh`).
+
+## Staging PP secrets governance (Faz 134)
+
+**Docs:** [`backend-staging-pp-secrets-governance.md`](backend-staging-pp-secrets-governance.md), [`backend-staging-pp-secrets-setup.md`](backend-staging-pp-secrets-setup.md).
+
+| Threat | Control |
+|--------|---------|
+| Long-lived admin JWT in GitHub | TTL ≤ 24h; revoke after PP run; environment-scoped secrets |
+| Emergency token reuse | Shortest TTL; mandatory rotate-after-drill; denylist verification |
+| IdP bearer in GitOps | ExternalSecret + Vault only; example overlays without values |
+| Secret in evidence artifact | Sanitizers + forbidden-pattern grep; bundle privacy exit 3 |
+| Accidental PR workflow leak | Live jobs: `workflow_dispatch` / staging push only; fixtures on PR |
+| False GO without evidence | Bundle `NO_GO` when secrets missing or PP not run |
+
+**Probe:** `check-staging-pp-secrets.sh` prints present/missing only; `--print-required` lists catalog without values.
 
 ## Break-glass static-token rotation governance (Faz 94)
 

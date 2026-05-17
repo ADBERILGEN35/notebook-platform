@@ -11,10 +11,16 @@ Phase 93 adds active break-glass access token revocation.
 ## APIs
 
 - Internal identity:
-  - `POST /internal/admin/break-glass/events/{id}/revoke-token`
+  - `GET /internal/admin/break-glass/sessions`
+  - `POST /internal/admin/break-glass/sessions/{ref}/revoke`
+  - `POST /internal/admin/break-glass/sessions/revoke-all-active`
+  - `POST /internal/admin/break-glass/events/{id}/revoke-token` (legacy by event id)
   - `GET /internal/break-glass/tokens/{jti}/revoked`
 - Gateway admin:
-  - `POST /admin/break-glass/events/{id}/revoke-token`
+  - `GET /admin/security/break-glass/sessions`
+  - `POST /admin/security/break-glass/sessions/{ref}/revoke`
+  - `POST /admin/security/break-glass/sessions/revoke-all-active`
+  - `POST /admin/break-glass/events/{id}/revoke-token` (legacy)
 
 ## Security
 

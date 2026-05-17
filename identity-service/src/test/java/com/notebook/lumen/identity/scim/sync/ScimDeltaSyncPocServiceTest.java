@@ -59,7 +59,8 @@ class ScimDeltaSyncPocServiceTest {
                 Instant.now()));
 
     ScimDeltaSyncPocService service =
-        newService(pocProperties(true), mock(ScimSyncCheckpointRepository.class), mock(), diagnostics);
+        newService(
+            pocProperties(true), mock(ScimSyncCheckpointRepository.class), mock(), diagnostics);
 
     var response =
         service.executeDryRun(
@@ -68,7 +69,8 @@ class ScimDeltaSyncPocServiceTest {
 
     assertThat(response.run().deprovisionedCount()).isZero();
     assertThat(response.remoteFetchEnabled()).isFalse();
-    assertThat(response.warnings()).contains(ScimProviderResponseClassifier.WARNING_REMOTE_FETCH_DISABLED);
+    assertThat(response.warnings())
+        .contains(ScimProviderResponseClassifier.WARNING_REMOTE_FETCH_DISABLED);
     assertThat(response.toString()).doesNotContain("token");
     assertThat(response.toString()).doesNotContain("Bearer");
     verify(diagnostics).createDiagnosticRun(any(), any());
@@ -149,7 +151,11 @@ class ScimDeltaSyncPocServiceTest {
         "",
         "",
         "",
-        100);
+        100,
+        false,
+        1,
+        500,
+        0);
   }
 
   private static ScimDeltaSyncPocService newService(
@@ -174,7 +180,7 @@ class ScimDeltaSyncPocServiceTest {
         new ScimDeltaFetchDiagnosticsService(
             properties,
             org.mockito.Mockito.mock(
-                com.notebook.lumen.identity.scim.sync.delta.ScimDeltaProviderClient.class),
+                com.notebook.lumen.identity.scim.sync.delta.ScimDeltaMultiPageRemoteFetcher.class),
             new com.notebook.lumen.identity.scim.sync.delta.ScimDeltaProviderRequestBuilder()),
         checkpoints,
         runs,

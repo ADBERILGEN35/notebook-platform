@@ -1,0 +1,54 @@
+name: Break-glass Revocation Readiness
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  break-glass-revocation-fixtures:
+    name: break-glass-revocation-fixtures
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate drill fixtures (no secrets)
+        run: bash scripts/security/ci-break-glass-revocation-fixtures.sh
+
+  break-glass-revocation-drill:
+    name: break-glass-revocation-drill
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run staging break-glass revocation drill
+        env:
+          BREAK_GLASS_REVOCATION_DRILL_OUTPUT_DIR: break-glass-revocation-evidence-out
+          BREAK_GLASS_STAGING_API_BASE_URL: ${{ secrets.BREAK_GLASS_STAGING_API_BASE_URL }}
+          BREAK_GLASS_STAGING_ADMIN_ACCESS_TOKEN: ${{ secrets.BREAK_GLASS_STAGING_ADMIN_ACCESS_TOKEN }}
+          BREAK_GLASS_STAGING_EMERGENCY_TOKEN: ${{ secrets.BREAK_GLASS_STAGING_EMERGENCY_TOKEN }}
+          BREAK_GLASS_STAGING_BREAK_GLASS_TOKEN: ${{ secrets.BREAK_GLASS_STAGING_BREAK_GLASS_TOKEN }}
+          BREAK_GLASS_STAGING_TEST_ENDPOINT: ${{ vars.BREAK_GLASS_STAGING_TEST_ENDPOINT || '/admin/enterprise/status' }}
+          GIT_SHA: ${{ github.sha }}
+          IMAGE_TAG: ${{ vars.BREAK_GLASS_STAGING_IMAGE_TAG || 'staging' }}
+        run: bash scripts/security/run-break-glass-revocation-evidence.sh
+
+      - name: Validate evidence JSON
+        if: always()
+        run: python3 -m json.tool break-glass-revocation-evidence-out/break-glass-revocation-evidence.json
+
+      - name: Upload break-glass revocation evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: break-glass-revocation-evidence
+          path: |
+            break-glass-revocation-evidence-out/break-glass-revocation-evidence.json
+            break-glass-revocation-evidence-out/break-glass-revocation-summary.md
+          if-no-files-found: warn

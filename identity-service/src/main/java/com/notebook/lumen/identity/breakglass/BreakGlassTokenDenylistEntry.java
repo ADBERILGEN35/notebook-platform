@@ -24,6 +24,9 @@ public class BreakGlassTokenDenylistEntry {
   @Column(name = "revoked_by_user_id")
   private UUID revokedByUserId;
 
+  @Column(name = "issued_at", nullable = false)
+  private Instant issuedAt;
+
   @Column(name = "revoked_at", nullable = false)
   private Instant revokedAt;
 
@@ -47,6 +50,7 @@ public class BreakGlassTokenDenylistEntry {
       String sessionId,
       UUID eventId,
       UUID revokedByUserId,
+      Instant issuedAt,
       Instant revokedAt,
       Instant expiresAt,
       String reason,
@@ -57,6 +61,7 @@ public class BreakGlassTokenDenylistEntry {
     this.sessionId = sessionId;
     this.eventId = eventId;
     this.revokedByUserId = revokedByUserId;
+    this.issuedAt = issuedAt;
     this.revokedAt = revokedAt;
     this.expiresAt = expiresAt;
     this.reason = reason;
@@ -82,6 +87,10 @@ public class BreakGlassTokenDenylistEntry {
 
   public UUID getRevokedByUserId() {
     return revokedByUserId;
+  }
+
+  public Instant getIssuedAt() {
+    return issuedAt;
   }
 
   public Instant getRevokedAt() {

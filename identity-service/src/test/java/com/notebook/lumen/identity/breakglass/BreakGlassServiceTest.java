@@ -118,6 +118,8 @@ class BreakGlassServiceTest {
         false,
         true,
         24,
+        30,
+        false,
         tokenHash,
         "",
         "notebook-break-glass-offline",

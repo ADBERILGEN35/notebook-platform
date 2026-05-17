@@ -36,9 +36,14 @@ public record ScimProperties(
     String deltaRemoteTokenSecretName,
     String deltaRemoteTokenSecretKey,
     String deltaRemoteBearerToken,
-    int deltaRemoteMaxPageSize) {
+    int deltaRemoteMaxPageSize,
+    boolean deltaRemoteMultiPageEnabled,
+    int deltaRemoteMaxPages,
+    int deltaRemoteMaxResources,
+    int deltaRemotePageDelayMs) {
 
-  public ScimProperties(
+  /** Test helper only — Spring binds via the canonical record constructor + application.yml. */
+  public static ScimProperties withLegacyDefaults(
       boolean enabled,
       String bearerToken,
       String bearerTokenHash,
@@ -49,7 +54,7 @@ public record ScimProperties(
       boolean bulkEnabled,
       int bulkMaxOperations,
       int bulkFailOnErrorsMax) {
-    this(
+    return new ScimProperties(
         enabled,
         bearerToken,
         bearerTokenHash,
@@ -79,7 +84,11 @@ public record ScimProperties(
         "",
         "",
         "",
-        100);
+        100,
+        false,
+        1,
+        500,
+        0);
   }
 
   public boolean deltaRemoteBaseUrlConfigured() {

@@ -11,9 +11,7 @@ class ScimDeltaStrategyResolverTest {
 
   @Test
   void oktaSelectsLastModifiedWhenFilteringSupported() {
-    var plan =
-        resolver.resolve(
-            properties("okta", true, true, true, true, true, true, true));
+    var plan = resolver.resolve(properties("okta", true, true, true, true, true, true, true));
 
     assertThat(plan.selectedStrategy()).isEqualTo(ScimDeltaSyncStrategy.LAST_MODIFIED_FILTER);
     assertThat(plan.supportsFiltering()).isTrue();
@@ -23,9 +21,7 @@ class ScimDeltaStrategyResolverTest {
 
   @Test
   void entraSelectsCursorCheckpointWhenFilteringSupported() {
-    var plan =
-        resolver.resolve(
-            properties("azure-ad", true, true, true, true, true, true, true));
+    var plan = resolver.resolve(properties("azure-ad", true, true, true, true, true, true, true));
 
     assertThat(plan.selectedStrategy()).isEqualTo(ScimDeltaSyncStrategy.CURSOR_CHECKPOINT);
     assertThat(plan.providerType()).isEqualTo("azure-ad");
@@ -33,8 +29,7 @@ class ScimDeltaStrategyResolverTest {
 
   @Test
   void genericIsConservativeWhenPocEnabledWithoutDeltaSync() {
-    var plan =
-        resolver.resolve(properties("generic", true, false, false, true, true, true, false));
+    var plan = resolver.resolve(properties("generic", true, false, false, true, true, true, false));
 
     assertThat(plan.selectedStrategy()).isEqualTo(ScimDeltaSyncStrategy.DISABLED);
     assertThat(plan.warnings()).contains(ScimDeltaStrategyResolver.WARNING_PROVIDER_UNSUPPORTED);
@@ -50,9 +45,7 @@ class ScimDeltaStrategyResolverTest {
 
   @Test
   void filteringUnavailableFallsBackForOkta() {
-    var plan =
-        resolver.resolve(
-            properties("okta", true, true, false, true, true, true, true));
+    var plan = resolver.resolve(properties("okta", true, true, false, true, true, true, true));
 
     assertThat(plan.selectedStrategy()).isEqualTo(ScimDeltaSyncStrategy.FULL_SYNC_FALLBACK);
     assertThat(plan.warnings()).contains(ScimDeltaStrategyResolver.WARNING_FILTERING_UNAVAILABLE);
@@ -61,8 +54,7 @@ class ScimDeltaStrategyResolverTest {
 
   @Test
   void deprovisionSemanticsNeverImplyMissingFromDelta() {
-    assertThat(resolver.deprovisionSemantics(ScimDeltaProviderKind.OKTA))
-        .contains("missing");
+    assertThat(resolver.deprovisionSemantics(ScimDeltaProviderKind.OKTA)).contains("missing");
     assertThat(resolver.deprovisionSemantics(ScimDeltaProviderKind.AZURE_AD))
         .contains("not deletion");
     assertThat(resolver.deprovisionSemantics(ScimDeltaProviderKind.GENERIC))
@@ -108,6 +100,10 @@ class ScimDeltaStrategyResolverTest {
         "",
         "",
         "",
-        100);
+        100,
+        false,
+        1,
+        500,
+        0);
   }
 }

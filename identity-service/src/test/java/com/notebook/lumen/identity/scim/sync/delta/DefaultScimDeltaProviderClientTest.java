@@ -52,7 +52,10 @@ class DefaultScimDeltaProviderClientTest {
     var client = new DefaultScimDeltaProviderClient(properties());
     var request =
         new ScimDeltaProviderRequest(
-            ScimDeltaHttpMethod.GET, baseUrl + "/Users?count=10&startIndex=1", ScimResourceType.USER, 10);
+            ScimDeltaHttpMethod.GET,
+            baseUrl + "/Users?count=10&startIndex=1",
+            ScimResourceType.USER,
+            10);
 
     var result = client.fetch(request, "test-bearer-token");
 
@@ -125,6 +128,10 @@ class DefaultScimDeltaProviderClientTest {
         "",
         "",
         "",
-        100);
+        100,
+        false,
+        1,
+        500,
+        0);
   }
 }

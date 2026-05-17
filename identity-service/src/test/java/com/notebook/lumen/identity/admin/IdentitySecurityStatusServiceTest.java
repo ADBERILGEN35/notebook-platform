@@ -38,7 +38,7 @@ class IdentitySecurityStatusServiceTest {
                     "admins",
                     "example.com")));
     var scim =
-        new ScimProperties(
+        ScimProperties.withLegacyDefaults(
             true, "scim-token-value", "", true, "notebook-admins", true, 5, false, 100, 10);
     var mfa =
         new MfaProperties(
@@ -112,7 +112,7 @@ class IdentitySecurityStatusServiceTest {
   @Test
   void siemDisabled_yieldsNoSecretConfigured() {
     var sso = new SsoProperties(false, 300, false, "", "", List.of());
-    var scim = new ScimProperties(false, "", "", false, "", true, 5, false, 100, 10);
+    var scim = ScimProperties.withLegacyDefaults(false, "", "", false, "", true, 5, false, 100, 10);
     var mfa =
         new MfaProperties(
             false, new MfaProperties.Webauthn(false, "", "", "", "preferred"), 300, false);

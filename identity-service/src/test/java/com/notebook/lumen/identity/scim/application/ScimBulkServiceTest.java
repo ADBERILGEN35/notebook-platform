@@ -38,7 +38,8 @@ class ScimBulkServiceTest {
 
   @Test
   void bulkDisabledThrows() {
-    var props = new ScimProperties(true, "t", "", true, "g", true, 5, false, 100, 10);
+    var props =
+        ScimProperties.withLegacyDefaults(true, "t", "", true, "g", true, 5, false, 100, 10);
     var svc = newService(props);
     JsonNode data =
         objectMapper.valueToTree(
@@ -60,7 +61,7 @@ class ScimBulkServiceTest {
 
   @Test
   void tooManyOperationsThrows() {
-    var props = new ScimProperties(true, "t", "", true, "g", true, 5, true, 2, 10);
+    var props = ScimProperties.withLegacyDefaults(true, "t", "", true, "g", true, 5, true, 2, 10);
     var svc = newService(props);
     JsonNode data = objectMapper.createObjectNode();
     var ops =
@@ -77,7 +78,7 @@ class ScimBulkServiceTest {
 
   @Test
   void failOnErrorsStopsAfterThreshold() {
-    var props = new ScimProperties(true, "t", "", true, "g", true, 5, true, 100, 10);
+    var props = ScimProperties.withLegacyDefaults(true, "t", "", true, "g", true, 5, true, 100, 10);
     var svc = newService(props);
     when(scimService.createUser(any(), any(), any()))
         .thenThrow(new ScimException(HttpStatus.BAD_REQUEST, "invalidValue", "bad"));
@@ -97,7 +98,7 @@ class ScimBulkServiceTest {
 
   @Test
   void postUserSuccessRecordsBulkIdInContextForLaterOps() {
-    var props = new ScimProperties(true, "t", "", true, "g", true, 5, true, 100, 10);
+    var props = ScimProperties.withLegacyDefaults(true, "t", "", true, "g", true, 5, true, 100, 10);
     var svc = newService(props);
     UUID uid = UUID.randomUUID();
     when(scimService.createUser(any(), any(), any()))

@@ -11,6 +11,10 @@ public interface BreakGlassAccessEventRepository
     extends JpaRepository<BreakGlassAccessEvent, UUID> {
   Optional<BreakGlassAccessEvent> findBySessionId(String sessionId);
 
+  Optional<BreakGlassAccessEvent> findByTokenJti(String tokenJti);
+
+  java.util.List<BreakGlassAccessEvent> findByExpiresAtAfterAndTokenJtiIsNotNull(Instant now);
+
   Page<BreakGlassAccessEvent> findByStatusAndIssuedAtBetween(
       BreakGlassAccessEventStatus status, Instant from, Instant to, Pageable pageable);
 

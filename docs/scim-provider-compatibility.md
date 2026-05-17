@@ -74,7 +74,9 @@ The diagnostics status reports warning codes only, never tokens or raw SCIM payl
 | Entra | `entra.overlay.example.yaml` | same | `$top` / cursor diagnostic GET |
 | Generic | `generic.overlay.example.yaml` | same | count/startIndex fallback GET |
 
-Bearer token via Kubernetes `secretKeyRef` / ExternalSecret only — never in Git values. Sandbox evidence: `scripts/scim/scim-delta-remote-fetch-smoke.sh`.
+Bearer token via Kubernetes `secretKeyRef` / ExternalSecret only — never in Git values.
+
+**Faz 120 certification:** Per-provider checklist and evidence format — [`scim-delta-provider-certification.md`](scim-delta-provider-certification.md), [`scim-delta-sandbox-evidence.md`](scim-delta-sandbox-evidence.md). Smoke: `scripts/scim/scim-delta-remote-fetch-smoke.sh`; validate: `scripts/scim/validate-scim-delta-evidence.sh`.
 
 ## Rollout rule
 

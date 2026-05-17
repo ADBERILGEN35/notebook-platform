@@ -39,7 +39,11 @@ Source: scripts/scim/generate-scim-delta-evidence-template.sh
 | remoteFetchAttempted | true / false |
 | dryRunOnly | true |
 | fetchedResourceCount | 0 |
-| pageObserved | 0 / 1 |
+| pagesObserved | 0 / 1 |
+| remoteMultiPageEnabled | false |
+| stoppedReason | SINGLE_PAGE_ONLY / NO_NEXT_CURSOR / PAGE_LIMIT_REACHED |
+| pageLimitReached | false |
+| resourceLimitReached | false |
 | nextCursorPresent | true / false |
 | providerErrorClass | NONE / RATE_LIMITED / ... |
 | retryAfterSeconds | n/a |

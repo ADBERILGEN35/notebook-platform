@@ -22,8 +22,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 /**
- * Provider-specific delta sync POC (Faz 115–116). Diagnostic only — no IdP mutation, no deprovision from
- * missing delta users. Remote fetch disabled by default (Faz 116).
+ * Provider-specific delta sync POC (Faz 115–116). Diagnostic only — no IdP mutation, no deprovision
+ * from missing delta users. Remote fetch disabled by default (Faz 116).
  */
 @Service
 public class ScimDeltaSyncPocService {
@@ -127,10 +127,14 @@ public class ScimDeltaSyncPocService {
         run.id(),
         request,
         Map.of(
-            "provider", plan.providerType(),
-            "resourceType", resourceType.name(),
-            "selectedStrategy", plan.selectedStrategy().name(),
-            "deprovisionedCount", 0,
+            "provider",
+            plan.providerType(),
+            "resourceType",
+            resourceType.name(),
+            "selectedStrategy",
+            plan.selectedStrategy().name(),
+            "deprovisionedCount",
+            0,
             "providerErrorClass",
             rate.providerErrorClass().name(),
             "retryAfterSeconds",
@@ -180,8 +184,12 @@ public class ScimDeltaSyncPocService {
         rate.remoteFetchConfigured(),
         rate.remoteFetchAttempted(),
         rate.fetchedResourceCount(),
-        rate.pageObserved(),
+        rate.pagesObserved(),
         rate.nextCursorPresent(),
+        rate.remoteMultiPageEnabled(),
+        rate.stoppedReason(),
+        rate.pageLimitReached(),
+        rate.resourceLimitReached(),
         rate.rateLimitAware(),
         retryObserved,
         retrySeconds,
@@ -210,8 +218,12 @@ public class ScimDeltaSyncPocService {
         rate.remoteFetchConfigured(),
         rate.remoteFetchAttempted(),
         rate.fetchedResourceCount(),
-        rate.pageObserved(),
+        rate.pagesObserved(),
         rate.nextCursorPresent(),
+        rate.remoteMultiPageEnabled(),
+        rate.stoppedReason(),
+        rate.pageLimitReached(),
+        rate.resourceLimitReached(),
         rate.rateLimitAware(),
         rate.retryAfterObserved(),
         rate.retryAfterSeconds(),

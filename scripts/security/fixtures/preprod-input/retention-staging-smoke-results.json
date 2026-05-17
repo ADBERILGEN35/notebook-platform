@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "generatedAt": "2026-05-17T12:00:00Z",
+  "stagingSecretsConfigured": true,
+  "overall": {
+    "status": "passed",
+    "exitCode": 0,
+    "message": "All domains passed."
+  },
+  "domains": [
+    {"domain": "content", "status": "passed", "exitCode": 0},
+    {"domain": "notification", "status": "passed", "exitCode": 0},
+    {"domain": "workspace", "status": "passed", "exitCode": 0},
+    {"domain": "search", "status": "passed", "exitCode": 0}
+  ]
+}

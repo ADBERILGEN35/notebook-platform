@@ -1,0 +1,32 @@
+{
+  "evidenceSchemaVersion": "scim-delta-evidence-v1",
+  "generatedAt": "2026-05-17T12:00:00Z",
+  "evidenceStatus": "passed",
+  "skipReason": null,
+  "providerType": "okta",
+  "selectedStrategy": "LAST_MODIFIED_FILTER",
+  "remoteFetchEnabled": true,
+  "remoteFetchConfigured": true,
+  "remoteFetchAttempted": true,
+  "remoteMultiPageEnabled": false,
+  "dryRunOnly": true,
+  "pagesObserved": 1,
+  "fetchedResourceCount": 1,
+  "nextCursorPresent": true,
+  "stoppedReason": "SINGLE_PAGE_ONLY",
+  "pageLimitReached": false,
+  "resourceLimitReached": false,
+  "providerErrorClass": "NONE",
+  "retryAfterSeconds": null,
+  "nextRecommendedAttemptAt": null,
+  "warnings": ["SCIM_DELTA_RAW_PAYLOAD_SUPPRESSED"],
+  "nextCursor": "raw-cursor-value-must-not-appear-in-evidence",
+  "certificationHints": {
+    "privacyChecksPassed": false,
+    "dryRunOnlyConfirmed": true,
+    "onePageGetAttempted": true,
+    "paginationObservedOrValidStop": true,
+    "rateLimitDiagnosticReady": true,
+    "missingFromDeltaNoDeprovision": true
+  }
+}

@@ -1,0 +1,77 @@
+name: Backend RC Readiness
+
+on:
+  workflow_dispatch:
+    inputs:
+      skip_gradle:
+        description: Skip targeted Gradle tests
+        required: false
+        type: boolean
+        default: false
+      release_candidate_id:
+        description: Optional release candidate id
+        required: false
+        type: string
+        default: ""
+  push:
+    branches:
+      - main
+  pull_request:
+    paths:
+      - "**.java"
+      - "**.gradle.kts"
+      - "scripts/**"
+      - "deploy/**"
+      - ".github/workflows/backend-rc-readiness.yml"
+      - ".github/workflows/ci.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  backend-rc-readiness:
+    name: backend-rc-readiness
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Java 25
+        if: github.event_name != 'pull_request' && github.event.inputs.skip_gradle != 'true'
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "25"
+          cache: gradle
+
+      - name: Validate Gradle wrapper
+        if: github.event_name != 'pull_request' && github.event.inputs.skip_gradle != 'true'
+        uses: gradle/actions/wrapper-validation@v4
+
+      - name: Install Helm
+        if: github.event_name != 'pull_request'
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.16.4
+
+      - name: Run backend RC readiness gate
+        env:
+          RC_OUTPUT_DIR: backend-rc-readiness-out
+          GIT_SHA: ${{ github.sha }}
+          RELEASE_CANDIDATE_ID: ${{ github.event.inputs.release_candidate_id || github.sha }}
+          RC_SKIP_GRADLE: ${{ github.event_name == 'pull_request' && 'true' || (github.event_name == 'workflow_dispatch' && github.event.inputs.skip_gradle == 'true' && 'true' || 'false') }}
+          RC_SKIP_HELM: ${{ github.event_name == 'pull_request' && 'true' || 'false' }}
+        run: bash scripts/security/ci-backend-rc-readiness.sh
+
+      - name: Validate results JSON
+        if: always()
+        run: python3 -m json.tool backend-rc-readiness-out/backend-rc-readiness-results.json
+
+      - name: Upload backend RC readiness artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-rc-readiness
+          path: |
+            backend-rc-readiness-out/backend-rc-readiness-results.json
+            backend-rc-readiness-out/backend-rc-readiness-summary.md
+          if-no-files-found: warn

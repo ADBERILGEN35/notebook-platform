@@ -1,0 +1,28 @@
+{
+  "evidenceSchemaVersion": "break-glass-revocation-evidence-v1",
+  "generatedAt": "2026-05-17T12:00:00Z",
+  "environment": "staging-fixture",
+  "gitSha": "fixture",
+  "imageTag": "fixture",
+  "result": "readiness-gap",
+  "skipReason": "",
+  "issuedAt": null,
+  "expiresAt": null,
+  "sessionIdShort": "",
+  "jtiMasked": "",
+  "revokeRefMasked": "",
+  "revokedAt": null,
+  "revokedByPresent": false,
+  "reasonPresent": false,
+  "gatewayRejectStatus": null,
+  "gatewayRejectErrorCode": "",
+  "auditEventsObserved": [],
+  "metricsObserved": {},
+  "readinessGaps": ["BREAK_GLASS_REVOCATION_ENABLED"],
+  "drillSteps": {
+    "loginAttempted": false,
+    "sessionsListed": false,
+    "revokeAttempted": false,
+    "gatewayRejectVerified": false
+  }
+}

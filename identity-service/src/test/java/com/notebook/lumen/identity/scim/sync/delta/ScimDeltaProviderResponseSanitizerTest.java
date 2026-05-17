@@ -16,7 +16,8 @@ class ScimDeltaProviderResponseSanitizerTest {
     var sanitized = ScimDeltaProviderResponseSanitizer.sanitize(body);
     assertThat(sanitized.fetchedResourceCount()).isEqualTo(2);
     assertThat(sanitized.validListResponseShape()).isTrue();
-    assertThat(sanitized.warnings()).contains(ScimDeltaRemoteFetchWarnings.PROVIDER_RESPONSE_SANITIZED);
+    assertThat(sanitized.warnings())
+        .contains(ScimDeltaRemoteFetchWarnings.PROVIDER_RESPONSE_SANITIZED);
   }
 
   @Test

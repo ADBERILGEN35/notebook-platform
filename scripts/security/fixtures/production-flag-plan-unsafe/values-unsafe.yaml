@@ -1,0 +1,20 @@
+# CI fixture only — intentionally violates Faz 126 guardrails. Never deploy.
+config:
+  breakGlassEnabled: "true"
+  breakGlassAllowAdminWrite: "true"
+  gatewayBreakGlassAdminAllowed: "true"
+  scimDeltaSyncEnabled: "true"
+  scimDeltaRemoteFetchEnabled: "true"
+  scimDeltaDryRunOnly: "false"
+  adminGitopsPrEnabled: "true"
+  adminGitopsProvider: "mock"
+  notificationRetentionWorkerEnabled: "true"
+  notificationRetentionDryRunOnly: "false"
+
+frontend:
+  env:
+    FRONTEND_NOTIFICATION_RETENTION_PURGE_ENABLED: "true"
+
+retentionDatasource:
+  content:
+    enabled: true

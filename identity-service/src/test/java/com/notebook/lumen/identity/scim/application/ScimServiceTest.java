@@ -53,7 +53,8 @@ class ScimServiceTest {
             groups,
             encoder,
             mock(AuditService.class),
-            new ScimProperties(true, "token", "", true, "notebook-admins", true, 5, false, 100, 10),
+            ScimProperties.withLegacyDefaults(
+                true, "token", "", true, "notebook-admins", true, 5, false, 100, 10),
             graphValidation);
 
     var result =
@@ -121,7 +122,8 @@ class ScimServiceTest {
             groups,
             mock(PasswordEncoder.class),
             mock(AuditService.class),
-            new ScimProperties(true, "token", "", true, "notebook-admins", true, 5, false, 100, 10),
+            ScimProperties.withLegacyDefaults(
+                true, "token", "", true, "notebook-admins", true, 5, false, 100, 10),
             graphValidation);
 
     var patched =
@@ -178,7 +180,8 @@ class ScimServiceTest {
             groups,
             mock(PasswordEncoder.class),
             auditService,
-            new ScimProperties(true, "token", "", true, "notebook-admins", true, 5, false, 100, 10),
+            ScimProperties.withLegacyDefaults(
+                true, "token", "", true, "notebook-admins", true, 5, false, 100, 10),
             graphValidation);
 
     var response =
@@ -250,7 +253,8 @@ class ScimServiceTest {
             mock(ScimGroupRepository.class),
             mock(PasswordEncoder.class),
             mock(AuditService.class),
-            new ScimProperties(true, "token", "", true, "notebook-admins", true, 5, false, 100, 10),
+            ScimProperties.withLegacyDefaults(
+                true, "token", "", true, "notebook-admins", true, 5, false, 100, 10),
             mock(ScimGroupGraphValidation.class));
 
     assertThatThrownBy(
@@ -281,7 +285,8 @@ class ScimServiceTest {
             mock(ScimGroupRepository.class),
             mock(PasswordEncoder.class),
             mock(AuditService.class),
-            new ScimProperties(true, "token", "", true, "notebook-admins", true, 5, false, 100, 10),
+            ScimProperties.withLegacyDefaults(
+                true, "token", "", true, "notebook-admins", true, 5, false, 100, 10),
             mock(ScimGroupGraphValidation.class));
     assertThatThrownBy(() -> service.listUsers(1, 10, "title co \"x\""))
         .isInstanceOf(ScimException.class)

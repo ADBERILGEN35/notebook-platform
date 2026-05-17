@@ -1,0 +1,70 @@
+name: SCIM Delta Readiness
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - staging
+  workflow_dispatch:
+    inputs:
+      provider:
+        description: Sandbox IdP provider for evidence run
+        required: true
+        type: choice
+        options:
+          - okta
+          - entra
+          - generic
+        default: okta
+
+permissions:
+  contents: read
+
+jobs:
+  scim-delta-fixtures:
+    name: scim-delta-fixtures
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: SCIM delta fixture validation (no secrets)
+        run: bash scripts/scim/ci-scim-delta-remote-fetch-fixtures.sh
+
+  scim-delta-sandbox-evidence:
+    name: scim-delta-sandbox-evidence
+    runs-on: ubuntu-latest
+    if: |
+      (github.event_name == 'push' && github.ref == 'refs/heads/staging') ||
+      github.event_name == 'workflow_dispatch'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run staging SCIM delta sandbox evidence
+        id: sandbox
+        env:
+          SCIM_DELTA_SANDBOX_OUTPUT_DIR: scim-delta-sandbox-evidence-out
+          SCIM_DELTA_SANDBOX_GATEWAY_BASE_URL: ${{ secrets.SCIM_DELTA_SANDBOX_GATEWAY_BASE_URL }}
+          SCIM_DELTA_SANDBOX_ADMIN_ACCESS_TOKEN: ${{ secrets.SCIM_DELTA_SANDBOX_ADMIN_ACCESS_TOKEN }}
+          SCIM_DELTA_SANDBOX_PROVIDER: ${{ github.event.inputs.provider || vars.SCIM_DELTA_SANDBOX_PROVIDER || 'okta' }}
+          SCIM_DELTA_SANDBOX_EXPECT_READY: ${{ vars.SCIM_DELTA_SANDBOX_EXPECT_READY || 'false' }}
+        run: bash scripts/scim/run-scim-delta-sandbox-evidence.sh
+
+      - name: Validate artifact JSON shape
+        if: always()
+        run: |
+          python3 -m json.tool scim-delta-sandbox-evidence-out/scim-delta-sandbox-evidence.json >/dev/null
+
+      - name: Upload SCIM delta sandbox evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: scim-delta-sandbox-evidence-${{ github.event.inputs.provider || 'staging' }}
+          path: |
+            scim-delta-sandbox-evidence-out/scim-delta-sandbox-evidence.json
+            scim-delta-sandbox-evidence-out/scim-delta-certification-checklist.md
+            scim-delta-sandbox-evidence-out/scim-delta-sandbox-summary.md
+          if-no-files-found: warn

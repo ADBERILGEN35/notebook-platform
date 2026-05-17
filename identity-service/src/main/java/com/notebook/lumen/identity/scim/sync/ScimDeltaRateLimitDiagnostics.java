@@ -2,17 +2,18 @@ package com.notebook.lumen.identity.scim.sync;
 
 import com.notebook.lumen.identity.scim.ScimProperties;
 import com.notebook.lumen.identity.scim.sync.delta.ScimDeltaProviderFetchResult;
+import com.notebook.lumen.identity.scim.sync.delta.ScimDeltaStoppedReason;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
-/** Sanitized rate-limit / remote-fetch diagnostics for delta POC (Faz 116–117). */
+/** Sanitized rate-limit / remote-fetch diagnostics for delta POC (Faz 116–119). */
 public record ScimDeltaRateLimitDiagnostics(
     boolean remoteFetchEnabled,
     boolean remoteFetchConfigured,
     boolean remoteFetchAttempted,
+    boolean remoteMultiPageEnabled,
     boolean rateLimitAware,
     boolean retryAfterObserved,
     Integer retryAfterSeconds,
@@ -22,15 +23,24 @@ public record ScimDeltaRateLimitDiagnostics(
     int backoffBaseSeconds,
     int httpTimeoutMs,
     int fetchedResourceCount,
-    int pageObserved,
+    int pagesObserved,
     boolean nextCursorPresent,
+    String stoppedReason,
+    boolean pageLimitReached,
+    boolean resourceLimitReached,
     List<String> warnings) {
 
-  public static ScimDeltaRateLimitDiagnostics empty(ScimProperties properties, List<String> baseWarnings) {
+  public int pageObserved() {
+    return pagesObserved;
+  }
+
+  public static ScimDeltaRateLimitDiagnostics empty(
+      ScimProperties properties, List<String> baseWarnings, ScimDeltaStoppedReason stoppedReason) {
     return new ScimDeltaRateLimitDiagnostics(
         properties.deltaRemoteFetchEnabled(),
         properties.deltaRemoteFetchConfigured(),
         false,
+        properties.deltaRemoteMultiPageEnabled(),
         properties.providerRateLimitAware(),
         false,
         null,
@@ -42,28 +52,66 @@ public record ScimDeltaRateLimitDiagnostics(
         0,
         0,
         false,
+        stoppedReason.name(),
+        false,
+        false,
         baseWarnings);
+  }
+
+  public static ScimDeltaRateLimitDiagnostics empty(
+      ScimProperties properties, List<String> baseWarnings) {
+    return empty(properties, baseWarnings, ScimDeltaStoppedReason.NOT_CONFIGURED);
   }
 
   public static ScimDeltaRateLimitDiagnostics fromRemoteFetch(
       ScimProperties properties, List<String> baseWarnings, ScimDeltaProviderFetchResult fetch) {
+    return fromMultiPage(
+        properties,
+        baseWarnings,
+        fetch,
+        fetch.pageObserved(),
+        fetch.fetchedResourceCount(),
+        fetch.nextCursorPresent(),
+        fetch.nextCursorPresent()
+            ? ScimDeltaStoppedReason.NO_NEXT_CURSOR
+            : ScimDeltaStoppedReason.SINGLE_PAGE_ONLY,
+        false,
+        false);
+  }
+
+  public static ScimDeltaRateLimitDiagnostics fromMultiPage(
+      ScimProperties properties,
+      List<String> baseWarnings,
+      ScimDeltaProviderFetchResult lastPage,
+      int pagesObserved,
+      int totalResources,
+      boolean nextCursorPresent,
+      ScimDeltaStoppedReason stoppedReason,
+      boolean pageLimitReached,
+      boolean resourceLimitReached) {
     Set<String> warnings = new LinkedHashSet<>(baseWarnings);
-    warnings.addAll(fetch.warnings());
+    if (lastPage != null) {
+      warnings.addAll(lastPage.warnings());
+    }
     return new ScimDeltaRateLimitDiagnostics(
         properties.deltaRemoteFetchEnabled(),
         properties.deltaRemoteFetchConfigured(),
-        fetch.attempted(),
+        lastPage != null && lastPage.attempted(),
+        properties.deltaRemoteMultiPageEnabled(),
         properties.providerRateLimitAware(),
-        fetch.retryAfterObserved(),
-        fetch.retryAfterSeconds(),
-        fetch.retryAfterCapped(),
-        fetch.nextRecommendedAttemptAt(),
-        fetch.providerErrorClass(),
+        lastPage != null && lastPage.retryAfterObserved(),
+        lastPage == null ? null : lastPage.retryAfterSeconds(),
+        lastPage != null && lastPage.retryAfterCapped(),
+        lastPage == null ? null : lastPage.nextRecommendedAttemptAt(),
+        lastPage == null ? ScimProviderErrorClass.NONE : lastPage.providerErrorClass(),
         properties.deltaBackoffBaseSeconds(),
         properties.deltaHttpTimeoutMs(),
-        fetch.fetchedResourceCount(),
-        fetch.pageObserved(),
-        fetch.nextCursorPresent(),
+        totalResources,
+        pagesObserved,
+        nextCursorPresent,
+        stoppedReason.name(),
+        pageLimitReached,
+        resourceLimitReached,
         List.copyOf(warnings));
   }
 
@@ -79,6 +127,7 @@ public record ScimDeltaRateLimitDiagnostics(
         properties.deltaRemoteFetchEnabled(),
         properties.deltaRemoteFetchConfigured(),
         false,
+        properties.deltaRemoteMultiPageEnabled(),
         properties.providerRateLimitAware(),
         retryAfterObserved,
         retryAfterSeconds,
@@ -89,6 +138,9 @@ public record ScimDeltaRateLimitDiagnostics(
         properties.deltaHttpTimeoutMs(),
         0,
         0,
+        false,
+        ScimDeltaStoppedReason.SINGLE_PAGE_ONLY.name(),
+        false,
         false,
         warnings);
   }

@@ -422,6 +422,10 @@ data:
   SCIM_DELTA_REMOTE_TOKEN_SECRET_NAME: {{ include "notebook-platform.scimDeltaRemoteTokenSecretNameConfig" . | quote }}
   SCIM_DELTA_REMOTE_TOKEN_SECRET_KEY: {{ include "notebook-platform.scimDeltaRemoteTokenSecretKeyConfig" . | quote }}
   SCIM_DELTA_REMOTE_MAX_PAGE_SIZE: {{ .Values.config.scimDeltaRemoteMaxPageSize | quote }}
+  SCIM_DELTA_REMOTE_MULTI_PAGE_ENABLED: {{ .Values.config.scimDeltaRemoteMultiPageEnabled | quote }}
+  SCIM_DELTA_REMOTE_MAX_PAGES: {{ .Values.config.scimDeltaRemoteMaxPages | quote }}
+  SCIM_DELTA_REMOTE_MAX_RESOURCES: {{ .Values.config.scimDeltaRemoteMaxResources | quote }}
+  SCIM_DELTA_REMOTE_PAGE_DELAY_MS: {{ .Values.config.scimDeltaRemotePageDelayMs | quote }}
   SIEM_PUSH_ENABLED: {{ .Values.config.siemPushEnabled | quote }}
   SIEM_PROVIDER: {{ .Values.config.siemProvider | quote }}
   SIEM_ENDPOINT_URL: {{ .Values.config.siemEndpointUrl | quote }}

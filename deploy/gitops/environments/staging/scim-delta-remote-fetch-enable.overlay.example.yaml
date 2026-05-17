@@ -6,6 +6,10 @@
 #   3. Helm render shows SCIM_DELTA_REMOTE_BEARER_TOKEN secretKeyRef (no token literal)
 #
 # NEVER commit real bearer tokens or production IdP credentials.
+#
+# Faz 121 CR handoff: after merge, run GitHub Actions workflow "SCIM Delta Readiness"
+# (workflow_dispatch or push to staging) and attach artifacts to the change request.
+# See docs/scim-delta-sandbox-evidence.md for SCIM_DELTA_SANDBOX_* secrets.
 
 config:
   scimProviderType: "okta"

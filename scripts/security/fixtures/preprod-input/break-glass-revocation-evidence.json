@@ -1,0 +1,15 @@
+{
+  "evidenceSchemaVersion": "break-glass-revocation-evidence-v1",
+  "generatedAt": "2026-05-17T12:00:00Z",
+  "environment": "staging-fixture",
+  "result": "passed",
+  "gatewayRejectStatus": 401,
+  "gatewayRejectErrorCode": "BREAK_GLASS_TOKEN_REVOKED",
+  "jtiMasked": "abcd…wxyz",
+  "sessionIdShort": "sess-fixture",
+  "revokedByPresent": true,
+  "reasonPresent": true,
+  "drillSteps": {
+    "gatewayRejectVerified": true
+  }
+}

@@ -64,3 +64,12 @@ If `BREAK_GLASS_APPROVAL_MODE=required_before_issue`, workflow may return approv
   - `BREAK_GLASS_TOKEN_ROTATION_REQUIRED|ACKNOWLEDGED|VERIFIED|CLOSED`
 - Post-incident review: root cause, controls, and any policy improvements.
 
+## Staging revocation drill (Faz 123)
+
+Before production enablement of denylist enforcement, run the staging drill and attach evidence to the change request:
+
+1. Confirm prerequisites in [`break-glass-revocation-staging-drill.md`](break-glass-revocation-staging-drill.md).
+2. Run `bash scripts/security/run-break-glass-revocation-evidence.sh` or GitHub Actions **Break-glass Revocation Readiness** (`workflow_dispatch`).
+3. Verify `result: passed` and `gatewayRejectErrorCode: BREAK_GLASS_TOKEN_REVOKED`.
+4. Complete the manual UI checklist in the same doc.
+

@@ -21,3 +21,13 @@ Replace `config.scimDeltaRemoteBaseUrl` with your sandbox SCIM base URL (no toke
 ## Evidence
 
 See `scripts/scim/scim-delta-evidence-formats.md` and `scripts/scim/generate-scim-delta-evidence-template.sh`.
+
+## Staging promotion gate (Faz 121)
+
+After Helm/GitOps overlay is on staging:
+
+1. Configure GitHub secrets `SCIM_DELTA_SANDBOX_GATEWAY_BASE_URL` and `SCIM_DELTA_SANDBOX_ADMIN_ACCESS_TOKEN`.
+2. Run workflow **SCIM Delta Readiness** (`workflow_dispatch` or push to `staging` branch).
+3. Attach artifacts (`scim-delta-sandbox-evidence.json`, checklist, summary) to the change request.
+
+See `docs/scim-delta-sandbox-evidence.md` and `docs/scim-delta-provider-certification.md`.

@@ -64,7 +64,23 @@ Warning codes include:
 
 When `SCIM_DELTA_REMOTE_FETCH_ENABLED=true` and base URL + bearer token are configured, **manual dry-run only** may issue a single bounded **GET** to the provider. Response bodies are discarded after aggregate extraction (`fetchedResourceCount`, `nextCursorPresent`, `pageObserved`). No POST/PATCH/PUT/DELETE; no user/group DB mutation; no raw payload/token/Authorization in API, audit, or logs.
 
-Additional readiness/dry-run fields: `remoteFetchConfigured`, `remoteFetchAttempted`, `fetchedResourceCount`, `pageObserved`, `nextCursorPresent`.
+Additional readiness/dry-run fields: `remoteFetchConfigured`, `remoteFetchAttempted`, `fetchedResourceCount`, `pagesObserved`, `nextCursorPresent`, `remoteMultiPageEnabled`, `stoppedReason`, `pageLimitReached`, `resourceLimitReached`.
+
+### Multi-page loop (Faz 119)
+
+- Default: `SCIM_DELTA_REMOTE_MULTI_PAGE_ENABLED=false`, `SCIM_DELTA_REMOTE_MAX_PAGES=1` (single GET, same as Faz 117).
+- When enabled: bounded loop on manual dry-run only — max pages, max aggregate resources, page delay, GET-only.
+- Raw cursor / next URL never returned in API, audit, or logs; continuation is sanitized internally.
+- On 429/5xx/timeout/bad JSON the loop stops (no automatic retry worker).
+
+## Sandbox certification (Faz 120)
+
+Before production scheduler proposals:
+
+1. Collect `scim-delta-remote-fetch-evidence.json` via `scripts/scim/scim-delta-remote-fetch-smoke.sh`
+2. Validate with `scripts/scim/validate-scim-delta-evidence.sh`
+3. Complete provider checklist — [`scim-delta-provider-certification.md`](scim-delta-provider-certification.md)
+4. See [`scim-delta-sandbox-evidence.md`](scim-delta-sandbox-evidence.md)
 
 ### Secret wiring (Faz 118)
 

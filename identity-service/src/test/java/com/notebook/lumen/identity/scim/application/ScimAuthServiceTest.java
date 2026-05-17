@@ -15,7 +15,8 @@ class ScimAuthServiceTest {
   void rejectsWhenDisabled() {
     ScimAuthService service =
         new ScimAuthService(
-            new ScimProperties(false, "", "", true, "notebook-admins", true, 5, false, 100, 10),
+            ScimProperties.withLegacyDefaults(
+                false, "", "", true, "notebook-admins", true, 5, false, 100, 10),
             mock(AuditService.class));
     HttpServletRequest request = mock(HttpServletRequest.class);
     assertThatThrownBy(() -> service.requireAuthorized(request))
@@ -27,7 +28,7 @@ class ScimAuthServiceTest {
   void acceptsValidBearerToken() {
     ScimAuthService service =
         new ScimAuthService(
-            new ScimProperties(
+            ScimProperties.withLegacyDefaults(
                 true, "scim-secret", "", true, "notebook-admins", true, 5, false, 100, 10),
             mock(AuditService.class));
     HttpServletRequest request = mock(HttpServletRequest.class);

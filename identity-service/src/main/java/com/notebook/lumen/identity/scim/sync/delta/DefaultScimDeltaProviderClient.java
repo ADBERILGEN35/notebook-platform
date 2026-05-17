@@ -1,6 +1,7 @@
 package com.notebook.lumen.identity.scim.sync.delta;
 
 import com.notebook.lumen.identity.scim.ScimProperties;
+import com.notebook.lumen.identity.scim.sync.ScimDeltaProviderKind;
 import com.notebook.lumen.identity.scim.sync.ScimProviderErrorClass;
 import com.notebook.lumen.identity.scim.sync.ScimProviderResponseClassifier;
 import com.notebook.lumen.identity.scim.sync.ScimRetryAfterParser;
@@ -13,11 +14,13 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
- * JDK HttpClient-based read-only provider fetch (Faz 117). Discards raw body after sanitization; never
- * logs token or Authorization header.
+ * JDK HttpClient-based read-only provider fetch (Faz 117–119). Discards raw body after
+ * sanitization; never logs token or Authorization header.
  */
 @Component
 public class DefaultScimDeltaProviderClient implements ScimDeltaProviderClient {
@@ -25,11 +28,17 @@ public class DefaultScimDeltaProviderClient implements ScimDeltaProviderClient {
   private final ScimProperties properties;
   private final HttpClient httpClient;
 
+  @Autowired
   public DefaultScimDeltaProviderClient(ScimProperties properties) {
     this(properties, HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).build());
   }
 
-  DefaultScimDeltaProviderClient(ScimProperties properties, HttpClient httpClient) {
+  /** Test-only; not a Spring bean constructor. */
+  static DefaultScimDeltaProviderClient forTest(ScimProperties properties, HttpClient httpClient) {
+    return new DefaultScimDeltaProviderClient(properties, httpClient);
+  }
+
+  private DefaultScimDeltaProviderClient(ScimProperties properties, HttpClient httpClient) {
     this.properties = properties;
     this.httpClient = httpClient;
   }
@@ -49,6 +58,7 @@ public class DefaultScimDeltaProviderClient implements ScimDeltaProviderClient {
 
     Instant now = Instant.now();
     int backoffBase = Math.max(1, properties.deltaBackoffBaseSeconds());
+    ScimDeltaProviderKind kind = ScimDeltaProviderKind.fromConfig(properties.providerType());
 
     try {
       HttpRequest httpRequest =
@@ -78,7 +88,7 @@ public class DefaultScimDeltaProviderClient implements ScimDeltaProviderClient {
             true,
             response.statusCode(),
             0,
-            0,
+            1,
             false,
             false,
             retryAfter.retryAfterObserved(),
@@ -88,10 +98,11 @@ public class DefaultScimDeltaProviderClient implements ScimDeltaProviderClient {
                 ? ScimRetryAfterParser.nextRecommendedAttempt(now, retryAfter.retryAfterSeconds())
                 : null,
             classification.errorClass(),
-            warnings);
+            warnings,
+            Optional.empty());
       }
 
-      var sanitized = ScimDeltaProviderResponseSanitizer.sanitize(response.body());
+      var sanitized = ScimDeltaProviderResponseSanitizer.sanitize(response.body(), kind);
       warnings.addAll(sanitized.warnings());
 
       if (!sanitized.validListResponseShape()) {
@@ -109,7 +120,8 @@ public class DefaultScimDeltaProviderClient implements ScimDeltaProviderClient {
             retryAfter.retryAfterCapped(),
             null,
             ScimProviderErrorClass.PROVIDER_BAD_RESPONSE,
-            warnings);
+            warnings,
+            Optional.empty());
       }
 
       return new ScimDeltaProviderFetchResult(
@@ -125,7 +137,8 @@ public class DefaultScimDeltaProviderClient implements ScimDeltaProviderClient {
           retryAfter.retryAfterCapped(),
           null,
           ScimProviderErrorClass.NONE,
-          warnings);
+          warnings,
+          sanitized.continuation());
 
     } catch (java.net.http.HttpTimeoutException ex) {
       var timeout = ScimProviderResponseClassifier.classifyTimeout();
@@ -135,7 +148,7 @@ public class DefaultScimDeltaProviderClient implements ScimDeltaProviderClient {
           false,
           0,
           0,
-          0,
+          1,
           false,
           false,
           false,
@@ -143,7 +156,8 @@ public class DefaultScimDeltaProviderClient implements ScimDeltaProviderClient {
           false,
           ScimRetryAfterParser.nextRecommendedAttempt(now, backoffBase),
           timeout.errorClass(),
-          warnings);
+          warnings,
+          Optional.empty());
     } catch (Exception ex) {
       var unavailable = ScimProviderResponseClassifier.classifyHttpStatus(503);
       warnings.addAll(unavailable.warnings());
@@ -152,7 +166,7 @@ public class DefaultScimDeltaProviderClient implements ScimDeltaProviderClient {
           false,
           0,
           0,
-          0,
+          1,
           false,
           false,
           false,
@@ -160,7 +174,8 @@ public class DefaultScimDeltaProviderClient implements ScimDeltaProviderClient {
           false,
           ScimRetryAfterParser.nextRecommendedAttempt(now, backoffBase),
           unavailable.errorClass(),
-          warnings);
+          warnings,
+          Optional.empty());
     }
   }
 }

@@ -32,11 +32,32 @@ jobs:
       - name: Check committed secrets
         run: scripts/check-no-secrets.sh
 
+      - name: Backend production-readiness default checks
+        run: bash scripts/security/ci-backend-production-readiness-review.sh
+
+      - name: Backend pre-prod evidence bundle (fixtures)
+        run: bash scripts/security/ci-backend-preprod-evidence-bundle.sh
+
+      - name: Backend pre-prod evidence input preparer
+        run: bash scripts/security/ci-prepare-backend-preprod-evidence-inputs.sh
+
+      - name: Backend RC sign-off template
+        run: bash scripts/security/ci-generate-backend-rc-signoff-template.sh
+
+      - name: Backend live staging PP evidence orchestrator
+        run: bash scripts/security/ci-run-backend-live-staging-pp-evidence.sh
+
+      - name: Staging PP secrets probe
+        run: bash scripts/security/ci-check-staging-pp-secrets.sh
+
+      - name: Staging PP artifact download helper
+        run: bash scripts/security/ci-download-backend-pp-artifacts.sh
+
+      - name: Production flag flip plan guardrails
+        run: bash scripts/security/ci-production-flag-plan.sh
+
       - name: Validate Helm templates
         run: scripts/helm-template-check.sh
-
-      - name: SCIM delta remote fetch fixtures
-        run: bash scripts/scim/ci-scim-delta-remote-fetch-fixtures.sh
 
       - name: Run checks
         run: ./gradlew --no-daemon clean check

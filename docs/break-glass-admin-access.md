@@ -32,6 +32,7 @@ Break-glass is an **emergency-only** access path to prevent total platform locko
 - **Approval/review governance modes** (`BREAK_GLASS_APPROVAL_MODE`)
 - **Post-use review event trail** for emergency sessions
 - **Active token revocation + denylist foundation** for break-glass JWTs
+- **Staging revocation drill + evidence gate** (Faz 123): `docs/break-glass-revocation-staging-drill.md`
 - **Session limit** guardrail (in-memory per instance; max active sessions default 1)
 
 ## Credential strategy (Faz 90)

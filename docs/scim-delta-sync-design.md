@@ -82,8 +82,10 @@ Do not add userId or email labels.
 
 - Single-page read-only GET on manual dry-run when `SCIM_DELTA_REMOTE_FETCH_ENABLED=true` and runtime bearer + base URL are set.
 - K8s wiring (Faz 118): `SCIM_DELTA_REMOTE_BEARER_TOKEN` from `existingSecret` / ExternalSecret; token not in GitOps values.
-- No production scheduler, no multi-page loop (future phase), no provider mutation.
-- Evidence bundle: sanitized JSON — see `scripts/scim/scim-delta-evidence-formats.md`.
+- Manual dry-run multi-page loop (Faz 119): bounded GET pages when `SCIM_DELTA_REMOTE_MULTI_PAGE_ENABLED=true`; default single page.
+- No production scheduler, no provider mutation.
+- Evidence bundle: sanitized JSON — see `docs/scim-delta-sandbox-evidence.md` and `scripts/scim/validate-scim-delta-evidence.sh`.
+- Provider certification (Faz 120): Okta / Entra / generic checklists before any scheduler phase — `docs/scim-delta-provider-certification.md`.
 
 ## Faz 115 POC (implemented)
 

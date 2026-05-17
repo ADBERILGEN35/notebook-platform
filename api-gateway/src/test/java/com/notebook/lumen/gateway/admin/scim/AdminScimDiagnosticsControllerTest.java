@@ -67,7 +67,8 @@ class AdminScimDiagnosticsControllerTest {
     var controller = new AdminScimDiagnosticsController(auth, proxy);
 
     StepVerifier.create(controller.deltaReadiness(jwt(), "req-delta"))
-        .assertNext(response -> assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN))
+        .assertNext(
+            response -> assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN))
         .verifyComplete();
     verifyNoInteractions(proxy);
   }

@@ -4,10 +4,10 @@ import com.notebook.lumen.identity.scim.ScimProperties;
 import com.notebook.lumen.identity.scim.sync.ScimProviderResponseClassifier.Classification;
 import com.notebook.lumen.identity.scim.sync.ScimRetryAfterParser.ParseResult;
 import com.notebook.lumen.identity.scim.sync.ScimSyncDiagnosticsDtos.DryRunPocRequest;
-import com.notebook.lumen.identity.scim.sync.delta.ScimDeltaProviderClient;
-import com.notebook.lumen.identity.scim.sync.delta.ScimDeltaProviderRequest;
+import com.notebook.lumen.identity.scim.sync.delta.ScimDeltaMultiPageRemoteFetcher;
 import com.notebook.lumen.identity.scim.sync.delta.ScimDeltaProviderRequestBuilder;
 import com.notebook.lumen.identity.scim.sync.delta.ScimDeltaRemoteFetchWarnings;
+import com.notebook.lumen.identity.scim.sync.delta.ScimDeltaStoppedReason;
 import java.time.Instant;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -15,22 +15,22 @@ import java.util.Set;
 import org.springframework.stereotype.Service;
 
 /**
- * Evaluates simulated or read-only remote GET fetch outcomes for delta POC (Faz 116–117). Remote fetch is
- * manual dry-run only; default disabled; no IdP mutation.
+ * Evaluates simulated or read-only remote GET fetch outcomes for delta POC (Faz 116–117). Remote
+ * fetch is manual dry-run only; default disabled; no IdP mutation.
  */
 @Service
 public class ScimDeltaFetchDiagnosticsService {
 
   private final ScimProperties properties;
-  private final ScimDeltaProviderClient providerClient;
+  private final ScimDeltaMultiPageRemoteFetcher multiPageFetcher;
   private final ScimDeltaProviderRequestBuilder requestBuilder;
 
   public ScimDeltaFetchDiagnosticsService(
       ScimProperties properties,
-      ScimDeltaProviderClient providerClient,
+      ScimDeltaMultiPageRemoteFetcher multiPageFetcher,
       ScimDeltaProviderRequestBuilder requestBuilder) {
     this.properties = properties;
-    this.providerClient = providerClient;
+    this.multiPageFetcher = multiPageFetcher;
     this.requestBuilder = requestBuilder;
   }
 
@@ -40,7 +40,8 @@ public class ScimDeltaFetchDiagnosticsService {
     return ScimDeltaRateLimitDiagnostics.empty(properties, List.copyOf(warnings));
   }
 
-  public ScimDeltaRateLimitDiagnostics evaluateDryRun(DryRunPocRequest request, List<String> baseWarnings) {
+  public ScimDeltaRateLimitDiagnostics evaluateDryRun(
+      DryRunPocRequest request, List<String> baseWarnings) {
     Set<String> warnings = new LinkedHashSet<>(baseWarnings);
     warnings.add(ScimDeltaStrategyResolver.WARNING_RAW_PAYLOAD_SUPPRESSED);
 
@@ -62,27 +63,22 @@ public class ScimDeltaFetchDiagnosticsService {
     }
 
     ScimResourceType resourceType =
-        request == null || request.resourceType() == null ? ScimResourceType.USER : request.resourceType();
-    return requestBuilder
-        .buildDiagnosticPage(properties, resourceType)
-        .map(req -> evaluateRemoteFetch(req, warnings))
-        .orElseGet(
-            () -> {
-              warnings.add(ScimDeltaRemoteFetchWarnings.REMOTE_FETCH_NOT_CONFIGURED);
-              return ScimDeltaRateLimitDiagnostics.empty(properties, List.copyOf(warnings));
-            });
-  }
+        request == null || request.resourceType() == null
+            ? ScimResourceType.USER
+            : request.resourceType();
+    if (requestBuilder.buildDiagnosticPage(properties, resourceType).isEmpty()) {
+      warnings.add(ScimDeltaRemoteFetchWarnings.REMOTE_FETCH_NOT_CONFIGURED);
+      return ScimDeltaRateLimitDiagnostics.empty(
+          properties, List.copyOf(warnings), ScimDeltaStoppedReason.NOT_CONFIGURED);
+    }
 
-  private ScimDeltaRateLimitDiagnostics evaluateRemoteFetch(
-      ScimDeltaProviderRequest providerRequest, Set<String> warnings) {
-    if (providerRequest.pageSize() < properties.deltaRemoteMaxPageSize()
-        || providerRequest.pageSize() < properties.providerMaxPageSize()) {
+    if (properties.deltaRemoteMaxPageSize() < properties.providerMaxPageSize()
+        || properties.deltaRemoteMaxPageSize() > 0) {
       warnings.add(ScimDeltaRemoteFetchWarnings.REMOTE_PAGE_SIZE_CAPPED);
     }
-    var fetchResult =
-        providerClient.fetch(providerRequest, properties.deltaRemoteBearerToken());
-    return ScimDeltaRateLimitDiagnostics.fromRemoteFetch(
-        properties, List.copyOf(warnings), fetchResult);
+
+    return multiPageFetcher.fetchPages(
+        resourceType, properties.deltaRemoteBearerToken(), List.copyOf(warnings));
   }
 
   private ScimDeltaRateLimitDiagnostics evaluateSimulatedProbe(
@@ -113,9 +109,7 @@ public class ScimDeltaFetchDiagnosticsService {
       if (c.retryable() && request.simulatedRetryAfter() != null) {
         ParseResult parsed =
             ScimRetryAfterParser.parse(
-                request.simulatedRetryAfter(),
-                properties.deltaMaxRetryAfterSeconds(),
-                backoffBase);
+                request.simulatedRetryAfter(), properties.deltaMaxRetryAfterSeconds(), backoffBase);
         warnings.addAll(parsed.warnings());
         wait = parsed.retryAfterSeconds();
         observed = parsed.retryAfterObserved();
@@ -125,47 +119,23 @@ public class ScimDeltaFetchDiagnosticsService {
         warnings.add(ScimDeltaStrategyResolver.WARNING_RETRY_AFTER_OBSERVED);
       }
 
-      return new ScimDeltaRateLimitDiagnostics(
-          properties.deltaRemoteFetchEnabled(),
-          properties.deltaRemoteFetchConfigured(),
-          false,
-          properties.providerRateLimitAware(),
-          observed,
-          observed ? wait : null,
-          capped,
-          ScimRetryAfterParser.nextRecommendedAttempt(now, wait),
-          c.errorClass(),
-          properties.deltaBackoffBaseSeconds(),
-          properties.deltaHttpTimeoutMs(),
-          0,
-          0,
-          false,
-          List.copyOf(warnings));
+      return buildSimulated(now, c, wait, capped, observed, warnings);
     }
 
     if (request != null && request.observedRetryAfter()) {
-      int seconds =
-          request.retryAfterSeconds() == null ? backoffBase : request.retryAfterSeconds();
+      int seconds = request.retryAfterSeconds() == null ? backoffBase : request.retryAfterSeconds();
       ParseResult parsed =
           ScimRetryAfterParser.parse(
               String.valueOf(seconds), properties.deltaMaxRetryAfterSeconds(), backoffBase);
       warnings.addAll(parsed.warnings());
       warnings.add(ScimDeltaStrategyResolver.WARNING_RETRY_AFTER_OBSERVED);
-      return new ScimDeltaRateLimitDiagnostics(
-          properties.deltaRemoteFetchEnabled(),
-          properties.deltaRemoteFetchConfigured(),
-          false,
-          properties.providerRateLimitAware(),
+      return ScimDeltaRateLimitDiagnostics.simulated(
+          properties,
           parsed.retryAfterObserved(),
           parsed.retryAfterSeconds(),
           parsed.retryAfterCapped(),
           ScimRetryAfterParser.nextRecommendedAttempt(now, parsed.retryAfterSeconds()),
           ScimProviderErrorClass.RETRY_AFTER_OBSERVED,
-          properties.deltaBackoffBaseSeconds(),
-          properties.deltaHttpTimeoutMs(),
-          0,
-          0,
-          false,
           List.copyOf(warnings));
     }
 
@@ -192,10 +162,29 @@ public class ScimDeltaFetchDiagnosticsService {
     if (classification.retryable() && classification.errorClass() != ScimProviderErrorClass.NONE) {
       warnings.add(ScimProviderResponseClassifier.WARNING_BACKOFF_RECOMMENDED);
     }
+    return buildSimulated(now, classification, waitSeconds, capped, observed, warnings);
+  }
+
+  private ScimDeltaRateLimitDiagnostics buildSimulated(
+      Instant now,
+      Classification classification,
+      int waitSeconds,
+      boolean capped,
+      boolean observed,
+      Set<String> warnings) {
+    String stopped =
+        classification.errorClass() == ScimProviderErrorClass.RATE_LIMITED
+            ? ScimDeltaStoppedReason.PROVIDER_RATE_LIMITED.name()
+            : classification.errorClass() == ScimProviderErrorClass.TIMEOUT
+                ? ScimDeltaStoppedReason.TIMEOUT.name()
+                : classification.errorClass() == ScimProviderErrorClass.PROVIDER_BAD_RESPONSE
+                    ? ScimDeltaStoppedReason.BAD_RESPONSE.name()
+                    : ScimDeltaStoppedReason.SINGLE_PAGE_ONLY.name();
     return new ScimDeltaRateLimitDiagnostics(
         properties.deltaRemoteFetchEnabled(),
         properties.deltaRemoteFetchConfigured(),
         false,
+        properties.deltaRemoteMultiPageEnabled(),
         properties.providerRateLimitAware(),
         observed,
         observed || classification.retryable() ? waitSeconds : null,
@@ -208,6 +197,9 @@ public class ScimDeltaFetchDiagnosticsService {
         properties.deltaHttpTimeoutMs(),
         0,
         0,
+        false,
+        stopped,
+        false,
         false,
         List.copyOf(warnings));
   }

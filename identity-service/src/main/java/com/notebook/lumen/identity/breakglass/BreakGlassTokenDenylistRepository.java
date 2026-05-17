@@ -10,4 +10,6 @@ public interface BreakGlassTokenDenylistRepository
   Optional<BreakGlassTokenDenylistEntry> findByJti(String jti);
 
   long countByExpiresAtAfter(Instant now);
+
+  long deleteByExpiresAtBefore(Instant threshold);
 }

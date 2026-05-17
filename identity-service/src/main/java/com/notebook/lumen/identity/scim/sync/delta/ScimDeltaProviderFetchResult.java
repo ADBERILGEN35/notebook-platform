@@ -3,6 +3,7 @@ package com.notebook.lumen.identity.scim.sync.delta;
 import com.notebook.lumen.identity.scim.sync.ScimProviderErrorClass;
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 
 /** Sanitized aggregate result of a read-only provider fetch (Faz 117). No raw body or token. */
 public record ScimDeltaProviderFetchResult(
@@ -18,7 +19,8 @@ public record ScimDeltaProviderFetchResult(
     boolean retryAfterCapped,
     Instant nextRecommendedAttemptAt,
     ScimProviderErrorClass providerErrorClass,
-    List<String> warnings) {
+    List<String> warnings,
+    Optional<ScimDeltaPaginationContinuation> paginationContinuation) {
 
   public static ScimDeltaProviderFetchResult notAttempted(List<String> warnings) {
     return new ScimDeltaProviderFetchResult(
@@ -34,6 +36,7 @@ public record ScimDeltaProviderFetchResult(
         false,
         null,
         ScimProviderErrorClass.NONE,
-        warnings);
+        warnings,
+        Optional.empty());
   }
 }

@@ -107,6 +107,9 @@ identity:
     revocation-enabled: ${BREAK_GLASS_REVOCATION_ENABLED:false}
     revoke-on-reject: ${BREAK_GLASS_REVOKE_ON_REJECT:true}
     denylist-retention-hours: ${BREAK_GLASS_DENYLIST_RETENTION_HOURS:24}
+    revocation-cache-ttl-seconds: ${BREAK_GLASS_REVOCATION_CACHE_TTL_SECONDS:30}
+    revocation-cleanup-enabled: ${BREAK_GLASS_REVOCATION_CLEANUP_ENABLED:false}
+    revocation-cleanup-interval-ms: ${BREAK_GLASS_REVOCATION_CLEANUP_INTERVAL_MS:3600000}
     token-hash: ${BREAK_GLASS_TOKEN_HASH:}
     offline-public-key-path: ${BREAK_GLASS_OFFLINE_PUBLIC_KEY_PATH:}
     offline-allowed-issuer: ${BREAK_GLASS_OFFLINE_ALLOWED_ISSUER:notebook-break-glass-offline}
@@ -234,6 +237,10 @@ identity:
     delta-remote-token-secret-key: ${SCIM_DELTA_REMOTE_TOKEN_SECRET_KEY:}
     delta-remote-bearer-token: ${SCIM_DELTA_REMOTE_BEARER_TOKEN:}
     delta-remote-max-page-size: ${SCIM_DELTA_REMOTE_MAX_PAGE_SIZE:100}
+    delta-remote-multi-page-enabled: ${SCIM_DELTA_REMOTE_MULTI_PAGE_ENABLED:false}
+    delta-remote-max-pages: ${SCIM_DELTA_REMOTE_MAX_PAGES:1}
+    delta-remote-max-resources: ${SCIM_DELTA_REMOTE_MAX_RESOURCES:500}
+    delta-remote-page-delay-ms: ${SCIM_DELTA_REMOTE_PAGE_DELAY_MS:0}
   siem:
     push-enabled: ${SIEM_PUSH_ENABLED:false}
     provider: ${SIEM_PROVIDER:noop}

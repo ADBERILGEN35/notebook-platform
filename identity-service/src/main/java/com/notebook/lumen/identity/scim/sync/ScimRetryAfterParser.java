@@ -1,7 +1,6 @@
 package com.notebook.lumen.identity.scim.sync;
 
 import java.time.Instant;
-import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -27,7 +26,8 @@ public final class ScimRetryAfterParser {
       boolean invalidFallback,
       List<String> warnings) {}
 
-  public static ParseResult parse(String retryAfterHeader, int maxRetryAfterSeconds, int fallbackSeconds) {
+  public static ParseResult parse(
+      String retryAfterHeader, int maxRetryAfterSeconds, int fallbackSeconds) {
     List<String> warnings = new ArrayList<>();
     int safeMax = Math.max(1, maxRetryAfterSeconds);
     int safeFallback = Math.max(1, fallbackSeconds);

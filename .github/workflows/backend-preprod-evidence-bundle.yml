@@ -1,0 +1,118 @@
+name: Backend Pre-prod Evidence Bundle
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_candidate_id:
+        description: Release candidate identifier (e.g. rc-2026-05-17)
+        required: false
+        type: string
+        default: ""
+      pp3_required:
+        description: Require PP-3 retention staging smoke evidence
+        required: false
+        type: boolean
+        default: false
+      use_fixture_inputs:
+        description: Use repo fixture inputs (for dry-run without downloaded artifacts)
+        required: false
+        type: boolean
+        default: false
+      scim_artifact_name:
+        description: SCIM sandbox artifact name from scim-delta-readiness workflow
+        required: false
+        type: string
+        default: scim-delta-sandbox-evidence-staging
+
+permissions:
+  contents: read
+
+jobs:
+  build-preprod-bundle:
+    name: build-preprod-bundle
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Prepare input directory
+        id: inputs
+        run: |
+          mkdir -p preprod-inputs
+          if [[ "${{ github.event.inputs.use_fixture_inputs }}" == "true" ]]; then
+            cp scripts/security/fixtures/preprod-input/* preprod-inputs/
+            echo "mode=fixture" >> "$GITHUB_OUTPUT"
+          else
+            echo "mode=artifacts" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Download SCIM sandbox artifact (optional)
+        if: github.event.inputs.use_fixture_inputs != true
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ github.event.inputs.scim_artifact_name || 'scim-delta-sandbox-evidence-staging' }}
+          path: preprod-inputs
+
+      - name: Download break-glass revocation artifact (optional)
+        if: github.event.inputs.use_fixture_inputs != true
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          name: break-glass-revocation-evidence
+          path: preprod-inputs
+
+      - name: Download retention smoke artifact (optional)
+        if: github.event.inputs.use_fixture_inputs != true
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          name: retention-staging-smoke-evidence
+          path: preprod-inputs
+
+      - name: Locate input JSON files
+        id: locate
+        shell: bash
+        run: |
+          find_scim() {
+            find preprod-inputs -name 'scim-delta-sandbox-evidence.json' -print -quit 2>/dev/null || true
+          }
+          find_bg() {
+            find preprod-inputs -name 'break-glass-revocation-evidence.json' -print -quit 2>/dev/null || true
+          }
+          find_ret() {
+            find preprod-inputs -name 'retention-staging-smoke-results.json' -print -quit 2>/dev/null || true
+          }
+          SCIM="$(find_scim)"
+          BG="$(find_bg)"
+          RET="$(find_ret)"
+          echo "scim=${SCIM}" >> "$GITHUB_OUTPUT"
+          echo "bg=${BG}" >> "$GITHUB_OUTPUT"
+          echo "ret=${RET}" >> "$GITHUB_OUTPUT"
+
+      - name: Build backend pre-prod evidence bundle
+        env:
+          PREPROD_BUNDLE_OUTPUT_DIR: backend-preprod-evidence-out
+          RELEASE_CANDIDATE_ID: ${{ github.event.inputs.release_candidate_id || github.sha }}
+          GIT_SHA: ${{ github.sha }}
+          IMAGE_TAG: ${{ vars.BACKEND_PREPROD_IMAGE_TAG || 'staging' }}
+          PREPROD_SCIM_EVIDENCE_PATH: ${{ steps.locate.outputs.scim }}
+          PREPROD_BREAK_GLASS_EVIDENCE_PATH: ${{ steps.locate.outputs.bg }}
+          PREPROD_RETENTION_EVIDENCE_PATH: ${{ steps.locate.outputs.ret }}
+          PREPROD_PP3_REQUIRED: ${{ github.event.inputs.pp3_required }}
+          PREPROD_ACCEPTED_RISKS_JSON: ${{ vars.BACKEND_PREPROD_ACCEPTED_RISKS_JSON || '[]' }}
+          PREPROD_HIGH_RISK_COUNT: ${{ vars.BACKEND_PREPROD_HIGH_RISK_COUNT || '0' }}
+        run: bash scripts/security/build-backend-preprod-evidence-bundle.sh
+
+      - name: Validate bundle JSON
+        if: always()
+        run: python3 -m json.tool backend-preprod-evidence-out/backend-preprod-evidence-bundle.json
+
+      - name: Upload backend pre-prod evidence bundle
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-preprod-evidence-bundle
+          path: |
+            backend-preprod-evidence-out/backend-preprod-evidence-bundle.json
+            backend-preprod-evidence-out/backend-preprod-evidence-summary.md
+          if-no-files-found: warn

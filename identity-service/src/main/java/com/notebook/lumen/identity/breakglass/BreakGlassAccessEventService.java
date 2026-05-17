@@ -248,10 +248,11 @@ public class BreakGlassAccessEventService {
             e.getSessionId(),
             e.getId(),
             reviewerId,
+            e.getIssuedAt(),
             now,
             e.getExpiresAt(),
             reason == null ? "" : reason.trim(),
-            source,
+            normalizeSource(source),
             now));
     e.markTokenRevoked(reviewerId, reason);
     repository.save(e);
@@ -315,6 +316,27 @@ public class BreakGlassAccessEventService {
       return "EXPIRED";
     }
     return e.getTokenJti() == null || e.getTokenJti().isBlank() ? "UNKNOWN" : "ACTIVE";
+  }
+
+  static String maskJti(String jti) {
+    if (jti == null || jti.isBlank()) {
+      return "";
+    }
+    String trimmed = jti.trim();
+    if (trimmed.length() <= 8) {
+      return "****";
+    }
+    return trimmed.substring(0, 4) + "…" + trimmed.substring(trimmed.length() - 4);
+  }
+
+  static String normalizeSource(String source) {
+    if (source == null || source.isBlank()) {
+      return BreakGlassRevocationSource.ADMIN_REVOKE.wire();
+    }
+    if ("MANUAL_REVOKE".equalsIgnoreCase(source) || "REVIEW_REJECT".equalsIgnoreCase(source)) {
+      return BreakGlassRevocationSource.from(source).wire();
+    }
+    return BreakGlassRevocationSource.from(source).wire();
   }
 
   private static String hash(String value) {
