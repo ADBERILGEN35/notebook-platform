@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Sign Up | Notebook Platform</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Manrope:wght@600;700;800&amp;family=JetBrains+Mono:wght@400&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary": "#ffffff",
+                        "on-primary": "#ffffff",
+                        "on-surface-variant": "#464553",
+                        "on-secondary-fixed-variant": "#3a485b",
+                        "on-secondary-container": "#57657a",
+                        "on-primary-container": "#a9a7ff",
+                        "on-secondary": "#ffffff",
+                        "inverse-on-surface": "#f3eff9",
+                        "secondary-fixed-dim": "#b9c7df",
+                        "primary-fixed-dim": "#c3c0ff",
+                        "on-secondary-fixed": "#0d1c2e",
+                        "surface-bright": "#fcf8ff",
+                        "outline-variant": "#c8c4d5",
+                        "on-background": "#1b1b22",
+                        "on-surface": "#1b1b22",
+                        "on-error": "#ffffff",
+                        "secondary": "#515f74",
+                        "surface-container-low": "#f6f2fc",
+                        "surface-tint": "#544fc0",
+                        "outline": "#777584",
+                        "on-primary-fixed": "#0f0069",
+                        "error": "#ba1a1a",
+                        "secondary-container": "#d5e3fc",
+                        "inverse-surface": "#303037",
+                        "tertiary": "#511c00",
+                        "on-tertiary-fixed-variant": "#7a3003",
+                        "surface": "#fcf8ff",
+                        "on-error-container": "#93000a",
+                        "tertiary-container": "#752c00",
+                        "surface-container": "#f0ecf6",
+                        "tertiary-fixed": "#ffdbcc",
+                        "error-container": "#ffdad6",
+                        "surface-variant": "#e4e1eb",
+                        "surface-container-high": "#eae6f1",
+                        "on-tertiary-container": "#fe9562",
+                        "surface-dim": "#dcd8e3",
+                        "primary-fixed": "#e2dfff",
+                        "primary": "#1f108e",
+                        "secondary-fixed": "#d5e3fc",
+                        "on-tertiary-fixed": "#351000",
+                        "background": "#fcf8ff",
+                        "tertiary-fixed-dim": "#ffb694",
+                        "surface-container-lowest": "#ffffff",
+                        "primary-container": "#3730a3",
+                        "surface-container-highest": "#e4e1eb",
+                        "inverse-primary": "#c3c0ff",
+                        "on-primary-fixed-variant": "#3b35a7"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "sm": "8px",
+                        "base": "4px",
+                        "xl": "48px",
+                        "container-max": "1280px",
+                        "xs": "4px",
+                        "gutter": "24px",
+                        "lg": "24px",
+                        "md": "16px"
+                    },
+                    "fontFamily": {
+                        "label-md": ["Inter"],
+                        "display-lg": ["Manrope"],
+                        "mono-sm": ["JetBrains Mono"],
+                        "body-lg": ["Inter"],
+                        "headline-md": ["Manrope"],
+                        "headline-sm": ["Manrope"],
+                        "body-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "label-md": ["12px", {"lineHeight": "1", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                        "display-lg": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "mono-sm": ["13px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                        "body-lg": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                        "headline-md": ["24px", {"lineHeight": "1.3", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "headline-sm": ["18px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                        "body-md": ["14px", {"lineHeight": "1.5", "fontWeight": "400"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface min-h-screen flex items-center justify-center p-lg">
+<!-- Main Registration Container -->
+<main class="w-full max-w-[480px] bg-surface-container-lowest border border-outline-variant rounded-xl shadow-[0px_10px_15px_-3px_rgba(15,23,42,0.1)] overflow-hidden">
+<!-- Header Section -->
+<div class="px-xl pt-xl pb-lg text-center">
+<div class="mb-lg inline-flex items-center justify-center w-12 h-12 rounded-lg bg-primary-container text-white">
+<span class="material-symbols-outlined text-headline-md" data-icon="menu_book">menu_book</span>
+</div>
+<h1 class="font-headline-md text-headline-md text-on-surface mb-xs">Create your workspace</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">Secure access to the Notebook Platform</p>
+</div>
+<!-- Form Section -->
+<form class="px-xl space-y-md" onsubmit="return false;">
+<!-- Full Name Field -->
+<div class="space-y-base">
+<label class="font-label-md text-label-md text-on-surface-variant px-base" for="full-name">Full Name</label>
+<div class="relative">
+<span class="absolute left-md top-1/2 -translate-y-1/2 material-symbols-outlined text-outline" data-icon="person">person</span>
+<input class="w-full pl-[44px] pr-md py-md bg-surface-container-lowest border border-outline-variant rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all font-body-md text-body-md" id="full-name" placeholder="John Doe" type="text"/>
+</div>
+</div>
+<!-- Email Field -->
+<div class="space-y-base">
+<label class="font-label-md text-label-md text-on-surface-variant px-base" for="work-email">Work Email</label>
+<div class="relative">
+<span class="absolute left-md top-1/2 -translate-y-1/2 material-symbols-outlined text-outline" data-icon="mail">mail</span>
+<input class="w-full pl-[44px] pr-md py-md bg-surface-container-lowest border border-outline-variant rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all font-body-md text-body-md" id="work-email" placeholder="name@company.com" type="email"/>
+</div>
+</div>
+<!-- Password Field -->
+<div class="space-y-base">
+<label class="font-label-md text-label-md text-on-surface-variant px-base" for="password">Password</label>
+<div class="relative">
+<span class="absolute left-md top-1/2 -translate-y-1/2 material-symbols-outlined text-outline" data-icon="lock">lock</span>
+<input class="w-full pl-[44px] pr-md py-md bg-surface-container-lowest border border-outline-variant rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all font-body-md text-body-md" id="password" placeholder="••••••••" type="password"/>
+</div>
+<!-- Password Strength -->
+<div class="pt-base space-y-sm">
+<div class="flex gap-xs">
+<div class="h-1 flex-1 rounded-full bg-primary"></div>
+<div class="h-1 flex-1 rounded-full bg-primary"></div>
+<div class="h-1 flex-1 rounded-full bg-primary"></div>
+<div class="h-1 flex-1 rounded-full bg-outline-variant"></div>
+</div>
+<div class="flex flex-wrap gap-x-md gap-y-xs">
+<div class="flex items-center gap-xs text-primary">
+<span class="material-symbols-outlined !text-[14px]" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="font-label-md text-label-md">8+ characters</span>
+</div>
+<div class="flex items-center gap-xs text-on-surface-variant">
+<span class="material-symbols-outlined !text-[14px]" data-icon="circle" style="font-variation-settings: 'FILL' 0;">circle</span>
+<span class="font-label-md text-label-md">1 Symbol</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Terms Checkbox -->
+<div class="flex items-start gap-md pt-base">
+<div class="pt-xs">
+<input class="w-4 h-4 rounded border-outline-variant text-primary focus:ring-primary cursor-pointer" id="terms" type="checkbox"/>
+</div>
+<label class="font-body-md text-body-md text-on-surface-variant" for="terms">
+                    I agree to the <a class="text-primary hover:underline" href="#">Terms of Service</a> and <a class="text-primary hover:underline" href="#">Privacy Policy</a>.
+                </label>
+</div>
+<!-- Actions -->
+<div class="pt-md space-y-md">
+<button class="w-full py-md bg-primary text-white font-headline-sm text-headline-sm rounded-lg hover:opacity-90 active:scale-[0.98] transition-all shadow-sm" type="submit">
+                    Create Account
+                </button>
+<div class="relative flex items-center py-sm">
+<div class="flex-grow border-t border-outline-variant"></div>
+<span class="flex-shrink mx-md font-label-md text-label-md text-outline">OR</span>
+<div class="flex-grow border-t border-outline-variant"></div>
+</div>
+<button class="w-full flex items-center justify-center gap-md py-md bg-surface-container-lowest border border-outline-variant text-on-surface font-headline-sm text-headline-sm rounded-lg hover:bg-surface-container-low transition-colors active:scale-[0.98]" type="button">
+<img alt="Google" class="w-5 h-5" data-alt="A high-fidelity rendering of the Google secondary icon logo with its signature four-color palette. The logo is set against a clean, professional white background with soft, diffused lighting that emphasizes its modern corporate aesthetic and sharp vector edges. The visual style is minimal and secure, suitable for a premium enterprise login interface." src="https://lh3.googleusercontent.com/aida-public/AB6AXuACMl8z9lKP6xjE6-mtzPcE43zZUFjVmXD8Pwnz3mRRG4f99G10sdkDeOZM8LiSmCrAhiap4_m0bt5KYEcLetVYiQlUVozfPzHXbPV000Cez3Z3dSZPftzgtiNXR_XsTE914z4WbvlL3ReJb6G2KVhWDOiUQ8otJ_glLIvN5NL6U6PZ-QdYxbYeb-u8xd4LN_VVNNtlo3PI_mnE6Vyjod11fJj6DENhqVPr3u7moJT7XuiooZahDsWq74NssAMxod6qd-CIGRQaIec"/>
+                    Sign up with SSO
+                </button>
+</div>
+</form>
+<!-- Footer Footer -->
+<div class="px-xl py-xl text-center bg-surface-container-low border-t border-outline-variant mt-xl">
+<p class="font-body-md text-body-md text-on-surface-variant">
+                Already have an account? <a class="text-primary font-bold hover:underline" href="#">Log in</a>
+</p>
+</div>
+</main>
+<!-- Background Decorative Elements (Subtle) -->
+<div class="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
+<div class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/5 rounded-full blur-[120px]"></div>
+<div class="absolute bottom-[-10%] right-[-10%] w-[30%] h-[30%] bg-secondary/5 rounded-full blur-[100px]"></div>
+</div>
+</body></html>

@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Notebook Platform - Notification Center</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Manrope:wght@600;700&amp;family=JetBrains+Mono:wght@400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary-fixed-variant": "#7a3003",
+                        "surface-container-highest": "#e4e1eb",
+                        "secondary": "#515f74",
+                        "on-primary-fixed-variant": "#3b35a7",
+                        "tertiary-fixed-dim": "#ffb694",
+                        "on-error": "#ffffff",
+                        "on-primary-container": "#a9a7ff",
+                        "on-primary-fixed": "#0f0069",
+                        "surface-container": "#f0ecf6",
+                        "on-error-container": "#93000a",
+                        "outline-variant": "#c8c4d5",
+                        "on-primary": "#ffffff",
+                        "inverse-primary": "#c3c0ff",
+                        "on-secondary-container": "#57657a",
+                        "secondary-container": "#d5e3fc",
+                        "surface-container-lowest": "#ffffff",
+                        "error": "#ba1a1a",
+                        "surface": "#fcf8ff",
+                        "surface-dim": "#dcd8e3",
+                        "on-secondary": "#ffffff",
+                        "tertiary-fixed": "#ffdbcc",
+                        "on-tertiary-container": "#fe9562",
+                        "inverse-on-surface": "#f3eff9",
+                        "background": "#fcf8ff",
+                        "on-background": "#1b1b22",
+                        "on-surface-variant": "#464553",
+                        "tertiary": "#511c00",
+                        "primary-fixed": "#e2dfff",
+                        "primary": "#1f108e",
+                        "surface-bright": "#fcf8ff",
+                        "on-tertiary": "#ffffff",
+                        "primary-container": "#3730a3",
+                        "outline": "#777584",
+                        "inverse-surface": "#303037",
+                        "on-tertiary-fixed": "#351000",
+                        "surface-container-high": "#eae6f1",
+                        "error-container": "#ffdad6",
+                        "surface-container-low": "#f6f2fc",
+                        "tertiary-container": "#752c00",
+                        "surface-variant": "#e4e1eb",
+                        "on-secondary-fixed": "#0d1c2e",
+                        "secondary-fixed-dim": "#b9c7df",
+                        "on-secondary-fixed-variant": "#3a485b",
+                        "surface-tint": "#544fc0",
+                        "secondary-fixed": "#d5e3fc",
+                        "on-surface": "#1b1b22",
+                        "primary-fixed-dim": "#c3c0ff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "sm": "8px",
+                        "container-max": "1280px",
+                        "gutter": "24px",
+                        "base": "4px",
+                        "md": "16px",
+                        "xs": "4px",
+                        "xl": "48px",
+                        "lg": "24px"
+                    },
+                    "fontFamily": {
+                        "label-md": ["Inter"],
+                        "mono-sm": ["JetBrains Mono"],
+                        "headline-sm": ["Manrope"],
+                        "display-lg": ["Manrope"],
+                        "body-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-md": ["Manrope"]
+                    },
+                    "fontSize": {
+                        "label-md": ["12px", { "lineHeight": "1", "letterSpacing": "0.01em", "fontWeight": "500" }],
+                        "mono-sm": ["13px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "headline-sm": ["18px", { "lineHeight": "1.4", "fontWeight": "600" }],
+                        "display-lg": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-md": ["14px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "body-lg": ["16px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "1.3", "letterSpacing": "-0.01em", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-surface text-on-surface font-body-md h-screen w-screen overflow-hidden flex relative">
+<!-- Mock Background Content to show overlay effect -->
+<div class="flex-1 h-full opacity-30 grayscale pointer-events-none flex">
+<!-- SideNavBar structure -->
+<nav class="fixed left-0 top-0 h-full w-[240px] bg-surface border-r border-outline-variant flex flex-col py-md px-md z-10">
+<div class="mb-xl px-sm">
+<h1 class="text-headline-sm font-headline-sm font-bold text-primary">Notebook Platform</h1>
+<p class="font-label-md text-label-md text-on-surface-variant mt-1">Enterprise Workspace</p>
+</div>
+<button class="mb-lg w-full py-2 px-4 bg-primary text-on-primary rounded-lg font-label-md text-label-md flex items-center justify-center gap-2 hover:bg-primary-container transition-colors">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                New Notebook
+            </button>
+<div class="flex-1 space-y-1">
+<a class="flex items-center gap-3 px-sm py-2 rounded-DEFAULT text-on-surface-variant hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">folder_open</span>
+<span class="font-body-md text-body-md">Workspaces</span>
+</a>
+<a class="flex items-center gap-3 px-sm py-2 rounded-DEFAULT text-on-surface-variant hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">search</span>
+<span class="font-body-md text-body-md">Search</span>
+</a>
+<a class="flex items-center gap-3 px-sm py-2 rounded-DEFAULT text-primary font-bold border-r-2 border-primary bg-surface-container-low opacity-80 transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">notifications</span>
+<span class="font-body-md text-body-md">Notifications</span>
+</a>
+</div>
+</nav>
+<!-- Main Content Area with TopNavBar -->
+<div class="ml-[240px] flex-1 flex flex-col">
+<header class="fixed top-0 right-0 w-[calc(100%-240px)] z-40 bg-surface/80 backdrop-blur-md border-b border-outline-variant flex justify-between items-center h-16 px-lg">
+<div class="font-headline-sm text-headline-sm text-on-surface">Workspace Switcher</div>
+<div class="flex items-center gap-4">
+<button class="text-secondary hover:text-primary transition-colors"><span class="material-symbols-outlined">history</span></button>
+<button class="text-secondary hover:text-primary transition-colors"><span class="material-symbols-outlined">star</span></button>
+<button class="py-1 px-3 border border-outline-variant rounded-DEFAULT text-on-surface font-label-md text-label-md hover:bg-surface-container-low transition-colors">Invite Team</button>
+</div>
+</header>
+<main class="mt-16 p-xl container-max mx-auto w-full">
+<div class="w-full h-64 bg-surface-container-low rounded-xl border border-outline-variant mb-lg"></div>
+<div class="w-full h-96 bg-surface-container-low rounded-xl border border-outline-variant"></div>
+</main>
+</div>
+</div>
+<!-- Overlay Backdrop -->
+<div class="absolute inset-0 bg-inverse-surface/20 backdrop-blur-[2px] z-40 transition-opacity"></div>
+<!-- Notification Drawer (Slide-out right) -->
+<aside class="absolute top-0 right-0 h-full w-[400px] max-w-full bg-surface-container-lowest border-l border-outline-variant shadow-[0_10px_25px_-5px_rgba(15,23,42,0.1)] z-50 flex flex-col transform translate-x-0 transition-transform duration-300 ease-in-out">
+<!-- Drawer Header -->
+<div class="px-lg py-md border-b border-outline-variant flex justify-between items-center bg-surface-container-lowest">
+<h2 class="font-headline-md text-headline-md text-on-surface flex items-center gap-2">
+                Notifications
+                <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-error-container text-on-error-container font-label-md text-label-md">3</span>
+</h2>
+<div class="flex items-center gap-2">
+<button aria-label="Mark all as read" class="p-1 text-on-surface-variant hover:text-primary hover:bg-surface-container-low rounded-full transition-colors group relative">
+<span class="material-symbols-outlined text-[20px]">done_all</span>
+<span class="absolute hidden group-hover:block bottom-full right-0 mb-1 whitespace-nowrap bg-inverse-surface text-inverse-on-surface font-label-md text-label-md px-2 py-1 rounded">Mark all read</span>
+</button>
+<button aria-label="Settings" class="p-1 text-on-surface-variant hover:text-primary hover:bg-surface-container-low rounded-full transition-colors">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+</button>
+<button aria-label="Close drawer" class="p-1 ml-2 text-on-surface hover:bg-surface-container-high rounded-full transition-colors">
+<span class="material-symbols-outlined text-[24px]">close</span>
+</button>
+</div>
+</div>
+<!-- Tabs -->
+<div class="px-lg pt-sm border-b border-outline-variant flex gap-6 bg-surface-container-lowest overflow-x-auto">
+<button class="pb-2 border-b-2 border-primary font-label-md text-label-md text-primary px-1">All</button>
+<button class="pb-2 border-b-2 border-transparent font-label-md text-label-md text-on-surface-variant hover:text-on-surface px-1 flex items-center gap-1">
+                Unread
+                <span class="w-1.5 h-1.5 rounded-full bg-primary inline-block"></span>
+</button>
+<button class="pb-2 border-b-2 border-transparent font-label-md text-label-md text-on-surface-variant hover:text-on-surface px-1">Mentions</button>
+<button class="pb-2 border-b-2 border-transparent font-label-md text-label-md text-on-surface-variant hover:text-on-surface px-1 flex items-center gap-1">
+                Security
+                <span class="w-1.5 h-1.5 rounded-full bg-error inline-block"></span>
+</button>
+</div>
+<!-- Notification List -->
+<div class="flex-1 overflow-y-auto bg-surface-container-lowest">
+<!-- Section Header -->
+<div class="px-lg py-sm mt-sm">
+<span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">New</span>
+</div>
+<!-- List items -->
+<div class="divide-y divide-outline-variant/30">
+<!-- Security Notification (Unread, Critical) -->
+<div class="px-lg py-md hover:bg-surface-container-low cursor-pointer transition-colors relative group bg-surface-container-low/50">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-error"></div>
+<div class="flex gap-4">
+<div class="shrink-0 mt-1">
+<div class="w-10 h-10 rounded-full bg-error-container flex items-center justify-center text-on-error-container">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">shield_person</span>
+</div>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-start mb-1">
+<h3 class="font-body-md text-body-md font-semibold text-on-surface truncate pr-2">New login from San Francisco</h3>
+<span class="font-label-md text-label-md text-error whitespace-nowrap">Just now</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant line-clamp-2">A new sign-in was detected on a Mac OS device from San Francisco, CA. If this wasn't you, secure your account immediately.</p>
+<div class="mt-3 flex gap-2">
+<button class="px-3 py-1.5 bg-surface text-on-surface border border-outline-variant rounded font-label-md text-label-md hover:bg-surface-container-high transition-colors">Review Login</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Mention Notification (Unread) -->
+<div class="px-lg py-md hover:bg-surface-container-low cursor-pointer transition-colors relative bg-surface-container-low/30">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-primary"></div>
+<div class="flex gap-4">
+<div class="shrink-0 mt-1 relative">
+<div class="w-10 h-10 rounded-full overflow-hidden border border-outline-variant bg-surface-container-highest">
+<img alt="Jane" class="w-full h-full object-cover" data-alt="A professional headshot of a young woman with dark hair, smiling slightly. The background is a soft, blurred office environment with natural lighting, creating a bright, modern corporate aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDzPxf56fLhS0iFp9juw3RqHZy90oZShwXxC7ihkgfEaOnacRNxqFxaWwQu5NSmQUR65z4yBMBNARH7yfbMC5jWDVLOEs2SpoMCOTvzi7ZtN9qd0Nl6XiMxSg-9FCcXewX_t37o-mvHHngotZf9AFOzhJrDC7BZ3ERvyW4zqaz1SyU14gfHsr-KWKNVRWldXZkk4fAiNlyzXWUmwz2ZSOjLqsVDACFWT6CddzNuTthhp83Ml6qv_MFNX_zL0dqOF2dlAsb3nx03QyU"/>
+</div>
+<div class="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center border-2 border-surface-container-lowest">
+<span class="material-symbols-outlined text-[12px]" style="font-variation-settings: 'FILL' 1;">alternate_email</span>
+</div>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-start mb-1">
+<h3 class="font-body-md text-body-md font-semibold text-on-surface truncate pr-2">Jane mentioned you in Q3 Planning</h3>
+<span class="font-label-md text-label-md text-primary whitespace-nowrap">10m ago</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant line-clamp-2">"Can we get your input on the resource allocation for the upcoming launch phase? @you"</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Section Header -->
+<div class="px-lg py-sm mt-md border-t border-outline-variant/30">
+<span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Earlier Today</span>
+</div>
+<div class="divide-y divide-outline-variant/30">
+<!-- System Notification (Read) -->
+<div class="px-lg py-md hover:bg-surface-container-low cursor-pointer transition-colors relative opacity-80">
+<div class="flex gap-4">
+<div class="shrink-0 mt-1">
+<div class="w-10 h-10 rounded-full bg-surface-container-highest flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined text-[20px]">info</span>
+</div>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-start mb-1">
+<h3 class="font-body-md text-body-md text-on-surface truncate pr-2">Workspace policy updated</h3>
+<span class="font-label-md text-label-md text-on-surface-variant whitespace-nowrap">2h ago</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant line-clamp-2">The organization admin has updated the data retention policies. Changes take effect next week.</p>
+</div>
+</div>
+</div>
+<!-- Document Notification (Read) -->
+<div class="px-lg py-md hover:bg-surface-container-low cursor-pointer transition-colors relative opacity-80">
+<div class="flex gap-4">
+<div class="shrink-0 mt-1">
+<div class="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container">
+<span class="material-symbols-outlined text-[20px]">description</span>
+</div>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-start mb-1">
+<h3 class="font-body-md text-body-md text-on-surface truncate pr-2">Product Requirements Document finalized</h3>
+<span class="font-label-md text-label-md text-on-surface-variant whitespace-nowrap">5h ago</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant line-clamp-2">Alex marked the document as final and locked it for further editing.</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Empty State (Hidden by default, shown here as reference if needed via js, or just structurally present) -->
+<div class="hidden flex-col items-center justify-center py-xl px-lg text-center mt-xl">
+<div class="w-16 h-16 rounded-full bg-surface-container-high flex items-center justify-center text-outline mb-4">
+<span class="material-symbols-outlined text-[32px]">done_all</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface mb-2">You're all caught up.</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Check back later for new notifications and updates.</p>
+</div>
+</div>
+</aside>
+</body></html>

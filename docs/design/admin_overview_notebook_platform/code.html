@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Enterprise Admin Overview - Notebook Platform</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@400&amp;family=Manrope:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-tertiary-fixed-variant": "#7a3003",
+                      "on-secondary-container": "#57657a",
+                      "secondary-container": "#d5e3fc",
+                      "error": "#ba1a1a",
+                      "inverse-primary": "#c3c0ff",
+                      "on-background": "#1b1b22",
+                      "surface-variant": "#e4e1eb",
+                      "inverse-on-surface": "#f3eff9",
+                      "on-secondary-fixed-variant": "#3a485b",
+                      "surface-dim": "#dcd8e3",
+                      "background": "#fcf8ff",
+                      "tertiary-container": "#752c00",
+                      "surface-tint": "#544fc0",
+                      "surface": "#fcf8ff",
+                      "on-primary-container": "#a9a7ff",
+                      "on-surface": "#1b1b22",
+                      "tertiary": "#511c00",
+                      "outline-variant": "#c8c4d5",
+                      "surface-container-low": "#f6f2fc",
+                      "on-surface-variant": "#464553",
+                      "on-error-container": "#93000a",
+                      "surface-container": "#f0ecf6",
+                      "on-error": "#ffffff",
+                      "surface-container-high": "#eae6f1",
+                      "secondary-fixed": "#d5e3fc",
+                      "on-secondary-fixed": "#0d1c2e",
+                      "tertiary-fixed-dim": "#ffb694",
+                      "surface-bright": "#fcf8ff",
+                      "secondary": "#515f74",
+                      "outline": "#777584",
+                      "inverse-surface": "#303037",
+                      "on-tertiary": "#ffffff",
+                      "surface-container-lowest": "#ffffff",
+                      "error-container": "#ffdad6",
+                      "on-secondary": "#ffffff",
+                      "primary-fixed-dim": "#c3c0ff",
+                      "on-tertiary-fixed": "#351000",
+                      "primary-container": "#3730a3",
+                      "secondary-fixed-dim": "#b9c7df",
+                      "primary": "#1f108e",
+                      "on-tertiary-container": "#fe9562",
+                      "on-primary-fixed-variant": "#3b35a7",
+                      "tertiary-fixed": "#ffdbcc",
+                      "surface-container-highest": "#e4e1eb",
+                      "on-primary": "#ffffff",
+                      "primary-fixed": "#e2dfff",
+                      "on-primary-fixed": "#0f0069"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "md": "16px",
+                      "lg": "24px",
+                      "base": "4px",
+                      "xs": "4px",
+                      "sm": "8px",
+                      "container-max": "1280px",
+                      "xl": "48px",
+                      "gutter": "24px"
+              },
+              "fontFamily": {
+                      "display-lg": [
+                              "Manrope"
+                      ],
+                      "headline-sm": [
+                              "Manrope"
+                      ],
+                      "headline-md": [
+                              "Manrope"
+                      ],
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "mono-sm": [
+                              "JetBrains Mono"
+                      ],
+                      "label-md": [
+                              "Inter"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ]
+              },
+              "fontSize": {
+                      "display-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "1.1",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "headline-sm": [
+                              "18px",
+                              {
+                                      "lineHeight": "1.4",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "1.3",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-lg": [
+                              "16px",
+                              {
+                                      "lineHeight": "1.6",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "mono-sm": [
+                              "13px",
+                              {
+                                      "lineHeight": "1.5",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "label-md": [
+                              "12px",
+                              {
+                                      "lineHeight": "1",
+                                      "letterSpacing": "0.01em",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "body-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "1.5",
+                                      "fontWeight": "400"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+    </script>
+</head>
+<body class="bg-background text-on-background font-body-md text-body-md antialiased flex h-screen overflow-hidden">
+<!-- SideNavBar -->
+<nav class="hidden md:flex flex-col h-full py-md px-md bg-surface border-r border-outline-variant fixed left-0 top-0 h-full w-[240px] z-50">
+<div class="flex items-center gap-sm mb-xl">
+<span class="material-symbols-outlined text-primary text-2xl" style="font-variation-settings: 'FILL' 1;">dataset</span>
+<div>
+<h1 class="text-headline-sm font-headline-sm font-bold text-primary">Notebook Platform</h1>
+<p class="font-label-md text-label-md text-on-surface-variant">Enterprise Workspace</p>
+</div>
+</div>
+<button class="bg-primary text-on-primary w-full py-sm px-md rounded-lg font-label-md text-label-md mb-lg hover:bg-primary/90 transition-colors flex items-center justify-center gap-sm">
+<span class="material-symbols-outlined text-lg">add</span>
+            New Notebook
+        </button>
+<ul class="flex-1 space-y-sm">
+<li>
+<a class="flex items-center gap-sm px-sm py-sm rounded-md text-on-surface-variant hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined text-lg">folder_open</span>
+<span class="font-body-md text-body-md">Workspaces</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-sm px-sm py-sm rounded-md text-on-surface-variant hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined text-lg">search</span>
+<span class="font-body-md text-body-md">Search</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-sm px-sm py-sm rounded-md text-on-surface-variant hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined text-lg">notifications</span>
+<span class="font-body-md text-body-md">Notifications</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-sm px-sm py-sm rounded-md text-on-surface-variant hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined text-lg">settings</span>
+<span class="font-body-md text-body-md">Settings</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-sm px-sm py-sm rounded-md text-primary font-bold border-r-2 border-primary bg-surface-container-low transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-lg" style="font-variation-settings: 'FILL' 1;">admin_panel_settings</span>
+<span class="font-body-md text-body-md">Admin</span>
+</a>
+</li>
+</ul>
+<div class="mt-auto border-t border-outline-variant pt-md space-y-sm">
+<a class="flex items-center gap-sm px-sm py-sm rounded-md text-on-surface-variant hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined text-lg">help</span>
+<span class="font-body-md text-body-md">Support</span>
+</a>
+<a class="flex items-center gap-sm px-sm py-sm rounded-md text-on-surface-variant hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined text-lg">logout</span>
+<span class="font-body-md text-body-md">Sign Out</span>
+</a>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="flex-1 ml-0 md:ml-[240px] flex flex-col h-full bg-surface-container-low overflow-y-auto">
+<!-- TopAppBar (Simplified for Context) -->
+<header class="flex justify-between items-center h-16 px-lg w-full bg-surface/80 backdrop-blur-md border-b border-outline-variant sticky top-0 z-40">
+<h2 class="font-headline-md text-headline-md text-on-surface">Admin Overview</h2>
+<div class="flex items-center gap-md">
+<button class="text-secondary hover:text-primary transition-colors p-sm rounded-full hover:bg-surface-variant">
+<span class="material-symbols-outlined">history</span>
+</button>
+<button class="bg-primary text-on-primary px-md py-sm rounded-lg font-label-md text-label-md hover:bg-primary/90 transition-colors">
+                    Invite Team
+                 </button>
+</div>
+</header>
+<!-- Canvas -->
+<div class="flex-1 p-lg md:p-xl w-full max-w-container-max mx-auto">
+<div class="mb-lg">
+<h3 class="font-headline-sm text-headline-sm text-on-surface mb-xs">System Health &amp; Security Posture</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Monitor core enterprise services and identity providers.</p>
+</div>
+<!-- Grid Layout -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-md">
+<!-- SSO Card -->
+<div class="bg-surface border border-outline-variant rounded-xl p-md flex flex-col gap-sm shadow-sm hover:shadow-md transition-shadow">
+<div class="flex justify-between items-start mb-sm">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary bg-primary/10 p-sm rounded-md">login</span>
+<span class="font-label-md text-label-md text-on-surface font-semibold">Single Sign-On (SSO)</span>
+</div>
+<span class="bg-[#d1fae5] text-[#065f46] px-2 py-0.5 rounded-full font-label-md text-[10px] uppercase tracking-wider">Healthy</span>
+</div>
+<div class="flex items-center justify-between text-on-surface-variant">
+<span class="font-body-md text-body-md">SAML 2.0 via Okta</span>
+<div class="w-8 h-4 bg-primary rounded-full relative">
+<div class="w-3 h-3 bg-surface rounded-full absolute top-0.5 right-0.5"></div>
+</div>
+</div>
+<div class="mt-auto pt-sm border-t border-outline-variant/50 flex justify-between items-center">
+<span class="font-mono-sm text-mono-sm text-outline">Checked: 2m ago</span>
+<a class="font-label-md text-label-md text-primary hover:underline" href="#">View Details</a>
+</div>
+</div>
+<!-- SCIM Card -->
+<div class="bg-surface border border-outline-variant rounded-xl p-md flex flex-col gap-sm shadow-sm hover:shadow-md transition-shadow">
+<div class="flex justify-between items-start mb-sm">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary bg-primary/10 p-sm rounded-md">sync_alt</span>
+<span class="font-label-md text-label-md text-on-surface font-semibold">SCIM Provisioning</span>
+</div>
+<span class="bg-[#d1fae5] text-[#065f46] px-2 py-0.5 rounded-full font-label-md text-[10px] uppercase tracking-wider">Healthy</span>
+</div>
+<div class="flex items-center justify-between text-on-surface-variant">
+<span class="font-body-md text-body-md">Azure AD Sync</span>
+<div class="w-8 h-4 bg-primary rounded-full relative">
+<div class="w-3 h-3 bg-surface rounded-full absolute top-0.5 right-0.5"></div>
+</div>
+</div>
+<div class="mt-auto pt-sm border-t border-outline-variant/50 flex justify-between items-center">
+<span class="font-mono-sm text-mono-sm text-outline">Checked: 5m ago</span>
+<a class="font-label-md text-label-md text-primary hover:underline" href="#">View Details</a>
+</div>
+</div>
+<!-- MFA Card -->
+<div class="bg-surface border border-outline-variant rounded-xl p-md flex flex-col gap-sm shadow-sm hover:shadow-md transition-shadow">
+<div class="flex justify-between items-start mb-sm">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary bg-primary/10 p-sm rounded-md">fingerprint</span>
+<span class="font-label-md text-label-md text-on-surface font-semibold">Multi-Factor Auth</span>
+</div>
+<span class="bg-[#fef08a] text-[#854d0e] px-2 py-0.5 rounded-full font-label-md text-[10px] uppercase tracking-wider">Warning</span>
+</div>
+<div class="flex items-center justify-between text-on-surface-variant">
+<span class="font-body-md text-body-md">WebAuthn/FIDO2</span>
+<div class="w-8 h-4 bg-primary rounded-full relative">
+<div class="w-3 h-3 bg-surface rounded-full absolute top-0.5 right-0.5"></div>
+</div>
+</div>
+<p class="font-mono-sm text-mono-sm text-outline mt-1 truncate">12 users missing setup</p>
+<div class="mt-auto pt-sm border-t border-outline-variant/50 flex justify-between items-center">
+<span class="font-mono-sm text-mono-sm text-outline">Checked: 10m ago</span>
+<a class="font-label-md text-label-md text-primary hover:underline" href="#">View Details</a>
+</div>
+</div>
+<!-- Audit Card -->
+<div class="bg-surface border border-outline-variant rounded-xl p-md flex flex-col gap-sm shadow-sm hover:shadow-md transition-shadow">
+<div class="flex justify-between items-start mb-sm">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary bg-primary/10 p-sm rounded-md">list_alt</span>
+<span class="font-label-md text-label-md text-on-surface font-semibold">Audit Logging</span>
+</div>
+<span class="bg-[#d1fae5] text-[#065f46] px-2 py-0.5 rounded-full font-label-md text-[10px] uppercase tracking-wider">Healthy</span>
+</div>
+<div class="flex items-center justify-between text-on-surface-variant">
+<span class="font-body-md text-body-md">Stream to S3</span>
+<div class="w-8 h-4 bg-primary rounded-full relative">
+<div class="w-3 h-3 bg-surface rounded-full absolute top-0.5 right-0.5"></div>
+</div>
+</div>
+<div class="mt-auto pt-sm border-t border-outline-variant/50 flex justify-between items-center">
+<span class="font-mono-sm text-mono-sm text-outline">Checked: Just now</span>
+<a class="font-label-md text-label-md text-primary hover:underline" href="#">View Details</a>
+</div>
+</div>
+<!-- SIEM Card -->
+<div class="bg-surface border border-[#fecdd3] rounded-xl p-md flex flex-col gap-sm shadow-sm hover:shadow-md transition-shadow">
+<div class="flex justify-between items-start mb-sm">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-error bg-error/10 p-sm rounded-md">security</span>
+<span class="font-label-md text-label-md text-on-surface font-semibold">SIEM Integration</span>
+</div>
+<span class="bg-[#fee2e2] text-[#991b1b] px-2 py-0.5 rounded-full font-label-md text-[10px] uppercase tracking-wider">Critical</span>
+</div>
+<div class="flex items-center justify-between text-on-surface-variant">
+<span class="font-body-md text-body-md text-error">Splunk Forwarder</span>
+<div class="w-8 h-4 bg-primary rounded-full relative">
+<div class="w-3 h-3 bg-surface rounded-full absolute top-0.5 right-0.5"></div>
+</div>
+</div>
+<p class="font-mono-sm text-mono-sm text-error mt-1 truncate">Connection Timeout (Error 504)</p>
+<div class="mt-auto pt-sm border-t border-[#fecdd3]/50 flex justify-between items-center">
+<span class="font-mono-sm text-mono-sm text-error/70">Checked: 1m ago</span>
+<a class="font-label-md text-label-md text-error hover:underline" href="#">View Details</a>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

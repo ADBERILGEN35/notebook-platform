@@ -20,7 +20,10 @@ import { Button } from '../shared/components/Button'
 import { ErrorAlert } from '../shared/components/ErrorAlert'
 import { Input } from '../shared/components/Input'
 import { LoadingState } from '../shared/components/LoadingState'
+import { EmptyState } from '../shared/components/EmptyState'
 import { ApiError } from '../shared/api/api-client'
+import { AccessDeniedState } from '../features/access/components/AccessDeniedState'
+import { AccessRequestPanel } from '../features/access/components/AccessRequestPanel'
 import { trackMergeEvent } from '../features/notes/merge-analytics'
 import { RightPanel } from '../shared/layout/RightPanel'
 import type { NoteBlock } from '../shared/types/api'
@@ -71,8 +74,14 @@ const AUTO_SAVE_DEBOUNCE_MS = 1500
 const AUTO_SAVE_MIN_CHANGE_INTERVAL_MS = 1000
 const OFFLINE_DRAFT_SAVE_DEBOUNCE_MS = 750
 
-export function NotePage() {
+type NotePageProps = {
+  embedded?: boolean
+  expectedWorkspaceId?: string
+}
+
+export function NotePage({ embedded, expectedWorkspaceId }: NotePageProps = {}) {
   const { noteId } = useParams()
+  const [accessRequestSent, setAccessRequestSent] = useState(false)
   const navigate = useNavigate()
   const [tab, setTab] = useState<RightTab>('comments')
   const [title, setTitle] = useState('')
@@ -410,12 +419,44 @@ export function NotePage() {
       </div>
     )
   }
-  if (noteQuery.isError) return <ErrorAlert error={noteQuery.error} />
+  if (noteQuery.isError) {
+    const err = noteQuery.error
+    if (err instanceof ApiError && err.status === 403) {
+      return (
+        <div className="space-y-4">
+          <AccessDeniedState
+            message="You do not have permission to open this note. Request access from a workspace admin or check your membership."
+            onRequestAccess={() => setAccessRequestSent(true)}
+            requestPending={accessRequestSent}
+          />
+          {accessRequestSent ? <AccessRequestPanel status="sent" resourceLabel="This note" /> : null}
+        </div>
+      )
+    }
+    if (err instanceof ApiError && err.status === 404) {
+      return <EmptyState title="Note not found" message="This note may have been deleted or moved." />
+    }
+    return <ErrorAlert error={noteQuery.error} />
+  }
+
+  const loadedNote = noteQuery.data?.note
+  if (expectedWorkspaceId && loadedNote && loadedNote.workspaceId !== expectedWorkspaceId) {
+    return (
+      <AccessDeniedState
+        title="Workspace mismatch"
+        message="This note does not belong to the workspace in the URL. Open it from the correct workspace hub."
+      />
+    )
+  }
+
+  const editorSurfaceClass = embedded
+    ? 'min-w-0 flex-1 rounded-xl border border-outline-variant bg-surface-container-lowest p-3 sm:p-4'
+    : 'min-w-0 flex-1 rounded-lg border border-slate-200 bg-white p-3 sm:p-4'
 
   return (
     <>
-    <div className="flex h-full flex-col gap-3 lg:flex-row">
-      <section className="min-w-0 flex-1 rounded-lg border border-slate-200 bg-white p-3 sm:p-4">
+    <div className={`flex h-full flex-col gap-3 ${embedded ? '' : 'lg:flex-row'}`}>
+      <section className={editorSurfaceClass}>
         {isOfflineReadOnly ? (
           <div className="mb-2 rounded border border-amber-300 bg-amber-50 p-2 text-sm text-amber-800">
             Offline copy loaded. Editing is disabled while offline.

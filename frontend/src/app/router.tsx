@@ -1,14 +1,27 @@
 import { createBrowserRouter, Navigate, Outlet } from 'react-router-dom'
 import type { ReactNode } from 'react'
 import { LoginPage } from '../pages/LoginPage'
+import { RegisterPage } from '../pages/RegisterPage'
 import { SignupPage } from '../pages/SignupPage'
+import { ForgotPasswordPage } from '../pages/ForgotPasswordPage'
+import { MfaAuthenticationPage } from '../pages/MfaAuthenticationPage'
+import { SsoCallbackPage } from '../pages/SsoCallbackPage'
 import { AppShellPage } from '../pages/AppShellPage'
-import { WorkspacePage } from '../pages/WorkspacePage'
+import { WorkspaceHubPage } from '../pages/WorkspaceHubPage'
 import { NotebookPage } from '../pages/NotebookPage'
 import { NotePage } from '../pages/NotePage'
-import { SearchPage } from '../pages/SearchPage'
-import { SettingsPage } from '../pages/SettingsPage'
-import { NotificationsPage } from '../pages/NotificationsPage'
+import { NoteEditorPage } from '../pages/NoteEditorPage'
+import { NoteEditorHistoryPage } from '../pages/NoteEditorHistoryPage'
+import { WorkspaceMembersPage } from '../pages/WorkspaceMembersPage'
+import { WorkspaceSettingsPage } from '../pages/WorkspaceSettingsPage'
+import { SearchResultsPage } from '../pages/SearchResultsPage'
+import { SearchDiscoveryPage } from '../pages/SearchDiscoveryPage'
+import { SettingsLayout } from '../features/settings/SettingsLayout'
+import { UserSettingsPage } from '../pages/UserSettingsPage'
+import { AccountSecurityPage } from '../pages/AccountSecurityPage'
+import { NotificationPreferencesPage } from '../pages/NotificationPreferencesPage'
+import { OfflineSyncDiagnosticsPage } from '../pages/OfflineSyncDiagnosticsPage'
+import { NotificationCenterPage } from '../pages/NotificationCenterPage'
 import { AdminHomePage } from '../pages/admin/AdminHomePage'
 import { AdminAuditPage } from '../pages/admin/AdminAuditPage'
 import { AdminLayout } from '../pages/admin/AdminLayout'
@@ -63,7 +76,11 @@ function AdminGate() {
 export const router = createBrowserRouter([
   { path: '/', element: <Navigate to="/app" replace /> },
   { path: '/login', element: <LoginPage /> },
+  { path: '/register', element: <RegisterPage /> },
   { path: '/signup', element: <SignupPage /> },
+  { path: '/forgot-password', element: <ForgotPasswordPage /> },
+  { path: '/mfa', element: <MfaAuthenticationPage /> },
+  { path: '/sso/callback', element: <SsoCallbackPage /> },
   {
     path: '/app',
     element: (
@@ -72,15 +89,28 @@ export const router = createBrowserRouter([
       </Protected>
     ),
     children: [
-      { index: true, element: <WorkspacePage /> },
-      { path: 'workspaces/:workspaceId', element: <WorkspacePage /> },
+      { index: true, element: <WorkspaceHubPage /> },
+      { path: 'workspaces', element: <WorkspaceHubPage /> },
+      { path: 'workspaces/:workspaceId', element: <WorkspaceHubPage /> },
+      { path: 'workspaces/:workspaceId/members', element: <WorkspaceMembersPage /> },
+      { path: 'workspaces/:workspaceId/settings', element: <WorkspaceSettingsPage /> },
+      { path: 'workspaces/:workspaceId/notes/:noteId', element: <NoteEditorPage /> },
+      { path: 'workspaces/:workspaceId/notes/:noteId/history', element: <NoteEditorHistoryPage /> },
       { path: 'notebooks/:notebookId', element: <NotebookPage /> },
       { path: 'notes/:noteId', element: <NotePage /> },
-      { path: 'search', element: <SearchPage /> },
-      { path: 'notifications', element: <NotificationsPage /> },
-      { path: 'settings', element: <SettingsPage /> },
-      { path: 'settings/security', element: <SettingsPage /> },
-      { path: 'settings/notifications', element: <SettingsPage /> },
+      { path: 'search', element: <SearchResultsPage /> },
+      { path: 'search/discover', element: <SearchDiscoveryPage /> },
+      { path: 'notifications', element: <NotificationCenterPage /> },
+      {
+        path: 'settings',
+        element: <SettingsLayout />,
+        children: [
+          { index: true, element: <UserSettingsPage /> },
+          { path: 'security', element: <AccountSecurityPage /> },
+          { path: 'notifications', element: <NotificationPreferencesPage /> },
+          { path: 'sync', element: <OfflineSyncDiagnosticsPage /> },
+        ],
+      },
       {
         path: 'admin',
         element: <AdminGate />,

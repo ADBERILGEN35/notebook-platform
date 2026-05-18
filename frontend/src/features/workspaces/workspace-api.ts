@@ -17,3 +17,12 @@ export const createWorkspace = (payload: {
 export const getWorkspace = (workspaceId: string) =>
   apiRequest<Workspace>(`/workspaces/${workspaceId}`)
 
+export const updateWorkspace = (
+  workspaceId: string,
+  payload: { name: string; slug: string },
+) =>
+  apiRequest<Workspace>(`/workspaces/${workspaceId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(payload),
+  })
+

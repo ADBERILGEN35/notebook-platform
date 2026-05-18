@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Collaboration Modals</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&amp;family=Manrope:wght@600;700&amp;family=JetBrains+Mono:wght@400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-primary-fixed-variant": "#3b35a7",
+                        "on-background": "#1b1b22",
+                        "on-tertiary": "#ffffff",
+                        "surface-bright": "#fcf8ff",
+                        "on-error": "#ffffff",
+                        "tertiary-fixed-dim": "#ffb694",
+                        "primary": "#1f108e",
+                        "tertiary-container": "#752c00",
+                        "on-surface": "#1b1b22",
+                        "secondary-fixed": "#d5e3fc",
+                        "outline-variant": "#c8c4d5",
+                        "on-primary": "#ffffff",
+                        "on-tertiary-fixed": "#351000",
+                        "on-surface-variant": "#464553",
+                        "inverse-primary": "#c3c0ff",
+                        "primary-container": "#3730a3",
+                        "on-error-container": "#93000a",
+                        "primary-fixed-dim": "#c3c0ff",
+                        "on-secondary-fixed-variant": "#3a485b",
+                        "surface-container": "#f0ecf6",
+                        "background": "#fcf8ff",
+                        "surface-dim": "#dcd8e3",
+                        "on-secondary": "#ffffff",
+                        "tertiary": "#511c00",
+                        "inverse-on-surface": "#f3eff9",
+                        "secondary": "#515f74",
+                        "outline": "#777584",
+                        "on-secondary-container": "#57657a",
+                        "surface-container-high": "#eae6f1",
+                        "on-primary-fixed": "#0f0069",
+                        "error": "#ba1a1a",
+                        "surface-container-highest": "#e4e1eb",
+                        "inverse-surface": "#303037",
+                        "surface-container-low": "#f6f2fc",
+                        "secondary-fixed-dim": "#b9c7df",
+                        "surface": "#fcf8ff",
+                        "tertiary-fixed": "#ffdbcc",
+                        "surface-tint": "#544fc0",
+                        "error-container": "#ffdad6",
+                        "secondary-container": "#d5e3fc",
+                        "on-secondary-fixed": "#0d1c2e",
+                        "on-primary-container": "#a9a7ff",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary-container": "#fe9562",
+                        "on-tertiary-fixed-variant": "#7a3003",
+                        "surface-variant": "#e4e1eb",
+                        "primary-fixed": "#e2dfff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xl": "48px",
+                        "base": "4px",
+                        "md": "16px",
+                        "gutter": "24px",
+                        "sm": "8px",
+                        "lg": "24px",
+                        "xs": "4px",
+                        "container-max": "1280px"
+                    },
+                    "fontFamily": {
+                        "mono-sm": ["JetBrains Mono"],
+                        "headline-md": ["Manrope"],
+                        "body-lg": ["Inter"],
+                        "label-md": ["Inter"],
+                        "headline-sm": ["Manrope"],
+                        "display-lg": ["Manrope"],
+                        "body-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "mono-sm": ["13px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "1.3", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "body-lg": ["16px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "label-md": ["12px", { "lineHeight": "1", "letterSpacing": "0.01em", "fontWeight": "500" }],
+                        "headline-sm": ["18px", { "lineHeight": "1.4", "fontWeight": "600" }],
+                        "display-lg": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-md": ["14px", { "lineHeight": "1.5", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-surface text-on-surface font-body-md min-h-screen relative overflow-hidden">
+<!-- Blurred Background (Members List Context) -->
+<div class="absolute inset-0 z-0 select-none pointer-events-none opacity-40 blur-sm flex flex-col pt-24 px-lg max-w-container-max mx-auto w-full">
+<div class="font-headline-md text-headline-md mb-xl">Team Members</div>
+<div class="flex flex-col gap-sm">
+<div class="h-16 border border-outline-variant rounded-lg flex items-center px-md gap-md">
+<div class="w-10 h-10 rounded-full bg-secondary-container"></div>
+<div class="flex-1">
+<div class="h-4 w-32 bg-outline-variant rounded mb-2"></div>
+<div class="h-3 w-48 bg-surface-variant rounded"></div>
+</div>
+</div>
+<div class="h-16 border border-outline-variant rounded-lg flex items-center px-md gap-md">
+<div class="w-10 h-10 rounded-full bg-secondary-container"></div>
+<div class="flex-1">
+<div class="h-4 w-40 bg-outline-variant rounded mb-2"></div>
+<div class="h-3 w-32 bg-surface-variant rounded"></div>
+</div>
+</div>
+<div class="h-16 border border-outline-variant rounded-lg flex items-center px-md gap-md">
+<div class="w-10 h-10 rounded-full bg-secondary-container"></div>
+<div class="flex-1">
+<div class="h-4 w-24 bg-outline-variant rounded mb-2"></div>
+<div class="h-3 w-56 bg-surface-variant rounded"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Modals Container -->
+<div class="relative z-10 min-h-screen flex items-center justify-center p-lg gap-xl flex-col md:flex-row bg-on-surface/20 backdrop-blur-md">
+<!-- 1. Invite Member Modal -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant w-full max-w-md flex flex-col shadow-[0px_10px_15px_-3px_rgba(15,23,42,0.1)]">
+<!-- Header -->
+<div class="px-md py-md border-b border-outline-variant flex justify-between items-center">
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Invite Member</h2>
+<button class="text-on-surface-variant hover:text-on-surface">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<!-- Body -->
+<div class="p-md flex flex-col gap-lg">
+<!-- Email Input -->
+<div class="flex flex-col gap-sm">
+<label class="font-label-md text-label-md text-on-surface-variant">Email Address</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">mail</span>
+<input class="w-full pl-10 pr-3 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-fixed-dim transition-all text-on-surface placeholder:text-on-surface-variant/50" placeholder="colleague@company.com" type="email"/>
+</div>
+</div>
+<!-- Role Selector -->
+<div class="flex flex-col gap-sm">
+<label class="font-label-md text-label-md text-on-surface-variant">Access Role</label>
+<div class="relative">
+<select class="w-full pl-3 pr-10 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg appearance-none focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-fixed-dim text-on-surface transition-all cursor-pointer">
+<option>Admin</option>
+<option>Owner</option>
+<option selected="">Member</option>
+<option>Viewer</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">expand_more</span>
+</div>
+<!-- Role Explanation (Contextual) -->
+<div class="bg-surface-container-low p-sm rounded-lg border border-surface-variant flex gap-sm mt-1">
+<span class="material-symbols-outlined text-secondary text-sm">info</span>
+<p class="font-label-md text-label-md text-on-surface-variant leading-relaxed">
+                            Members can edit notebooks, create new workspaces, and invite other members. They cannot manage billing.
+                        </p>
+</div>
+</div>
+<!-- Optional Message -->
+<div class="flex flex-col gap-sm">
+<label class="font-label-md text-label-md text-on-surface-variant">Message (Optional)</label>
+<textarea class="w-full p-3 bg-surface-container-lowest border border-outline-variant rounded-lg focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-fixed-dim transition-all text-on-surface placeholder:text-on-surface-variant/50 resize-none" placeholder="Join our workspace to collaborate on..." rows="3"></textarea>
+</div>
+</div>
+<!-- Footer -->
+<div class="px-md py-md border-t border-outline-variant bg-surface-container-low/50 rounded-b-xl flex justify-end gap-sm">
+<button class="px-4 py-2 font-label-md text-label-md text-on-surface-variant hover:text-on-surface hover:bg-surface-variant rounded-lg transition-colors">Cancel</button>
+<button class="px-4 py-2 font-label-md text-label-md bg-primary text-on-primary rounded-lg hover:bg-primary-container transition-colors flex items-center gap-xs">
+<span>Send Invite</span>
+<span class="material-symbols-outlined text-[16px]">send</span>
+</button>
+</div>
+</div>
+<!-- 2. Role Change Confirmation Modal -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant w-full max-w-md flex flex-col shadow-[0px_10px_15px_-3px_rgba(15,23,42,0.1)]">
+<!-- Header -->
+<div class="px-md py-md border-b border-outline-variant flex gap-sm items-center">
+<div class="w-8 h-8 rounded-full bg-error-container flex items-center justify-center text-error">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">warning</span>
+</div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Confirm Role Change</h2>
+</div>
+<!-- Body -->
+<div class="p-md flex flex-col gap-lg">
+<div class="flex flex-col items-center py-md bg-surface-container-low rounded-lg border border-surface-variant">
+<div class="w-12 h-12 rounded-full bg-secondary-fixed mb-sm overflow-hidden flex items-center justify-center">
+<img alt="User Avatar" class="w-full h-full object-cover" data-alt="A portrait of a professional looking individual, head and shoulders, slightly smiling. Soft studio lighting. Neutral background. Minimalist aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCnZX2-D2ASROl2dfPT4jzfZ03SZr2tGQhDoOsObB7GMSxxN8h9K-8zBiVueZ41bgHI0Grb9TfVXHNEJaYw0x88hFMx4nnGxNbO4ss4xaD1rIACZ3jVOJFmpzvQ28WDLh4q9PWtRuWi5FG7Qp0M0ICTVvZZlUcmKQIsgTAWdeg53HxSDxM4oenzc1iAtjypeZ8PNvncUwQzr6S9z0hUei8SFnnpBbrjoWVB4vBl7EewjZx9ql4pIVeD5b7hBEQEp3L8VQOFl4oxauU"/>
+</div>
+<span class="font-label-md text-label-md text-on-surface font-semibold mb-xs">Sarah Jenkins</span>
+<div class="flex items-center gap-md mt-sm">
+<div class="flex flex-col items-center gap-xs">
+<span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider text-[10px]">Current</span>
+<span class="px-2 py-1 bg-surface-variant text-on-surface rounded-full font-label-md text-label-md">Member</span>
+</div>
+<span class="material-symbols-outlined text-outline">arrow_right_alt</span>
+<div class="flex flex-col items-center gap-xs">
+<span class="font-label-md text-label-md text-primary uppercase tracking-wider text-[10px]">New</span>
+<span class="px-2 py-1 bg-primary-container text-on-primary-container rounded-full font-label-md text-label-md">Admin</span>
+</div>
+</div>
+</div>
+<div class="bg-error-container/30 border border-error-container p-sm rounded-lg flex gap-sm">
+<span class="material-symbols-outlined text-error text-sm mt-1">security</span>
+<div class="flex flex-col gap-xs">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Increased Permissions</span>
+<p class="font-body-md text-body-md text-on-surface-variant text-sm">
+                            Admins have full access to workspace settings, including billing management, deleting notebooks, and removing other users.
+                        </p>
+</div>
+</div>
+<!-- Checkbox -->
+<label class="flex items-start gap-sm cursor-pointer group">
+<div class="relative flex items-center justify-center mt-1">
+<input class="peer appearance-none w-4 h-4 border border-outline rounded-sm bg-surface-container-lowest checked:bg-primary checked:border-primary focus:outline-none focus:ring-2 focus:ring-primary-fixed-dim transition-all" type="checkbox"/>
+<span class="material-symbols-outlined absolute text-on-primary text-[14px] opacity-0 peer-checked:opacity-100 pointer-events-none transition-opacity">check</span>
+</div>
+<span class="font-label-md text-label-md text-on-surface group-hover:text-on-background transition-colors leading-tight">
+                        I understand that granting Admin access gives this user elevated privileges.
+                    </span>
+</label>
+</div>
+<!-- Footer -->
+<div class="px-md py-md border-t border-outline-variant bg-surface-container-low/50 rounded-b-xl flex justify-end gap-sm">
+<button class="px-4 py-2 font-label-md text-label-md text-on-surface-variant hover:text-on-surface hover:bg-surface-variant rounded-lg transition-colors">Cancel</button>
+<button class="px-4 py-2 font-label-md text-label-md bg-primary text-on-primary rounded-lg hover:bg-primary-container transition-colors opacity-50 cursor-not-allowed">
+                    Confirm Change
+                </button>
+</div>
+</div>
+</div>
+</body></html>

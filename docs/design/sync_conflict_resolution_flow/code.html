@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Resolve Sync Conflict</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "tertiary-fixed": "#ffdbcc",
+                      "surface-tint": "#544fc0",
+                      "on-surface-variant": "#464553",
+                      "surface-container-low": "#f6f2fc",
+                      "surface-container": "#f0ecf6",
+                      "on-secondary": "#ffffff",
+                      "inverse-on-surface": "#f3eff9",
+                      "on-tertiary": "#ffffff",
+                      "error": "#ba1a1a",
+                      "on-tertiary-container": "#fe9562",
+                      "on-error-container": "#93000a",
+                      "tertiary-fixed-dim": "#ffb694",
+                      "secondary-fixed": "#d5e3fc",
+                      "on-primary": "#ffffff",
+                      "error-container": "#ffdad6",
+                      "surface-container-highest": "#e4e1eb",
+                      "secondary-container": "#d5e3fc",
+                      "inverse-surface": "#303037",
+                      "surface-variant": "#e4e1eb",
+                      "inverse-primary": "#c3c0ff",
+                      "background": "#fcf8ff",
+                      "surface-dim": "#dcd8e3",
+                      "tertiary": "#511c00",
+                      "on-tertiary-fixed-variant": "#7a3003",
+                      "on-background": "#1b1b22",
+                      "primary-container": "#3730a3",
+                      "on-primary-fixed": "#0f0069",
+                      "tertiary-container": "#752c00",
+                      "on-secondary-fixed-variant": "#3a485b",
+                      "surface-container-high": "#eae6f1",
+                      "primary-fixed": "#e2dfff",
+                      "on-primary-container": "#a9a7ff",
+                      "on-primary-fixed-variant": "#3b35a7",
+                      "on-secondary-fixed": "#0d1c2e",
+                      "on-error": "#ffffff",
+                      "secondary": "#515f74",
+                      "on-tertiary-fixed": "#351000",
+                      "surface-container-lowest": "#ffffff",
+                      "primary-fixed-dim": "#c3c0ff",
+                      "primary": "#1f108e",
+                      "surface-bright": "#fcf8ff",
+                      "on-secondary-container": "#57657a",
+                      "outline-variant": "#c8c4d5",
+                      "secondary-fixed-dim": "#b9c7df",
+                      "on-surface": "#1b1b22",
+                      "outline": "#777584",
+                      "surface": "#fcf8ff"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "xl": "48px",
+                      "lg": "24px",
+                      "sm": "8px",
+                      "gutter": "24px",
+                      "md": "16px",
+                      "container-max": "1280px",
+                      "xs": "4px",
+                      "base": "4px"
+              },
+              "fontFamily": {
+                      "headline-md": ["Manrope"],
+                      "display-lg": ["Manrope"],
+                      "label-md": ["Inter"],
+                      "body-md": ["Inter"],
+                      "mono-sm": ["JetBrains Mono"],
+                      "headline-sm": ["Manrope"],
+                      "body-lg": ["Inter"]
+              },
+              "fontSize": {
+                      "headline-md": ["24px", {"lineHeight": "1.3", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                      "display-lg": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "label-md": ["12px", {"lineHeight": "1", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                      "body-md": ["14px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                      "mono-sm": ["13px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                      "headline-sm": ["18px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                      "body-lg": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}]
+              }
+            }
+          }
+        }
+    </script>
+<style type="text/tailwindcss">
+        @layer utilities {
+            .material-symbols-outlined {
+                font-family: 'Material Symbols Outlined';
+                font-weight: normal;
+                font-style: normal;
+                font-size: 24px;
+                line-height: 1;
+                letter-spacing: normal;
+                text-transform: none;
+                display: inline-block;
+                white-space: nowrap;
+                word-wrap: normal;
+                direction: ltr;
+                -webkit-font-feature-settings: 'liga';
+                -webkit-font-smoothing: antialiased;
+            }
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md min-h-screen flex overflow-hidden">
+<!-- SideNavBar -->
+<nav class="hidden md:flex flex-col h-full py-md px-md bg-surface border-r border-outline-variant fixed left-0 top-0 w-[240px] z-30">
+<div class="flex items-center gap-sm mb-xl px-sm">
+<div class="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container">
+<span class="material-symbols-outlined" style="font-size: 18px;">business</span>
+</div>
+<div>
+<div class="font-headline-sm text-headline-sm text-primary font-bold">Notebook Platform</div>
+<div class="font-label-md text-label-md text-on-surface-variant">Enterprise Workspace</div>
+</div>
+</div>
+<button class="w-full bg-primary text-on-primary font-label-md text-label-md py-sm px-md rounded-lg mb-lg flex items-center justify-center gap-xs hover:bg-primary/90 transition-colors">
+<span class="material-symbols-outlined" style="font-size: 18px;">add</span>
+            New Notebook
+        </button>
+<ul class="flex-1 flex flex-col gap-xs">
+<li>
+<a class="flex items-center gap-sm py-sm px-md rounded-lg text-primary font-bold border-r-2 border-primary bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined">folder_open</span>
+                    Workspaces
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-sm py-sm px-md rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined">search</span>
+                    Search
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-sm py-sm px-md rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined">notifications</span>
+                    Notifications
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-sm py-sm px-md rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined">settings</span>
+                    Settings
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-sm py-sm px-md rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined">admin_panel_settings</span>
+                    Admin
+                </a>
+</li>
+</ul>
+<div class="mt-auto border-t border-outline-variant pt-sm flex flex-col gap-xs">
+<a class="flex items-center gap-sm py-sm px-md rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined">help</span>
+                Support
+            </a>
+<a class="flex items-center gap-sm py-sm px-md rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined">logout</span>
+                Sign Out
+            </a>
+</div>
+</nav>
+<!-- Main Content Area -->
+<div class="ml-0 md:ml-[240px] w-full flex flex-col relative h-screen">
+<!-- TopNavBar -->
+<header class="flex justify-between items-center h-16 px-lg w-full bg-surface/80 backdrop-blur-md border-b border-outline-variant fixed top-0 right-0 md:w-[calc(100%-240px)] z-40">
+<div class="font-headline-sm text-headline-sm text-on-surface font-bold">Workspace Switcher</div>
+<nav class="hidden lg:flex items-center gap-lg">
+<a class="text-primary border-b-2 border-primary pb-1 font-label-md text-label-md" href="#">Drafts</a>
+<a class="text-secondary hover:text-primary transition-colors pb-1 font-label-md text-label-md" href="#">Shared</a>
+<a class="text-secondary hover:text-primary transition-colors pb-1 font-label-md text-label-md" href="#">Archived</a>
+</nav>
+<div class="flex items-center gap-sm">
+<button class="text-secondary hover:text-primary p-2 rounded-full hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined">history</span>
+</button>
+<button class="text-secondary hover:text-primary p-2 rounded-full hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined">star</span>
+</button>
+<button class="text-secondary hover:text-primary p-2 rounded-full hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+<button class="ml-md bg-white border border-outline-variant text-on-surface font-label-md text-label-md py-xs px-md rounded-lg hover:bg-surface-container-low transition-colors">
+                    Invite Team
+                </button>
+<div class="w-8 h-8 rounded-full bg-surface-variant ml-sm flex items-center justify-center overflow-hidden border border-outline-variant">
+<span class="material-symbols-outlined text-secondary">person</span>
+</div>
+</div>
+</header>
+<!-- Dummy Canvas Context behind modal -->
+<main class="mt-16 p-xl flex-1 bg-background opacity-20 filter blur-sm transition-all duration-300">
+<div class="max-w-container-max mx-auto">
+<div class="h-64 bg-surface rounded-xl border border-outline-variant mb-lg"></div>
+<div class="h-96 bg-surface rounded-xl border border-outline-variant"></div>
+</div>
+</main>
+<!-- Conflict Resolution Modal Overlay -->
+<div class="fixed inset-0 bg-on-surface/30 backdrop-blur-sm z-50 flex items-center justify-center p-md">
+<!-- Modal Container -->
+<div class="bg-surface-container-lowest rounded-xl max-w-[640px] w-full shadow-[0px_10px_15px_-3px_rgba(15,23,42,0.1)] border border-outline-variant overflow-hidden flex flex-col">
+<!-- Modal Header -->
+<div class="px-xl py-lg border-b border-outline-variant flex items-start gap-md bg-surface">
+<div class="w-10 h-10 rounded-full bg-tertiary-fixed flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-on-tertiary-fixed-variant" style="font-variation-settings: 'FILL' 1;">warning</span>
+</div>
+<div>
+<h2 class="font-headline-md text-headline-md text-on-surface">Resolve Sync Conflict</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-xs">
+                            We detected a version mismatch for <span class="font-bold text-on-surface">"Q3 Enterprise Strategy - Draft"</span>.
+                        </p>
+</div>
+</div>
+<!-- Modal Body - Options -->
+<div class="p-xl flex flex-col gap-md bg-background">
+<!-- Option 1: Save as Copy (Recommended) -->
+<label class="relative flex items-start gap-md p-md rounded-xl border-2 border-primary bg-surface-container-low cursor-pointer transition-all">
+<input checked="" class="peer sr-only" name="conflict_resolution" type="radio"/>
+<div class="mt-xs">
+<div class="w-5 h-5 rounded-full border-2 border-primary flex items-center justify-center relative">
+<div class="w-2.5 h-2.5 rounded-full bg-primary"></div>
+</div>
+</div>
+<div class="flex-1">
+<div class="flex items-center justify-between mb-xs">
+<h3 class="font-headline-sm text-headline-sm text-on-surface flex items-center gap-xs">
+<span class="material-symbols-outlined text-secondary" style="font-size: 20px;">file_copy</span>
+                                    Save Local as Copy
+                                </h3>
+<span class="bg-secondary-fixed text-on-secondary-fixed-variant px-2 py-0.5 rounded-full font-label-md text-[10px] uppercase tracking-wider font-bold">Safest</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mb-sm">
+                                Keep the server version intact and save your local offline edits as a brand new draft.
+                            </p>
+<div class="flex gap-lg font-mono-sm text-mono-sm text-secondary">
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined" style="font-size: 16px;">laptop_mac</span>
+                                    Local: Today, 11:15 AM
+                                </div>
+</div>
+</div>
+</label>
+<!-- Option 2: Use Local (Overwrite) -->
+<label class="relative flex items-start gap-md p-md rounded-xl border border-outline-variant bg-surface hover:bg-surface-container-low cursor-pointer transition-all">
+<input class="peer sr-only" name="conflict_resolution" type="radio"/>
+<div class="mt-xs">
+<div class="w-5 h-5 rounded-full border-2 border-outline flex items-center justify-center relative peer-checked:border-primary">
+<div class="w-2.5 h-2.5 rounded-full bg-transparent peer-checked:bg-primary"></div>
+</div>
+</div>
+<div class="flex-1">
+<div class="flex items-center justify-between mb-xs">
+<h3 class="font-headline-sm text-headline-sm text-on-surface flex items-center gap-xs">
+<span class="material-symbols-outlined text-secondary" style="font-size: 20px;">upload</span>
+                                    Use Local Version
+                                </h3>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mb-sm">
+                                Overwrite the server document with your offline edits. <span class="text-error font-medium">Server changes will be permanently lost.</span>
+</p>
+<div class="flex gap-lg font-mono-sm text-mono-sm text-secondary">
+<div class="flex items-center gap-xs font-medium text-on-surface">
+<span class="material-symbols-outlined" style="font-size: 16px;">laptop_mac</span>
+                                    Local: Today, 11:15 AM
+                                </div>
+</div>
+</div>
+</label>
+<!-- Option 3: Use Server (Discard) -->
+<label class="relative flex items-start gap-md p-md rounded-xl border border-outline-variant bg-surface hover:bg-surface-container-low cursor-pointer transition-all">
+<input class="peer sr-only" name="conflict_resolution" type="radio"/>
+<div class="mt-xs">
+<div class="w-5 h-5 rounded-full border-2 border-outline flex items-center justify-center relative peer-checked:border-primary">
+<div class="w-2.5 h-2.5 rounded-full bg-transparent peer-checked:bg-primary"></div>
+</div>
+</div>
+<div class="flex-1">
+<div class="flex items-center justify-between mb-xs">
+<h3 class="font-headline-sm text-headline-sm text-on-surface flex items-center gap-xs">
+<span class="material-symbols-outlined text-secondary" style="font-size: 20px;">cloud_download</span>
+                                    Use Server Version
+                                </h3>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mb-sm">
+                                Discard your local offline edits and revert to the latest version saved on the server.
+                            </p>
+<div class="flex gap-lg font-mono-sm text-mono-sm text-secondary">
+<div class="flex items-center gap-xs font-medium text-on-surface">
+<span class="material-symbols-outlined" style="font-size: 16px;">cloud</span>
+                                    Server: Today, 10:42 AM
+                                </div>
+</div>
+</div>
+</label>
+</div>
+<!-- Modal Footer -->
+<div class="px-xl py-md border-t border-outline-variant bg-surface flex justify-end gap-md items-center">
+<button class="font-label-md text-label-md text-secondary hover:text-on-surface py-2 px-4 rounded-lg transition-colors">
+                        Cancel
+                    </button>
+<button class="bg-primary text-on-primary font-label-md text-label-md py-2 px-6 rounded-lg hover:bg-primary/90 transition-colors shadow-sm">
+                        Confirm Selection
+                    </button>
+</div>
+</div>
+</div>
+</div>
+</body></html>

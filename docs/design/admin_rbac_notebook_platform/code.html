@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Notebook Platform - Admin RBAC</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;family=Manrope:wght@600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-tertiary-fixed-variant": "#7a3003",
+                      "on-secondary-container": "#57657a",
+                      "secondary-container": "#d5e3fc",
+                      "error": "#ba1a1a",
+                      "inverse-primary": "#c3c0ff",
+                      "on-background": "#1b1b22",
+                      "surface-variant": "#e4e1eb",
+                      "inverse-on-surface": "#f3eff9",
+                      "on-secondary-fixed-variant": "#3a485b",
+                      "surface-dim": "#dcd8e3",
+                      "background": "#fcf8ff",
+                      "tertiary-container": "#752c00",
+                      "surface-tint": "#544fc0",
+                      "surface": "#fcf8ff",
+                      "on-primary-container": "#a9a7ff",
+                      "on-surface": "#1b1b22",
+                      "tertiary": "#511c00",
+                      "outline-variant": "#c8c4d5",
+                      "surface-container-low": "#f6f2fc",
+                      "on-surface-variant": "#464553",
+                      "on-error-container": "#93000a",
+                      "surface-container": "#f0ecf6",
+                      "on-error": "#ffffff",
+                      "surface-container-high": "#eae6f1",
+                      "secondary-fixed": "#d5e3fc",
+                      "on-secondary-fixed": "#0d1c2e",
+                      "tertiary-fixed-dim": "#ffb694",
+                      "surface-bright": "#fcf8ff",
+                      "secondary": "#515f74",
+                      "outline": "#777584",
+                      "inverse-surface": "#303037",
+                      "on-tertiary": "#ffffff",
+                      "surface-container-lowest": "#ffffff",
+                      "error-container": "#ffdad6",
+                      "on-secondary": "#ffffff",
+                      "primary-fixed-dim": "#c3c0ff",
+                      "on-tertiary-fixed": "#351000",
+                      "primary-container": "#3730a3",
+                      "secondary-fixed-dim": "#b9c7df",
+                      "primary": "#1f108e",
+                      "on-tertiary-container": "#fe9562",
+                      "on-primary-fixed-variant": "#3b35a7",
+                      "tertiary-fixed": "#ffdbcc",
+                      "surface-container-highest": "#e4e1eb",
+                      "on-primary": "#ffffff",
+                      "primary-fixed": "#e2dfff",
+                      "on-primary-fixed": "#0f0069"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "md": "16px",
+                      "lg": "24px",
+                      "base": "4px",
+                      "xs": "4px",
+                      "sm": "8px",
+                      "container-max": "1280px",
+                      "xl": "48px",
+                      "gutter": "24px"
+              },
+              "fontFamily": {
+                      "display-lg": [
+                              "Manrope"
+                      ],
+                      "headline-sm": [
+                              "Manrope"
+                      ],
+                      "headline-md": [
+                              "Manrope"
+                      ],
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "mono-sm": [
+                              "JetBrains Mono"
+                      ],
+                      "label-md": [
+                              "Inter"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ]
+              },
+              "fontSize": {
+                      "display-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "1.1",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "headline-sm": [
+                              "18px",
+                              {
+                                      "lineHeight": "1.4",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "1.3",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-lg": [
+                              "16px",
+                              {
+                                      "lineHeight": "1.6",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "mono-sm": [
+                              "13px",
+                              {
+                                      "lineHeight": "1.5",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "label-md": [
+                              "12px",
+                              {
+                                      "lineHeight": "1",
+                                      "letterSpacing": "0.01em",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "body-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "1.5",
+                                      "fontWeight": "400"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+        body {
+            background-color: #f8fafc; /* Tailwind slate-50 */
+        }
+      </style>
+</head>
+<body class="text-on-surface antialiased flex h-screen overflow-hidden font-body-md">
+<!-- SideNavBar -->
+<nav class="bg-surface dark:bg-surface-dim border-r border-outline-variant dark:border-outline fixed left-0 top-0 h-full w-[240px] flex flex-col py-md px-md z-50">
+<div class="mb-lg px-sm">
+<h1 class="font-headline-sm text-headline-sm font-bold text-primary dark:text-primary-fixed">Notebook Platform</h1>
+<p class="font-label-md text-label-md text-on-surface-variant dark:text-surface-variant mt-xs">Enterprise Workspace</p>
+</div>
+<button class="mb-lg w-full bg-primary text-on-primary py-sm px-md rounded-lg font-label-md text-label-md flex items-center justify-center gap-sm hover:bg-on-primary-fixed-variant transition-colors">
+<span class="material-symbols-outlined text-[18px]">add</span>
+            New Notebook
+        </button>
+<div class="flex-1 flex flex-col gap-xs">
+<a class="text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-low dark:hover:bg-surface-container-high transition-colors flex items-center gap-md px-sm py-sm rounded-md font-body-md text-body-md group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:text-primary transition-colors">folder_open</span>
+                Workspaces
+            </a>
+<a class="text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-low dark:hover:bg-surface-container-high transition-colors flex items-center gap-md px-sm py-sm rounded-md font-body-md text-body-md group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:text-primary transition-colors">search</span>
+                Search
+            </a>
+<a class="text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-low dark:hover:bg-surface-container-high transition-colors flex items-center gap-md px-sm py-sm rounded-md font-body-md text-body-md group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:text-primary transition-colors">notifications</span>
+                Notifications
+            </a>
+<a class="text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-low dark:hover:bg-surface-container-high transition-colors flex items-center gap-md px-sm py-sm rounded-md font-body-md text-body-md group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:text-primary transition-colors">settings</span>
+                Settings
+            </a>
+<a class="text-primary dark:text-primary-fixed font-bold border-r-2 border-primary bg-surface-container-low dark:bg-surface-container-high opacity-80 transition-all duration-200 flex items-center gap-md px-sm py-sm rounded-md font-body-md text-body-md" href="#">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">admin_panel_settings</span>
+                Admin
+            </a>
+</div>
+<div class="mt-auto pt-md border-t border-outline-variant dark:border-outline flex flex-col gap-xs">
+<a class="text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-low dark:hover:bg-surface-container-high transition-colors flex items-center gap-md px-sm py-sm rounded-md font-body-md text-body-md group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:text-primary transition-colors">help</span>
+                Support
+            </a>
+<a class="text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-low dark:hover:bg-surface-container-high transition-colors flex items-center gap-md px-sm py-sm rounded-md font-body-md text-body-md group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:text-primary transition-colors">logout</span>
+                Sign Out
+            </a>
+</div>
+</nav>
+<!-- Main Canvas -->
+<div class="ml-[240px] flex-1 flex flex-col h-screen overflow-hidden">
+<!-- TopNavBar -->
+<header class="bg-surface/80 dark:bg-surface-dim/80 backdrop-blur-md border-b border-outline-variant dark:border-outline fixed top-0 right-0 w-[calc(100%-240px)] z-40 flex justify-between items-center h-16 px-lg">
+<div class="flex items-center gap-lg">
+<h2 class="font-headline-sm text-headline-sm text-on-surface dark:text-on-surface">Workspace Switcher</h2>
+<nav class="hidden md:flex gap-md">
+<a class="text-secondary dark:text-secondary-fixed-dim hover:text-primary dark:hover:text-primary-fixed transition-colors font-label-md text-label-md py-md" href="#">Drafts</a>
+<a class="text-secondary dark:text-secondary-fixed-dim hover:text-primary dark:hover:text-primary-fixed transition-colors font-label-md text-label-md py-md" href="#">Shared</a>
+<a class="text-secondary dark:text-secondary-fixed-dim hover:text-primary dark:hover:text-primary-fixed transition-colors font-label-md text-label-md py-md" href="#">Archived</a>
+</nav>
+</div>
+<div class="flex items-center gap-md">
+<div class="flex gap-sm">
+<button class="p-sm text-on-surface-variant hover:bg-surface-container-low rounded-full transition-colors flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]">history</span>
+</button>
+<button class="p-sm text-on-surface-variant hover:bg-surface-container-low rounded-full transition-colors flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]">star</span>
+</button>
+<button class="p-sm text-on-surface-variant hover:bg-surface-container-low rounded-full transition-colors flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]">more_vert</span>
+</button>
+</div>
+<button class="bg-white border border-slate-200 text-slate-900 px-md py-sm rounded-lg font-label-md text-label-md hover:bg-slate-50 transition-colors shadow-[0px_4px_6px_-1px_rgba(15,23,42,0.05)]">
+                    Invite Team
+                </button>
+<div class="h-8 w-8 rounded-full bg-surface-container overflow-hidden border border-outline-variant">
+<img alt="User Profile" class="w-full h-full object-cover" data-alt="A close up professional headshot of an individual used as a user profile avatar. The background is a clean, neutral white to emphasize the subject. The lighting is soft and even, typical of modern high-end corporate photography." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBv3BE-XF4FbGWh01EF0-sD4UdUMa-6aTQI7Lk7mhCCRjXQILOj4WE4646tgq2eGSoP_T-Ai1bYFj7mbiRVM3ry52SwCta7CR5xqQWqYRqHLJEFBAABZ8wt_EZgvJwA1Gel2JchDhFWIGaxl0McBJF8so09vMyyTD0Lo0IwbWWWfJ2JOGAWSLpwGFK8hn-exCqnOblqukDWVEkzN0yNIlb4hUM3soETc53ITAkwQ1SRaRXScLfMTrZPxxsi5MOr_ETAPLn4C6r6mwM"/>
+</div>
+</div>
+</header>
+<!-- Page Content -->
+<main class="flex-1 overflow-y-auto mt-16 p-lg md:p-xl bg-slate-50">
+<div class="max-w-[1280px] mx-auto space-y-xl">
+<!-- Header Section -->
+<div>
+<h1 class="font-headline-md text-headline-md text-on-surface mb-xs">RBAC Management</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">Manage user roles, permissions, and view audit states.</p>
+</div>
+<!-- GitOps Status Card -->
+<div class="bg-white border border-slate-200 rounded-xl p-lg shadow-sm">
+<div class="flex justify-between items-start mb-md">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary">terminal</span>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">GitOps RBAC Synchronization</h3>
+</div>
+<span class="px-sm py-xs bg-emerald-50 text-emerald-700 rounded-full font-label-md text-label-md flex items-center gap-xs border border-emerald-100">
+<span class="material-symbols-outlined text-[14px]">check_circle</span>
+                            Synced
+                        </span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mb-md">Role definitions and base assignments are managed via infrastructure as code. Direct mutations in UI are disabled.</p>
+<div class="flex items-center gap-md bg-surface-container-low p-md rounded-lg border border-outline-variant">
+<div class="flex-1">
+<p class="font-label-md text-label-md text-on-surface-variant mb-xs">Current Commit SHA</p>
+<p class="font-mono-sm text-mono-sm text-on-surface">a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0</p>
+</div>
+<div class="w-px h-8 bg-outline-variant"></div>
+<div class="flex-1">
+<p class="font-label-md text-label-md text-on-surface-variant mb-xs">Last Applied</p>
+<p class="font-mono-sm text-mono-sm text-on-surface">2023-10-27 14:32:01 UTC</p>
+</div>
+<button class="bg-white border border-slate-200 text-slate-900 px-md py-sm rounded-lg font-label-md text-label-md hover:bg-slate-50 transition-colors flex items-center gap-xs">
+<span class="material-symbols-outlined text-[18px]">sync</span>
+                            Reload Policy
+                        </button>
+</div>
+</div>
+<!-- Controls -->
+<div class="flex flex-col md:flex-row gap-md justify-between items-center">
+<div class="relative w-full md:w-96">
+<span class="material-symbols-outlined absolute left-sm top-1/2 -translate-y-1/2 text-outline">search</span>
+<input class="w-full pl-xl pr-sm py-sm bg-white border border-slate-200 rounded-lg focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100 outline-none transition-all font-body-md text-body-md" placeholder="Search by email..." type="text"/>
+</div>
+<div class="flex gap-sm w-full md:w-auto">
+<select class="bg-white border border-slate-200 rounded-lg px-sm py-sm font-body-md text-body-md focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100 outline-none">
+<option>All Roles</option>
+<option>Admin</option>
+<option>Editor</option>
+<option>Viewer</option>
+</select>
+<select class="bg-white border border-slate-200 rounded-lg px-sm py-sm font-body-md text-body-md focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100 outline-none">
+<option>All Sources</option>
+<option>SSO Group</option>
+<option>SCIM</option>
+<option>Allowlist</option>
+</select>
+</div>
+</div>
+<!-- Data Table -->
+<div class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="border-b border-slate-200 bg-slate-50">
+<th class="py-md px-lg font-label-md text-label-md text-on-surface-variant font-medium">User Email</th>
+<th class="py-md px-lg font-label-md text-label-md text-on-surface-variant font-medium">Status</th>
+<th class="py-md px-lg font-label-md text-label-md text-on-surface-variant font-medium">Effective Roles</th>
+<th class="py-md px-lg font-label-md text-label-md text-on-surface-variant font-medium">Permissions</th>
+<th class="py-md px-lg font-label-md text-label-md text-on-surface-variant font-medium">Source</th>
+<th class="py-md px-lg font-label-md text-label-md text-on-surface-variant font-medium text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="font-body-md text-body-md">
+<tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors group">
+<td class="py-md px-lg text-on-surface font-medium">elena.rostova@acme.corp</td>
+<td class="py-md px-lg">
+<span class="px-sm py-xs bg-emerald-50 text-emerald-700 rounded-full font-label-md text-label-md border border-emerald-100">Active</span>
+</td>
+<td class="py-md px-lg">
+<div class="flex gap-xs flex-wrap">
+<span class="bg-surface-container px-xs py-xs rounded text-on-surface-variant font-mono-sm text-mono-sm border border-outline-variant">sys_admin</span>
+<span class="bg-surface-container px-xs py-xs rounded text-on-surface-variant font-mono-sm text-mono-sm border border-outline-variant">billing_read</span>
+</div>
+</td>
+<td class="py-md px-lg text-on-surface-variant font-mono-sm text-mono-sm">42</td>
+<td class="py-md px-lg text-on-surface-variant">SSO Group (okta-admins)</td>
+<td class="py-md px-lg text-right">
+<button class="text-primary hover:text-primary-container font-label-md text-label-md transition-colors" onclick="document.getElementById('roleModal').classList.remove('hidden')">Request Change</button>
+</td>
+</tr>
+<tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors group">
+<td class="py-md px-lg text-on-surface font-medium">marcus.chen@acme.corp</td>
+<td class="py-md px-lg">
+<span class="px-sm py-xs bg-emerald-50 text-emerald-700 rounded-full font-label-md text-label-md border border-emerald-100">Active</span>
+</td>
+<td class="py-md px-lg">
+<div class="flex gap-xs flex-wrap">
+<span class="bg-surface-container px-xs py-xs rounded text-on-surface-variant font-mono-sm text-mono-sm border border-outline-variant">data_scientist</span>
+</div>
+</td>
+<td class="py-md px-lg text-on-surface-variant font-mono-sm text-mono-sm">18</td>
+<td class="py-md px-lg text-on-surface-variant">SCIM Provisioned</td>
+<td class="py-md px-lg text-right">
+<button class="text-primary hover:text-primary-container font-label-md text-label-md transition-colors" onclick="document.getElementById('roleModal').classList.remove('hidden')">Request Change</button>
+</td>
+</tr>
+<tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors group">
+<td class="py-md px-lg text-on-surface font-medium">sarah.jenkins@acme.corp</td>
+<td class="py-md px-lg">
+<span class="px-sm py-xs bg-amber-50 text-amber-700 rounded-full font-label-md text-label-md border border-amber-100">Inactive</span>
+</td>
+<td class="py-md px-lg">
+<div class="flex gap-xs flex-wrap">
+<span class="bg-surface-container px-xs py-xs rounded text-on-surface-variant font-mono-sm text-mono-sm border border-outline-variant">viewer_base</span>
+</div>
+</td>
+<td class="py-md px-lg text-on-surface-variant font-mono-sm text-mono-sm">3</td>
+<td class="py-md px-lg text-on-surface-variant">Allowlist (Manual)</td>
+<td class="py-md px-lg text-right">
+<button class="text-primary hover:text-primary-container font-label-md text-label-md transition-colors" onclick="document.getElementById('roleModal').classList.remove('hidden')">Request Change</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</main>
+</div>
+<!-- Role Change Request Modal (Hidden by default) -->
+<div class="fixed inset-0 z-50 hidden" id="roleModal">
+<div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onclick="document.getElementById('roleModal').classList.add('hidden')"></div>
+<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[600px] bg-white rounded-xl shadow-[0px_10px_15px_-3px_rgba(15,23,42,0.1)] border border-slate-200 flex flex-col max-h-[921px]">
+<div class="p-lg border-b border-slate-200 flex justify-between items-center">
+<h3 class="font-headline-md text-headline-md text-on-surface">Role Change Request</h3>
+<button class="text-on-surface-variant hover:bg-surface-container rounded-full p-xs transition-colors" onclick="document.getElementById('roleModal').classList.add('hidden')">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<div class="p-lg overflow-y-auto space-y-lg flex-1">
+<div>
+<p class="font-label-md text-label-md text-on-surface-variant mb-xs">Target User</p>
+<p class="font-body-md text-body-md text-on-surface font-medium">elena.rostova@acme.corp</p>
+</div>
+<div>
+<label class="block font-label-md text-label-md text-on-surface-variant mb-xs">Requested Role Assignment</label>
+<select class="w-full bg-white border border-slate-200 rounded-lg px-sm py-sm font-body-md text-body-md focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100 outline-none">
+<option>Add 'data_scientist' role</option>
+<option>Remove 'sys_admin' role</option>
+</select>
+</div>
+<div class="bg-surface-container-low border border-outline-variant rounded-lg p-md">
+<h4 class="font-label-md text-label-md text-on-surface-variant mb-sm flex items-center gap-xs">
+<span class="material-symbols-outlined text-[16px]">visibility</span>
+                        Impact Preview (Effective Permissions Delta)
+                    </h4>
+<div class="space-y-xs font-mono-sm text-mono-sm">
+<div class="flex items-center gap-sm text-emerald-700">
+<span class="material-symbols-outlined text-[16px]">add</span>
+<span>notebook:write:shared</span>
+</div>
+<div class="flex items-center gap-sm text-emerald-700">
+<span class="material-symbols-outlined text-[16px]">add</span>
+<span>cluster:compute:execute</span>
+</div>
+<div class="flex items-center gap-sm text-on-surface-variant mt-sm pt-sm border-t border-outline-variant border-dashed">
+<span class="material-symbols-outlined text-[16px]">info</span>
+<span>No permissions revoked.</span>
+</div>
+</div>
+</div>
+<div>
+<label class="block font-label-md text-label-md text-on-surface-variant mb-xs">Justification/Reason <span class="text-error">*</span></label>
+<textarea class="w-full bg-white border border-slate-200 rounded-lg px-sm py-sm font-body-md text-body-md focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100 outline-none resize-none" placeholder="Provide context for this RBAC exception..." rows="3"></textarea>
+<p class="font-label-md text-label-md text-on-surface-variant mt-xs">This request will generate a Pull Request in the infrastructure repository.</p>
+</div>
+</div>
+<div class="p-lg border-t border-slate-200 bg-slate-50 flex justify-end gap-md rounded-b-xl">
+<button class="bg-transparent text-slate-600 hover:text-slate-900 px-md py-sm rounded-lg font-label-md text-label-md transition-colors" onclick="document.getElementById('roleModal').classList.add('hidden')">
+                    Cancel
+                </button>
+<button class="bg-indigo-600 text-white px-md py-sm rounded-lg font-label-md text-label-md hover:bg-indigo-700 transition-colors shadow-sm">
+                    Generate PR Request
+                </button>
+</div>
+</div>
+</div>
+</body></html>

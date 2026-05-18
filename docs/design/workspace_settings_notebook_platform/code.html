@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Workspace Settings | Notebook Enterprise</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Manrope:wght@600;700;800&amp;family=JetBrains+Mono&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-secondary-fixed": "#0d1c2e",
+                    "on-error": "#ffffff",
+                    "outline": "#777584",
+                    "on-tertiary-container": "#fe9562",
+                    "on-secondary-container": "#57657a",
+                    "on-secondary": "#ffffff",
+                    "surface-bright": "#fcf8ff",
+                    "on-background": "#1b1b22",
+                    "secondary-container": "#d5e3fc",
+                    "inverse-primary": "#c3c0ff",
+                    "on-primary-container": "#a9a7ff",
+                    "inverse-on-surface": "#f3eff9",
+                    "tertiary-container": "#752c00",
+                    "secondary-fixed-dim": "#b9c7df",
+                    "on-tertiary-fixed": "#351000",
+                    "on-primary": "#ffffff",
+                    "surface-tint": "#544fc0",
+                    "secondary-fixed": "#d5e3fc",
+                    "on-tertiary-fixed-variant": "#7a3003",
+                    "primary-container": "#3730a3",
+                    "outline-variant": "#c8c4d5",
+                    "surface-container-lowest": "#ffffff",
+                    "on-primary-fixed": "#0f0069",
+                    "primary-fixed": "#e2dfff",
+                    "on-tertiary": "#ffffff",
+                    "on-secondary-fixed-variant": "#3a485b",
+                    "background": "#fcf8ff",
+                    "tertiary-fixed": "#ffdbcc",
+                    "surface-container-low": "#f6f2fc",
+                    "on-surface-variant": "#464553",
+                    "secondary": "#515f74",
+                    "on-surface": "#1b1b22",
+                    "tertiary": "#511c00",
+                    "primary-fixed-dim": "#c3c0ff",
+                    "surface-container-highest": "#e4e1eb",
+                    "inverse-surface": "#303037",
+                    "surface-variant": "#e4e1eb",
+                    "on-primary-fixed-variant": "#3b35a7",
+                    "error-container": "#ffdad6",
+                    "surface-dim": "#dcd8e3",
+                    "error": "#ba1a1a",
+                    "tertiary-fixed-dim": "#ffb694",
+                    "surface-container-high": "#eae6f1",
+                    "surface-container": "#f0ecf6",
+                    "primary": "#1f108e",
+                    "surface": "#fcf8ff",
+                    "on-error-container": "#93000a"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "xl": "48px",
+                    "gutter": "24px",
+                    "base": "4px",
+                    "md": "16px",
+                    "xs": "4px",
+                    "lg": "24px",
+                    "sm": "8px",
+                    "container-max": "1280px"
+            },
+            "fontFamily": {
+                    "label-md": ["Inter"],
+                    "headline-md": ["Manrope"],
+                    "headline-sm": ["Manrope"],
+                    "body-md": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "display-lg": ["Manrope"],
+                    "mono-sm": ["JetBrains Mono"]
+            },
+            "fontSize": {
+                    "label-md": ["12px", {"lineHeight": "1", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                    "headline-md": ["24px", {"lineHeight": "1.3", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "headline-sm": ["18px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                    "body-md": ["14px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                    "body-lg": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                    "display-lg": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "mono-sm": ["13px", {"lineHeight": "1.5", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            background-color: #fcf8ff;
+            color: #1b1b22;
+        }
+    </style>
+</head>
+<body class="font-body-md text-body-md">
+<!-- SideNavBar Component -->
+<aside class="fixed left-0 top-0 h-full w-[240px] z-40 bg-surface-container-low border-r border-outline-variant flex flex-col py-lg px-md gap-sm">
+<div class="mb-lg px-sm">
+<h1 class="font-headline-sm text-headline-sm font-bold text-on-surface">Notebook Enterprise</h1>
+<p class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider mt-xs">Admin Console</p>
+</div>
+<nav class="flex flex-col gap-xs">
+<a class="flex items-center gap-md py-sm px-md rounded-lg text-primary font-semibold border-r-4 border-primary bg-secondary-container transition-all" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-body-md">General</span>
+</a>
+<a class="flex items-center gap-md py-sm px-md rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="font-body-md">Members</span>
+</a>
+<a class="flex items-center gap-md py-sm px-md rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">security</span>
+<span class="font-body-md">Security</span>
+</a>
+<a class="flex items-center gap-md py-sm px-md rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">extension</span>
+<span class="font-body-md">Integrations</span>
+</a>
+<a class="flex items-center gap-md py-sm px-md rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">payments</span>
+<span class="font-body-md">Billing</span>
+</a>
+</nav>
+<div class="mt-auto pt-lg border-t border-outline-variant">
+<div class="flex items-center gap-sm px-sm">
+<img alt="Workspace Logo" class="w-8 h-8 rounded-lg object-cover" data-alt="A clean, minimalist workspace logo for an enterprise software platform, featuring a geometric indigo emblem on a white background with soft studio lighting and professional corporate branding aesthetics." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCEoq8w270tx5tiNuFYqeJHuXxml5F3AJExDSI_V1ENNreVHWw4aoRbrgoXI_aYqjfOAmqnvsbaO1raSW7d9ddSq9J6hbSEdPOzjQDAEeewTppHEJ5lDnicqm_kdKS189Cv9E6dBBpHwI_Dw8jHBq4tComGl4Xoe-ikzj847ZSBSGVyHcLpnkrOg9k-DD2WWD_Ee0yG78A9CIM5QNkYuuXTkPqFG8VhEV0RJXLD92kc6HXO-lTJ-CJRVFo3SzTwKRAxW7YDi1mmezI"/>
+<div class="flex flex-col overflow-hidden">
+<span class="font-label-md text-on-surface truncate">Product Team</span>
+<span class="text-[10px] text-on-surface-variant">Pro Plan</span>
+</div>
+</div>
+</div>
+</aside>
+<!-- TopAppBar Component -->
+<header class="fixed top-0 right-0 left-[240px] z-30 bg-surface/80 backdrop-blur-md border-b border-outline-variant">
+<div class="flex justify-between items-center h-16 px-xl max-w-container-max mx-auto">
+<div class="flex items-center gap-md">
+<h2 class="font-headline-md text-headline-md font-bold text-primary">Workspace Settings</h2>
+</div>
+<div class="flex items-center gap-lg">
+<div class="relative group">
+<span class="material-symbols-outlined text-on-surface-variant hover:text-primary cursor-pointer transition-colors">notifications</span>
+<span class="absolute top-0 right-0 w-2 h-2 bg-error rounded-full border-2 border-surface"></span>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant hover:text-primary cursor-pointer transition-colors">help_outline</span>
+<div class="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center border border-outline-variant overflow-hidden">
+<img alt="User Profile" class="w-full h-full object-cover" data-alt="Close-up portrait of a professional corporate administrator with a friendly expression. The lighting is soft and natural, emphasizing a high-end enterprise environment with neutral tones and clean lines." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAuK8TNtkSsZxClbzjGOrfvMQ7eKxojzBuS_dl-V7DINfcT7YMB79jrvXoLH2NmyvRSw1TAuxNIuIBCQE__ewrBI28NT4qdtvzlV2ZH8namKF-qhAvBazq52eeLZjIxVY_1d4lq6bL-e1CmWjehcTu4i8PpDry9BLLU65tlrPOBGJ2as0EBikaOKjspMoVsFPfrdCl9bk31JhTjwAjfaWtUblrqn0WzcTPTEWfknLGXJUyN47LWbQcNAaPqkhMMkgreweyIknU0OT4"/>
+</div>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="ml-[240px] pt-16 min-h-screen">
+<div class="max-w-container-max mx-auto px-xl py-xl">
+<!-- Header Section -->
+<div class="mb-xl">
+<div class="flex justify-between items-end">
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-xs">General Settings</h3>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl">Manage your workspace identity, branding, and fundamental access controls to keep your team aligned and professional.</p>
+</div>
+<div class="flex gap-sm">
+<button class="px-lg py-sm rounded-lg bg-surface border border-outline-variant text-on-surface font-label-md hover:bg-surface-container-high transition-colors">Discard</button>
+<button class="px-lg py-sm rounded-lg bg-primary text-white font-label-md hover:opacity-90 shadow-sm transition-all">Save Changes</button>
+</div>
+</div>
+</div>
+<!-- Bento Grid Content -->
+<div class="grid grid-cols-12 gap-lg">
+<!-- Form Section: Identity -->
+<div class="col-span-12 lg:col-span-7 bg-white border border-outline-variant rounded-xl p-lg shadow-sm">
+<div class="flex items-center gap-sm mb-lg border-b border-outline-variant pb-md">
+<span class="material-symbols-outlined text-primary">badge</span>
+<h4 class="font-headline-sm text-headline-sm">Workspace Identity</h4>
+</div>
+<div class="space-y-lg">
+<div class="space-y-xs">
+<label class="font-label-md text-on-surface-variant block">Workspace Name</label>
+<input class="w-full bg-white border border-outline-variant rounded-lg px-md py-sm focus:ring-2 focus:ring-primary-container focus:border-primary outline-none transition-all" type="text" value="Notebook Enterprise"/>
+<p class="text-[11px] text-on-surface-variant">The name visible to your team and collaborators.</p>
+</div>
+<div class="space-y-xs">
+<label class="font-label-md text-on-surface-variant block">Workspace URL</label>
+<div class="flex">
+<span class="bg-surface-container px-md py-sm border border-r-0 border-outline-variant rounded-l-lg text-on-surface-variant font-mono-sm">notebook.app/</span>
+<input class="flex-1 bg-white border border-outline-variant rounded-r-lg px-md py-sm focus:ring-2 focus:ring-primary-container focus:border-primary outline-none transition-all font-mono-sm" type="text" value="enterprise-prod"/>
+</div>
+<p class="text-[11px] text-on-surface-variant">Used as the unique subdomain for your enterprise environment.</p>
+</div>
+</div>
+</div>
+<!-- Branding Section -->
+<div class="col-span-12 lg:col-span-5 bg-white border border-outline-variant rounded-xl p-lg shadow-sm">
+<div class="flex items-center gap-sm mb-lg border-b border-outline-variant pb-md">
+<span class="material-symbols-outlined text-primary">palette</span>
+<h4 class="font-headline-sm text-headline-sm">Branding</h4>
+</div>
+<div class="flex flex-col items-center justify-center py-md space-y-md">
+<div class="relative w-24 h-24 bg-surface-container rounded-xl border-2 border-dashed border-outline-variant flex items-center justify-center overflow-hidden group hover:border-primary transition-colors cursor-pointer">
+<img class="w-16 h-16 opacity-40 group-hover:opacity-60 transition-opacity" data-alt="A sophisticated minimalist abstract logo mark centered in a studio-lit space. The palette uses deep indigo and crisp white with sharp geometric lines. The overall aesthetic is professional, modern, and perfectly suited for an enterprise software dashboard environment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDJts0MW5ywRgpI7ostT1_jY4vqzF4O_JSCfP9meRYB6fGim1_HVHLDtUcuuYr_nhZ3Ge0A1zA_P1V8f633SLZws0FMFsMtS-TyDAScxQI6o4Fo1r5AqboNkpNKGmdq0aSEq0nvCWzQg_fXOe9eviJBfPdZMHVy3yurNy4ckxumlc9WgD1sA1YQYfJKqs2uI3ShMO-CzBSzVsFMF600q8uGbezoiUzDfHdxT9rN78AfVXuMc4tgUS3r6UK0pEG893gyLp2dS05ZU88"/>
+<div class="absolute inset-0 bg-primary/10 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+<span class="material-symbols-outlined text-primary">upload</span>
+</div>
+</div>
+<div class="text-center">
+<button class="text-primary font-label-md hover:underline">Upload Logo</button>
+<p class="text-[11px] text-on-surface-variant mt-xs">SVG, PNG or JPG (max 2MB).<br/>Recommended size 512x512px.</p>
+</div>
+</div>
+</div>
+<!-- Security Section -->
+<div class="col-span-12 lg:col-span-8 bg-white border border-outline-variant rounded-xl p-lg shadow-sm">
+<div class="flex items-center gap-sm mb-lg border-b border-outline-variant pb-md">
+<span class="material-symbols-outlined text-primary">lock</span>
+<h4 class="font-headline-sm text-headline-sm">Security &amp; Governance</h4>
+</div>
+<div class="space-y-lg">
+<div class="flex items-center justify-between">
+<div>
+<h5 class="font-body-md font-semibold text-on-surface">Allow Public Links</h5>
+<p class="text-[12px] text-on-surface-variant">Enable team members to share notebooks via public URLs.</p>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-container-highest rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</div>
+<div class="flex flex-col gap-xs">
+<h5 class="font-body-md font-semibold text-on-surface">Default Member Role</h5>
+<p class="text-[12px] text-on-surface-variant mb-xs">Set the starting permissions for newly added members.</p>
+<select class="w-full bg-white border border-outline-variant rounded-lg px-md py-sm focus:ring-2 focus:ring-primary-container focus:border-primary outline-none appearance-none cursor-pointer">
+<option>Viewer (Read Only)</option>
+<option selected="">Editor (Read/Write)</option>
+<option>Admin (Full Access)</option>
+</select>
+</div>
+</div>
+</div>
+<!-- Info Card: Status -->
+<div class="col-span-12 lg:col-span-4 bg-primary-container/10 border border-primary/20 rounded-xl p-lg">
+<h4 class="font-headline-sm text-primary mb-md">Workspace Status</h4>
+<div class="space-y-md">
+<div class="flex items-center justify-between">
+<span class="text-on-surface-variant font-label-md">Status</span>
+<span class="px-sm py-1 bg-emerald-50 text-emerald-700 text-[10px] font-bold rounded-full uppercase border border-emerald-200">Active</span>
+</div>
+<div class="flex items-center justify-between">
+<span class="text-on-surface-variant font-label-md">Member Limit</span>
+<span class="text-on-surface font-mono-sm">42 / 100</span>
+</div>
+<div class="flex items-center justify-between">
+<span class="text-on-surface-variant font-label-md">Region</span>
+<span class="text-on-surface font-label-md">US-East-1</span>
+</div>
+<div class="pt-md border-t border-primary/10">
+<p class="text-[11px] text-on-surface-variant leading-relaxed italic">Last compliance audit completed on Oct 12, 2023.</p>
+</div>
+</div>
+</div>
+<!-- Danger Zone Section -->
+<div class="col-span-12 bg-white border border-error/30 rounded-xl p-lg shadow-sm mt-lg">
+<div class="flex items-center gap-sm mb-lg border-b border-error/10 pb-md">
+<span class="material-symbols-outlined text-error">warning</span>
+<h4 class="font-headline-sm text-error">Danger Zone</h4>
+</div>
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-lg">
+<div>
+<h5 class="font-body-md font-semibold text-on-surface">Delete this workspace</h5>
+<p class="text-body-md text-on-surface-variant">Once deleted, all data, configurations, and team history will be permanently erased. This action cannot be undone.</p>
+</div>
+<button class="px-xl py-sm rounded-lg bg-white border-2 border-error text-error font-bold hover:bg-error hover:text-white transition-all whitespace-nowrap">Delete Workspace</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>RBAC Override Diff</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Manrope:wght@600;700&amp;family=JetBrains+Mono:wght@400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-fixed": "#ffdbcc",
+                        "inverse-primary": "#c3c0ff",
+                        "inverse-on-surface": "#f3eff9",
+                        "on-tertiary": "#ffffff",
+                        "secondary-fixed": "#d5e3fc",
+                        "on-primary-fixed": "#0f0069",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary": "#ffffff",
+                        "error": "#ba1a1a",
+                        "surface-container-highest": "#e4e1eb",
+                        "surface-container": "#f0ecf6",
+                        "on-background": "#1b1b22",
+                        "tertiary-container": "#752c00",
+                        "background": "#fcf8ff",
+                        "error-container": "#ffdad6",
+                        "tertiary-fixed-dim": "#ffb694",
+                        "surface-variant": "#e4e1eb",
+                        "outline": "#777584",
+                        "on-secondary-fixed-variant": "#3a485b",
+                        "on-primary-fixed-variant": "#3b35a7",
+                        "surface-bright": "#fcf8ff",
+                        "surface": "#fcf8ff",
+                        "secondary-fixed-dim": "#b9c7df",
+                        "primary-container": "#3730a3",
+                        "surface-dim": "#dcd8e3",
+                        "surface-container-low": "#f6f2fc",
+                        "secondary-container": "#d5e3fc",
+                        "on-surface": "#1b1b22",
+                        "on-primary-container": "#a9a7ff",
+                        "on-secondary-container": "#57657a",
+                        "on-tertiary-fixed": "#351000",
+                        "on-tertiary-container": "#fe9562",
+                        "on-error": "#ffffff",
+                        "primary-fixed": "#e2dfff",
+                        "surface-container-high": "#eae6f1",
+                        "on-error-container": "#93000a",
+                        "primary": "#1f108e",
+                        "on-secondary-fixed": "#0d1c2e",
+                        "inverse-surface": "#303037",
+                        "surface-tint": "#544fc0",
+                        "secondary": "#515f74",
+                        "primary-fixed-dim": "#c3c0ff",
+                        "on-secondary": "#ffffff",
+                        "outline-variant": "#c8c4d5",
+                        "tertiary": "#511c00",
+                        "on-surface-variant": "#464553",
+                        "on-tertiary-fixed-variant": "#7a3003"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xs": "4px",
+                        "xl": "48px",
+                        "container-max": "1280px",
+                        "gutter": "24px",
+                        "base": "4px",
+                        "lg": "24px",
+                        "sm": "8px",
+                        "md": "16px"
+                    },
+                    "fontFamily": {
+                        "label-md": ["Inter"],
+                        "headline-md": ["Manrope"],
+                        "body-md": ["Inter"],
+                        "headline-sm": ["Manrope"],
+                        "display-lg": ["Manrope"],
+                        "body-lg": ["Inter"],
+                        "mono-sm": ["JetBrains Mono"]
+                    },
+                    "fontSize": {
+                        "label-md": ["12px", {"lineHeight": "1", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                        "headline-md": ["24px", {"lineHeight": "1.3", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "body-md": ["14px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                        "headline-sm": ["18px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                        "display-lg": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "body-lg": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                        "mono-sm": ["13px", {"lineHeight": "1.5", "fontWeight": "400"}]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-background text-on-background antialiased flex">
+<!-- SideNavBar -->
+<nav class="fixed left-0 top-0 h-full w-[240px] bg-surface border-r border-outline-variant flex flex-col h-full py-md px-md hidden md:flex z-30">
+<div class="mb-xl flex items-center gap-sm px-sm">
+<span class="material-symbols-outlined text-primary" data-icon="terminal">terminal</span>
+<div>
+<h1 class="font-headline-sm text-headline-sm text-primary font-bold">Notebook Platform</h1>
+<p class="font-label-md text-label-md text-on-surface-variant">Enterprise Workspace</p>
+</div>
+</div>
+<button class="bg-primary text-on-primary font-label-md text-label-md py-sm px-md rounded-lg mb-xl w-full text-center hover:opacity-80 transition-opacity">
+            New Notebook
+        </button>
+<ul class="flex-1 space-y-sm">
+<li>
+<a class="flex items-center gap-md px-sm py-sm rounded-md font-body-md text-body-md text-on-surface-variant hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined">folder_open</span>
+                    Workspaces
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-md px-sm py-sm rounded-md font-body-md text-body-md text-on-surface-variant hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined">search</span>
+                    Search
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-md px-sm py-sm rounded-md font-body-md text-body-md text-on-surface-variant hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined">notifications</span>
+                    Notifications
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-md px-sm py-sm rounded-md font-body-md text-body-md text-on-surface-variant hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined">settings</span>
+                    Settings
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-md px-sm py-sm rounded-md font-body-md text-body-md text-primary font-bold border-r-2 border-primary hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined">admin_panel_settings</span>
+                    Admin
+                </a>
+</li>
+</ul>
+<ul class="mt-auto space-y-sm">
+<li>
+<a class="flex items-center gap-md px-sm py-sm rounded-md font-body-md text-body-md text-on-surface-variant hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined">help</span>
+                    Support
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-md px-sm py-sm rounded-md font-body-md text-body-md text-on-surface-variant hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined">logout</span>
+                    Sign Out
+                </a>
+</li>
+</ul>
+</nav>
+<!-- TopNavBar -->
+<header class="fixed top-0 right-0 w-full md:w-[calc(100%-240px)] z-40 bg-surface/80 backdrop-blur-md border-b border-outline-variant flex justify-between items-center h-16 px-lg">
+<div class="flex items-center gap-lg">
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Workspace Switcher</h2>
+<nav class="hidden lg:flex items-center gap-md">
+<a class="font-label-md text-label-md text-secondary hover:text-primary transition-colors" href="#">Drafts</a>
+<a class="font-label-md text-label-md text-secondary hover:text-primary transition-colors" href="#">Shared</a>
+<a class="font-label-md text-label-md text-secondary hover:text-primary transition-colors" href="#">Archived</a>
+</nav>
+</div>
+<div class="flex items-center gap-md">
+<button class="hidden md:flex items-center gap-xs font-label-md text-label-md text-secondary hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[18px]">history</span>
+</button>
+<button class="hidden md:flex items-center gap-xs font-label-md text-label-md text-secondary hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[18px]">star</span>
+</button>
+<button class="bg-primary text-on-primary font-label-md text-label-md py-sm px-md rounded-lg hover:opacity-80 transition-opacity">
+                Invite Team
+            </button>
+<button class="flex items-center gap-xs font-label-md text-label-md text-secondary hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+<img alt="User Profile" class="w-8 h-8 rounded-full border border-outline-variant" data-alt="A small circular profile picture of a professional user, placed in the top right corner of a minimalist enterprise software interface. The surrounding UI is high-key, using soft whites and subtle grays." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC6sS1xLo-O-1OhPLUrd-E8C5hKOPV5w0OTMcRIy4S-TArkk0DQarT3qZqguIfd3s37JEZ679XjD5etOyu7ekNnPFBY5qpq0MFiKLYqZUX2T88QAZEBrp5JGkWNhwrqnjxTEf9oD1Cr3CM5cJ0KFpFWommLqGaitqMc9uPCe_n7VEGwnTeZp4tIUg3zl-KoY348_zcDEZ92kNUBvN4kAM0hVu3otDAUj6_gfE_WTj6uhXzWQkWtyOwnkdaqgOg0TuF3zNDn6LoD32U"/>
+</div>
+</header>
+<!-- Main Content -->
+<main class="w-full md:ml-[240px] mt-16 p-lg md:p-xl flex justify-center">
+<div class="w-full max-w-container-max space-y-xl">
+<!-- Header Section -->
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-md border-b border-outline-variant pb-md">
+<div>
+<div class="flex items-center gap-sm mb-xs">
+<span class="px-sm py-[2px] bg-surface-container-high text-on-surface-variant font-mono-sm text-mono-sm rounded">PR-1029</span>
+<span class="px-sm py-[2px] bg-primary-fixed text-on-primary-fixed font-label-md text-label-md rounded-full">Merged</span>
+</div>
+<h1 class="font-headline-md text-headline-md text-on-background">RBAC Override Review</h1>
+<p class="font-body-md text-body-md text-on-surface-variant mt-xs font-mono-sm text-mono-sm">deploy/gitops/environments/staging/admin-rbac-overrides.yaml</p>
+</div>
+<div class="flex gap-sm">
+<button class="flex items-center gap-sm px-md py-sm bg-surface border border-outline-variant rounded-lg font-label-md text-label-md text-on-background hover:bg-surface-container-low transition-colors shadow-sm">
+<span class="material-symbols-outlined text-[18px]">content_copy</span>
+                        Copy Diff
+                    </button>
+<button class="flex items-center gap-sm px-md py-sm bg-surface border border-outline-variant rounded-lg font-label-md text-label-md text-on-background hover:bg-surface-container-low transition-colors shadow-sm">
+<span class="material-symbols-outlined text-[18px]">menu_book</span>
+                        Runbook
+                    </button>
+</div>
+</div>
+<!-- Warning Callout -->
+<div class="bg-error-container border-l-4 border-error p-md rounded-r-lg flex items-start gap-md">
+<span class="material-symbols-outlined text-error mt-[2px]">warning</span>
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-error-container">Policy Override Notice</h3>
+<p class="font-body-md text-body-md text-on-error-container mt-xs">This PR records an approved RBAC override proposal. It does not directly mutate IdP, SCIM, or runtime roles.</p>
+</div>
+</div>
+<!-- Diff Viewer -->
+<div class="bg-surface border border-outline-variant rounded-xl overflow-hidden shadow-sm">
+<div class="bg-surface-container-low border-b border-outline-variant px-md py-sm flex justify-between items-center">
+<span class="font-mono-sm text-mono-sm text-on-surface-variant">admin-rbac-overrides.yaml</span>
+<span class="font-label-md text-label-md text-on-surface-variant">1 addition, 0 deletions</span>
+</div>
+<div class="font-mono-sm text-mono-sm leading-relaxed overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<tbody>
+<tr class="text-on-surface-variant">
+<td class="w-12 text-right pr-md py-[2px] select-none opacity-50 bg-surface-container-lowest">124</td>
+<td class="w-12 text-right pr-md py-[2px] select-none opacity-50 bg-surface-container-lowest">124</td>
+<td class="px-md py-[2px] whitespace-pre bg-surface-container-lowest">  - role: Editor</td>
+</tr>
+<tr class="text-on-surface-variant">
+<td class="w-12 text-right pr-md py-[2px] select-none opacity-50 bg-surface-container-lowest">125</td>
+<td class="w-12 text-right pr-md py-[2px] select-none opacity-50 bg-surface-container-lowest">125</td>
+<td class="px-md py-[2px] whitespace-pre bg-surface-container-lowest">    status: ACTIVE</td>
+</tr>
+<tr class="text-on-surface-variant">
+<td class="w-12 text-right pr-md py-[2px] select-none opacity-50 bg-surface-container-lowest">126</td>
+<td class="w-12 text-right pr-md py-[2px] select-none opacity-50 bg-surface-container-lowest">126</td>
+<td class="px-md py-[2px] whitespace-pre bg-surface-container-lowest">    lastReviewed: 2023-10-15</td>
+</tr>
+<!-- Added Lines Highlighted -->
+<tr class="bg-[#dcfce7] text-[#166534] dark:bg-[#064e3b] dark:text-[#34d399]">
+<td class="w-12 text-right pr-md py-[2px] select-none opacity-70">+</td>
+<td class="w-12 text-right pr-md py-[2px] select-none opacity-70">127</td>
+<td class="px-md py-[2px] whitespace-pre font-bold">  - userId: user_9921</td>
+</tr>
+<tr class="bg-[#dcfce7] text-[#166534] dark:bg-[#064e3b] dark:text-[#34d399]">
+<td class="w-12 text-right pr-md py-[2px] select-none opacity-70">+</td>
+<td class="w-12 text-right pr-md py-[2px] select-none opacity-70">128</td>
+<td class="px-md py-[2px] whitespace-pre font-bold">    role: Admin</td>
+</tr>
+<tr class="bg-[#dcfce7] text-[#166534] dark:bg-[#064e3b] dark:text-[#34d399]">
+<td class="w-12 text-right pr-md py-[2px] select-none opacity-70">+</td>
+<td class="w-12 text-right pr-md py-[2px] select-none opacity-70">129</td>
+<td class="px-md py-[2px] whitespace-pre font-bold">    action: GRANT</td>
+</tr>
+<tr class="bg-[#dcfce7] text-[#166534] dark:bg-[#064e3b] dark:text-[#34d399]">
+<td class="w-12 text-right pr-md py-[2px] select-none opacity-70">+</td>
+<td class="w-12 text-right pr-md py-[2px] select-none opacity-70">130</td>
+<td class="px-md py-[2px] whitespace-pre font-bold">    reasonRef: REQ-8F92A1</td>
+</tr>
+<tr class="bg-[#dcfce7] text-[#166534] dark:bg-[#064e3b] dark:text-[#34d399]">
+<td class="w-12 text-right pr-md py-[2px] select-none opacity-70">+</td>
+<td class="w-12 text-right pr-md py-[2px] select-none opacity-70">131</td>
+<td class="px-md py-[2px] whitespace-pre font-bold">    requestedBy: s.jenkins</td>
+</tr>
+<tr class="bg-[#dcfce7] text-[#166534] dark:bg-[#064e3b] dark:text-[#34d399]">
+<td class="w-12 text-right pr-md py-[2px] select-none opacity-70">+</td>
+<td class="w-12 text-right pr-md py-[2px] select-none opacity-70">132</td>
+<td class="px-md py-[2px] whitespace-pre font-bold">    status: APPROVED_FOR_APPLY</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Metadata Card -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-md">
+<div class="bg-surface border border-outline-variant rounded-xl p-md shadow-sm">
+<h4 class="font-label-md text-label-md text-on-surface-variant mb-xs">Reviewer</h4>
+<div class="flex items-center gap-sm">
+<img alt="Reviewer Profile" class="w-6 h-6 rounded-full" data-alt="A small circular avatar of a technical reviewer in a minimalist enterprise interface. The portrait is clear and professional, set against a light background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVlFHVFLAlJ6X5msrM3-NV4o8nqChLMaRtMr9qB4Aw7eARedfIlhJuUKmcmsVVheUFMMaRPE3--fJz0NRbrsYhOKcEPHuG4Kb2akMD8C4lgZqOfZWr39pAfcQ6HMVf7rd87-IWtVehxE-dOGbVHXblMmd3G08cV343LYoeLzMq_2umGaZatbygEXssGQuUg3vmEdLqIdRaeX6iGzyHtmZ-4lAPXd10vlhxPShQyw6ZOXdaA2ALHMLlFk7t0GXihNkKxmadL3uquEE"/>
+<span class="font-body-md text-body-md text-on-background font-medium">j.doe</span>
+</div>
+</div>
+<div class="bg-surface border border-outline-variant rounded-xl p-md shadow-sm">
+<h4 class="font-label-md text-label-md text-on-surface-variant mb-xs">Environment</h4>
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-secondary text-[18px]">dns</span>
+<span class="font-body-md text-body-md text-on-background font-medium">Staging</span>
+</div>
+</div>
+<div class="bg-surface border border-outline-variant rounded-xl p-md shadow-sm">
+<h4 class="font-label-md text-label-md text-on-surface-variant mb-xs">Timestamp</h4>
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-secondary text-[18px]">schedule</span>
+<span class="font-body-md text-body-md text-on-background font-medium">2 hours ago</span>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

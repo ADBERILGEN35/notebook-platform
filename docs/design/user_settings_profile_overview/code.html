@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Notebook Platform - User Settings</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700&amp;family=Inter:wght@400;500&amp;family=JetBrains+Mono:wght@400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-fixed": "#ffdbcc",
+                        "surface-tint": "#544fc0",
+                        "on-surface-variant": "#464553",
+                        "surface-container-low": "#f6f2fc",
+                        "surface-container": "#f0ecf6",
+                        "on-secondary": "#ffffff",
+                        "inverse-on-surface": "#f3eff9",
+                        "on-tertiary": "#ffffff",
+                        "error": "#ba1a1a",
+                        "on-tertiary-container": "#fe9562",
+                        "on-error-container": "#93000a",
+                        "tertiary-fixed-dim": "#ffb694",
+                        "secondary-fixed": "#d5e3fc",
+                        "on-primary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "surface-container-highest": "#e4e1eb",
+                        "secondary-container": "#d5e3fc",
+                        "inverse-surface": "#303037",
+                        "surface-variant": "#e4e1eb",
+                        "inverse-primary": "#c3c0ff",
+                        "background": "#fcf8ff",
+                        "surface-dim": "#dcd8e3",
+                        "tertiary": "#511c00",
+                        "on-tertiary-fixed-variant": "#7a3003",
+                        "on-background": "#1b1b22",
+                        "primary-container": "#3730a3",
+                        "on-primary-fixed": "#0f0069",
+                        "tertiary-container": "#752c00",
+                        "on-secondary-fixed-variant": "#3a485b",
+                        "surface-container-high": "#eae6f1",
+                        "primary-fixed": "#e2dfff",
+                        "on-primary-container": "#a9a7ff",
+                        "on-primary-fixed-variant": "#3b35a7",
+                        "on-secondary-fixed": "#0d1c2e",
+                        "on-error": "#ffffff",
+                        "secondary": "#515f74",
+                        "on-tertiary-fixed": "#351000",
+                        "surface-container-lowest": "#ffffff",
+                        "primary-fixed-dim": "#c3c0ff",
+                        "primary": "#1f108e",
+                        "surface-bright": "#fcf8ff",
+                        "on-secondary-container": "#57657a",
+                        "outline-variant": "#c8c4d5",
+                        "secondary-fixed-dim": "#b9c7df",
+                        "on-surface": "#1b1b22",
+                        "outline": "#777584",
+                        "surface": "#fcf8ff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xl": "48px",
+                        "lg": "24px",
+                        "sm": "8px",
+                        "gutter": "24px",
+                        "md": "16px",
+                        "container-max": "1280px",
+                        "xs": "4px",
+                        "base": "4px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Manrope"],
+                        "display-lg": ["Manrope"],
+                        "label-md": ["Inter"],
+                        "body-md": ["Inter"],
+                        "mono-sm": ["JetBrains Mono"],
+                        "headline-sm": ["Manrope"],
+                        "body-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["24px", { "lineHeight": "1.3", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "display-lg": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "label-md": ["12px", { "lineHeight": "1", "letterSpacing": "0.01em", "fontWeight": "500" }],
+                        "body-md": ["14px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "mono-sm": ["13px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "headline-sm": ["18px", { "lineHeight": "1.4", "fontWeight": "600" }],
+                        "body-lg": ["16px", { "lineHeight": "1.6", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            background-color: #fcf8ff; /* background */
+        }
+    </style>
+</head>
+<body class="font-body-md text-on-background bg-background antialiased flex h-screen overflow-hidden">
+<!-- SideNavBar (Shared Component) -->
+<nav class="bg-surface dark:bg-surface-dim font-body-md text-body-md fixed left-0 top-0 h-full w-[240px] border-r border-outline-variant dark:border-outline flex flex-col h-full py-md px-md hidden md:flex z-50">
+<div class="mb-xl flex items-center gap-sm">
+<div class="w-8 h-8 rounded bg-primary-fixed flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-primary text-sm" data-icon="menu_book">menu_book</span>
+</div>
+<div>
+<h1 class="text-headline-sm font-headline-sm font-bold text-primary dark:text-primary-fixed truncate">Notebook Platform</h1>
+<p class="font-label-md text-label-md text-on-surface-variant truncate">Enterprise Workspace</p>
+</div>
+</div>
+<button class="bg-primary text-on-primary font-label-md text-label-md rounded-lg py-sm px-md mb-lg flex items-center justify-center gap-sm hover:opacity-90 transition-opacity">
+<span class="material-symbols-outlined text-[18px]" data-icon="add">add</span>
+            New Notebook
+        </button>
+<ul class="flex-1 space-y-xs overflow-y-auto">
+<li>
+<a class="flex items-center gap-md px-sm py-sm rounded text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-low dark:hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="folder_open">folder_open</span>
+                    Workspaces
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-md px-sm py-sm rounded text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-low dark:hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+                    Search
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-md px-sm py-sm rounded text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-low dark:hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+                    Notifications
+                </a>
+</li>
+<li>
+<!-- Active State -->
+<a class="flex items-center gap-md px-sm py-sm rounded text-primary dark:text-primary-fixed font-bold border-r-2 border-primary bg-surface-container-low transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="settings" data-weight="fill">settings</span>
+                    Settings
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-md px-sm py-sm rounded text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-low dark:hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="admin_panel_settings">admin_panel_settings</span>
+                    Admin
+                </a>
+</li>
+</ul>
+<div class="mt-auto pt-md border-t border-outline-variant dark:border-outline space-y-xs">
+<a class="flex items-center gap-md px-sm py-sm rounded text-on-surface-variant hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+                Support
+            </a>
+<a class="flex items-center gap-md px-sm py-sm rounded text-on-surface-variant hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+                Sign Out
+            </a>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="flex-1 ml-0 md:ml-[240px] flex flex-col h-full bg-background overflow-hidden relative">
+<!-- TopNavBar (Shared Component) -->
+<header class="bg-surface/80 dark:bg-surface-dim/80 backdrop-blur-md font-label-md text-label-md fixed top-0 right-0 w-full md:w-[calc(100%-240px)] z-40 border-b border-outline-variant dark:border-outline flex justify-between items-center h-16 px-lg">
+<div class="flex items-center gap-lg">
+<div class="font-headline-sm text-headline-sm text-on-surface dark:text-on-surface font-semibold hidden lg:block">Workspace Switcher</div>
+<nav class="hidden md:flex gap-md">
+<a class="text-secondary dark:text-secondary-fixed-dim hover:text-primary dark:hover:text-primary-fixed transition-colors py-sm px-xs" href="#">Drafts</a>
+<a class="text-secondary dark:text-secondary-fixed-dim hover:text-primary dark:hover:text-primary-fixed transition-colors py-sm px-xs" href="#">Shared</a>
+<a class="text-secondary dark:text-secondary-fixed-dim hover:text-primary dark:hover:text-primary-fixed transition-colors py-sm px-xs" href="#">Archived</a>
+</nav>
+</div>
+<div class="flex items-center gap-md">
+<div class="hidden sm:flex items-center bg-surface-container rounded-full px-md py-sm border border-outline-variant focus-within:border-primary focus-within:ring-2 focus-within:ring-primary-fixed-dim transition-all">
+<span class="material-symbols-outlined text-outline mr-sm text-[18px]" data-icon="search">search</span>
+<input class="bg-transparent border-none outline-none font-body-md text-on-surface placeholder:text-outline w-48 focus:ring-0 p-0 h-auto" placeholder="Search workspace..." type="text"/>
+</div>
+<div class="flex items-center gap-sm text-secondary">
+<button class="p-xs hover:text-primary transition-colors rounded-full hover:bg-surface-container-low"><span class="material-symbols-outlined" data-icon="history">history</span></button>
+<button class="p-xs hover:text-primary transition-colors rounded-full hover:bg-surface-container-low"><span class="material-symbols-outlined" data-icon="star">star</span></button>
+<button class="p-xs hover:text-primary transition-colors rounded-full hover:bg-surface-container-low"><span class="material-symbols-outlined" data-icon="more_vert">more_vert</span></button>
+</div>
+<button class="bg-primary-container text-on-primary-container hover:bg-primary hover:text-on-primary transition-colors px-md py-sm rounded-lg font-label-md ml-sm hidden lg:block">
+                    Invite Team
+                </button>
+<img alt="User Profile" class="w-8 h-8 rounded-full border border-outline-variant object-cover ml-sm" data-alt="A professional headshot of a person wearing a smart casual outfit, smiling warmly against a neutral grey studio background. The lighting is soft and flattering, highlighting their features. The mood is approachable and trustworthy, fitting for an enterprise software profile avatar." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDcRZzBhlYQlcVp8Tc1Fhwi-eSAj7j5fh1tdMjvlyGI2CsCOpJyPOYICyMPUaYhT17gxyLe0kaKrKDmnNknjOvgSxPOTFkbluiKNUc1Z4uPI37-m7DstKSqVEfep3SVeTiS7EVrYRQDioMSVaSfwM9Gg0BUT4msn8HIbppZ7Mw4KpAlPKmul__uXqCkt50lRZ_dXKLCBW10q93X-RaPUIhVhqSPA-EnEREU2oA4dcfcdXi2reY_mkikyrDX3-2XYN_M3HQ7P19kWqE"/>
+</div>
+</header>
+<!-- Scrollable Content -->
+<div class="flex-1 overflow-y-auto mt-16 p-lg md:p-xl">
+<div class="max-w-container-max mx-auto">
+<!-- Breadcrumbs & Header -->
+<div class="mb-lg">
+<nav class="flex items-center gap-sm font-label-md text-secondary mb-sm">
+<a class="hover:text-primary transition-colors" href="#">Home</a>
+<span class="material-symbols-outlined text-[16px]" data-icon="chevron_right">chevron_right</span>
+<a class="hover:text-primary transition-colors" href="#">Settings</a>
+<span class="material-symbols-outlined text-[16px]" data-icon="chevron_right">chevron_right</span>
+<span class="text-on-surface font-medium">Profile</span>
+</nav>
+<h2 class="font-display-lg text-display-lg text-on-surface">Settings</h2>
+</div>
+<div class="flex flex-col lg:flex-row gap-xl">
+<!-- Inner Settings Navigation -->
+<aside class="w-full lg:w-64 shrink-0">
+<nav class="flex flex-col gap-xs font-body-md text-body-md">
+<a class="flex items-center gap-md px-md py-sm rounded-lg bg-surface-container-low text-primary font-medium" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="person">person</span>
+                                Profile
+                            </a>
+<a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-lowest transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="shield">shield</span>
+                                Security
+                            </a>
+<a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-lowest transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="key">key</span>
+                                MFA
+                            </a>
+<a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-lowest transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="devices">devices</span>
+                                Sessions
+                            </a>
+<a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-lowest transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="notifications_active">notifications_active</span>
+                                Notifications
+                            </a>
+<a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-lowest transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="tune">tune</span>
+                                Workspace Prefs
+                            </a>
+<a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-lowest transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="cloud_off">cloud_off</span>
+                                Offline Data
+                            </a>
+<a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-lowest transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="lock">lock</span>
+                                Privacy
+                            </a>
+</nav>
+</aside>
+<!-- Settings Canvas -->
+<div class="flex-1 space-y-lg">
+<!-- Profile Card -->
+<section class="bg-surface-container-lowest rounded-xl border border-surface-variant p-lg shadow-[0px_4px_6px_-1px_rgba(15,23,42,0.05)]">
+<div class="flex items-center justify-between border-b border-surface-variant pb-md mb-md">
+<h3 class="font-headline-md text-headline-md text-on-surface">Profile Information</h3>
+<div class="px-sm py-xs bg-secondary-container text-on-secondary-container rounded-full font-label-md flex items-center gap-xs">
+<span class="w-2 h-2 rounded-full bg-primary block"></span>
+                                    Active Account
+                                </div>
+</div>
+<div class="flex flex-col md:flex-row gap-xl items-start">
+<div class="flex flex-col items-center gap-md">
+<div class="relative">
+<img alt="User Profile" class="w-24 h-24 rounded-full border-4 border-surface-container-low object-cover" data-alt="A professional headshot of a person wearing a smart casual outfit, smiling warmly against a neutral grey studio background. The lighting is soft and flattering, highlighting their features. The mood is approachable and trustworthy, fitting for an enterprise software profile avatar." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCZGN5_00BV9y1DT6q6N10OkpsoiNSNvFuCKE1wVUwfpurimhiB03c4QlF1G-OsD-OMTV4D2FgOJt4S_uDGvHfnJo5pFXTN04iTvqWR-Hs_yNUsde7yc9UKX7RpuWmj3oJ8risee-FwYO91vFuwzqOhHGowFdZn9SQEx465ciLYKFdQrHDwqMEKH8azTU5CtugtjpXt38o0JFoh98PNoWujT0N-YQrVCwpJK1EFqqvv2xankzwMTKWyJi1QN4dvcHSEVOcH4zatZwI"/>
+<button class="absolute bottom-0 right-0 bg-surface-container-highest text-on-surface p-xs rounded-full border border-surface-variant hover:bg-surface-variant transition-colors shadow-sm">
+<span class="material-symbols-outlined text-[16px]" data-icon="edit">edit</span>
+</button>
+</div>
+<span class="font-label-md text-secondary">JPG, GIF or PNG. Max 1MB.</span>
+</div>
+<div class="flex-1 w-full space-y-md">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-md">
+<div class="space-y-xs">
+<label class="font-label-md text-secondary block">Display Name</label>
+<input class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-md py-sm font-body-md text-on-surface focus:border-primary focus:ring-2 focus:ring-primary-fixed-dim outline-none transition-all" type="text" value="Alexander Rhodes"/>
+</div>
+<div class="space-y-xs">
+<label class="font-label-md text-secondary block">Job Title</label>
+<input class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-md py-sm font-body-md text-on-surface focus:border-primary focus:ring-2 focus:ring-primary-fixed-dim outline-none transition-all" type="text" value="Senior Product Designer"/>
+</div>
+</div>
+<div class="space-y-xs">
+<label class="font-label-md text-secondary block">Email Address (SSO Managed)</label>
+<div class="relative">
+<input class="w-full bg-surface-container border border-surface-variant rounded-lg px-md py-sm font-body-md text-on-surface-variant cursor-not-allowed outline-none" readonly="" type="text" value="alexander.rhodes@enterprise.com"/>
+<span class="material-symbols-outlined absolute right-md top-1/2 -translate-y-1/2 text-outline text-[18px]" data-icon="lock">lock</span>
+</div>
+<p class="font-label-md text-secondary mt-xs">Your email is managed by your organization's identity provider.</p>
+</div>
+<div class="pt-md flex justify-end">
+<button class="bg-primary text-on-primary font-label-md py-sm px-lg rounded-lg hover:bg-on-primary-fixed-variant transition-colors">Save Changes</button>
+</div>
+</div>
+</div>
+</section>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-lg">
+<!-- Account Security Summary -->
+<section class="bg-surface-container-lowest rounded-xl border border-surface-variant p-lg shadow-[0px_4px_6px_-1px_rgba(15,23,42,0.05)]">
+<h3 class="font-headline-sm text-headline-sm text-on-surface mb-md">Account Security</h3>
+<div class="space-y-md">
+<div class="flex items-center justify-between p-sm rounded-lg bg-surface-container-low border border-surface-variant">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container">
+<span class="material-symbols-outlined" data-icon="verified_user">verified_user</span>
+</div>
+<div>
+<div class="font-body-md text-on-surface font-medium">Multi-Factor Authentication</div>
+<div class="font-label-md text-secondary">Authenticator App Configured</div>
+</div>
+</div>
+<span class="px-sm py-xs bg-[#d1fae5] text-[#065f46] rounded-full font-label-md">Enabled</span>
+</div>
+<div class="flex items-center justify-between p-sm rounded-lg bg-surface-container-low border border-surface-variant">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded-full bg-surface-variant flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="password">password</span>
+</div>
+<div>
+<div class="font-body-md text-on-surface font-medium">Password Health</div>
+<div class="font-label-md text-secondary">Last changed 45 days ago</div>
+</div>
+</div>
+<span class="text-primary font-label-md hover:underline cursor-pointer">Update</span>
+</div>
+<div class="flex items-center justify-between p-sm rounded-lg bg-surface-container-low border border-surface-variant">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded-full bg-surface-variant flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="important_devices">important_devices</span>
+</div>
+<div>
+<div class="font-body-md text-on-surface font-medium">Active Sessions</div>
+<div class="font-label-md text-secondary">3 devices currently logged in</div>
+</div>
+</div>
+<span class="text-secondary font-label-md cursor-pointer hover:text-on-surface">Manage</span>
+</div>
+</div>
+</section>
+<!-- Offline Status Widget -->
+<section class="bg-surface-container-lowest rounded-xl border border-surface-variant p-lg shadow-[0px_4px_6px_-1px_rgba(15,23,42,0.05)] flex flex-col">
+<h3 class="font-headline-sm text-headline-sm text-on-surface mb-md">Local Data Cache</h3>
+<div class="flex-1 flex flex-col items-center justify-center text-center p-md bg-surface-container-low rounded-lg border border-surface-variant">
+<div class="w-16 h-16 rounded-full bg-[#d1fae5] flex items-center justify-center text-[#065f46] mb-md relative">
+<span class="material-symbols-outlined text-[32px]" data-icon="cloud_done">cloud_done</span>
+<span class="absolute top-0 right-0 w-4 h-4 bg-primary-container border-2 border-surface-container-lowest rounded-full"></span>
+</div>
+<div class="font-headline-sm text-headline-sm text-on-surface mb-xs">Sync is Healthy</div>
+<p class="font-body-md text-secondary mb-md">Your workspace data is securely cached for offline access.</p>
+<div class="w-full bg-surface-variant h-1.5 rounded-full overflow-hidden mb-sm">
+<div class="bg-primary h-full w-[85%] rounded-full"></div>
+</div>
+<div class="flex justify-between w-full font-mono-sm text-secondary text-xs">
+<span>Last synced: Just now</span>
+<span>1.2GB used</span>
+</div>
+</div>
+</section>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

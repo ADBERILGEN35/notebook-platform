@@ -6,13 +6,10 @@ import { listNotebooks, createNotebook } from '../features/notebooks/notebook-ap
 import { canShowAdminNavigation } from '../features/admin/access/admin-access'
 import { useWorkspaceStore } from '../features/workspaces/workspace-store'
 import { useAuthStore } from '../features/auth/auth-store'
-import { Sidebar } from '../shared/layout/Sidebar'
-import { Topbar } from '../shared/layout/Topbar'
 import { Modal } from '../shared/components/Modal'
 import { Input } from '../shared/components/Input'
 import { Button } from '../shared/components/Button'
 import { useMediaQuery } from '../shared/hooks/useMediaQuery'
-import { MobileSidebar } from '../shared/layout/MobileSidebar'
 import { useNotificationEventStream } from '../features/notifications/notification-hooks'
 import { useOnlineStatus } from '../shared/hooks/useOnlineStatus'
 import {
@@ -26,6 +23,8 @@ import { runForegroundBackgroundSync } from '../features/offline/offline-backgro
 import { OfflineSyncPromptBanner } from '../features/offline/components/OfflineSyncPromptBanner'
 import { OfflineSyncSummaryBanner } from '../features/offline/components/OfflineSyncSummaryBanner'
 import type { BackgroundSyncSummary } from '../features/offline/offline-background-sync-types'
+import { AppShell } from '../features/app-shell/components'
+import { GlobalSearchOverlay } from '../features/search/components/GlobalSearchOverlay'
 
 export function AppShellPage() {
   const navigate = useNavigate()
@@ -34,6 +33,7 @@ export function AppShellPage() {
   const [openCreateNotebook, setOpenCreateNotebook] = useState(false)
   const [newNotebookName, setNewNotebookName] = useState('')
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  const [globalSearchOpen, setGlobalSearchOpen] = useState(false)
   const activeWorkspaceId = useWorkspaceStore((state) => state.activeWorkspaceId)
   const setActiveWorkspaceId = useWorkspaceStore((state) => state.setActiveWorkspaceId)
   const user = useAuthStore((state) => state.user)
@@ -114,6 +114,17 @@ export function AppShellPage() {
   }, [activeWorkspaceId, setActiveWorkspaceId, workspaceQuery.data?.items])
 
   useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
+        event.preventDefault()
+        setGlobalSearchOpen(true)
+      }
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [])
+
+  useEffect(() => {
     setIsSidebarOpen(false)
   }, [location.pathname])
 
@@ -152,63 +163,68 @@ export function AppShellPage() {
     },
   })
 
-  return (
-    <div className="flex min-h-screen overflow-x-hidden">
-      {isDesktop ? (
-        <Sidebar
-          workspaces={workspaceQuery.data?.items || []}
-          notebooks={notebooksQuery.data?.items || []}
-          activeWorkspaceId={activeWorkspaceId}
-          showAdminNav={showAdminNav}
-          onWorkspaceSelect={(id) => {
-            setActiveWorkspaceId(id)
-            navigate(`/app/workspaces/${id}`)
+  const workspaces = workspaceQuery.data?.items ?? []
+  const notebooks = notebooksQuery.data?.items ?? []
+
+  const banners = (
+    <>
+      {promptSummary ? (
+        <OfflineSyncPromptBanner
+          readyCount={promptSummary.eligibleCount}
+          onSyncNow={() => {
+            setPromptSummary(null)
+            setSummaryState('syncing')
+            setSyncingCount(promptSummary.eligibleCount)
+            void evaluateBackgroundSync(true).then(() => setSyncingCount(0))
           }}
+          onReviewDrafts={() => {
+            setPromptSummary(null)
+            navigate('/app/settings/security')
+          }}
+          onNotNow={() => setPromptSummary(null)}
         />
       ) : null}
-      <MobileSidebar
-        open={!isDesktop && isSidebarOpen}
-        onClose={() => setIsSidebarOpen(false)}
-        workspaces={workspaceQuery.data?.items || []}
-        notebooks={notebooksQuery.data?.items || []}
-        activeWorkspaceId={activeWorkspaceId}
-        showAdminNav={showAdminNav}
-        onWorkspaceSelect={(id) => {
-          setActiveWorkspaceId(id)
-          navigate(`/app/workspaces/${id}`)
+      {summaryState ? (
+        <OfflineSyncSummaryBanner state={summaryState} syncingCount={syncingCount} summary={lastSummary} />
+      ) : null}
+    </>
+  )
+
+  return (
+    <>
+      <AppShell
+        isDesktop={isDesktop}
+        mobileNavOpen={isSidebarOpen}
+        onMobileNavOpen={() => setIsSidebarOpen(true)}
+        onMobileNavClose={() => setIsSidebarOpen(false)}
+        banners={banners}
+        nav={{
+          workspaces,
+          notebooks,
+          activeWorkspaceId,
+          showAdminNav,
+          onWorkspaceSelect: (id) => {
+            setActiveWorkspaceId(id)
+            navigate(`/app/workspaces/${id}`)
+          },
         }}
-      />
-      <div className="flex min-h-screen flex-1 flex-col">
-        <Topbar
-          search={search}
-          onSearchChange={setSearch}
-          onCreateNote={() => setOpenCreateNotebook(true)}
-          onSidebarToggle={() => setIsSidebarOpen(true)}
-          isOnline={isOnline}
-        />
-        <main className="flex-1 p-3 sm:p-4">
-          {promptSummary ? (
-            <OfflineSyncPromptBanner
-              readyCount={promptSummary.eligibleCount}
-              onSyncNow={() => {
-                setPromptSummary(null)
-                setSummaryState('syncing')
-                setSyncingCount(promptSummary.eligibleCount)
-                void evaluateBackgroundSync(true).then(() => setSyncingCount(0))
-              }}
-              onReviewDrafts={() => {
-                setPromptSummary(null)
-                navigate('/app/settings/security')
-              }}
-              onNotNow={() => setPromptSummary(null)}
-            />
-          ) : null}
-          {summaryState ? (
-            <OfflineSyncSummaryBanner state={summaryState} syncingCount={syncingCount} summary={lastSummary} />
-          ) : null}
-          <Outlet />
-        </main>
-      </div>
+        top={{
+          search,
+          onSearchChange: setSearch,
+          onCreateNote: () => setOpenCreateNotebook(true),
+          isOnline,
+          workspaces,
+          activeWorkspaceId,
+          onWorkspaceSelect: (id) => {
+            setActiveWorkspaceId(id)
+            navigate(`/app/workspaces/${id}`)
+          },
+          onOpenSearch: () => setGlobalSearchOpen(true),
+        }}
+      >
+        <Outlet />
+      </AppShell>
+      <GlobalSearchOverlay open={globalSearchOpen} onClose={() => setGlobalSearchOpen(false)} initialQuery={search} />
       <Modal open={openCreateNotebook} title="Create notebook" onClose={() => setOpenCreateNotebook(false)}>
         <div className="space-y-2">
           <Input value={newNotebookName} onChange={(event) => setNewNotebookName(event.target.value)} />
@@ -221,7 +237,6 @@ export function AppShellPage() {
           </Button>
         </div>
       </Modal>
-    </div>
+    </>
   )
 }
-

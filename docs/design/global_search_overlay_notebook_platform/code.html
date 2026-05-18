@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Notebook Platform - Global Search</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&amp;family=JetBrains+Mono:wght@400&amp;family=Manrope:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary": "#ffffff",
+                        "tertiary": "#511c00",
+                        "primary-container": "#3730a3",
+                        "surface-container-lowest": "#ffffff",
+                        "primary-fixed": "#e2dfff",
+                        "on-primary-fixed-variant": "#3b35a7",
+                        "on-error": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "on-primary-container": "#a9a7ff",
+                        "surface-container-high": "#eae6f1",
+                        "on-surface": "#1b1b22",
+                        "inverse-on-surface": "#f3eff9",
+                        "error-container": "#ffdad6",
+                        "surface-dim": "#dcd8e3",
+                        "surface-tint": "#544fc0",
+                        "primary": "#1f108e",
+                        "on-tertiary-fixed": "#351000",
+                        "surface-container": "#f0ecf6",
+                        "on-surface-variant": "#464553",
+                        "surface-container-low": "#f6f2fc",
+                        "surface": "#fcf8ff",
+                        "secondary-fixed-dim": "#b9c7df",
+                        "on-secondary-fixed": "#0d1c2e",
+                        "on-primary-fixed": "#0f0069",
+                        "error": "#ba1a1a",
+                        "on-tertiary-container": "#fe9562",
+                        "on-secondary-container": "#57657a",
+                        "surface-container-highest": "#e4e1eb",
+                        "primary-fixed-dim": "#c3c0ff",
+                        "outline-variant": "#c8c4d5",
+                        "outline": "#777584",
+                        "on-primary": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "inverse-primary": "#c3c0ff",
+                        "on-tertiary-fixed-variant": "#7a3003",
+                        "tertiary-fixed-dim": "#ffb694",
+                        "surface-bright": "#fcf8ff",
+                        "secondary-fixed": "#d5e3fc",
+                        "tertiary-fixed": "#ffdbcc",
+                        "inverse-surface": "#303037",
+                        "secondary-container": "#d5e3fc",
+                        "tertiary-container": "#752c00",
+                        "on-secondary-fixed-variant": "#3a485b",
+                        "on-background": "#1b1b22",
+                        "surface-variant": "#e4e1eb",
+                        "background": "#fcf8ff",
+                        "secondary": "#515f74"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "sm": "8px",
+                        "gutter": "24px",
+                        "lg": "24px",
+                        "container-max": "1280px",
+                        "base": "4px",
+                        "xs": "4px",
+                        "xl": "48px",
+                        "md": "16px"
+                    },
+                    "fontFamily": {
+                        "headline-sm": ["Manrope"],
+                        "body-lg": ["Inter"],
+                        "headline-md": ["Manrope"],
+                        "display-lg": ["Manrope"],
+                        "mono-sm": ["JetBrains Mono"],
+                        "body-md": ["Inter"],
+                        "label-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-sm": ["18px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                        "body-lg": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                        "headline-md": ["24px", {"lineHeight": "1.3", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "display-lg": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "mono-sm": ["13px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                        "body-md": ["14px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                        "label-md": ["12px", {"lineHeight": "1", "letterSpacing": "0.01em", "fontWeight": "500"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined[data-weight="fill"] {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        
+        /* Level 3 Elevation overlay */
+        .elevation-overlay {
+            box-shadow: 0px 10px 15px -3px rgba(15, 23, 42, 0.1);
+        }
+        
+        /* Custom scrollbar for search results */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #e4e1eb; /* surface-variant */
+            border-radius: 9999px;
+        }
+        .dark ::-webkit-scrollbar-thumb {
+            background: #464553; /* on-surface-variant */
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background h-screen w-full overflow-hidden antialiased">
+<!-- Ambient Background indicating page content beneath overlay -->
+<div class="fixed inset-0 flex">
+<!-- Sidebar placeholder -->
+<div class="fixed left-0 top-0 h-full w-[240px] bg-surface dark:bg-surface-dim border-r border-outline-variant dark:border-outline opacity-30"></div>
+<!-- Main content placeholder -->
+<div class="ml-[240px] mt-16 p-xl w-full opacity-30">
+<div class="h-64 bg-surface-container rounded-xl w-full max-w-container-max mx-auto border border-outline-variant"></div>
+</div>
+</div>
+<!-- Modal Backdrop -->
+<div class="fixed inset-0 bg-surface-dim/40 dark:bg-surface/60 backdrop-blur-sm z-50 flex items-start justify-center pt-[102px]">
+<!-- Command Palette Container -->
+<div class="w-full max-w-2xl bg-surface-container-lowest dark:bg-surface-dim rounded-xl border border-outline-variant dark:border-outline elevation-overlay flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+<!-- Header / Search Input -->
+<div class="flex items-center px-lg py-md border-b border-outline-variant dark:border-outline">
+<span class="material-symbols-outlined text-outline dark:text-outline-variant text-[24px]">search</span>
+<input autofocus="" class="flex-1 bg-transparent border-none outline-none focus:ring-0 px-md font-body-lg text-body-lg text-on-surface dark:text-on-surface placeholder:text-outline dark:placeholder:text-outline-variant" placeholder="Search Notebooks, Notes, People..." type="text" value="Q3 Planning"/>
+<!-- Active category badge, if searching within specific context -->
+<div class="flex items-center gap-2 bg-surface-container-low dark:bg-surface-container px-3 py-1 rounded-full border border-outline-variant dark:border-outline ml-4">
+<span class="font-label-md text-label-md text-on-surface-variant dark:text-surface-variant">in</span>
+<span class="font-label-md text-label-md text-primary dark:text-primary-fixed font-bold">Notes</span>
+<button class="material-symbols-outlined text-[16px] text-on-surface-variant hover:text-on-surface ml-1 cursor-pointer">close</button>
+</div>
+</div>
+<!-- Body Area -->
+<div class="flex flex-row h-[500px]">
+<!-- Category Sidebar (Filters) -->
+<div class="w-[160px] border-r border-outline-variant dark:border-outline bg-surface-container-low dark:bg-surface-container flex flex-col py-md shrink-0">
+<button class="w-full text-left px-md py-sm flex items-center gap-3 text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-highest dark:hover:bg-surface transition-colors">
+<span class="material-symbols-outlined text-[18px]">search</span>
+<span class="font-body-md text-body-md">All Results</span>
+</button>
+<button class="w-full text-left px-md py-sm flex items-center gap-3 bg-primary-fixed dark:bg-primary-container text-on-primary-fixed-variant dark:text-on-primary-container font-medium border-l-2 border-primary">
+<span class="material-symbols-outlined text-[18px]" data-weight="fill">description</span>
+<span class="font-body-md text-body-md">Notes</span>
+</button>
+<button class="w-full text-left px-md py-sm flex items-center gap-3 text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-highest dark:hover:bg-surface transition-colors">
+<span class="material-symbols-outlined text-[18px]">folder</span>
+<span class="font-body-md text-body-md">Notebooks</span>
+</button>
+<button class="w-full text-left px-md py-sm flex items-center gap-3 text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-highest dark:hover:bg-surface transition-colors">
+<span class="material-symbols-outlined text-[18px]">group</span>
+<span class="font-body-md text-body-md">People</span>
+</button>
+<button class="w-full text-left px-md py-sm flex items-center gap-3 text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-highest dark:hover:bg-surface transition-colors">
+<span class="material-symbols-outlined text-[18px]">forum</span>
+<span class="font-body-md text-body-md">Comments</span>
+</button>
+</div>
+<!-- Search Results Content -->
+<div class="flex-1 overflow-y-auto bg-surface-container-lowest dark:bg-surface-dim">
+<!-- Suggested / Top Hits Section -->
+<div class="px-md pt-lg pb-sm">
+<h3 class="font-label-md text-label-md text-outline dark:text-outline-variant uppercase tracking-wider mb-sm px-sm">Top Match</h3>
+<!-- Top Hit Card -->
+<div class="group flex flex-col gap-sm p-md rounded-lg border border-transparent bg-surface-container-low dark:bg-surface-container hover:border-primary-fixed dark:hover:border-primary cursor-pointer transition-colors">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-primary-container flex items-center justify-center text-on-primary-container">
+<span class="material-symbols-outlined text-[20px]" data-weight="fill">description</span>
+</div>
+<span class="font-headline-sm text-headline-sm text-on-surface">Q3 Product Planning Draft</span>
+</div>
+<span class="font-label-md text-label-md bg-secondary-container text-on-secondary-container px-2 py-1 rounded">Drafts</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant dark:text-surface-variant pl-11 line-clamp-2">
+                                Initial outline for <mark class="bg-primary-fixed text-on-primary-fixed bg-opacity-50 dark:bg-primary-container dark:text-on-primary-container px-1 rounded">Q3 Planning</mark> initiatives focusing on core workflow improvements and the new search architecture implementation...
+                            </p>
+<div class="flex items-center gap-2 pl-11 mt-1">
+<span class="font-label-md text-label-md text-outline dark:text-outline-variant">Updated 2 hours ago by Sarah J.</span>
+</div>
+</div>
+</div>
+<!-- Notes Section -->
+<div class="px-md py-sm">
+<h3 class="font-label-md text-label-md text-outline dark:text-outline-variant uppercase tracking-wider mb-sm px-sm">Notes</h3>
+<div class="flex flex-col gap-1">
+<!-- Selected Result -->
+<div class="group flex flex-col gap-1 p-sm rounded-lg bg-surface-container-highest dark:bg-surface border-l-2 border-primary cursor-pointer">
+<div class="flex items-center gap-3 px-sm">
+<span class="material-symbols-outlined text-primary dark:text-primary-fixed-dim text-[20px]">article</span>
+<span class="font-body-md text-body-md text-on-surface font-medium flex-1">Marketing <mark class="bg-primary-fixed text-on-primary-fixed bg-opacity-50 dark:bg-primary-container dark:text-on-primary-container px-1 rounded">Q3 Planning</mark> Sync</span>
+<span class="font-label-md text-label-md text-outline dark:text-outline-variant">Marketing Workspace</span>
+</div>
+</div>
+<!-- Unselected Result -->
+<div class="group flex flex-col gap-1 p-sm rounded-lg hover:bg-surface-container-low dark:hover:bg-surface-container cursor-pointer border-l-2 border-transparent">
+<div class="flex items-center gap-3 px-sm">
+<span class="material-symbols-outlined text-outline dark:text-outline-variant text-[20px]">article</span>
+<span class="font-body-md text-body-md text-on-surface-variant dark:text-surface-variant group-hover:text-on-surface flex-1">Engineering OKRs - <mark class="bg-transparent text-on-surface font-bold">Q3 Planning</mark></span>
+<span class="font-label-md text-label-md text-outline dark:text-outline-variant">Engineering Team</span>
+</div>
+</div>
+<!-- Unselected Result -->
+<div class="group flex flex-col gap-1 p-sm rounded-lg hover:bg-surface-container-low dark:hover:bg-surface-container cursor-pointer border-l-2 border-transparent">
+<div class="flex items-center gap-3 px-sm">
+<span class="material-symbols-outlined text-outline dark:text-outline-variant text-[20px]">article</span>
+<span class="font-body-md text-body-md text-on-surface-variant dark:text-surface-variant group-hover:text-on-surface flex-1">Executive Summary: <mark class="bg-transparent text-on-surface font-bold">Q3 Planning</mark> Kickoff</span>
+<span class="font-label-md text-label-md text-outline dark:text-outline-variant">Leadership</span>
+</div>
+</div>
+</div>
+</div>
+<!-- People Section -->
+<div class="px-md py-sm">
+<h3 class="font-label-md text-label-md text-outline dark:text-outline-variant uppercase tracking-wider mb-sm px-sm">People</h3>
+<div class="grid grid-cols-2 gap-sm px-sm">
+<div class="flex items-center gap-3 p-sm rounded-lg border border-outline-variant dark:border-outline hover:border-primary-fixed dark:hover:border-primary bg-surface-container-lowest dark:bg-surface-dim cursor-pointer transition-colors">
+<img alt="Profile" class="w-8 h-8 rounded-full object-cover border border-outline-variant" data-alt="A professional headshot of a smiling woman with dark hair in a well-lit office setting. The lighting is soft and bright, adhering to a modern corporate light-mode aesthetic. The color palette features neutral tones with subtle indigo accents, conveying approachability and trust." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCGZpfWwBkMmeJ07nlMwHKpRMLX2XVHJzeSrAb3DBG9R6DSfesE9ji8VQQUGf0ZooaTMNfkedVKxyzS2twJBf4ZOl848vALsnGXDkXEGgSF8GqdvK3xFlydviZ6bfXZIsTJKmBpLkaWWql3sL0S-zD8J_Vw1ebWFuxRCixZjQPtKXbT1P0vH4moNA9MzXzTMNKmn0mWdinQvScqbswJ99iFqkr_PQbAgKzaJWsqgSvcsoE0mY6eLNu5AxLS4PWIkT_8kUO56hsXO9Y"/>
+<div class="flex flex-col">
+<span class="font-body-md text-body-md text-on-surface font-medium leading-tight">Sarah Jenkins</span>
+<span class="font-label-md text-label-md text-on-surface-variant dark:text-surface-variant">Product Manager</span>
+</div>
+</div>
+<div class="flex items-center gap-3 p-sm rounded-lg border border-outline-variant dark:border-outline hover:border-primary-fixed dark:hover:border-primary bg-surface-container-lowest dark:bg-surface-dim cursor-pointer transition-colors">
+<div class="w-8 h-8 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center font-label-md font-bold">
+                                    MR
+                                </div>
+<div class="flex flex-col">
+<span class="font-body-md text-body-md text-on-surface font-medium leading-tight">Marcus Reed</span>
+<span class="font-label-md text-label-md text-on-surface-variant dark:text-surface-variant">Engineering Lead</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer / Keyboard Hints -->
+<div class="border-t border-outline-variant dark:border-outline px-lg py-sm bg-surface-container-low dark:bg-surface-container flex items-center justify-between mt-auto">
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2">
+<span class="font-mono-sm text-mono-sm bg-surface-container-highest dark:bg-surface-variant text-on-surface-variant px-2 py-0.5 rounded border border-outline-variant dark:border-outline shadow-sm">↑↓</span>
+<span class="font-label-md text-label-md text-on-surface-variant dark:text-surface-variant">Navigate</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="font-mono-sm text-mono-sm bg-surface-container-highest dark:bg-surface-variant text-on-surface-variant px-2 py-0.5 rounded border border-outline-variant dark:border-outline shadow-sm">↵</span>
+<span class="font-label-md text-label-md text-on-surface-variant dark:text-surface-variant">Select</span>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<span class="font-mono-sm text-mono-sm bg-surface-container-highest dark:bg-surface-variant text-on-surface-variant px-2 py-0.5 rounded border border-outline-variant dark:border-outline shadow-sm">esc</span>
+<span class="font-label-md text-label-md text-on-surface-variant dark:text-surface-variant">Close</span>
+</div>
+</div>
+</div>
+</div>
+</body></html>

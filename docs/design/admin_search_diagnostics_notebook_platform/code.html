@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Notebook Platform - Admin Search</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&amp;family=Manrope:wght@600;700&amp;family=JetBrains+Mono:wght@400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary": "#ffffff",
+                        "tertiary": "#511c00",
+                        "primary-container": "#3730a3",
+                        "surface-container-lowest": "#ffffff",
+                        "primary-fixed": "#e2dfff",
+                        "on-primary-fixed-variant": "#3b35a7",
+                        "on-error": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "on-primary-container": "#a9a7ff",
+                        "surface-container-high": "#eae6f1",
+                        "on-surface": "#1b1b22",
+                        "inverse-on-surface": "#f3eff9",
+                        "error-container": "#ffdad6",
+                        "surface-dim": "#dcd8e3",
+                        "surface-tint": "#544fc0",
+                        "primary": "#1f108e",
+                        "on-tertiary-fixed": "#351000",
+                        "surface-container": "#f0ecf6",
+                        "on-surface-variant": "#464553",
+                        "surface-container-low": "#f6f2fc",
+                        "surface": "#fcf8ff",
+                        "secondary-fixed-dim": "#b9c7df",
+                        "on-secondary-fixed": "#0d1c2e",
+                        "on-primary-fixed": "#0f0069",
+                        "error": "#ba1a1a",
+                        "on-tertiary-container": "#fe9562",
+                        "on-secondary-container": "#57657a",
+                        "surface-container-highest": "#e4e1eb",
+                        "primary-fixed-dim": "#c3c0ff",
+                        "outline-variant": "#c8c4d5",
+                        "outline": "#777584",
+                        "on-primary": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "inverse-primary": "#c3c0ff",
+                        "on-tertiary-fixed-variant": "#7a3003",
+                        "tertiary-fixed-dim": "#ffb694",
+                        "surface-bright": "#fcf8ff",
+                        "secondary-fixed": "#d5e3fc",
+                        "tertiary-fixed": "#ffdbcc",
+                        "inverse-surface": "#303037",
+                        "secondary-container": "#d5e3fc",
+                        "tertiary-container": "#752c00",
+                        "on-secondary-fixed-variant": "#3a485b",
+                        "on-background": "#1b1b22",
+                        "surface-variant": "#e4e1eb",
+                        "background": "#fcf8ff",
+                        "secondary": "#515f74"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "sm": "8px",
+                        "gutter": "24px",
+                        "lg": "24px",
+                        "container-max": "1280px",
+                        "base": "4px",
+                        "xs": "4px",
+                        "xl": "48px",
+                        "md": "16px"
+                    },
+                    "fontFamily": {
+                        "headline-sm": ["Manrope"],
+                        "body-lg": ["Inter"],
+                        "headline-md": ["Manrope"],
+                        "display-lg": ["Manrope"],
+                        "mono-sm": ["JetBrains Mono"],
+                        "body-md": ["Inter"],
+                        "label-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-sm": ["18px", { "lineHeight": "1.4", "fontWeight": "600" }],
+                        "body-lg": ["16px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "1.3", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "display-lg": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "mono-sm": ["13px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "body-md": ["14px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "label-md": ["12px", { "lineHeight": "1", "letterSpacing": "0.01em", "fontWeight": "500" }]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-surface font-body-md text-on-surface antialiased min-h-screen flex selection:bg-primary-container selection:text-on-primary-container">
+<!-- SideNavBar -->
+<nav class="fixed left-0 top-0 h-full w-[240px] bg-surface dark:bg-surface-dim border-r border-outline-variant dark:border-outline flex flex-col py-md px-md z-50">
+<div class="flex items-center gap-sm mb-xl">
+<div class="w-8 h-8 rounded-DEFAULT bg-primary flex items-center justify-center text-on-primary">
+<span class="material-symbols-outlined text-[20px]" data-icon="book" data-weight="fill" style="font-variation-settings: 'FILL' 1;">book</span>
+</div>
+<div>
+<h1 class="font-headline-sm text-headline-sm text-primary dark:text-primary-fixed">Notebook Platform</h1>
+<p class="font-label-md text-label-md text-on-surface-variant">Enterprise Workspace</p>
+</div>
+</div>
+<button class="w-full bg-primary text-on-primary rounded-DEFAULT py-sm px-md font-label-md text-label-md hover:bg-surface-tint transition-colors mb-lg flex items-center justify-center gap-xs">
+<span class="material-symbols-outlined text-[16px]" data-icon="add">add</span>
+            New Notebook
+        </button>
+<div class="flex-1 flex flex-col gap-xs">
+<a class="flex items-center gap-sm py-sm px-md rounded-DEFAULT text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-low dark:hover:bg-surface-container-high transition-colors font-body-md text-body-md" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="folder_open">folder_open</span>
+                Workspaces
+            </a>
+<a class="flex items-center gap-sm py-sm px-md rounded-DEFAULT text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-low dark:hover:bg-surface-container-high transition-colors font-body-md text-body-md" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="search">search</span>
+                Search
+            </a>
+<a class="flex items-center gap-sm py-sm px-md rounded-DEFAULT text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-low dark:hover:bg-surface-container-high transition-colors font-body-md text-body-md" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="notifications">notifications</span>
+                Notifications
+            </a>
+<a class="flex items-center gap-sm py-sm px-md rounded-DEFAULT text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-low dark:hover:bg-surface-container-high transition-colors font-body-md text-body-md" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="settings">settings</span>
+                Settings
+            </a>
+<a class="flex items-center gap-sm py-sm px-md rounded-DEFAULT text-primary dark:text-primary-fixed font-bold border-r-2 border-primary bg-surface-container-low dark:bg-surface-container-high transition-all duration-200 opacity-80 font-body-md text-body-md" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="admin_panel_settings">admin_panel_settings</span>
+                Admin
+            </a>
+</div>
+<div class="mt-auto border-t border-outline-variant dark:border-outline pt-sm flex flex-col gap-xs">
+<a class="flex items-center gap-sm py-sm px-md rounded-DEFAULT text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-low dark:hover:bg-surface-container-high transition-colors font-body-md text-body-md" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="help">help</span>
+                Support
+            </a>
+<a class="flex items-center gap-sm py-sm px-md rounded-DEFAULT text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-low dark:hover:bg-surface-container-high transition-colors font-body-md text-body-md" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="logout">logout</span>
+                Sign Out
+            </a>
+</div>
+</nav>
+<!-- TopNavBar -->
+<header class="fixed top-0 right-0 w-[calc(100%-240px)] z-40 bg-surface/80 dark:bg-surface-dim/80 backdrop-blur-md border-b border-outline-variant dark:border-outline flex justify-between items-center h-16 px-lg">
+<div class="flex items-center gap-lg">
+<span class="font-headline-sm text-headline-sm text-on-surface dark:text-on-surface">Workspace Switcher</span>
+<div class="flex items-center bg-surface-container-highest rounded-DEFAULT px-sm py-xs border border-outline-variant focus-within:border-primary focus-within:ring-2 focus-within:ring-primary-fixed transition-all w-64">
+<span class="material-symbols-outlined text-outline text-[18px] mr-xs" data-icon="search">search</span>
+<input class="bg-transparent border-none outline-none font-body-md text-body-md text-on-surface w-full placeholder:text-outline" placeholder="Search admin logs..." type="text" value="user:mfa error"/>
+</div>
+</div>
+<div class="flex items-center gap-md">
+<nav class="flex items-center gap-md font-label-md text-label-md">
+<a class="text-secondary dark:text-secondary-fixed-dim hover:text-primary dark:hover:text-primary-fixed transition-colors py-sm" href="#">Drafts</a>
+<a class="text-secondary dark:text-secondary-fixed-dim hover:text-primary dark:hover:text-primary-fixed transition-colors py-sm" href="#">Shared</a>
+<a class="text-secondary dark:text-secondary-fixed-dim hover:text-primary dark:hover:text-primary-fixed transition-colors py-sm" href="#">Archived</a>
+</nav>
+<div class="h-6 w-px bg-outline-variant mx-xs"></div>
+<button class="bg-primary text-on-primary rounded-DEFAULT py-xs px-sm font-label-md text-label-md hover:bg-surface-tint transition-colors">
+                Invite Team
+            </button>
+<div class="flex items-center gap-xs text-on-surface-variant">
+<button class="p-xs rounded-DEFAULT hover:bg-surface-container-highest transition-colors"><span class="material-symbols-outlined text-[20px]" data-icon="history">history</span></button>
+<button class="p-xs rounded-DEFAULT hover:bg-surface-container-highest transition-colors"><span class="material-symbols-outlined text-[20px]" data-icon="star">star</span></button>
+<button class="p-xs rounded-DEFAULT hover:bg-surface-container-highest transition-colors"><span class="material-symbols-outlined text-[20px]" data-icon="more_vert">more_vert</span></button>
+</div>
+<img alt="User Profile" class="w-8 h-8 rounded-full border border-outline-variant" data-alt="A close up portrait of a professional male user in a bright office environment. Soft, diffused lighting creates a clean, approachable aesthetic suitable for an enterprise profile image. The background is slightly out of focus, emphasizing the subject." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAe0S-oXi1LL0K5X8B6BMNtOCGACdxbks4P2pTvXmgRJHfcUeT2Wm03AR59F7DJ7rvxNbqKj5UvQEpm1Xpgcr8CTaUPZ2k9qQPpDkOjSmQEsPULs-KGJCdCIa3ZlqBpJAg7kjXHv0rg8i7uIpgioQTtV7PQ6RKzUYd_CxhOZcVriGKyINF4XWUOQl9u93so5xv9FbGcb412fGMxDblXYmlCu5iKzIgpC5CuTEeRDzXktjWe5c_qie4sYZXznUH1Wt3uGlx3_pnqQy4"/>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="ml-[240px] pt-16 w-full min-h-screen bg-background flex justify-center">
+<div class="w-full max-w-[container-max] p-lg md:p-xl flex flex-col gap-lg">
+<!-- Banners/Notices -->
+<div class="flex flex-col gap-sm">
+<!-- Permission Notice -->
+<div class="bg-surface-container-high border border-outline-variant rounded-lg p-md flex items-start gap-sm">
+<span class="material-symbols-outlined text-primary mt-xs" data-icon="admin_panel_settings">admin_panel_settings</span>
+<div>
+<h3 class="font-label-md text-label-md text-on-surface font-bold">Admin Operations Search</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mt-xs">Results are filtered based on your Administrative access. Showing global tenant events.</p>
+</div>
+</div>
+<!-- Index Rebuilding Notice -->
+<div class="bg-error-container/20 border border-error/30 rounded-lg p-md flex items-center gap-sm">
+<span class="material-symbols-outlined text-error" data-icon="sync_problem">sync_problem</span>
+<p class="font-body-md text-body-md text-on-surface">Some results may be stale while the index finishes rebuilding. (Est. completion: 2 mins)</p>
+</div>
+</div>
+<!-- Search Stats & Controls -->
+<div class="flex justify-between items-center border-b border-outline-variant pb-sm">
+<p class="font-body-md text-body-md text-on-surface-variant">Showing <span class="font-bold text-on-surface">1-3</span> of <span class="font-bold text-on-surface">24</span> admin results for "<span class="text-primary">user:mfa error</span>"</p>
+<div class="flex gap-sm">
+<button class="flex items-center gap-xs px-sm py-xs bg-surface border border-outline-variant rounded-DEFAULT font-label-md text-label-md text-on-surface hover:bg-surface-container-highest transition-colors shadow-sm">
+<span class="material-symbols-outlined text-[16px]" data-icon="filter_list">filter_list</span>
+                        Filters
+                    </button>
+<button class="flex items-center gap-xs px-sm py-xs bg-surface border border-outline-variant rounded-DEFAULT font-label-md text-label-md text-on-surface hover:bg-surface-container-highest transition-colors shadow-sm">
+<span class="material-symbols-outlined text-[16px]" data-icon="download">download</span>
+                        Export
+                    </button>
+</div>
+</div>
+<!-- Results List -->
+<div class="flex flex-col gap-md">
+<!-- Result Card: Identity Error -->
+<div class="bg-surface border-l-4 border-l-error border border-outline-variant rounded-lg p-md shadow-sm hover:shadow-md transition-shadow flex flex-col gap-sm">
+<div class="flex justify-between items-start">
+<div class="flex items-center gap-sm">
+<div class="px-xs py-[2px] bg-error/10 text-error rounded-full font-label-md text-label-md flex items-center gap-[2px]">
+<span class="material-symbols-outlined text-[14px]" data-icon="error">error</span>
+                                Identity Error
+                            </div>
+<span class="font-mono-sm text-mono-sm text-on-surface-variant">ERR_MFA_TIMEOUT</span>
+</div>
+<span class="font-label-md text-label-md text-on-surface-variant">2 mins ago</span>
+</div>
+<div>
+<h4 class="font-headline-sm text-headline-sm text-on-surface">MFA Setup Timeout for User: j.doe@example.com</h4>
+<p class="font-body-md text-body-md text-on-surface-variant mt-xs">User failed to complete the Multi-Factor Authentication enrollment within the required 15-minute window during initial provisioning.</p>
+</div>
+<div class="bg-surface-container-lowest border border-outline-variant rounded-DEFAULT p-sm mt-xs">
+<code class="font-mono-sm text-mono-sm text-on-surface block break-all">
+                            {"event_id": "req_8f92a1", "user_id": "usr_9921", "action": "mfa_enrollment", "status": "timeout", "ip_address": "192.168.1.45"}
+                        </code>
+</div>
+</div>
+<!-- Result Card: SCIM Log -->
+<div class="bg-surface border-l-4 border-l-primary border border-outline-variant rounded-lg p-md shadow-sm hover:shadow-md transition-shadow flex flex-col gap-sm">
+<div class="flex justify-between items-start">
+<div class="flex items-center gap-sm">
+<div class="px-xs py-[2px] bg-primary/10 text-primary rounded-full font-label-md text-label-md flex items-center gap-[2px]">
+<span class="material-symbols-outlined text-[14px]" data-icon="sync">sync</span>
+                                SCIM Provisioning
+                            </div>
+<span class="font-mono-sm text-mono-sm text-on-surface-variant">Azure AD Sync</span>
+</div>
+<span class="font-label-md text-label-md text-on-surface-variant">15 mins ago</span>
+</div>
+<div>
+<h4 class="font-headline-sm text-headline-sm text-on-surface">User Attributes Updated: j.doe@example.com</h4>
+<p class="font-body-md text-body-md text-on-surface-variant mt-xs">SCIM sync triggered an update to the user's role mapping, requiring a re-evaluation of MFA policies.</p>
+</div>
+</div>
+<!-- Result Card: Audit Event -->
+<div class="bg-surface border-l-4 border-l-secondary border border-outline-variant rounded-lg p-md shadow-sm hover:shadow-md transition-shadow flex flex-col gap-sm">
+<div class="flex justify-between items-start">
+<div class="flex items-center gap-sm">
+<div class="px-xs py-[2px] bg-secondary/10 text-secondary rounded-full font-label-md text-label-md flex items-center gap-[2px]">
+<span class="material-symbols-outlined text-[14px]" data-icon="policy">policy</span>
+                                Audit Event
+                            </div>
+<span class="font-mono-sm text-mono-sm text-on-surface-variant">Policy Change</span>
+</div>
+<span class="font-label-md text-label-md text-on-surface-variant">1 hour ago</span>
+</div>
+<div>
+<h4 class="font-headline-sm text-headline-sm text-on-surface">Global MFA Policy Enforced by Admin (a.smith)</h4>
+<p class="font-body-md text-body-md text-on-surface-variant mt-xs">Administrator a.smith changed the global security policy "Require MFA for Engineering Org" from 'Audit' to 'Enforce'.</p>
+</div>
+</div>
+</div>
+<div class="flex justify-center mt-lg">
+<button class="px-md py-sm bg-surface border border-outline-variant rounded-DEFAULT font-label-md text-label-md text-on-surface hover:bg-surface-container-highest transition-colors shadow-sm">
+                    Load More Results
+                </button>
+</div>
+</div>
+</main>
+</body></html>

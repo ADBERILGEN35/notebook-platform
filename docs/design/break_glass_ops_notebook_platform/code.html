@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Security Operations - Break-glass Tokens</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Manrope:wght@600;700&amp;family=JetBrains+Mono:wght@400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary-fixed-variant": "#7a3003",
+                        "on-secondary-container": "#57657a",
+                        "secondary-container": "#d5e3fc",
+                        "error": "#ba1a1a",
+                        "inverse-primary": "#c3c0ff",
+                        "on-background": "#1b1b22",
+                        "surface-variant": "#e4e1eb",
+                        "inverse-on-surface": "#f3eff9",
+                        "on-secondary-fixed-variant": "#3a485b",
+                        "surface-dim": "#dcd8e3",
+                        "background": "#fcf8ff",
+                        "tertiary-container": "#752c00",
+                        "surface-tint": "#544fc0",
+                        "surface": "#fcf8ff",
+                        "on-primary-container": "#a9a7ff",
+                        "on-surface": "#1b1b22",
+                        "tertiary": "#511c00",
+                        "outline-variant": "#c8c4d5",
+                        "surface-container-low": "#f6f2fc",
+                        "on-surface-variant": "#464553",
+                        "on-error-container": "#93000a",
+                        "surface-container": "#f0ecf6",
+                        "on-error": "#ffffff",
+                        "surface-container-high": "#eae6f1",
+                        "secondary-fixed": "#d5e3fc",
+                        "on-secondary-fixed": "#0d1c2e",
+                        "tertiary-fixed-dim": "#ffb694",
+                        "surface-bright": "#fcf8ff",
+                        "secondary": "#515f74",
+                        "outline": "#777584",
+                        "inverse-surface": "#303037",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "on-secondary": "#ffffff",
+                        "primary-fixed-dim": "#c3c0ff",
+                        "on-tertiary-fixed": "#351000",
+                        "primary-container": "#3730a3",
+                        "secondary-fixed-dim": "#b9c7df",
+                        "primary": "#1f108e",
+                        "on-tertiary-container": "#fe9562",
+                        "on-primary-fixed-variant": "#3b35a7",
+                        "tertiary-fixed": "#ffdbcc",
+                        "surface-container-highest": "#e4e1eb",
+                        "on-primary": "#ffffff",
+                        "primary-fixed": "#e2dfff",
+                        "on-primary-fixed": "#0f0069"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "md": "16px",
+                        "lg": "24px",
+                        "base": "4px",
+                        "xs": "4px",
+                        "sm": "8px",
+                        "container-max": "1280px",
+                        "xl": "48px",
+                        "gutter": "24px"
+                    },
+                    "fontFamily": {
+                        "display-lg": ["Manrope"],
+                        "headline-sm": ["Manrope"],
+                        "headline-md": ["Manrope"],
+                        "body-lg": ["Inter"],
+                        "mono-sm": ["JetBrains Mono"],
+                        "label-md": ["Inter"],
+                        "body-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "display-lg": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-sm": ["18px", { "lineHeight": "1.4", "fontWeight": "600" }],
+                        "headline-md": ["24px", { "lineHeight": "1.3", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "body-lg": ["16px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "mono-sm": ["13px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "label-md": ["12px", { "lineHeight": "1", "letterSpacing": "0.01em", "fontWeight": "500" }],
+                        "body-md": ["14px", { "lineHeight": "1.5", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            background-color: #fcf8ff; /* bg-surface */
+            color: #1b1b22; /* text-on-surface */
+        }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden bg-surface text-on-surface font-body-md text-body-md">
+<!-- SideNavBar -->
+<nav class="hidden md:flex fixed left-0 top-0 h-full w-[240px] bg-surface border-r border-outline-variant flex-col py-md px-md z-30">
+<div class="flex items-center gap-sm mb-xl px-sm">
+<span class="material-symbols-outlined text-primary text-2xl" data-icon="admin_panel_settings">admin_panel_settings</span>
+<div>
+<h1 class="font-headline-sm text-headline-sm font-bold text-primary">Notebook Platform</h1>
+<p class="font-label-md text-label-md text-on-surface-variant">Enterprise Workspace</p>
+</div>
+</div>
+<button class="mb-lg w-full bg-primary text-on-primary font-label-md text-label-md py-sm px-md rounded-lg flex items-center justify-center gap-sm hover:opacity-90 transition-opacity">
+<span class="material-symbols-outlined text-lg" data-icon="add">add</span>
+            New Notebook
+        </button>
+<ul class="flex flex-col gap-xs flex-1">
+<li>
+<a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined text-xl" data-icon="folder_open">folder_open</span>
+<span class="font-label-md text-label-md">Workspaces</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined text-xl" data-icon="search">search</span>
+<span class="font-label-md text-label-md">Search</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined text-xl" data-icon="notifications">notifications</span>
+<span class="font-label-md text-label-md">Notifications</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined text-xl" data-icon="settings">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-md px-md py-sm rounded-lg text-primary font-bold border-r-2 border-primary bg-surface-container-low hover:bg-surface-container-low transition-colors opacity-80" href="#">
+<span class="material-symbols-outlined text-xl" data-icon="admin_panel_settings">admin_panel_settings</span>
+<span class="font-label-md text-label-md">Admin</span>
+</a>
+</li>
+</ul>
+<div class="mt-auto pt-md border-t border-outline-variant flex flex-col gap-xs">
+<a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined text-xl" data-icon="help">help</span>
+<span class="font-label-md text-label-md">Support</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined text-xl" data-icon="logout">logout</span>
+<span class="font-label-md text-label-md">Sign Out</span>
+</a>
+</div>
+</nav>
+<!-- TopNavBar -->
+<header class="hidden md:flex fixed top-0 right-0 w-[calc(100%-240px)] z-40 bg-surface/80 backdrop-blur-md border-b border-outline-variant h-16 px-lg justify-between items-center">
+<div class="flex items-center gap-lg">
+<div class="font-headline-sm text-headline-sm text-on-surface font-semibold">Workspace Switcher</div>
+<nav class="flex gap-md">
+<a class="text-secondary font-label-md text-label-md hover:text-primary transition-colors py-sm" href="#">Drafts</a>
+<a class="text-secondary font-label-md text-label-md hover:text-primary transition-colors py-sm" href="#">Shared</a>
+<a class="text-secondary font-label-md text-label-md hover:text-primary transition-colors py-sm" href="#">Archived</a>
+</nav>
+</div>
+<div class="flex items-center gap-md">
+<div class="flex gap-xs text-on-surface-variant">
+<button class="p-xs hover:bg-surface-container rounded-full transition-colors"><span class="material-symbols-outlined text-xl" data-icon="history">history</span></button>
+<button class="p-xs hover:bg-surface-container rounded-full transition-colors"><span class="material-symbols-outlined text-xl" data-icon="star">star</span></button>
+<button class="p-xs hover:bg-surface-container rounded-full transition-colors"><span class="material-symbols-outlined text-xl" data-icon="more_vert">more_vert</span></button>
+</div>
+<button class="bg-primary text-on-primary font-label-md text-label-md py-xs px-md rounded-lg hover:opacity-90 transition-opacity">Invite Team</button>
+<div class="w-8 h-8 rounded-full bg-surface-variant border border-outline-variant flex items-center justify-center overflow-hidden">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="person">person</span>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-1 ml-0 md:ml-[240px] mt-0 md:mt-16 overflow-y-auto p-gutter bg-surface-container-low min-h-screen">
+<div class="max-w-container-max mx-auto flex flex-col gap-xl">
+<!-- Page Header -->
+<div>
+<h2 class="font-headline-md text-headline-md text-on-surface mb-xs">Security Operations</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Manage break-glass access and critical authentication overrides.</p>
+</div>
+<!-- Critical Warning Alert -->
+<div class="bg-error-container border border-error/30 rounded-xl p-md flex items-start gap-md">
+<span class="material-symbols-outlined text-error mt-xs" data-icon="warning">warning</span>
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-error-container mb-xs">Active Break-glass Tokens Detected</h3>
+<p class="font-body-md text-body-md text-on-error-container/80">There are currently 2 active break-glass tokens bypassing standard authentication. Ensure these are reviewed and revoked immediately after the emergency window closes. The token value is never shown or entered here.</p>
+</div>
+</div>
+<!-- Status Bento Grid -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-md">
+<!-- Emergency Mode Card -->
+<div class="bg-surface border border-outline-variant rounded-xl p-md flex flex-col justify-between shadow-sm hover:shadow-md transition-shadow">
+<div class="flex items-center justify-between mb-lg">
+<span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Emergency Mode</span>
+<span class="material-symbols-outlined text-outline" data-icon="power_settings_new">power_settings_new</span>
+</div>
+<div>
+<div class="flex items-center gap-sm mb-xs">
+<span class="w-2 h-2 rounded-full bg-outline"></span>
+<span class="font-headline-md text-headline-md text-on-surface">Disabled</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Standard policies enforced.</p>
+</div>
+</div>
+<!-- Credential Mode Card -->
+<div class="bg-surface border border-outline-variant rounded-xl p-md flex flex-col justify-between shadow-sm hover:shadow-md transition-shadow">
+<div class="flex items-center justify-between mb-lg">
+<span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Credential Mode</span>
+<span class="material-symbols-outlined text-outline" data-icon="passkey">passkey</span>
+</div>
+<div>
+<div class="flex items-center gap-sm mb-xs">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+<span class="font-headline-md text-headline-md text-on-surface">WebAuthn</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Hardware keys required.</p>
+</div>
+</div>
+<!-- Gateway Card -->
+<div class="bg-surface border border-outline-variant rounded-xl p-md flex flex-col justify-between shadow-sm hover:shadow-md transition-shadow">
+<div class="flex items-center justify-between mb-lg">
+<span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Gateway Allowed</span>
+<span class="material-symbols-outlined text-outline" data-icon="router">router</span>
+</div>
+<div>
+<div class="flex items-center gap-sm mb-xs">
+<span class="w-2 h-2 rounded-full bg-error"></span>
+<span class="font-headline-md text-headline-md text-on-surface">False</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">External API gateway blocked.</p>
+</div>
+</div>
+</div>
+<!-- Tabs & Data Section -->
+<div class="bg-surface border border-outline-variant rounded-xl overflow-hidden shadow-sm">
+<!-- Tab Header -->
+<div class="border-b border-outline-variant flex px-md bg-surface-container-low">
+<button class="px-md py-sm font-label-md text-label-md text-primary border-b-2 border-primary -mb-[1px]">Break-glass Events</button>
+<button class="px-md py-sm font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-colors">Token Rotation</button>
+</div>
+<!-- Break-glass Events Table -->
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="border-b border-outline-variant bg-surface-container-lowest">
+<th class="py-sm px-md font-label-md text-label-md text-on-surface-variant font-medium">Event ID</th>
+<th class="py-sm px-md font-label-md text-label-md text-on-surface-variant font-medium">Issued To</th>
+<th class="py-sm px-md font-label-md text-label-md text-on-surface-variant font-medium">Issue Time</th>
+<th class="py-sm px-md font-label-md text-label-md text-on-surface-variant font-medium">Expiry Time</th>
+<th class="py-sm px-md font-label-md text-label-md text-on-surface-variant font-medium">Status</th>
+<th class="py-sm px-md font-label-md text-label-md text-on-surface-variant font-medium text-right">Action</th>
+</tr>
+</thead>
+<tbody class="font-body-md text-body-md">
+<tr class="border-b border-outline-variant hover:bg-surface-container-low transition-colors">
+<td class="py-md px-md font-mono-sm text-mono-sm text-on-surface">evt_8x92nd1</td>
+<td class="py-md px-md">sec-ops-lead@internal.io</td>
+<td class="py-md px-md text-on-surface-variant">2023-10-27 14:32 UTC</td>
+<td class="py-md px-md text-on-surface-variant">2023-10-27 18:32 UTC</td>
+<td class="py-md px-md">
+<span class="inline-flex items-center px-2 py-1 rounded-full bg-error-container text-on-error-container font-label-md text-[10px] uppercase tracking-wider">Active</span>
+</td>
+<td class="py-md px-md text-right">
+<button class="text-primary font-label-md text-label-md hover:underline">Review</button>
+</td>
+</tr>
+<tr class="border-b border-outline-variant hover:bg-surface-container-low transition-colors">
+<td class="py-md px-md font-mono-sm text-mono-sm text-on-surface">evt_4k29fm8</td>
+<td class="py-md px-md">db-admin-escalation</td>
+<td class="py-md px-md text-on-surface-variant">2023-10-27 15:05 UTC</td>
+<td class="py-md px-md text-on-surface-variant">2023-10-27 19:05 UTC</td>
+<td class="py-md px-md">
+<span class="inline-flex items-center px-2 py-1 rounded-full bg-error-container text-on-error-container font-label-md text-[10px] uppercase tracking-wider">Active</span>
+</td>
+<td class="py-md px-md text-right">
+<button class="text-primary font-label-md text-label-md hover:underline">Review</button>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-md px-md font-mono-sm text-mono-sm text-on-surface">evt_1p03zx4</td>
+<td class="py-md px-md">sys-admin-tier3</td>
+<td class="py-md px-md text-on-surface-variant">2023-10-26 09:12 UTC</td>
+<td class="py-md px-md text-on-surface-variant">2023-10-26 13:12 UTC</td>
+<td class="py-md px-md">
+<span class="inline-flex items-center px-2 py-1 rounded-full bg-surface-variant text-on-surface-variant font-label-md text-[10px] uppercase tracking-wider">Expired</span>
+</td>
+<td class="py-md px-md text-right">
+<button class="text-secondary font-label-md text-label-md hover:underline">Log</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Token Rotation Tab Content (Hidden by default, shown for context) -->
+<div class="bg-surface border border-outline-variant rounded-xl p-md shadow-sm hidden">
+<h3 class="font-headline-sm text-headline-sm text-on-surface mb-md">Token Rotation Status</h3>
+<div class="grid grid-cols-2 gap-md">
+<div class="border border-outline-variant rounded-lg p-sm bg-surface-container-lowest">
+<span class="font-label-md text-label-md text-on-surface-variant block mb-xs">Previous Fingerprint</span>
+<span class="font-mono-sm text-mono-sm text-on-surface break-all">sha256:8f3a...9c21</span>
+</div>
+<div class="border border-outline-variant rounded-lg p-sm bg-surface-container-lowest">
+<span class="font-label-md text-label-md text-on-surface-variant block mb-xs">Current Fingerprint</span>
+<span class="font-mono-sm text-mono-sm text-on-surface break-all">sha256:4b1d...7e90</span>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Modal Overlay (Simulated Active State for 'Review Token') -->
+<div class="fixed inset-0 bg-on-background/50 backdrop-blur-sm z-50 flex items-center justify-center hidden">
+<!-- Review Token Modal -->
+<div class="bg-surface rounded-xl shadow-[0px_10px_15px_-3px_rgba(15,23,42,0.1)] w-full max-w-md border border-outline-variant flex flex-col">
+<div class="p-lg border-b border-outline-variant flex justify-between items-center">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Review Break-glass Token</h3>
+<button class="text-on-surface-variant hover:text-on-surface transition-colors">
+<span class="material-symbols-outlined" data-icon="close">close</span>
+</button>
+</div>
+<div class="p-lg flex flex-col gap-md">
+<div>
+<span class="font-label-md text-label-md text-on-surface-variant block mb-xs">Event ID</span>
+<span class="font-mono-sm text-mono-sm text-on-surface">evt_8x92nd1</span>
+</div>
+<div>
+<span class="font-label-md text-label-md text-on-surface-variant block mb-xs">Issued To</span>
+<span class="font-body-md text-body-md text-on-surface">sec-ops-lead@internal.io</span>
+</div>
+<div>
+<span class="font-label-md text-label-md text-on-surface-variant block mb-xs">Reason Provided</span>
+<p class="font-body-md text-body-md text-on-surface bg-surface-container-low p-sm rounded border border-outline-variant">Emergency DB failover required in us-east-1. Accessing primary replica to force promotion.</p>
+</div>
+<div class="bg-surface-variant rounded p-sm flex items-start gap-sm mt-sm">
+<span class="material-symbols-outlined text-on-surface-variant text-sm mt-[2px]" data-icon="info">info</span>
+<p class="font-label-md text-label-md text-on-surface-variant">The token value is never shown or entered here.</p>
+</div>
+</div>
+<div class="p-lg border-t border-outline-variant bg-surface-container-low flex justify-end gap-sm rounded-b-xl">
+<button class="px-md py-sm rounded-lg font-label-md text-label-md bg-surface text-on-surface border border-outline-variant hover:bg-surface-variant transition-colors">Reject</button>
+<button class="px-md py-sm rounded-lg font-label-md text-label-md bg-error text-on-error hover:opacity-90 transition-opacity">Revoke Access</button>
+<button class="px-md py-sm rounded-lg font-label-md text-label-md bg-primary text-on-primary hover:opacity-90 transition-opacity">Approve Extension</button>
+</div>
+</div>
+</div>
+</body></html>

@@ -3,8 +3,8 @@ import { useState } from 'react'
 import { useAuthStore } from '../../auth/auth-store'
 import { hasPlatformPermission, PERM_BREAK_GLASS_READ, PERM_BREAK_GLASS_REVOKE } from '../access/admin-permissions'
 import { isBreakGlassRevocationUiEnabled } from '../../../shared/config/admin-feature-flags'
-import { Button } from '../../../shared/ui/Button'
-import { ErrorAlert } from '../../../shared/ui/ErrorAlert'
+import { Button } from '../../../shared/components/Button'
+import { ErrorAlert } from '../../../shared/components/ErrorAlert'
 import {
   listBreakGlassActiveSessions,
   revokeAllBreakGlassActiveSessions,

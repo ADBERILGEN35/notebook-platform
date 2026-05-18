@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Notebook Platform - Editor</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&amp;family=Manrope:wght@600;700&amp;family=JetBrains+Mono:wght@400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary-fixed-variant": "#7a3003",
+                        "surface-container-highest": "#e4e1eb",
+                        "secondary": "#515f74",
+                        "on-primary-fixed-variant": "#3b35a7",
+                        "tertiary-fixed-dim": "#ffb694",
+                        "on-error": "#ffffff",
+                        "on-primary-container": "#a9a7ff",
+                        "on-primary-fixed": "#0f0069",
+                        "surface-container": "#f0ecf6",
+                        "on-error-container": "#93000a",
+                        "outline-variant": "#c8c4d5",
+                        "on-primary": "#ffffff",
+                        "inverse-primary": "#c3c0ff",
+                        "on-secondary-container": "#57657a",
+                        "secondary-container": "#d5e3fc",
+                        "surface-container-lowest": "#ffffff",
+                        "error": "#ba1a1a",
+                        "surface": "#fcf8ff",
+                        "surface-dim": "#dcd8e3",
+                        "on-secondary": "#ffffff",
+                        "tertiary-fixed": "#ffdbcc",
+                        "on-tertiary-container": "#fe9562",
+                        "inverse-on-surface": "#f3eff9",
+                        "background": "#fcf8ff",
+                        "on-background": "#1b1b22",
+                        "on-surface-variant": "#464553",
+                        "tertiary": "#511c00",
+                        "primary-fixed": "#e2dfff",
+                        "primary": "#1f108e",
+                        "surface-bright": "#fcf8ff",
+                        "on-tertiary": "#ffffff",
+                        "primary-container": "#3730a3",
+                        "outline": "#777584",
+                        "inverse-surface": "#303037",
+                        "on-tertiary-fixed": "#351000",
+                        "surface-container-high": "#eae6f1",
+                        "error-container": "#ffdad6",
+                        "surface-container-low": "#f6f2fc",
+                        "tertiary-container": "#752c00",
+                        "surface-variant": "#e4e1eb",
+                        "on-secondary-fixed": "#0d1c2e",
+                        "secondary-fixed-dim": "#b9c7df",
+                        "on-secondary-fixed-variant": "#3a485b",
+                        "surface-tint": "#544fc0",
+                        "secondary-fixed": "#d5e3fc",
+                        "on-surface": "#1b1b22",
+                        "primary-fixed-dim": "#c3c0ff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "sm": "8px",
+                        "container-max": "1280px",
+                        "gutter": "24px",
+                        "base": "4px",
+                        "md": "16px",
+                        "xs": "4px",
+                        "xl": "48px",
+                        "lg": "24px"
+                    },
+                    "fontFamily": {
+                        "label-md": ["Inter"],
+                        "mono-sm": ["JetBrains Mono"],
+                        "headline-sm": ["Manrope"],
+                        "display-lg": ["Manrope"],
+                        "body-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-md": ["Manrope"]
+                    },
+                    "fontSize": {
+                        "label-md": ["12px", { "lineHeight": "1", "letterSpacing": "0.01em", "fontWeight": "500" }],
+                        "mono-sm": ["13px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "headline-sm": ["18px", { "lineHeight": "1.4", "fontWeight": "600" }],
+                        "display-lg": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-md": ["14px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "body-lg": ["16px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "1.3", "letterSpacing": "-0.01em", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.fill-1 {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        /* Custom scrollbar for minimal look */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #dcd8e3; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #c8c4d5; }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md antialiased overflow-hidden selection:bg-primary-container selection:text-on-primary-container">
+<!-- SideNavBar (from JSON) -->
+<nav class="bg-surface dark:bg-surface-dim font-body-md text-body-md fixed left-0 top-0 h-full w-[240px] border-r border-outline-variant dark:border-outline flex flex-col py-md px-md z-50">
+<!-- Header -->
+<div class="flex items-center gap-sm mb-xl px-sm">
+<div class="w-8 h-8 rounded-lg bg-primary text-on-primary flex items-center justify-center font-bold">
+                N
+            </div>
+<div>
+<h1 class="text-headline-sm font-headline-sm font-bold text-primary dark:text-primary-fixed truncate">Notebook Platform</h1>
+<p class="text-label-md font-label-md text-on-surface-variant truncate">Enterprise Workspace</p>
+</div>
+</div>
+<!-- CTA -->
+<button class="w-full bg-primary text-on-primary py-2 px-4 rounded-lg font-label-md text-label-md mb-lg flex items-center justify-center gap-2 hover:bg-primary-container hover:text-on-primary-container transition-colors shadow-sm">
+<span class="material-symbols-outlined text-[18px]">add</span>
+            New Notebook
+        </button>
+<!-- Main Nav -->
+<div class="flex-grow space-y-1">
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-primary dark:text-primary-fixed font-bold border-r-2 border-primary hover:bg-surface-container-low dark:hover:bg-surface-container-high transition-colors opacity-80 transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">folder_open</span>
+                Workspaces
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-low dark:hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">search</span>
+                Search
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-low dark:hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">notifications</span>
+                Notifications
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-low dark:hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+                Settings
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-low dark:hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">admin_panel_settings</span>
+                Admin
+            </a>
+</div>
+<!-- Footer Nav -->
+<div class="pt-md border-t border-outline-variant space-y-1">
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">help</span>
+                Support
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">logout</span>
+                Sign Out
+            </a>
+</div>
+</nav>
+<!-- TopNavBar (from JSON) -->
+<header class="bg-surface/80 dark:bg-surface-dim/80 backdrop-blur-md font-label-md text-label-md fixed top-0 right-0 w-[calc(100%-240px)] z-40 border-b border-outline-variant dark:border-outline flex justify-between items-center h-16 px-lg">
+<!-- Left: Branding & Search -->
+<div class="flex items-center gap-xl">
+<div class="font-headline-sm text-headline-sm text-on-surface dark:text-on-surface">Workspace Switcher</div>
+<div class="relative hidden lg:block w-64">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[18px]">search</span>
+<input class="w-full bg-surface-container-lowest border border-outline-variant rounded-full py-1.5 pl-10 pr-4 text-body-md focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all" placeholder="Search in workspace..." type="text"/>
+</div>
+</div>
+<!-- Center: Links -->
+<nav class="hidden md:flex gap-lg">
+<a class="text-secondary dark:text-secondary-fixed-dim hover:text-primary dark:hover:text-primary-fixed transition-colors py-4" href="#">Drafts</a>
+<a class="text-primary dark:text-primary-fixed-dim border-b-2 border-primary py-4 hover:text-primary transition-colors scale-95 transition-transform" href="#">Shared</a>
+<a class="text-secondary dark:text-secondary-fixed-dim hover:text-primary dark:hover:text-primary-fixed transition-colors py-4" href="#">Archived</a>
+</nav>
+<!-- Right: Actions & Profile -->
+<div class="flex items-center gap-md">
+<button class="hidden lg:flex px-4 py-2 bg-surface-container-lowest border border-outline-variant text-on-surface rounded-lg hover:bg-surface-container-low transition-colors">
+                Invite Team
+            </button>
+<div class="flex items-center text-secondary">
+<button class="p-2 hover:bg-surface-container-low rounded-full transition-colors"><span class="material-symbols-outlined">history</span></button>
+<button class="p-2 hover:bg-surface-container-low rounded-full transition-colors"><span class="material-symbols-outlined">star</span></button>
+<button class="p-2 hover:bg-surface-container-low rounded-full transition-colors"><span class="material-symbols-outlined">more_vert</span></button>
+</div>
+<div class="w-8 h-8 rounded-full overflow-hidden border border-outline-variant ml-2">
+<img alt="User Profile" class="w-full h-full object-cover" data-alt="A professional headshot of a person with short brown hair, wearing a neutral gray shirt against a clean, light background. The lighting is soft and even, highlighting a friendly but focused expression typical of a corporate profile photo." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDCttNepyUdsaXbi5YVtvYswDCJvLppoORvJX1WLIqjMH8SbvVqjJ9cbGs3tSJ4ng6JFfvnpjj4ho87eQ53s8aXtcGNAjte9lSLEWsS01NOhlCDxn-euYH55DgJDjphNAJRsiMovcaruCbDcqrjaY22nJwVuo9Ely3be2-tKiwscYUmlGUJt8Z7jPPeMjX8sUfFq6CQ71E2yxJ7BYE0a5um2MidRVDFvYtBE_lKem76Z85MhuO3Topf9hOp9op4AgmOUveVrW7NJ2Y"/>
+</div>
+</div>
+</header>
+<!-- Main Application Area -->
+<main class="ml-[240px] mt-16 h-[calc(100vh-64px)] flex bg-background">
+<!-- Editor Canvas Canvas -->
+<div class="flex-grow overflow-y-auto relative scroll-smooth">
+<!-- Contextual Editor Header -->
+<div class="sticky top-0 z-30 bg-background/90 backdrop-blur-md px-xl py-sm flex justify-between items-center border-b border-outline-variant/30">
+<div class="flex items-center gap-sm text-secondary font-label-md text-label-md">
+<span class="material-symbols-outlined text-[16px] text-outline">cloud_done</span>
+                    Saved to cloud
+                </div>
+<div class="flex items-center gap-4">
+<!-- Collaborators -->
+<div class="flex -space-x-2">
+<img alt="Collaborator" class="w-7 h-7 rounded-full border-2 border-background object-cover" data-alt="A professional headshot of a woman with long dark hair, wearing a dark top against a light background. She has a subtle, pleasant smile. The image is cropped closely for a small avatar circle." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCWQO3tnSSwjh26Kp0GsYTnrg_LuhI6h74u1Xjb5qepFo2R2Sjrc_BVtckOdbzG6oODlZG-hQBTe7bXB9keQi_WvOlk2u6u1VzgacvK86yf6S3rejBssVyjszpfaqUSVA6pDeUdxqCyNKoZ7IwXCeT3WtjnSCgDkIyAFHVNCRzeWM6Bdav5kgVLPEbzJB3v7ljDmdApbUKIXGE99DjwG9xnV_0X4SuIA5K-y2kClcXR3Szx8z-iPXV1ZYFmff7JLkHyh4TS-WV_P1Q"/>
+<img alt="Collaborator" class="w-7 h-7 rounded-full border-2 border-background object-cover" data-alt="A close-up profile picture of a man with short hair and a beard, smiling warmly. He is wearing a dark t-shirt. The background is a soft, blurred studio grey." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAqa7SLWcAw-bRp-_iWIh7-sdd0fWwqQcLuLdwRcV0EmeLLpvu63bx7-M0wQZO1g-sSAostRmIqywfiNnph4FtdW_n2AnErtw7yZkCD_NRrfQo1qVGzCRLuwSuiv3lDhsP8gJAc5gpkchL7IFSuKKhSE9kGLy74UBiV8QUmM0hN7-20YqitPWIXLXsyKCEgzOooNn6iXbSy7vEigyB0QZcq7Zz_FljESe0joLj1AZ-nZahoX1H2T0J_zcRnQEq6PDkJk_06ttsTI_E"/>
+</div>
+<!-- Actions -->
+<button class="px-3 py-1.5 text-secondary hover:text-on-surface font-label-md text-label-md transition-colors flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">forum</span>
+                        Comments (2)
+                    </button>
+<button class="px-4 py-1.5 bg-primary text-on-primary rounded-lg font-label-md text-label-md hover:bg-primary-container hover:text-on-primary-container transition-colors shadow-sm">
+                        Share
+                    </button>
+</div>
+</div>
+<!-- The Document -->
+<div class="max-w-[800px] mx-auto px-lg py-xl pb-32">
+<!-- Title Block -->
+<h1 class="text-display-lg font-display-lg text-on-surface mb-xl outline-none" contenteditable="true">Q3 API Migration Plan</h1>
+<!-- Content Blocks (Notion Style) -->
+<div class="group relative mb-md">
+<!-- Block Handle (Visible on hover in real app, static here for UI demo) -->
+<div class="absolute -left-8 top-1 opacity-0 group-hover:opacity-50 cursor-grab text-outline transition-opacity">
+<span class="material-symbols-outlined text-[18px]">drag_indicator</span>
+</div>
+<p class="text-body-lg font-body-lg text-on-surface-variant outline-none" contenteditable="true">
+                        This document outlines the strategic approach and technical requirements for migrating our core services from REST to GraphQL during the Q3 cycle. The primary objective is to reduce payload size and improve client-side rendering speeds.
+                    </p>
+</div>
+<div class="group relative mt-xl mb-sm">
+<div class="absolute -left-8 top-2 opacity-0 group-hover:opacity-50 cursor-grab text-outline transition-opacity">
+<span class="material-symbols-outlined text-[18px]">drag_indicator</span>
+</div>
+<h2 class="text-headline-md font-headline-md text-on-surface outline-none" contenteditable="true">Phase 1: Audit &amp; Mapping</h2>
+</div>
+<div class="group relative mb-md">
+<div class="absolute -left-8 top-1 opacity-0 group-hover:opacity-50 cursor-grab text-outline transition-opacity">
+<span class="material-symbols-outlined text-[18px]">drag_indicator</span>
+</div>
+<ul class="list-disc pl-lg text-body-lg font-body-lg text-on-surface-variant space-y-2 outline-none" contenteditable="true">
+<li>Identify all actively consumed REST endpoints via Datadog logs.</li>
+<li>Map existing JSON schemas to proposed GraphQL types.</li>
+<li>Establish deprecation timelines for legacy endpoints (target: End of Q4).</li>
+</ul>
+</div>
+<div class="group relative mt-xl mb-sm">
+<div class="absolute -left-8 top-2 opacity-0 group-hover:opacity-50 cursor-grab text-outline transition-opacity">
+<span class="material-symbols-outlined text-[18px]">drag_indicator</span>
+</div>
+<h2 class="text-headline-md font-headline-md text-on-surface outline-none" contenteditable="true">Schema Example (Draft)</h2>
+</div>
+<div class="group relative mb-xl">
+<div class="absolute -left-8 top-2 opacity-0 group-hover:opacity-50 cursor-grab text-outline transition-opacity">
+<span class="material-symbols-outlined text-[18px]">drag_indicator</span>
+</div>
+<!-- Code Block -->
+<div class="bg-surface-container-low rounded-xl border border-outline-variant overflow-hidden">
+<div class="flex items-center justify-between px-4 py-2 bg-surface-container-high border-b border-outline-variant text-secondary font-label-md text-label-md">
+<span>graphql</span>
+<button class="hover:text-on-surface"><span class="material-symbols-outlined text-[16px]">content_copy</span></button>
+</div>
+<pre class="p-4 text-mono-sm font-mono-sm text-on-surface-variant overflow-x-auto"><code contenteditable="true">type Workspace {
+  id: ID!
+  name: String!
+  members: [User!]!
+  createdAt: DateTime!
+  settings: WorkspaceSettings
+}
+
+type Query {
+  workspace(id: ID!): Workspace
+  activeWorkspaces: [Workspace!]!
+}</code></pre>
+</div>
+</div>
+<div class="group relative mt-xl mb-sm">
+<div class="absolute -left-8 top-2 opacity-0 group-hover:opacity-50 cursor-grab text-outline transition-opacity">
+<span class="material-symbols-outlined text-[18px]">drag_indicator</span>
+</div>
+<h2 class="text-headline-md font-headline-md text-on-surface outline-none" contenteditable="true">Endpoint Transition Matrix</h2>
+</div>
+<div class="group relative mb-xl">
+<div class="absolute -left-8 top-2 opacity-0 group-hover:opacity-50 cursor-grab text-outline transition-opacity">
+<span class="material-symbols-outlined text-[18px]">drag_indicator</span>
+</div>
+<!-- Data Table -->
+<div class="border border-outline-variant rounded-xl overflow-hidden bg-surface-container-lowest">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low border-b border-outline-variant">
+<th class="py-3 px-4 text-label-md font-label-md text-secondary font-medium">Legacy REST Path</th>
+<th class="py-3 px-4 text-label-md font-label-md text-secondary font-medium">GQL Operation</th>
+<th class="py-3 px-4 text-label-md font-label-md text-secondary font-medium">Status</th>
+<th class="py-3 px-4 text-label-md font-label-md text-secondary font-medium">Owner</th>
+</tr>
+</thead>
+<tbody class="text-body-md font-body-md text-on-surface-variant">
+<tr class="border-b border-outline-variant hover:bg-surface-container-low transition-colors cursor-default">
+<td class="py-3 px-4 font-mono-sm text-[12px]">/api/v1/workspaces</td>
+<td class="py-3 px-4 font-mono-sm text-[12px]">query activeWorkspaces</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-secondary-container text-on-secondary-container">
+                                            In Progress
+                                        </span>
+</td>
+<td class="py-3 px-4">Alex Chen</td>
+</tr>
+<tr class="border-b border-outline-variant hover:bg-surface-container-low transition-colors cursor-default">
+<td class="py-3 px-4 font-mono-sm text-[12px]">/api/v1/users/{id}</td>
+<td class="py-3 px-4 font-mono-sm text-[12px]">query user(id)</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-tertiary-container text-tertiary-fixed-dim">
+                                            Blocked
+                                        </span>
+</td>
+<td class="py-3 px-4">Sarah Miller</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors cursor-default">
+<td class="py-3 px-4 font-mono-sm text-[12px]">/api/v1/settings</td>
+<td class="py-3 px-4 font-mono-sm text-[12px]">mutation updateSettings</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-surface-variant text-on-surface-variant">
+                                            Not Started
+                                        </span>
+</td>
+<td class="py-3 px-4">Unassigned</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="group relative mb-md">
+<!-- New block placeholder -->
+<div class="flex items-center gap-2 text-outline-variant cursor-text">
+<span class="material-symbols-outlined text-[20px]">add</span>
+<p class="text-body-lg font-body-lg">Type '/' for commands</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Panel: Comments -->
+<aside class="w-[320px] bg-surface border-l border-outline-variant flex flex-col flex-shrink-0 z-20">
+<!-- Panel Header -->
+<div class="h-14 px-md flex items-center justify-between border-b border-outline-variant bg-surface/80 backdrop-blur-sm">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Comments</h3>
+<button class="p-1 rounded hover:bg-surface-container-low text-secondary transition-colors">
+<span class="material-symbols-outlined text-[20px]">close</span>
+</button>
+</div>
+<!-- Panel Content (Scrollable) -->
+<div class="flex-grow overflow-y-auto p-md space-y-md">
+<!-- Comment Thread 1 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-3 shadow-sm">
+<div class="flex justify-between items-start mb-2">
+<div class="flex items-center gap-2">
+<img alt="Avatar" class="w-6 h-6 rounded-full object-cover" data-alt="A small circular avatar showing a woman with dark hair." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCaNuYZq4PRQ0aLiMNXzERPqUbuDIUaloKB4QZAEeEjPHoRc_6J2aCsElLJ1R97m4TL4TUqJvRMILTvnci7aexK35omI1SheqPojKtcimgC3MfpTyi7v7qKRWsq_0LY4d8Sly0NTK7DCqiWdMWC4gi0MfuV0t074rij4AAuAsusW7rNqsbzdNx3nbeoFxHwHLBJBs3bUfoscjDR_aJiiH2lhefuuPzTPvTjqbYxT-Xo6BVeSvjsaMt-N0p8Uac7JIvKbl4B2kekR_U"/>
+<span class="font-label-md text-label-md text-on-surface font-semibold">Sarah Miller</span>
+</div>
+<span class="text-[10px] text-secondary">2h ago</span>
+</div>
+<p class="text-body-md font-body-md text-on-surface-variant mb-2">
+                        Regarding Phase 1: Should we also include the webhooks payload in this audit? I suspect some legacy structures are hiding there.
+                    </p>
+<!-- Reply -->
+<div class="pl-4 border-l-2 border-outline-variant/30 mt-2">
+<div class="flex justify-between items-start mb-1">
+<div class="flex items-center gap-2">
+<img alt="Avatar" class="w-5 h-5 rounded-full object-cover" data-alt="A small circular avatar showing a man with a beard." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCnqSHIJN9D2vDiqykiPlh9HHFuWPCKB6INLJaEisln0rQSXasa6Vn-2FkUqdfzmm7tfryrQfuu3KTmzYaQ0VTdZmrN1AcTuWSF4-LE-u8J8jmKaSVFBBYrOY_MzpVHy4cXz4D4ypG5GEQP-KDYjBO3aoUGF2fT442yk41FFu1Of4J8kXKCiMyDL1MN9ZBxlI_4Q78QRucybn8Y6AJOsviZC7R0jikeyFYGEl9VqvJW6McgaJwilWieAlIJNIkcF7AZon7d82cXoVE"/>
+<span class="font-label-md text-label-md text-on-surface font-semibold">Alex Chen</span>
+</div>
+</div>
+<p class="text-body-md font-body-md text-on-surface-variant">
+                            Good call. I'll add a sub-task for the webhooks team.
+                        </p>
+</div>
+</div>
+<!-- Comment Thread 2 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-3 shadow-sm border-l-4 border-l-primary">
+<div class="flex justify-between items-start mb-2">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center font-label-md text-[10px] font-bold">
+                                JD
+                            </div>
+<span class="font-label-md text-label-md text-on-surface font-semibold">Jordan Doe</span>
+</div>
+<span class="text-[10px] text-secondary">Just now</span>
+</div>
+<p class="text-body-md font-body-md text-on-surface-variant">
+                        The schema example looks solid, but we might want to paginate `activeWorkspaces` from the start to prevent future bottlenecks.
+                    </p>
+<div class="mt-3 flex gap-2">
+<button class="text-[11px] font-label-md text-primary hover:underline">Reply</button>
+<button class="text-[11px] font-label-md text-secondary hover:text-on-surface">Resolve</button>
+</div>
+</div>
+</div>
+<!-- Input Area -->
+<div class="p-sm border-t border-outline-variant bg-surface-container-lowest">
+<div class="relative">
+<input class="w-full bg-surface border border-outline-variant rounded-lg py-2 pl-3 pr-10 text-body-md focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all placeholder:text-secondary" placeholder="Add a comment..." type="text"/>
+<button class="absolute right-2 top-1/2 -translate-y-1/2 text-primary hover:text-primary-container p-1 rounded">
+<span class="material-symbols-outlined text-[18px]">send</span>
+</button>
+</div>
+</div>
+</aside>
+</main>
+</body></html>

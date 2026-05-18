@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Notification Preferences</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;family=Manrope:wght@500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Configuration -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "tertiary-fixed": "#ffdbcc",
+                        "surface-tint": "#544fc0",
+                        "on-surface-variant": "#464553",
+                        "surface-container-low": "#f6f2fc",
+                        "surface-container": "#f0ecf6",
+                        "on-secondary": "#ffffff",
+                        "inverse-on-surface": "#f3eff9",
+                        "on-tertiary": "#ffffff",
+                        "error": "#ba1a1a",
+                        "on-tertiary-container": "#fe9562",
+                        "on-error-container": "#93000a",
+                        "tertiary-fixed-dim": "#ffb694",
+                        "secondary-fixed": "#d5e3fc",
+                        "on-primary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "surface-container-highest": "#e4e1eb",
+                        "secondary-container": "#d5e3fc",
+                        "inverse-surface": "#303037",
+                        "surface-variant": "#e4e1eb",
+                        "inverse-primary": "#c3c0ff",
+                        "background": "#fcf8ff",
+                        "surface-dim": "#dcd8e3",
+                        "tertiary": "#511c00",
+                        "on-tertiary-fixed-variant": "#7a3003",
+                        "on-background": "#1b1b22",
+                        "primary-container": "#3730a3",
+                        "on-primary-fixed": "#0f0069",
+                        "tertiary-container": "#752c00",
+                        "on-secondary-fixed-variant": "#3a485b",
+                        "surface-container-high": "#eae6f1",
+                        "primary-fixed": "#e2dfff",
+                        "on-primary-container": "#a9a7ff",
+                        "on-primary-fixed-variant": "#3b35a7",
+                        "on-secondary-fixed": "#0d1c2e",
+                        "on-error": "#ffffff",
+                        "secondary": "#515f74",
+                        "on-tertiary-fixed": "#351000",
+                        "surface-container-lowest": "#ffffff",
+                        "primary-fixed-dim": "#c3c0ff",
+                        "primary": "#1f108e",
+                        "surface-bright": "#fcf8ff",
+                        "on-secondary-container": "#57657a",
+                        "outline-variant": "#c8c4d5",
+                        "secondary-fixed-dim": "#b9c7df",
+                        "on-surface": "#1b1b22",
+                        "outline": "#777584",
+                        "surface": "#fcf8ff"
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    spacing: {
+                        "xl": "48px",
+                        "lg": "24px",
+                        "sm": "8px",
+                        "gutter": "24px",
+                        "md": "16px",
+                        "container-max": "1280px",
+                        "xs": "4px",
+                        "base": "4px"
+                    },
+                    fontFamily: {
+                        "headline-md": ["Manrope"],
+                        "display-lg": ["Manrope"],
+                        "label-md": ["Inter"],
+                        "body-md": ["Inter"],
+                        "mono-sm": ["JetBrains Mono"],
+                        "headline-sm": ["Manrope"],
+                        "body-lg": ["Inter"]
+                    },
+                    fontSize: {
+                        "headline-md": ["24px", { lineHeight: "1.3", letterSpacing: "-0.01em", fontWeight: "600" }],
+                        "display-lg": ["48px", { lineHeight: "1.1", letterSpacing: "-0.02em", fontWeight: "700" }],
+                        "label-md": ["12px", { lineHeight: "1", letterSpacing: "0.01em", fontWeight: "500" }],
+                        "body-md": ["14px", { lineHeight: "1.5", fontWeight: "400" }],
+                        "mono-sm": ["13px", { lineHeight: "1.5", fontWeight: "400" }],
+                        "headline-sm": ["18px", { lineHeight: "1.4", fontWeight: "600" }],
+                        "body-lg": ["16px", { lineHeight: "1.6", fontWeight: "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md antialiased">
+<!-- Shared Component: SideNavBar -->
+<nav class="bg-surface border-r border-outline-variant fixed left-0 top-0 h-full w-[240px] flex flex-col py-md px-md z-50">
+<!-- Header -->
+<div class="flex items-center gap-sm mb-xl px-sm">
+<div class="w-8 h-8 rounded bg-primary-container flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-on-primary-container" style="font-size: 20px;">layers</span>
+</div>
+<div>
+<h1 class="text-headline-sm font-headline-sm font-bold text-primary truncate">Notebook Platform</h1>
+<p class="font-label-md text-label-md text-secondary truncate">Enterprise Workspace</p>
+</div>
+</div>
+<!-- CTA -->
+<button class="w-full bg-primary hover:bg-primary/90 text-on-primary font-label-md text-label-md py-sm px-md rounded-lg mb-lg flex items-center justify-center gap-xs transition-colors">
+<span class="material-symbols-outlined" style="font-size: 18px;">add</span>
+            New Notebook
+        </button>
+<!-- Navigation Links -->
+<div class="flex-1 flex flex-col gap-xs">
+<a class="flex items-center gap-md px-sm py-sm rounded-lg hover:bg-surface-container-low transition-colors text-on-surface-variant" href="#">
+<span class="material-symbols-outlined">folder_open</span>
+<span class="font-body-md text-body-md">Workspaces</span>
+</a>
+<a class="flex items-center gap-md px-sm py-sm rounded-lg hover:bg-surface-container-low transition-colors text-on-surface-variant" href="#">
+<span class="material-symbols-outlined">search</span>
+<span class="font-body-md text-body-md">Search</span>
+</a>
+<!-- Active State -->
+<a class="flex items-center gap-md px-sm py-sm rounded-lg hover:bg-surface-container-low transition-colors text-primary font-bold border-r-2 border-primary bg-surface-container-low/50" href="#">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">notifications</span>
+<span class="font-body-md text-body-md">Notifications</span>
+</a>
+<a class="flex items-center gap-md px-sm py-sm rounded-lg hover:bg-surface-container-low transition-colors text-on-surface-variant" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-body-md text-body-md">Settings</span>
+</a>
+<a class="flex items-center gap-md px-sm py-sm rounded-lg hover:bg-surface-container-low transition-colors text-on-surface-variant" href="#">
+<span class="material-symbols-outlined">admin_panel_settings</span>
+<span class="font-body-md text-body-md">Admin</span>
+</a>
+</div>
+<!-- Footer Links -->
+<div class="mt-auto flex flex-col gap-xs pt-md border-t border-outline-variant">
+<a class="flex items-center gap-md px-sm py-sm rounded-lg hover:bg-surface-container-low transition-colors text-on-surface-variant" href="#">
+<span class="material-symbols-outlined">help</span>
+<span class="font-body-md text-body-md">Support</span>
+</a>
+<a class="flex items-center gap-md px-sm py-sm rounded-lg hover:bg-surface-container-low transition-colors text-on-surface-variant" href="#">
+<span class="material-symbols-outlined">logout</span>
+<span class="font-body-md text-body-md">Sign Out</span>
+</a>
+</div>
+</nav>
+<!-- Shared Component: TopNavBar -->
+<header class="bg-surface/80 backdrop-blur-md border-b border-outline-variant fixed top-0 right-0 w-[calc(100%-240px)] z-40 flex justify-between items-center h-16 px-lg">
+<!-- Left: Product Name / Branding -->
+<div class="flex items-center gap-lg">
+<span class="font-headline-sm text-headline-sm text-on-surface">Workspace Switcher</span>
+<!-- Navigation Links -->
+<nav class="hidden md:flex items-center gap-md ml-lg">
+<a class="font-label-md text-label-md text-secondary hover:text-primary transition-colors pb-1 border-b-2 border-transparent hover:border-outline-variant" href="#">Drafts</a>
+<a class="font-label-md text-label-md text-secondary hover:text-primary transition-colors pb-1 border-b-2 border-transparent hover:border-outline-variant" href="#">Shared</a>
+<a class="font-label-md text-label-md text-secondary hover:text-primary transition-colors pb-1 border-b-2 border-transparent hover:border-outline-variant" href="#">Archived</a>
+</nav>
+</div>
+<!-- Right: Actions & Profile -->
+<div class="flex items-center gap-md">
+<button class="hidden md:flex px-md py-sm bg-surface-container-lowest border border-outline-variant hover:bg-surface-container-low rounded-lg font-label-md text-label-md text-on-surface transition-colors">
+                Invite Team
+            </button>
+<div class="flex items-center gap-xs text-secondary">
+<button class="p-sm rounded-full hover:bg-surface-container-low transition-colors flex items-center justify-center">
+<span class="material-symbols-outlined">history</span>
+</button>
+<button class="p-sm rounded-full hover:bg-surface-container-low transition-colors flex items-center justify-center">
+<span class="material-symbols-outlined">star</span>
+</button>
+<button class="p-sm rounded-full hover:bg-surface-container-low transition-colors flex items-center justify-center">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+<div class="w-8 h-8 rounded-full bg-secondary-container border border-outline-variant flex items-center justify-center overflow-hidden shrink-0 ml-sm cursor-pointer hover:opacity-80 transition-opacity">
+<!-- Generic Profile Placeholder -->
+<span class="material-symbols-outlined text-on-secondary-container" style="font-size: 20px;">person</span>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="ml-[240px] pt-[64px] min-h-screen pb-xl">
+<div class="max-w-container-max mx-auto px-lg lg:px-xl py-xl flex flex-col gap-xl">
+<!-- Page Header -->
+<div class="flex flex-col gap-xs">
+<h2 class="font-headline-md text-headline-md text-on-surface">Notification Preferences</h2>
+<p class="font-body-md text-body-md text-secondary max-w-2xl">Manage how and when you receive alerts across your workspaces. Global settings apply everywhere unless overridden.</p>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-xl">
+<!-- Left Column: Global Settings -->
+<div class="lg:col-span-4 flex flex-col gap-md">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Global Defaults</h3>
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm">
+<!-- Toggle Row: Comments -->
+<div class="flex items-center justify-between p-md border-b border-outline-variant">
+<div>
+<p class="font-body-md text-body-md font-medium text-on-surface">Comments</p>
+<p class="font-label-md text-label-md text-secondary mt-1">Replies and mentions in threads.</p>
+</div>
+<!-- Active Toggle -->
+<button aria-pressed="true" class="w-10 h-6 rounded-full bg-primary relative flex items-center px-[2px] transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">
+<span class="w-[20px] h-[20px] bg-on-primary rounded-full shadow-sm transform translate-x-4 transition-transform"></span>
+</button>
+</div>
+<!-- Toggle Row: Mentions -->
+<div class="flex items-center justify-between p-md border-b border-outline-variant">
+<div>
+<p class="font-body-md text-body-md font-medium text-on-surface">Direct Mentions</p>
+<p class="font-label-md text-label-md text-secondary mt-1">When someone @mentions you.</p>
+</div>
+<!-- Active Toggle -->
+<button aria-pressed="true" class="w-10 h-6 rounded-full bg-primary relative flex items-center px-[2px] transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">
+<span class="w-[20px] h-[20px] bg-on-primary rounded-full shadow-sm transform translate-x-4 transition-transform"></span>
+</button>
+</div>
+<!-- Toggle Row: Security Alerts (Required) -->
+<div class="flex items-center justify-between p-md bg-surface-container-low/50">
+<div>
+<div class="flex items-center gap-sm">
+<p class="font-body-md text-body-md font-medium text-on-surface">Security Alerts</p>
+<span class="inline-flex items-center px-2 py-0.5 rounded-full bg-error-container text-on-error-container font-label-md text-[10px] uppercase tracking-wider font-bold">Required</span>
+</div>
+<p class="font-label-md text-label-md text-secondary mt-1">Unusual logins or policy breaches.</p>
+</div>
+<!-- Disabled Active Toggle -->
+<button aria-pressed="true" class="w-10 h-6 rounded-full bg-primary/60 relative flex items-center px-[2px] cursor-not-allowed" disabled="">
+<span class="w-[20px] h-[20px] bg-on-primary rounded-full shadow-sm transform translate-x-4"></span>
+</button>
+</div>
+</div>
+</div>
+<!-- Right Column: Workspace Overrides -->
+<div class="lg:col-span-8 flex flex-col gap-md">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-md">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Workspace Overrides</h3>
+<!-- Workspace Selector -->
+<div class="relative">
+<button class="flex items-center gap-md px-md py-sm bg-surface-container-lowest border border-outline-variant rounded-lg hover:bg-surface-container-low transition-colors shadow-sm min-w-[200px] justify-between">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-secondary" style="font-size: 18px;">corporate_fare</span>
+<span class="font-body-md text-body-md text-on-surface font-medium">Engineering</span>
+</div>
+<span class="material-symbols-outlined text-secondary">expand_more</span>
+</button>
+<!-- Dropdown menu would sit here, omitted for static UI -->
+</div>
+</div>
+<!-- Data Table Card -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr>
+<th class="py-sm px-md border-b border-outline-variant font-label-md text-label-md text-secondary font-medium uppercase tracking-wider bg-surface-container-low/30">Notification Type</th>
+<th class="py-sm px-md border-b border-outline-variant font-label-md text-label-md text-secondary font-medium uppercase tracking-wider bg-surface-container-low/30">Delivery Channel</th>
+<th class="py-sm px-md border-b border-outline-variant font-label-md text-label-md text-secondary font-medium uppercase tracking-wider bg-surface-container-low/30 text-right">Policy Status</th>
+</tr>
+</thead>
+<tbody class="font-body-md text-body-md text-on-surface">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors group">
+<td class="py-md px-md border-b border-outline-variant">
+<p class="font-medium">Pull Request Reviews</p>
+<p class="font-label-md text-secondary mt-0.5">Assigned or requested reviews.</p>
+</td>
+<td class="py-md px-md border-b border-outline-variant">
+<div class="flex items-center gap-md">
+<label class="flex items-center gap-xs cursor-pointer">
+<input checked="" class="rounded border-outline-variant text-primary focus:ring-primary w-4 h-4 bg-surface" type="checkbox"/>
+<span class="text-secondary text-sm">In-app</span>
+</label>
+<label class="flex items-center gap-xs cursor-pointer">
+<input class="rounded border-outline-variant text-primary focus:ring-primary w-4 h-4 bg-surface" type="checkbox"/>
+<span class="text-secondary text-sm">Email</span>
+</label>
+</div>
+</td>
+<td class="py-md px-md border-b border-outline-variant text-right">
+<span class="inline-flex items-center gap-xs px-2 py-1 rounded-full bg-surface text-secondary font-label-md border border-outline-variant">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                                            Custom
+                                        </span>
+</td>
+</tr>
+<!-- Row 2 (Enforced) -->
+<tr class="bg-surface-container-low/20 group">
+<td class="py-md px-md border-b border-outline-variant">
+<p class="font-medium text-on-surface">Deployment Status</p>
+<p class="font-label-md text-secondary mt-0.5">Success, failure, or rollback alerts.</p>
+</td>
+<td class="py-md px-md border-b border-outline-variant">
+<div class="flex items-center gap-md opacity-60">
+<label class="flex items-center gap-xs cursor-not-allowed">
+<input checked="" class="rounded border-outline-variant text-primary w-4 h-4 bg-surface" disabled="" type="checkbox"/>
+<span class="text-secondary text-sm">In-app</span>
+</label>
+<label class="flex items-center gap-xs cursor-not-allowed">
+<input checked="" class="rounded border-outline-variant text-primary w-4 h-4 bg-surface" disabled="" type="checkbox"/>
+<span class="text-secondary text-sm">Email</span>
+</label>
+</div>
+</td>
+<td class="py-md px-md border-b border-outline-variant text-right">
+<div class="inline-flex items-center gap-xs px-2.5 py-1 rounded-full bg-surface-variant text-on-surface-variant font-label-md border border-outline-variant/50" title="Enforced by Workspace Admin settings">
+<span class="material-symbols-outlined" style="font-size: 14px;">lock</span>
+                                            Locked by Policy
+                                        </div>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors group">
+<td class="py-md px-md border-b border-outline-variant">
+<p class="font-medium text-on-surface">Weekly Digest</p>
+<p class="font-label-md text-secondary mt-0.5">Summary of workspace activity.</p>
+</td>
+<td class="py-md px-md border-b border-outline-variant">
+<div class="flex items-center gap-md">
+<label class="flex items-center gap-xs cursor-pointer opacity-50" title="Not available for this alert type">
+<input class="rounded border-outline-variant w-4 h-4 bg-surface" disabled="" type="checkbox"/>
+<span class="text-secondary text-sm line-through">In-app</span>
+</label>
+<label class="flex items-center gap-xs cursor-pointer">
+<input checked="" class="rounded border-outline-variant text-primary focus:ring-primary w-4 h-4 bg-surface" type="checkbox"/>
+<span class="text-secondary text-sm">Email</span>
+</label>
+</div>
+</td>
+<td class="py-md px-md border-b border-outline-variant text-right">
+<span class="inline-flex items-center gap-xs px-2 py-1 rounded-full bg-surface text-secondary font-label-md border border-outline-variant">
+<span class="w-1.5 h-1.5 rounded-full bg-outline"></span>
+                                            Default
+                                        </span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p class="font-label-md text-label-md text-secondary text-right mt-sm flex items-center justify-end gap-xs">
+<span class="material-symbols-outlined" style="font-size: 16px;">info</span>
+                        Locked policies inherit settings from the Engineering organization level.
+                    </p>
+</div>
+</div>
+</div>
+</main>
+</body></html>
