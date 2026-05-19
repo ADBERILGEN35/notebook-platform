@@ -44,6 +44,9 @@ jobs:
       - name: Backend RC sign-off template
         run: bash scripts/security/ci-generate-backend-rc-signoff-template.sh
 
+      - name: Platform RC sign-off template
+        run: bash scripts/security/ci-generate-platform-rc-signoff-template.sh
+
       - name: Backend live staging PP evidence orchestrator
         run: bash scripts/security/ci-run-backend-live-staging-pp-evidence.sh
 
@@ -77,6 +80,9 @@ jobs:
         run: |
           npm ci
           npm run build
+
+      - name: Frontend RC sign-off template
+        run: bash scripts/security/ci-generate-frontend-rc-signoff-template.sh
 
       - name: Frontend image build
         env:

@@ -41,4 +41,26 @@ describe('auth routes', () => {
     expect(adminChild).toBeTruthy()
     expect(adminChild?.element).toBeTruthy()
   })
+
+  it('registers Faz 142 admin diagnostic routes', () => {
+    const paths = collectPaths(router.routes)
+    expect(paths.some((p) => p.endsWith('admin/overview') || p.includes('admin/overview'))).toBe(true)
+    expect(paths.some((p) => p.includes('admin/setup'))).toBe(true)
+    expect(paths.some((p) => p.includes('admin/identity/sso'))).toBe(true)
+    expect(paths.some((p) => p.includes('admin/identity/scim'))).toBe(true)
+    expect(paths.some((p) => p.includes('admin/identity/role-mapping'))).toBe(true)
+    expect(paths.some((p) => p.includes('admin/security/break-glass'))).toBe(true)
+    expect(paths.some((p) => p.includes('change-requests'))).toBe(true)
+  })
+
+  it('registers Faz 144 notification ops and retention routes', () => {
+    const paths = collectPaths(router.routes)
+    expect(paths.some((p) => p.includes('notifications/analytics'))).toBe(true)
+    expect(paths.some((p) => p.includes('notifications/dead-letter'))).toBe(true)
+    expect(paths.some((p) => p.includes('dead-letter/:eventId/requeue'))).toBe(true)
+    expect(paths.some((p) => p.includes('notifications/retention'))).toBe(true)
+    expect(paths.some((p) => p.includes('retention/legal-holds'))).toBe(true)
+    expect(paths.some((p) => p.includes('retention/purge-result'))).toBe(true)
+    expect(paths.some((p) => p.endsWith('retention') || p.includes('/retention'))).toBe(true)
+  })
 })

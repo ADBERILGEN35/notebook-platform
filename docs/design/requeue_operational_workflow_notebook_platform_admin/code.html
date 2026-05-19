@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Notebook Platform - Requeue Dry-run</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&amp;family=Manrope:wght@600;700&amp;family=JetBrains+Mono:wght@400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-primary-fixed": "#0f0069",
+                      "on-secondary": "#ffffff",
+                      "outline": "#777584",
+                      "on-secondary-container": "#57657a",
+                      "background": "#fcf8ff",
+                      "tertiary": "#511c00",
+                      "secondary": "#515f74",
+                      "surface-container": "#f0ecf6",
+                      "on-primary": "#ffffff",
+                      "surface-tint": "#544fc0",
+                      "surface": "#fcf8ff",
+                      "on-background": "#1b1b22",
+                      "primary-fixed": "#e2dfff",
+                      "on-primary-fixed-variant": "#3b35a7",
+                      "inverse-on-surface": "#f3eff9",
+                      "on-tertiary": "#ffffff",
+                      "surface-container-highest": "#e4e1eb",
+                      "on-error-container": "#93000a",
+                      "on-tertiary-container": "#fe9562",
+                      "on-tertiary-fixed": "#351000",
+                      "error-container": "#ffdad6",
+                      "on-error": "#ffffff",
+                      "primary-fixed-dim": "#c3c0ff",
+                      "outline-variant": "#c8c4d5",
+                      "surface-variant": "#e4e1eb",
+                      "surface-bright": "#fcf8ff",
+                      "inverse-surface": "#303037",
+                      "secondary-container": "#d5e3fc",
+                      "surface-container-high": "#eae6f1",
+                      "tertiary-fixed-dim": "#ffb694",
+                      "on-surface-variant": "#464553",
+                      "inverse-primary": "#c3c0ff",
+                      "on-tertiary-fixed-variant": "#7a3003",
+                      "secondary-fixed": "#d5e3fc",
+                      "on-surface": "#1b1b22",
+                      "primary-container": "#3730a3",
+                      "on-primary-container": "#a9a7ff",
+                      "tertiary-fixed": "#ffdbcc",
+                      "error": "#ba1a1a",
+                      "primary": "#1f108e",
+                      "surface-container-lowest": "#ffffff",
+                      "surface-dim": "#dcd8e3",
+                      "tertiary-container": "#752c00",
+                      "on-secondary-fixed": "#0d1c2e",
+                      "surface-container-low": "#f6f2fc",
+                      "secondary-fixed-dim": "#b9c7df",
+                      "on-secondary-fixed-variant": "#3a485b"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "base": "4px",
+                      "md": "16px",
+                      "xl": "48px",
+                      "lg": "24px",
+                      "gutter": "24px",
+                      "container-max": "1280px",
+                      "xs": "4px",
+                      "sm": "8px"
+              },
+              "fontFamily": {
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "label-md": [
+                              "Inter"
+                      ],
+                      "display-lg": [
+                              "Manrope"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "headline-sm": [
+                              "Manrope"
+                      ],
+                      "headline-md": [
+                              "Manrope"
+                      ],
+                      "mono-sm": [
+                              "JetBrains Mono"
+                      ]
+              },
+              "fontSize": {
+                      "body-lg": [
+                              "16px",
+                              {
+                                      "lineHeight": "1.6",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "label-md": [
+                              "12px",
+                              {
+                                      "lineHeight": "1",
+                                      "letterSpacing": "0.01em",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "display-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "1.1",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "1.5",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-sm": [
+                              "18px",
+                              {
+                                      "lineHeight": "1.4",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "1.3",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "mono-sm": [
+                              "13px",
+                              {
+                                      "lineHeight": "1.5",
+                                      "fontWeight": "400"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+    </script>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex antialiased">
+<!-- Background App Shell (Blurred) -->
+<div class="fixed inset-0 z-0 flex blur-[2px] opacity-80 pointer-events-none">
+<!-- SideNavBar -->
+<nav class="fixed left-0 top-0 h-full w-[240px] bg-surface border-r border-outline-variant flex flex-col py-md px-md z-30">
+<div class="mb-xl">
+<div class="flex items-center gap-sm px-sm py-sm">
+<div class="w-8 h-8 rounded bg-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-on-primary text-sm" style="font-variation-settings: 'FILL' 1;">dataset</span>
+</div>
+<div>
+<h1 class="text-headline-sm font-headline-sm font-bold text-primary">Notebook Platform</h1>
+<p class="text-label-md font-label-md text-on-surface-variant">Enterprise Workspace</p>
+</div>
+</div>
+</div>
+<button class="w-full bg-primary text-on-primary py-sm px-md rounded font-label-md text-label-md mb-xl hover:bg-primary-container hover:text-on-primary-container transition-colors flex items-center justify-center gap-sm">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                New Notebook
+            </button>
+<div class="flex flex-col gap-xs flex-grow">
+<a class="flex items-center gap-md px-sm py-sm rounded hover:bg-surface-container-low transition-colors text-on-surface-variant font-body-md text-body-md opacity-80 transition-all duration-200 text-primary font-bold border-r-2 border-primary" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="folder_open">folder_open</span>
+                    Workspaces
+                </a>
+<a class="flex items-center gap-md px-sm py-sm rounded hover:bg-surface-container-low transition-colors text-on-surface-variant font-body-md text-body-md opacity-80 transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="search">search</span>
+                    Search
+                </a>
+<a class="flex items-center gap-md px-sm py-sm rounded hover:bg-surface-container-low transition-colors text-on-surface-variant font-body-md text-body-md opacity-80 transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="notifications">notifications</span>
+                    Notifications
+                </a>
+<a class="flex items-center gap-md px-sm py-sm rounded hover:bg-surface-container-low transition-colors text-on-surface-variant font-body-md text-body-md opacity-80 transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="settings">settings</span>
+                    Settings
+                </a>
+<a class="flex items-center gap-md px-sm py-sm rounded hover:bg-surface-container-low transition-colors text-on-surface-variant font-body-md text-body-md opacity-80 transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="admin_panel_settings">admin_panel_settings</span>
+                    Admin
+                </a>
+</div>
+<div class="flex flex-col gap-xs mt-auto pt-md border-t border-outline-variant">
+<a class="flex items-center gap-md px-sm py-sm rounded hover:bg-surface-container-low transition-colors text-on-surface-variant font-body-md text-body-md" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="help">help</span>
+                    Support
+                </a>
+<a class="flex items-center gap-md px-sm py-sm rounded hover:bg-surface-container-low transition-colors text-on-surface-variant font-body-md text-body-md" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="logout">logout</span>
+                    Sign Out
+                </a>
+</div>
+</nav>
+<!-- TopNavBar -->
+<header class="fixed top-0 right-0 w-[calc(100%-240px)] z-40 bg-surface/80 backdrop-blur-md border-b border-outline-variant flex justify-between items-center h-16 px-lg">
+<div class="flex items-center gap-xl">
+<h2 class="font-headline-sm text-headline-sm text-on-surface font-bold">Workspace Switcher</h2>
+<nav class="hidden md:flex gap-md">
+<a class="text-secondary font-label-md text-label-md hover:text-primary transition-colors py-sm" href="#">Drafts</a>
+<a class="text-secondary font-label-md text-label-md hover:text-primary transition-colors py-sm" href="#">Shared</a>
+<a class="text-secondary font-label-md text-label-md hover:text-primary transition-colors py-sm" href="#">Archived</a>
+</nav>
+</div>
+<div class="flex items-center gap-md">
+<button class="text-secondary hover:text-primary transition-colors p-xs rounded-full hover:bg-surface-container-low">
+<span class="material-symbols-outlined text-[20px]" data-icon="history">history</span>
+</button>
+<button class="text-secondary hover:text-primary transition-colors p-xs rounded-full hover:bg-surface-container-low">
+<span class="material-symbols-outlined text-[20px]" data-icon="star">star</span>
+</button>
+<button class="bg-primary text-on-primary px-md py-sm rounded font-label-md text-label-md hover:bg-primary-container hover:text-on-primary-container transition-colors ml-sm">
+                    Invite Team
+                </button>
+<div class="h-6 w-px bg-outline-variant mx-xs"></div>
+<button class="w-8 h-8 rounded-full bg-surface-variant overflow-hidden border border-outline-variant ml-xs">
+<img alt="User Profile" class="w-full h-full object-cover" data-alt="A professional headshot of a person looking directly at the camera. The background is slightly out of focus. High quality, clear lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAyfDajFefd6dXhDDONIKFKkc9jnV9RlHXk87eAGPVsXXaCguVanPEYCR2BKTlfrrS3zClXFGFLSL3NdcyuVMbkedljoP3JJ0saDFR4FVO44lQD907OVoo418lMt0ndzI8JfPnkGnHOr3n3iCDV-9zgG1aq9agxk43wuE4SAoZecqpvHdwaR_5uVUjVlELmdnPp83pYh5pIdfNL9Zs8xY7M_UjH4acZwcweVqQpBDjWgWR-gYE6d7OIhLzGzqJfs2he7lf5wjgsgkM"/>
+</button>
+</div>
+</header>
+<!-- Dummy Content representing Dead-letter queue -->
+<main class="ml-[240px] pt-16 flex-1 bg-background p-lg flex justify-center items-center h-screen w-full relative overflow-hidden">
+<!-- Abstract tech background visual to imply data stream -->
+<div class="absolute inset-0 opacity-10 pointer-events-none flex flex-col gap-4 p-8">
+<div class="h-12 w-full bg-surface-variant rounded flex items-center px-4"><div class="h-2 w-1/4 bg-primary rounded"></div></div>
+<div class="h-12 w-full bg-surface-variant rounded flex items-center px-4"><div class="h-2 w-1/3 bg-error rounded"></div></div>
+<div class="h-12 w-full bg-surface-variant rounded flex items-center px-4"><div class="h-2 w-1/2 bg-primary rounded"></div></div>
+<div class="h-12 w-full bg-surface-variant rounded flex items-center px-4"><div class="h-2 w-1/5 bg-error rounded"></div></div>
+<div class="h-12 w-full bg-surface-variant rounded flex items-center px-4"><div class="h-2 w-1/4 bg-primary rounded"></div></div>
+<div class="h-12 w-full bg-surface-variant rounded flex items-center px-4"><div class="h-2 w-1/4 bg-primary rounded"></div></div>
+</div>
+</main>
+</div>
+<!-- Modal Overlay -->
+<div class="fixed inset-0 z-50 flex items-center justify-center p-md bg-inverse-surface/40 backdrop-blur-sm overflow-y-auto">
+<!-- Two Modals side-by-side for demonstration. In a real app, these would be separate states. -->
+<div class="flex gap-xl items-start justify-center max-w-[1280px] w-full">
+<!-- STATE A: Dry-run Modal -->
+<div class="bg-surface border border-outline-variant rounded-xl shadow-[0px_10px_15px_-3px_rgba(15,23,42,0.1)] w-full max-w-[480px] flex flex-col overflow-hidden">
+<!-- Header -->
+<div class="px-lg py-md border-b border-outline-variant flex justify-between items-start bg-surface-container-lowest">
+<div>
+<h2 class="text-headline-sm font-headline-sm text-on-surface font-bold flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary" data-icon="science">science</span>
+                            Requeue Dry-run
+                        </h2>
+<p class="text-body-md font-body-md text-on-surface-variant mt-xs">Analyzing event <span class="font-mono-sm text-mono-sm bg-surface-variant px-1 rounded">evt_9x8k2</span></p>
+</div>
+<button class="text-on-surface-variant hover:text-on-surface p-xs rounded-full hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined text-[20px]" data-icon="close">close</span>
+</button>
+</div>
+<!-- Body -->
+<div class="p-lg flex flex-col gap-lg bg-background">
+<!-- Eligibility Checks -->
+<div class="flex flex-col gap-sm">
+<h3 class="text-label-md font-label-md text-on-surface font-bold uppercase tracking-wider text-xs">Eligibility Checks</h3>
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg overflow-hidden">
+<div class="px-md py-sm border-b border-outline-variant flex items-center gap-md">
+<span class="material-symbols-outlined text-[#10b981] text-[18px]" data-icon="check_circle" data-weight="fill">check_circle</span>
+<div class="flex-1">
+<span class="text-body-md font-body-md text-on-surface">Status check</span>
+</div>
+<span class="text-label-md font-label-md text-on-surface-variant">Passed</span>
+</div>
+<div class="px-md py-sm border-b border-outline-variant flex items-center gap-md">
+<span class="material-symbols-outlined text-[#10b981] text-[18px]" data-icon="check_circle" data-weight="fill">check_circle</span>
+<div class="flex-1">
+<span class="text-body-md font-body-md text-on-surface">Max attempts check</span>
+</div>
+<span class="text-label-md font-label-md text-on-surface-variant">2/5 used</span>
+</div>
+<div class="px-md py-sm flex items-center gap-md">
+<span class="material-symbols-outlined text-[#10b981] text-[18px]" data-icon="check_circle" data-weight="fill">check_circle</span>
+<div class="flex-1">
+<span class="text-body-md font-body-md text-on-surface">Source support</span>
+</div>
+<span class="text-label-md font-label-md text-on-surface-variant">Verified</span>
+</div>
+</div>
+</div>
+<!-- Expected Result -->
+<div class="flex flex-col gap-sm">
+<h3 class="text-label-md font-label-md text-on-surface font-bold uppercase tracking-wider text-xs">Expected Result</h3>
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-md flex items-start gap-md">
+<div class="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center flex-shrink-0 mt-xs">
+<span class="material-symbols-outlined text-secondary text-[18px]" data-icon="double_arrow">double_arrow</span>
+</div>
+<div>
+<p class="text-body-md font-body-md text-on-surface">Event will be routed to <span class="font-mono-sm text-mono-sm bg-surface-variant px-1 rounded">queue_primary_v2</span>.</p>
+<div class="mt-sm flex items-center gap-xs">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#fef3c7] text-[#b45309] text-[11px] font-label-md border border-[#fde68a]">
+<span class="material-symbols-outlined text-[12px]" data-icon="warning">warning</span>
+                                         Duplicate Risk: Medium
+                                     </span>
+</div>
+</div>
+</div>
+</div>
+<!-- Reason Field (Disabled in State A) -->
+<div class="flex flex-col gap-xs">
+<label class="text-label-md font-label-md text-on-surface-variant">Requeue Reason</label>
+<textarea class="w-full bg-surface-container border border-outline-variant rounded-lg px-md py-sm text-body-md font-body-md text-on-surface-variant opacity-60 resize-none h-20 cursor-not-allowed focus:ring-0 focus:border-outline-variant" disabled="" placeholder="Reason field is disabled during dry-run..."></textarea>
+</div>
+</div>
+<!-- Footer Actions -->
+<div class="px-lg py-md border-t border-outline-variant bg-surface-container-lowest flex justify-end gap-sm">
+<button class="px-md py-sm rounded-lg bg-surface-container-lowest border border-outline-variant text-on-surface font-label-md text-label-md hover:bg-surface-container-low transition-colors">
+                        Cancel
+                    </button>
+<button class="px-md py-sm rounded-lg bg-primary text-on-primary font-label-md text-label-md hover:bg-primary-container transition-colors flex items-center gap-xs shadow-sm">
+                        Continue to Confirmation
+                        <span class="material-symbols-outlined text-[16px]" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- STATE B: Confirmation Modal -->
+<div class="bg-surface border border-outline-variant rounded-xl shadow-[0px_10px_15px_-3px_rgba(15,23,42,0.1)] w-full max-w-[480px] flex flex-col overflow-hidden relative">
+<!-- Danger Accent Bar -->
+<div class="h-1 w-full bg-error absolute top-0 left-0 z-10"></div>
+<!-- Header -->
+<div class="px-lg py-md border-b border-outline-variant flex justify-between items-start bg-surface-container-lowest pt-5">
+<div>
+<h2 class="text-headline-sm font-headline-sm text-on-surface font-bold flex items-center gap-sm">
+<span class="material-symbols-outlined text-error" data-icon="warning">warning</span>
+                            Confirm High-Risk Requeue
+                        </h2>
+<p class="text-body-md font-body-md text-on-surface-variant mt-xs">Action requires audit logging.</p>
+</div>
+<button class="text-on-surface-variant hover:text-on-surface p-xs rounded-full hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined text-[20px]" data-icon="close">close</span>
+</button>
+</div>
+<!-- Body -->
+<div class="p-lg flex flex-col gap-lg bg-background">
+<!-- Warning Banner -->
+<div class="bg-error-container/30 border border-error-container rounded-lg p-md flex items-start gap-md">
+<span class="material-symbols-outlined text-error mt-xs" data-icon="error">error</span>
+<p class="text-body-md font-body-md text-on-surface">Requeue may deliver a notification event again. <span class="font-bold">Only continue if the original failure has been investigated.</span></p>
+</div>
+<!-- Event Details Summary -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-md flex flex-col gap-xs">
+<div class="flex justify-between items-center">
+<span class="text-label-md font-label-md text-on-surface-variant">Event ID</span>
+<span class="font-mono-sm text-mono-sm text-on-surface">evt_9x8k2_alpha</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-label-md font-label-md text-on-surface-variant">Original Failure</span>
+<span class="text-body-md font-body-md text-on-surface">Timeout at downstream</span>
+</div>
+<div class="flex justify-between items-center mt-sm pt-sm border-t border-outline-variant border-dashed">
+<span class="text-label-md font-label-md text-on-surface-variant">Target Queue</span>
+<span class="font-mono-sm text-mono-sm text-on-surface bg-surface-container px-1 rounded">queue_primary_v2</span>
+</div>
+</div>
+<!-- Required Reason Field -->
+<div class="flex flex-col gap-xs">
+<label class="text-label-md font-label-md text-on-surface flex items-center justify-between">
+                            Required Reason
+                            <span class="text-error text-xs">*</span>
+</label>
+<textarea class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-md py-sm text-body-md font-body-md text-on-surface focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all resize-none h-24" placeholder="Detail the investigation findings and justification for requeue..."></textarea>
+<p class="text-[11px] font-label-md text-on-surface-variant text-right">Minimum 10 characters required.</p>
+</div>
+</div>
+<!-- Footer Actions -->
+<div class="px-lg py-md border-t border-outline-variant bg-surface-container-lowest flex justify-end gap-sm items-center">
+<button class="px-md py-sm rounded-lg bg-surface-container-lowest border border-outline-variant text-on-surface font-label-md text-label-md hover:bg-surface-container-low transition-colors">
+                        Cancel
+                    </button>
+<!-- High Visibility Action Button -->
+<button class="px-lg py-sm rounded-lg bg-error text-on-error font-label-md text-label-md hover:bg-[#93000a] transition-colors flex items-center gap-xs shadow-[0px_4px_6px_-1px_rgba(220,38,38,0.2)] font-bold">
+<span class="material-symbols-outlined text-[18px]" data-icon="refresh">refresh</span>
+                        Requeue Event
+                    </button>
+</div>
+</div>
+</div>
+</div>
+</body></html>

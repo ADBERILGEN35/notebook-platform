@@ -1,4 +1,5 @@
 import type { PropsWithChildren, ReactNode } from 'react'
+import { SkipToMain } from '../../../shared/components/SkipToMain'
 import { SideNav } from './SideNav'
 import { TopNav } from './TopNav'
 import { MobileNav } from './MobileNav'
@@ -27,6 +28,7 @@ export function AppShell({
 }: AppShellProps) {
   return (
     <div className="flex min-h-screen overflow-x-hidden bg-surface">
+      <SkipToMain />
       {isDesktop ? <SideNav {...nav} /> : null}
       <MobileNavDrawer open={!isDesktop && mobileNavOpen} onClose={onMobileNavClose} {...nav} />
       <div className="flex min-h-screen flex-1 flex-col pb-16 lg:pb-0">

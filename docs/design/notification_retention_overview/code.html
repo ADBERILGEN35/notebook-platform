@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Notification Retention - Notebook Platform</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&amp;family=Manrope:wght@600;700&amp;family=JetBrains+Mono:wght@400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-bright": "#fcf8ff",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-low": "#f6f2fc",
+                        "surface": "#fcf8ff",
+                        "on-primary": "#ffffff",
+                        "inverse-primary": "#c3c0ff",
+                        "tertiary-container": "#752c00",
+                        "surface-container": "#f0ecf6",
+                        "on-surface-variant": "#464553",
+                        "surface-container-high": "#eae6f1",
+                        "on-secondary": "#ffffff",
+                        "on-secondary-container": "#57657a",
+                        "on-error-container": "#93000a",
+                        "primary": "#1f108e",
+                        "background": "#fcf8ff",
+                        "tertiary-fixed": "#ffdbcc",
+                        "error-container": "#ffdad6",
+                        "tertiary": "#511c00",
+                        "on-error": "#ffffff",
+                        "surface-variant": "#e4e1eb",
+                        "secondary": "#515f74",
+                        "on-background": "#1b1b22",
+                        "surface-container-highest": "#e4e1eb",
+                        "on-secondary-fixed": "#0d1c2e",
+                        "primary-fixed-dim": "#c3c0ff",
+                        "primary-fixed": "#e2dfff",
+                        "surface-dim": "#dcd8e3",
+                        "on-primary-container": "#a9a7ff",
+                        "secondary-fixed-dim": "#b9c7df",
+                        "inverse-surface": "#303037",
+                        "surface-tint": "#544fc0",
+                        "on-secondary-fixed-variant": "#3a485b",
+                        "inverse-on-surface": "#f3eff9",
+                        "on-tertiary": "#ffffff",
+                        "error": "#ba1a1a",
+                        "on-tertiary-fixed-variant": "#7a3003",
+                        "tertiary-fixed-dim": "#ffb694",
+                        "on-surface": "#1b1b22",
+                        "secondary-fixed": "#d5e3fc",
+                        "on-primary-fixed-variant": "#3b35a7",
+                        "on-tertiary-fixed": "#351000",
+                        "outline": "#777584",
+                        "primary-container": "#3730a3",
+                        "secondary-container": "#d5e3fc",
+                        "on-tertiary-container": "#fe9562",
+                        "on-primary-fixed": "#0f0069",
+                        "outline-variant": "#c8c4d5"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "24px",
+                        "lg": "24px",
+                        "base": "4px",
+                        "xs": "4px",
+                        "xl": "48px",
+                        "sm": "8px",
+                        "container-max": "1280px",
+                        "md": "16px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Inter"],
+                        "headline-sm": ["Manrope"],
+                        "display-lg": ["Manrope"],
+                        "headline-md": ["Manrope"],
+                        "mono-sm": ["JetBrains Mono"],
+                        "label-md": ["Inter"],
+                        "body-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["16px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "headline-sm": ["18px", { "lineHeight": "1.4", "fontWeight": "600" }],
+                        "display-lg": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-md": ["24px", { "lineHeight": "1.3", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "mono-sm": ["13px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "label-md": ["12px", { "lineHeight": "1", "letterSpacing": "0.01em", "fontWeight": "500" }],
+                        "body-md": ["14px", { "lineHeight": "1.5", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-surface-container-lowest text-on-surface font-body-md antialiased min-h-screen">
+<!-- SideNavBar -->
+<nav class="fixed left-0 top-0 h-full w-[240px] border-r border-outline-variant bg-surface flex flex-col h-full py-md px-md hidden md:flex z-50">
+<div class="mb-xl flex items-center gap-sm px-sm">
+<span class="material-symbols-outlined text-primary text-2xl" data-weight="fill" style="font-variation-settings: 'FILL' 1;">book</span>
+<div>
+<div class="text-headline-sm font-headline-sm font-bold text-primary">Notebook Platform</div>
+<div class="text-label-md font-label-md text-on-surface-variant">Enterprise Workspace</div>
+</div>
+</div>
+<button class="mb-xl bg-primary text-on-primary font-label-md text-label-md py-sm px-md rounded-lg flex items-center justify-center gap-xs hover:bg-primary-container transition-colors w-full">
+<span class="material-symbols-outlined text-lg">add</span>
+            New Notebook
+        </button>
+<div class="flex-1 flex flex-col gap-xs">
+<a class="flex items-center gap-sm px-sm py-sm rounded-lg text-on-surface-variant font-body-md text-body-md hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined">folder_open</span>
+                Workspaces
+            </a>
+<a class="flex items-center gap-sm px-sm py-sm rounded-lg text-on-surface-variant font-body-md text-body-md hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined">search</span>
+                Search
+            </a>
+<a class="flex items-center gap-sm px-sm py-sm rounded-lg text-on-surface-variant font-body-md text-body-md hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined">notifications</span>
+                Notifications
+            </a>
+<a class="flex items-center gap-sm px-sm py-sm rounded-lg text-on-surface-variant font-body-md text-body-md hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined">settings</span>
+                Settings
+            </a>
+<a class="flex items-center gap-sm px-sm py-sm rounded-lg text-primary font-bold border-r-2 border-primary bg-surface-container-low transition-all duration-200" href="#">
+<span class="material-symbols-outlined">admin_panel_settings</span>
+                Admin
+            </a>
+</div>
+<div class="mt-auto pt-lg border-t border-outline-variant flex flex-col gap-xs">
+<a class="flex items-center gap-sm px-sm py-sm rounded-lg text-on-surface-variant font-body-md text-body-md hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined">help</span>
+                Support
+            </a>
+<a class="flex items-center gap-sm px-sm py-sm rounded-lg text-on-surface-variant font-body-md text-body-md hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined">logout</span>
+                Sign Out
+            </a>
+</div>
+</nav>
+<!-- TopNavBar -->
+<header class="fixed top-0 right-0 w-full md:w-[calc(100%-240px)] z-40 border-b border-outline-variant bg-surface/80 backdrop-blur-md flex justify-between items-center h-16 px-lg">
+<div class="flex items-center gap-md">
+<div class="font-headline-sm text-headline-sm text-on-surface hidden md:block">Workspace Switcher</div>
+<div class="md:hidden flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary text-xl" data-weight="fill" style="font-variation-settings: 'FILL' 1;">book</span>
+</div>
+<nav class="hidden lg:flex items-center gap-lg ml-xl">
+<a class="text-secondary font-label-md text-label-md hover:text-primary transition-colors py-sm" href="#">Drafts</a>
+<a class="text-secondary font-label-md text-label-md hover:text-primary transition-colors py-sm" href="#">Shared</a>
+<a class="text-secondary font-label-md text-label-md hover:text-primary transition-colors py-sm" href="#">Archived</a>
+</nav>
+</div>
+<div class="flex items-center gap-md">
+<div class="hidden sm:flex items-center gap-xs">
+<button class="p-sm rounded-full text-secondary hover:text-primary hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined">history</span>
+</button>
+<button class="p-sm rounded-full text-secondary hover:text-primary hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined">star</span>
+</button>
+<button class="p-sm rounded-full text-secondary hover:text-primary hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+<button class="hidden sm:block text-primary font-label-md text-label-md px-sm py-xs border border-outline-variant rounded-lg hover:bg-surface-container-low transition-colors">Invite Team</button>
+<div class="h-8 w-8 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container font-headline-sm text-headline-sm cursor-pointer border border-outline-variant">
+<span class="material-symbols-outlined text-sm">person</span>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="pt-24 pb-xl px-lg md:px-xl md:ml-[240px] max-w-container-max mx-auto w-full">
+<!-- Breadcrumbs -->
+<nav class="flex items-center gap-xs text-on-surface-variant font-label-md text-label-md mb-lg">
+<a class="hover:text-primary transition-colors" href="#">Admin</a>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<a class="hover:text-primary transition-colors" href="#">Notifications</a>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<span class="text-on-surface">Retention</span>
+</nav>
+<!-- Header -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-md mb-xl">
+<div class="flex items-center gap-md">
+<h1 class="text-display-lg font-display-lg text-on-surface">Notification Retention</h1>
+<span class="bg-surface-container text-on-surface-variant px-sm py-xs rounded-full font-label-md text-label-md flex items-center gap-xs border border-outline-variant">
+<span class="material-symbols-outlined text-[14px]">science</span>
+                    Dry-run Only
+                </span>
+</div>
+<button class="bg-primary text-on-primary px-md py-sm rounded-lg font-label-md text-label-md flex items-center gap-xs hover:bg-primary-container transition-colors shadow-sm">
+<span class="material-symbols-outlined text-sm">play_arrow</span>
+                Manual Dry-run
+            </button>
+</div>
+<!-- Warning Callout -->
+<div class="bg-error-container/20 border border-error-container rounded-xl p-md flex items-start gap-md mb-xl">
+<span class="material-symbols-outlined text-error mt-xs" data-weight="fill" style="font-variation-settings: 'FILL' 1;">warning</span>
+<div>
+<h4 class="text-headline-sm font-headline-sm text-on-surface mb-xs">Destructive purge disabled</h4>
+<p class="text-body-md font-body-md text-on-surface-variant">Destructive purge is currently disabled via feature flag. Retention workers will only log eligible records without removing them from the database.</p>
+</div>
+</div>
+<!-- Summary Cards -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-md mb-xl">
+<!-- Card 1 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-md shadow-sm hover:shadow-md transition-shadow">
+<div class="flex items-center justify-between mb-sm">
+<span class="text-label-md font-label-md text-on-surface-variant">Retention Worker</span>
+<span class="material-symbols-outlined text-on-surface-variant text-sm">memory</span>
+</div>
+<div class="flex items-end justify-between">
+<div class="text-headline-md font-headline-md text-on-surface">Healthy</div>
+<span class="w-2 h-2 rounded-full bg-[#10b981] mb-2"></span>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-md shadow-sm hover:shadow-md transition-shadow">
+<div class="flex items-center justify-between mb-sm">
+<span class="text-label-md font-label-md text-on-surface-variant">Purge Mode</span>
+<span class="material-symbols-outlined text-on-surface-variant text-sm">delete_sweep</span>
+</div>
+<div class="flex items-end justify-between">
+<div class="text-headline-md font-headline-md text-on-surface">Dry-run Only</div>
+<span class="bg-[#fef3c7] text-[#b45309] px-xs py-[2px] rounded font-label-md text-[10px] uppercase tracking-wider">Warning</span>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-md shadow-sm hover:shadow-md transition-shadow">
+<div class="flex items-center justify-between mb-sm">
+<span class="text-label-md font-label-md text-on-surface-variant">Legal Holds</span>
+<span class="material-symbols-outlined text-on-surface-variant text-sm">gavel</span>
+</div>
+<div class="flex items-end justify-between">
+<div class="text-headline-md font-headline-md text-on-surface">3 Active</div>
+<span class="bg-[#fef3c7] text-[#b45309] px-xs py-[2px] rounded font-label-md text-[10px] uppercase tracking-wider">Amber</span>
+</div>
+</div>
+<!-- Card 4 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-md shadow-sm hover:shadow-md transition-shadow">
+<div class="flex items-center justify-between mb-sm">
+<span class="text-label-md font-label-md text-on-surface-variant">Eligible Records</span>
+<span class="material-symbols-outlined text-on-surface-variant text-sm">database</span>
+</div>
+<div class="flex items-end justify-between">
+<div class="text-headline-md font-headline-md text-on-surface">1.2M</div>
+<span class="text-label-md font-label-md text-on-surface-variant">Total</span>
+</div>
+</div>
+</div>
+<!-- Main Data Table -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm overflow-hidden">
+<div class="px-md py-md border-b border-outline-variant flex justify-between items-center bg-surface-bright">
+<h3 class="text-headline-sm font-headline-sm text-on-surface">Retention Plan (Dry-run Results)</h3>
+<button class="text-secondary hover:text-primary transition-colors">
+<span class="material-symbols-outlined">filter_list</span>
+</button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="border-b border-outline-variant bg-surface-container-lowest">
+<th class="py-sm px-md font-label-md text-label-md text-on-surface-variant font-medium">Target</th>
+<th class="py-sm px-md font-label-md text-label-md text-on-surface-variant font-medium">Retention Period</th>
+<th class="py-sm px-md font-label-md text-label-md text-on-surface-variant font-medium">Cutoff Date</th>
+<th class="py-sm px-md font-label-md text-label-md text-on-surface-variant font-medium text-right">Eligible Count</th>
+<th class="py-sm px-md font-label-md text-label-md text-on-surface-variant font-medium text-right">Purgeable Count</th>
+<th class="py-sm px-md font-label-md text-label-md text-on-surface-variant font-medium">Status</th>
+<th class="py-sm px-md font-label-md text-label-md text-on-surface-variant font-medium text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="text-body-md font-body-md text-on-surface divide-y divide-outline-variant">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="py-md px-md font-mono-sm text-mono-sm">notification_delivery_analytics_hourly</td>
+<td class="py-md px-md">30 days</td>
+<td class="py-md px-md">2023-09-27</td>
+<td class="py-md px-md text-right tabular-nums">850k</td>
+<td class="py-md px-md text-right tabular-nums">850k</td>
+<td class="py-md px-md">
+<span class="bg-surface-container text-on-surface px-xs py-[2px] rounded-full font-label-md text-[11px] border border-outline-variant">Eligible</span>
+</td>
+<td class="py-md px-md text-right">
+<button class="text-secondary hover:text-primary opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-sm">more_horiz</span>
+</button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="py-md px-md font-mono-sm text-mono-sm">notification_fanout_outbox_sent</td>
+<td class="py-md px-md">14 days</td>
+<td class="py-md px-md">2023-10-13</td>
+<td class="py-md px-md text-right tabular-nums">250k</td>
+<td class="py-md px-md text-right tabular-nums text-on-surface-variant">0</td>
+<td class="py-md px-md">
+<span class="bg-[#fef3c7] text-[#b45309] px-xs py-[2px] rounded-full font-label-md text-[11px] border border-[#fde68a] flex items-center w-fit gap-xs">
+<span class="material-symbols-outlined text-[12px]">gavel</span>
+                                    Blocked by Legal Hold
+                                </span>
+</td>
+<td class="py-md px-md text-right">
+<button class="text-secondary hover:text-primary opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-sm">more_horiz</span>
+</button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="py-md px-md font-mono-sm text-mono-sm">notification_dead_letter_requeue_requests</td>
+<td class="py-md px-md">90 days</td>
+<td class="py-md px-md">2023-07-29</td>
+<td class="py-md px-md text-right tabular-nums">12k</td>
+<td class="py-md px-md text-right tabular-nums">12k</td>
+<td class="py-md px-md">
+<span class="bg-surface-container text-on-surface px-xs py-[2px] rounded-full font-label-md text-[11px] border border-outline-variant">Eligible</span>
+</td>
+<td class="py-md px-md text-right">
+<button class="text-secondary hover:text-primary opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-sm">more_horiz</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="px-md py-sm border-t border-outline-variant bg-surface-container-lowest flex justify-end">
+<span class="text-label-md font-label-md text-on-surface-variant">Showing 3 of 12 targets</span>
+</div>
+</div>
+</main>
+</body></html>

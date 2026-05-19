@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Platform Retention Governance - Notebook Enterprise</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Manrope:wght@600;700;800&amp;family=JetBrains+Mono&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-container": "#57657a",
+                        "surface-container-high": "#eae6f1",
+                        "on-tertiary-fixed-variant": "#7a3003",
+                        "secondary-fixed": "#d5e3fc",
+                        "secondary-fixed-dim": "#b9c7df",
+                        "on-tertiary-container": "#fe9562",
+                        "on-surface": "#1b1b22",
+                        "surface-tint": "#544fc0",
+                        "surface-container": "#f0ecf6",
+                        "primary": "#1f108e",
+                        "tertiary": "#511c00",
+                        "tertiary-fixed": "#ffdbcc",
+                        "on-secondary-fixed-variant": "#3a485b",
+                        "tertiary-fixed-dim": "#ffb694",
+                        "surface-container-highest": "#e4e1eb",
+                        "on-error": "#ffffff",
+                        "outline": "#777584",
+                        "primary-fixed-dim": "#c3c0ff",
+                        "secondary": "#515f74",
+                        "on-primary-container": "#a9a7ff",
+                        "on-surface-variant": "#464553",
+                        "on-primary-fixed-variant": "#3b35a7",
+                        "outline-variant": "#c8c4d5",
+                        "primary-fixed": "#e2dfff",
+                        "on-error-container": "#93000a",
+                        "inverse-surface": "#303037",
+                        "on-tertiary": "#ffffff",
+                        "surface-dim": "#dcd8e3",
+                        "surface-variant": "#e4e1eb",
+                        "surface-bright": "#fcf8ff",
+                        "inverse-on-surface": "#f3eff9",
+                        "surface-container-low": "#f6f2fc",
+                        "primary-container": "#3730a3",
+                        "on-background": "#1b1b22",
+                        "surface": "#fcf8ff",
+                        "on-secondary-fixed": "#0d1c2e",
+                        "inverse-primary": "#c3c0ff",
+                        "on-secondary": "#ffffff",
+                        "background": "#fcf8ff",
+                        "tertiary-container": "#752c00",
+                        "on-primary-fixed": "#0f0069",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary-fixed": "#351000",
+                        "secondary-container": "#d5e3fc",
+                        "error": "#ba1a1a",
+                        "on-primary": "#ffffff",
+                        "error-container": "#ffdad6"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "sm": "8px",
+                        "gutter": "24px",
+                        "xl": "48px",
+                        "lg": "24px",
+                        "container-max": "1280px",
+                        "md": "16px",
+                        "base": "4px",
+                        "xs": "4px"
+                    },
+                    "fontFamily": {
+                        "mono-sm": ["JetBrains Mono"],
+                        "headline-md": ["Manrope"],
+                        "display-lg": ["Manrope"],
+                        "body-md": ["Inter"],
+                        "headline-sm": ["Manrope"],
+                        "body-lg": ["Inter"],
+                        "label-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "mono-sm": ["13px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                        "headline-md": ["24px", {"lineHeight": "1.3", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "display-lg": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "body-md": ["14px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                        "headline-sm": ["18px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                        "body-lg": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                        "label-md": ["12px", {"lineHeight": "1", "letterSpacing": "0.01em", "fontWeight": "500"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        body {
+            background-color: #fcf8ff;
+            color: #1b1b22;
+        }
+    </style>
+</head>
+<body class="font-body-md text-body-md">
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-0 h-full w-[240px] z-40 bg-surface-container-low dark:bg-surface-container-lowest border-r border-outline-variant dark:border-outline flex flex-col py-lg px-md gap-sm">
+<div class="mb-xl px-sm">
+<h1 class="font-headline-sm text-headline-sm font-bold text-on-surface dark:text-surface-bright">Notebook Enterprise</h1>
+<p class="text-on-surface-variant text-label-md font-label-md opacity-70">Admin Console</p>
+</div>
+<nav class="flex flex-col gap-xs">
+<a class="flex items-center gap-sm px-md py-sm rounded-lg hover:bg-surface-container-high dark:hover:bg-surface-container transition-colors duration-200 text-on-surface-variant dark:text-surface-variant hover:text-on-surface dark:hover:text-surface-bright group" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-body-md text-body-md">General</span>
+</a>
+<a class="flex items-center gap-sm px-md py-sm rounded-lg hover:bg-surface-container-high dark:hover:bg-surface-container transition-colors duration-200 text-on-surface-variant dark:text-surface-variant hover:text-on-surface dark:hover:text-surface-bright group" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="font-body-md text-body-md">Members</span>
+</a>
+<a class="flex items-center gap-sm px-md py-sm rounded-lg bg-secondary-container dark:bg-secondary-container text-primary dark:text-primary-fixed font-semibold border-r-4 border-primary dark:border-primary-fixed" href="#">
+<span class="material-symbols-outlined">security</span>
+<span class="font-body-md text-body-md">Security</span>
+</a>
+<a class="flex items-center gap-sm px-md py-sm rounded-lg hover:bg-surface-container-high dark:hover:bg-surface-container transition-colors duration-200 text-on-surface-variant dark:text-surface-variant hover:text-on-surface dark:hover:text-surface-bright group" href="#">
+<span class="material-symbols-outlined">extension</span>
+<span class="font-body-md text-body-md">Integrations</span>
+</a>
+<a class="flex items-center gap-sm px-md py-sm rounded-lg hover:bg-surface-container-high dark:hover:bg-surface-container transition-colors duration-200 text-on-surface-variant dark:text-surface-variant hover:text-on-surface dark:hover:text-surface-bright group" href="#">
+<span class="material-symbols-outlined">payments</span>
+<span class="font-body-md text-body-md">Billing</span>
+</a>
+</nav>
+</aside>
+<!-- TopAppBar -->
+<header class="fixed top-0 right-0 left-[240px] z-30 bg-surface/80 dark:bg-surface/80 backdrop-blur-md border-b border-outline-variant dark:border-outline">
+<div class="flex justify-between items-center h-16 px-xl max-w-container-max mx-auto">
+<div class="flex items-center gap-lg flex-1">
+<div class="relative w-full max-w-md">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-primary-container transition-all" placeholder="Search governance policies..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-md">
+<h2 class="font-headline-sm text-headline-sm font-bold text-primary dark:text-primary-fixed mr-xl">Workspace Settings</h2>
+<div class="flex items-center gap-sm">
+<button class="p-2 text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">help_outline</span>
+</button>
+<div class="h-8 w-8 rounded-full overflow-hidden ml-sm border border-outline-variant bg-surface-container-high">
+<img alt="User Profile" data-alt="A professional close-up portrait of a corporate administrator in a modern office environment. The image is brightly lit with high-key lighting, maintaining a crisp, light-mode aesthetic that fits a high-end enterprise dashboard. The person wears a sharp, minimalist suit against a soft-focus architectural background of glass and white walls." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBCAxyh3HdKGzORE6_lTXHTwuZas6SJ8uPdD2bNOSbISw5RKFAkiLECJ8EjpavLRp9SH2O87DVMaS-mVzPT4EAxcDICelZUxXI8HapjuwMOjFUwnmFZlf-FC4nyIyFAS3i7NZhTb4D49GsYbXHletw7jP81FIgHq4Xh631LGHOmFa7ADzMInasTOb-P_5A--K6o2_UM-xHDsdgQLIxvs8-vfqclyZjCXv08dGVyHFfXMw3cmdFDE0_fFfCgdK8Yeuka0JBHih9G_E4"/>
+</div>
+</div>
+</div>
+</div>
+</header>
+<!-- Main Content -->
+<main class="ml-[240px] pt-24 px-xl pb-xl max-w-container-max mx-auto">
+<!-- Header Section -->
+<div class="flex justify-between items-end mb-xl">
+<div>
+<nav class="flex items-center gap-xs text-on-surface-variant font-label-md text-label-md mb-xs">
+<span>Security</span>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<span class="text-primary font-semibold">Platform Retention Governance</span>
+</nav>
+<h3 class="font-headline-md text-headline-md text-on-surface">Retention Governance</h3>
+<p class="text-on-surface-variant font-body-md text-body-md mt-xs">Establish and enforce data lifecycle policies across the enterprise infrastructure.</p>
+</div>
+<button class="bg-primary text-on-primary px-lg py-sm rounded-xl font-body-md font-semibold flex items-center gap-sm hover:opacity-90 transition-opacity">
+<span class="material-symbols-outlined text-[20px]">rebase</span>
+                Request Policy Change
+            </button>
+</div>
+<!-- Bento Grid: Dashboard Summary -->
+<div class="grid grid-cols-12 gap-lg mb-xl">
+<!-- Compliance Health -->
+<div class="col-span-12 md:col-span-4 bg-surface-container-lowest border border-outline-variant rounded-xl p-lg flex flex-col justify-between">
+<div>
+<div class="flex justify-between items-start mb-md">
+<span class="text-label-md font-label-md uppercase tracking-wider text-on-surface-variant">Compliance Health</span>
+<span class="material-symbols-outlined text-on-surface-variant">verified_user</span>
+</div>
+<div class="flex items-baseline gap-sm">
+<span class="font-display-lg text-display-lg text-primary">98.4%</span>
+<span class="text-label-md font-label-md px-2 py-1 rounded bg-emerald-50 text-emerald-700">+0.2%</span>
+</div>
+</div>
+<div class="mt-xl">
+<div class="w-full bg-surface-container h-1.5 rounded-full overflow-hidden">
+<div class="bg-emerald-500 h-full w-[98.4%]"></div>
+</div>
+<p class="text-label-md text-on-surface-variant mt-sm">2 minor deviations detected in Audit Logs.</p>
+</div>
+</div>
+<!-- Data Footprint -->
+<div class="col-span-12 md:col-span-5 bg-surface-container-lowest border border-outline-variant rounded-xl p-lg">
+<div class="flex justify-between items-start mb-md">
+<span class="text-label-md font-label-md uppercase tracking-wider text-on-surface-variant">Data Footprint</span>
+<span class="material-symbols-outlined text-on-surface-variant">database</span>
+</div>
+<div class="flex gap-lg">
+<div class="flex-1">
+<span class="block text-headline-sm font-headline-sm text-on-surface">1.2 PB</span>
+<span class="text-label-md text-on-surface-variant">Total Managed Data</span>
+</div>
+<div class="w-[1px] bg-outline-variant"></div>
+<div class="flex-1">
+<span class="block text-headline-sm font-headline-sm text-on-surface">140 TB</span>
+<span class="text-label-md text-on-surface-variant">Purged (Last 30d)</span>
+</div>
+</div>
+<div class="mt-lg flex items-center gap-sm">
+<div class="h-3 w-3 rounded-full bg-primary"></div>
+<span class="text-label-md text-on-surface-variant">68% Active</span>
+<div class="h-3 w-3 rounded-full bg-on-secondary-container ml-md"></div>
+<span class="text-label-md text-on-surface-variant">32% Archived</span>
+</div>
+</div>
+<!-- Safety Toggles -->
+<div class="col-span-12 md:col-span-3 bg-primary-container text-on-primary-container rounded-xl p-lg flex flex-col justify-between">
+<div class="flex items-center gap-sm mb-md">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">security</span>
+<span class="font-headline-sm text-headline-sm">Global Controls</span>
+</div>
+<div class="space-y-md">
+<div class="flex justify-between items-center">
+<span class="font-label-md text-label-md text-on-primary-fixed">Automated Purge</span>
+<div class="w-10 h-5 bg-on-primary-container/30 rounded-full relative p-0.5">
+<div class="w-4 h-4 bg-white rounded-full translate-x-5"></div>
+</div>
+</div>
+<div class="flex justify-between items-center">
+<span class="font-label-md text-label-md text-on-primary-fixed">Legal Hold Override</span>
+<div class="w-10 h-5 bg-on-primary-container/30 rounded-full relative p-0.5">
+<div class="w-4 h-4 bg-white rounded-full"></div>
+</div>
+</div>
+</div>
+<p class="text-[11px] leading-tight opacity-70 mt-md italic">Last critical action: 12h ago by System Auth.</p>
+</div>
+</div>
+<!-- Centralized Policy Table -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden mb-xl">
+<div class="px-lg py-md border-b border-outline-variant flex justify-between items-center">
+<h4 class="font-headline-sm text-headline-sm text-on-surface">Active Governance Policies</h4>
+<div class="flex gap-sm">
+<button class="text-label-md font-label-md px-md py-sm border border-outline-variant rounded-lg hover:bg-surface-container-high transition-colors">Export Report</button>
+<button class="text-label-md font-label-md px-md py-sm border border-outline-variant rounded-lg hover:bg-surface-container-high transition-colors flex items-center gap-xs">
+<span class="material-symbols-outlined text-[16px]">filter_list</span>
+                        Filters
+                    </button>
+</div>
+</div>
+<table class="w-full border-collapse text-left">
+<thead>
+<tr class="bg-surface-container-low/50">
+<th class="px-lg py-md font-label-md text-label-md text-on-surface-variant border-b border-outline-variant">Resource Type</th>
+<th class="px-lg py-md font-label-md text-label-md text-on-surface-variant border-b border-outline-variant">Default Retention</th>
+<th class="px-lg py-md font-label-md text-label-md text-on-surface-variant border-b border-outline-variant">Legal Hold Status</th>
+<th class="px-lg py-md font-label-md text-label-md text-on-surface-variant border-b border-outline-variant">Last Audit</th>
+<th class="px-lg py-md font-label-md text-label-md text-on-surface-variant border-b border-outline-variant">Compliance</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant">
+<tr class="hover:bg-surface-container transition-colors group">
+<td class="px-lg py-md">
+<div class="flex items-center gap-md">
+<span class="material-symbols-outlined text-primary">description</span>
+<div>
+<span class="font-body-md font-semibold text-on-surface block">User Content (Notes)</span>
+<span class="text-[12px] text-on-surface-variant">S3 Bucket / Global</span>
+</div>
+</div>
+</td>
+<td class="px-lg py-md text-on-surface-variant font-mono-sm text-mono-sm">7 Years</td>
+<td class="px-lg py-md">
+<span class="px-2 py-1 rounded-full bg-slate-100 text-slate-700 text-label-md font-label-md inline-flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+                                Inactive
+                            </span>
+</td>
+<td class="px-lg py-md text-on-surface-variant">Oct 24, 2023</td>
+<td class="px-lg py-md">
+<span class="px-2 py-1 rounded-full bg-emerald-50 text-emerald-700 text-label-md font-label-md">Healthy</span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container transition-colors group">
+<td class="px-lg py-md">
+<div class="flex items-center gap-md">
+<span class="material-symbols-outlined text-primary">history_edu</span>
+<div>
+<span class="font-body-md font-semibold text-on-surface block">Audit Logs</span>
+<span class="text-[12px] text-on-surface-variant">ElasticSearch / CloudWatch</span>
+</div>
+</div>
+</td>
+<td class="px-lg py-md text-on-surface-variant font-mono-sm text-mono-sm">Indefinite</td>
+<td class="px-lg py-md">
+<span class="px-2 py-1 rounded-full bg-amber-50 text-amber-700 text-label-md font-label-md inline-flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+                                Active
+                            </span>
+</td>
+<td class="px-lg py-md text-on-surface-variant">Nov 02, 2023</td>
+<td class="px-lg py-md">
+<span class="px-2 py-1 rounded-full bg-amber-50 text-amber-700 text-label-md font-label-md">Warning</span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container transition-colors group">
+<td class="px-lg py-md">
+<div class="flex items-center gap-md">
+<span class="material-symbols-outlined text-primary">notifications_active</span>
+<div>
+<span class="font-body-md font-semibold text-on-surface block">Notifications History</span>
+<span class="text-[12px] text-on-surface-variant">PostgreSQL / App Cluster</span>
+</div>
+</div>
+</td>
+<td class="px-lg py-md text-on-surface-variant font-mono-sm text-mono-sm">30 Days</td>
+<td class="px-lg py-md">
+<span class="px-2 py-1 rounded-full bg-slate-100 text-slate-700 text-label-md font-label-md inline-flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+                                Inactive
+                            </span>
+</td>
+<td class="px-lg py-md text-on-surface-variant">Oct 30, 2023</td>
+<td class="px-lg py-md">
+<span class="px-2 py-1 rounded-full bg-emerald-50 text-emerald-700 text-label-md font-label-md">Healthy</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Bottom Grid: Audit History & Intelligence -->
+<div class="grid grid-cols-12 gap-lg">
+<!-- Audit History -->
+<div class="col-span-12 lg:col-span-8 bg-surface-container-lowest border border-outline-variant rounded-xl p-lg">
+<div class="flex justify-between items-center mb-lg">
+<h4 class="font-headline-sm text-headline-sm text-on-surface">Policy Audit History</h4>
+<span class="text-label-md text-on-surface-variant">Last 7 Days</span>
+</div>
+<div class="space-y-md">
+<div class="flex gap-md pb-md border-b border-outline-variant border-dashed">
+<div class="flex-none">
+<div class="h-8 w-8 rounded-full bg-secondary-container flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[18px]">history</span>
+</div>
+</div>
+<div class="flex-1">
+<div class="flex justify-between">
+<span class="font-body-md font-semibold text-on-surface">Retention Policy Update: Audit Logs</span>
+<span class="text-label-md text-on-surface-variant">2h ago</span>
+</div>
+<p class="text-body-md text-on-surface-variant mt-xs">Modified retention window from 365 days to Indefinite via PR #4482.</p>
+<div class="mt-sm flex items-center gap-xs font-mono-sm text-mono-sm text-primary">
+<span class="material-symbols-outlined text-[14px]">commit</span>
+                                hash: 8f2a9c1
+                            </div>
+</div>
+</div>
+<div class="flex gap-md pb-md border-b border-outline-variant border-dashed">
+<div class="flex-none">
+<div class="h-8 w-8 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined text-[18px]">gavel</span>
+</div>
+</div>
+<div class="flex-1">
+<div class="flex justify-between">
+<span class="font-body-md font-semibold text-on-surface">Legal Hold Initiated: Case #X-204</span>
+<span class="text-label-md text-on-surface-variant">Yesterday</span>
+</div>
+<p class="text-body-md text-on-surface-variant mt-xs">Auto-purge suspended for resource type 'Collaborative Assets'.</p>
+</div>
+</div>
+<div class="flex justify-center pt-sm">
+<button class="text-primary font-label-md text-label-md hover:underline">View full activity log</button>
+</div>
+</div>
+</div>
+<!-- Insights / Quick View -->
+<div class="col-span-12 lg:col-span-4 flex flex-col gap-lg">
+<div class="bg-surface-container border border-outline-variant rounded-xl p-lg flex-1">
+<h4 class="font-label-md text-label-md uppercase tracking-wider text-on-surface-variant mb-md">System Recommendations</h4>
+<div class="p-md bg-surface-container-lowest rounded-lg border border-outline-variant mb-md">
+<div class="flex items-center gap-sm text-amber-700 mb-xs">
+<span class="material-symbols-outlined text-[18px]">lightbulb</span>
+<span class="font-semibold text-body-md">Optimization Opportunity</span>
+</div>
+<p class="text-label-md text-on-surface-variant">Migrating 'Archive 2022' to Glacier Deep Archive could reduce storage costs by 42%.</p>
+</div>
+<button class="w-full py-sm text-label-md font-semibold text-primary border border-primary/20 rounded-lg hover:bg-primary/5 transition-colors">Analyze Cost Impact</button>
+</div>
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-lg relative overflow-hidden h-[180px]">
+<div class="relative z-10">
+<h4 class="font-label-md text-label-md text-on-surface-variant">Infrastructure Map</h4>
+<p class="text-headline-sm font-headline-sm mt-sm">Global Data Residency</p>
+<p class="text-label-md text-on-surface-variant opacity-80">Ensuring regional compliance (GDPR/CCPA)</p>
+</div>
+<div class="absolute inset-0 opacity-10">
+<img class="w-full h-full object-cover" data-alt="A stylized, minimalist topographical map of the world rendered in subtle shades of indigo and slate gray. The lighting is soft and professional, suggesting a futuristic command center display. High-tech nodes and faint glowing connection lines represent global data centers, following the established light-mode enterprise design language." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDCabYetypJ_y7feOTdmka-VK7Tjc6QC7gcYZR_953fLi6ZPu7GU_iOqSnrOfknPBOO3f4F-AWgZsOxZ_f3VM2NQzDrnbQEqBUH_GLLW69T6F8ZuIJbbHEvlNvd5gYMPEBCtqdb3vnfcSv6F6e-1jhl9g1eFeHLv0Gz_dUL_9CuEzYhdZkiscPdPHnVv2KY4xV_DQxAASLxeyDkzTfPkW7wFJdeU9OFqKEjrNeGvisA9A1BsFxIxtrxZXvZ0PYR8d6WrZPb_tU8RwA"/>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

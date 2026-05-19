@@ -20,6 +20,7 @@ import {
   fetchNotificationAnalyticsSummary,
   type NotificationAnalyticsSummary,
 } from '../../features/admin/notification-analytics-api'
+import { AdminMetricCard } from '../../features/admin/notifications/AdminMetricCard'
 
 function rangeLast24h(): { from: string; to: string } {
   const to = new Date()
@@ -118,13 +119,17 @@ export function AdminNotificationAnalyticsPage() {
       {loading ? <LoadingState label="Loading analytics summary" /> : null}
       {data && !loading ? (
         <>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            <MetricCard title="Created (in-app + email queued)" value={data.totals.created} />
-            <MetricCard title="Sent" value={data.totals.sent} />
-            <MetricCard title="Failed / dead (email)" value={data.totals.failed + data.totals.dead} />
-            <MetricCard title="Preference skipped" value={data.totals.skippedPreference} />
-            <MetricCard title="Digest queued / sent" value={data.totals.digestQueued + data.totals.digestSent} />
-            <MetricCard title="Quiet-hours delayed (email)" value={data.totals.quietHoursDelayed} />
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" data-testid="delivery-health-cards">
+            <AdminMetricCard title="Created (in-app + email queued)" value={data.totals.created} hint="Aggregate only" />
+            <AdminMetricCard title="Sent" value={data.totals.sent} />
+            <AdminMetricCard title="Failed" value={data.totals.failed} />
+            <AdminMetricCard title="Dead-letter (email)" value={data.totals.dead} />
+            <AdminMetricCard title="Skipped (preference)" value={data.totals.skippedPreference} />
+            <AdminMetricCard
+              title="Digest queued / sent"
+              value={data.totals.digestQueued + data.totals.digestSent}
+            />
+            <AdminMetricCard title="Quiet-hours delayed" value={data.totals.quietHoursDelayed} />
           </div>
           <Card className="space-y-2 p-4">
             <p className="text-xs font-semibold uppercase text-slate-500">Fanout outbox (live)</p>
@@ -231,11 +236,3 @@ export function AdminNotificationAnalyticsPage() {
   )
 }
 
-function MetricCard({ title, value }: { title: string; value: number }) {
-  return (
-    <Card className="p-4">
-      <p className="text-xs font-semibold uppercase text-slate-500">{title}</p>
-      <p className="mt-1 text-2xl font-semibold text-slate-900">{value}</p>
-    </Card>
-  )
-}

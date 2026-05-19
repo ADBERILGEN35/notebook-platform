@@ -10,13 +10,9 @@ import {
   hasPlatformPermission,
 } from '../../features/admin/access/admin-permissions'
 import { isNotificationDeadLetterUiEnabled } from '../../shared/config/admin-feature-flags'
-import {
-  dryRunDeadLetterRequeue,
-  fetchDeadLetterList,
-  requeueDeadLetter,
-  type DeadLetterListItem,
-  type RequeueDryRunResponse,
-} from '../../features/admin/notification-dead-letter-api'
+import { fetchDeadLetterList, type DeadLetterListItem } from '../../features/admin/notification-dead-letter-api'
+import { DeadLetterEventTable } from '../../features/admin/notifications/DeadLetterEventTable'
+import { OperationalRunbookLink } from '../../features/admin/notifications/OperationalRunbookLink'
 
 export function AdminNotificationDeadLetterPage() {
   const user = useAuthStore((s) => s.user)
@@ -28,13 +24,6 @@ export function AdminNotificationDeadLetterPage() {
   const [eventType, setEventType] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [selected, setSelected] = useState<DeadLetterListItem | null>(null)
-  const [dryRun, setDryRun] = useState<RequeueDryRunResponse | null>(null)
-  const [dryRunLoading, setDryRunLoading] = useState(false)
-  const [requeueOpen, setRequeueOpen] = useState(false)
-  const [reason, setReason] = useState('')
-  const [idempotencyKey, setIdempotencyKey] = useState(() => crypto.randomUUID())
-  const [requeueError, setRequeueError] = useState<string | null>(null)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -61,37 +50,6 @@ export function AdminNotificationDeadLetterPage() {
     void load()
   }, [canRead, load, page])
 
-  async function runDryRun(row: DeadLetterListItem) {
-    setSelected(row)
-    setDryRun(null)
-    setDryRunLoading(true)
-    setRequeueError(null)
-    try {
-      const r = await dryRunDeadLetterRequeue(row.id)
-      setDryRun(r)
-    } catch (e: unknown) {
-      setRequeueError(e instanceof Error ? e.message : 'Dry-run failed')
-    } finally {
-      setDryRunLoading(false)
-    }
-  }
-
-  async function submitRequeue() {
-    if (!selected) return
-    setRequeueError(null)
-    try {
-      await requeueDeadLetter(selected.id, { idempotencyKey, reason: reason.trim() })
-      setRequeueOpen(false)
-      setReason('')
-      setIdempotencyKey(crypto.randomUUID())
-      setDryRun(null)
-      setSelected(null)
-      await load()
-    } catch (e: unknown) {
-      setRequeueError(e instanceof Error ? e.message : 'Requeue failed')
-    }
-  }
-
   if (!isNotificationDeadLetterUiEnabled()) {
     return (
       <div className="space-y-3">
@@ -116,7 +74,7 @@ export function AdminNotificationDeadLetterPage() {
     <div className="space-y-4">
       <PageHeader
         title="Notification dead-letter"
-        subtitle="Fanout SSE outbox — DEAD only. No message bodies or user identifiers (hashed recipient). Requeue requires MFA-verified session when gateway enforces admin-write MFA."
+        subtitle="Fanout SSE outbox — DEAD only. No message bodies or user identifiers (hashed recipient)."
       />
       <div className="flex flex-wrap items-end gap-2">
         <label className="flex flex-col text-xs">
@@ -142,62 +100,9 @@ export function AdminNotificationDeadLetterPage() {
       </div>
       {error ? <ErrorAlert message={error} /> : null}
       {loading ? <LoadingState label="Loading dead-letter rows" /> : null}
-      {!loading && items.length === 0 ? (
-        <Card className="p-4 text-sm text-slate-600">No DEAD fanout rows in this page.</Card>
-      ) : null}
-      {!loading && items.length > 0 ? (
-        <Card className="overflow-x-auto p-0">
-          <table className="min-w-full text-left text-xs">
-            <thead className="border-b bg-slate-50 text-slate-600">
-              <tr>
-                <th className="px-3 py-2">Event</th>
-                <th className="px-3 py-2">Attempts</th>
-                <th className="px-3 py-2">Requeues</th>
-                <th className="px-3 py-2">Error</th>
-                <th className="px-3 py-2">Dead at</th>
-                <th className="px-3 py-2">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {items.map((row) => (
-                <tr key={row.id} className="border-b border-slate-100">
-                  <td className="px-3 py-2 font-mono">{row.eventType}</td>
-                  <td className="px-3 py-2">{row.attemptCount}</td>
-                  <td className="px-3 py-2">{row.requeueCount}</td>
-                  <td className="max-w-xs truncate px-3 py-2" title={row.lastErrorSummary}>
-                    <span className="font-mono text-slate-700">{row.lastErrorCode}</span>{' '}
-                    {row.lastErrorSummary}
-                  </td>
-                  <td className="px-3 py-2 text-slate-600">{row.deadAt ?? '—'}</td>
-                  <td className="space-x-2 px-3 py-2">
-                    <button
-                      type="button"
-                      className="text-primary-700 underline"
-                      onClick={() => void runDryRun(row)}
-                    >
-                      Dry-run
-                    </button>
-                    {canRequeue ? (
-                      <button
-                        type="button"
-                        className="text-primary-700 underline"
-                        onClick={() => {
-                          setSelected(row)
-                          setDryRun(null)
-                          setRequeueOpen(true)
-                          setReason('')
-                          setIdempotencyKey(crypto.randomUUID())
-                          setRequeueError(null)
-                        }}
-                      >
-                        Requeue
-                      </button>
-                    ) : null}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      {!loading ? (
+        <Card className="p-0">
+          <DeadLetterEventTable items={items} showRequeueLink={canRequeue} />
         </Card>
       ) : null}
       <div className="flex gap-2">
@@ -218,73 +123,7 @@ export function AdminNotificationDeadLetterPage() {
           Next
         </button>
       </div>
-
-      {selected && (dryRun || dryRunLoading || requeueOpen) ? (
-        <Card className="space-y-2 p-4">
-          <p className="text-xs font-semibold uppercase text-slate-500">Selected row</p>
-          <p className="font-mono text-sm">{selected.id}</p>
-          {dryRunLoading ? <p className="text-xs text-slate-600">Running dry-run…</p> : null}
-          {dryRun ? (
-            <div className="space-y-1 text-sm">
-              <p>
-                <span className="font-semibold">Can requeue:</span>{' '}
-                {dryRun.canRequeue ? 'yes' : 'no'}
-              </p>
-              <p className="text-slate-700">{dryRun.impact.reason}</p>
-              <ul className="list-inside list-disc text-xs text-slate-600">
-                {dryRun.checks.map((c) => (
-                  <li key={c.code}>
-                    {c.code}: {c.passed ? 'ok' : 'failed'}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ) : null}
-          {requeueOpen && canRequeue ? (
-            <div className="space-y-2 border-t border-slate-100 pt-3">
-              <p className="text-xs text-amber-800">
-                Confirm requeue: duplicates may cause extra SSE events (clients should be idempotent). MFA may be
-                required.
-              </p>
-              {selected.requeueCount > 0 ? (
-                <p className="text-xs font-semibold text-amber-900">
-                  This row was already requeued {selected.requeueCount} time(s). Proceed only if intentional.
-                </p>
-              ) : null}
-              <label className="flex flex-col text-xs">
-                <span className="font-semibold text-slate-600">Reason (required, min 5 chars)</span>
-                <textarea
-                  className="min-h-[72px] rounded border border-slate-200 px-2 py-1 text-sm"
-                  value={reason}
-                  onChange={(e) => setReason(e.target.value)}
-                />
-              </label>
-              {requeueError ? <p className="text-xs text-red-700">{requeueError}</p> : null}
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  className="rounded bg-slate-800 px-3 py-1.5 text-sm text-white disabled:opacity-40"
-                  disabled={reason.trim().length < 5}
-                  onClick={() => void submitRequeue()}
-                >
-                  Submit requeue
-                </button>
-                <button
-                  type="button"
-                  className="rounded border px-3 py-1.5 text-sm"
-                  onClick={() => {
-                    setRequeueOpen(false)
-                    setRequeueError(null)
-                  }}
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          ) : null}
-        </Card>
-      ) : null}
-      <p className="text-xs text-slate-500">Runbook: docs/notification-dead-letter-requeue.md</p>
+      <OperationalRunbookLink docPath="docs/notification-dead-letter-requeue.md" />
     </div>
   )
 }

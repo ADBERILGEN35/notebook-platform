@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { PageHeader } from '../../shared/components/PageHeader'
 import { Card } from '../../shared/components/Card'
 import { ErrorAlert } from '../../shared/components/ErrorAlert'
@@ -23,8 +23,13 @@ import {
   runRetention,
   type RetentionPlanResponse,
 } from '../../features/admin/notification-retention-api'
+import { RetentionTargetTable } from '../../features/admin/retention/RetentionTargetTable'
+import { PurgeConfirmationDialog } from '../../features/admin/retention/PurgeConfirmationDialog'
+import { savePurgeResult } from '../../features/admin/retention/purge-result-storage'
+import { maskActorId } from '../../features/admin/notifications/notification-ops-utils'
 
 export function AdminNotificationRetentionPage() {
+  const navigate = useNavigate()
   const user = useAuthStore((s) => s.user)
   const canRead = hasPlatformPermission(user, PERM_NOTIFICATIONS_RETENTION_READ)
   const canRun = hasPlatformPermission(user, PERM_NOTIFICATIONS_RETENTION_RUN)
@@ -89,14 +94,14 @@ export function AdminNotificationRetentionPage() {
       setPurgeOpen(false)
       setReason('')
       setConfirmText('')
-      const skipped = r.skippedByLegalHold ?? 0
-      const keys = r.legalHoldKeysBlocking ?? []
-      setDryMsg(
-        `Purge completed. Rows deleted (total): ${r.totalDeleted}` +
-          (skipped > 0
-            ? `. Skipped (eligible under hold): ${skipped}. Holds: ${keys.join(', ') || '—'}.`
-            : ''),
-      )
+      const requestId = `purge-${Date.now()}`
+      savePurgeResult({
+        requestId,
+        recordedAt: new Date().toISOString(),
+        actorLabel: maskActorId(user?.id),
+        result: r,
+      })
+      navigate('/app/admin/retention/purge-result')
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Purge failed')
     } finally {
@@ -144,8 +149,17 @@ export function AdminNotificationRetentionPage() {
               Legal holds
             </Link>
           ) : null}
+          <Link to="/app/admin/retention" className="text-primary-700 underline">
+            Retention hub
+          </Link>
         </p>
-      ) : null}
+      ) : (
+        <p className="text-sm">
+          <Link to="/app/admin/retention" className="text-primary-700 underline">
+            Retention hub
+          </Link>
+        </p>
+      )}
       <div className="flex flex-wrap gap-2">
         <button
           type="button"
@@ -188,38 +202,7 @@ export function AdminNotificationRetentionPage() {
               </ul>
             </Card>
           ) : null}
-          <Card className="overflow-x-auto p-0">
-            <table className="min-w-full text-left text-sm">
-              <thead className="border-b border-slate-200 bg-slate-50 text-xs uppercase text-slate-500">
-                <tr>
-                  <th className="px-3 py-2">Target</th>
-                  <th className="px-3 py-2">Retention</th>
-                  <th className="px-3 py-2">Eligible</th>
-                  <th className="px-3 py-2">Cutoff (UTC)</th>
-                  <th className="px-3 py-2">Oldest eligible</th>
-                  <th className="px-3 py-2">Legal hold</th>
-                  <th className="px-3 py-2">Purgeable</th>
-                </tr>
-              </thead>
-              <tbody>
-                {plan.targets.map((t) => (
-                  <tr key={t.target} className="border-b border-slate-100">
-                    <td className="px-3 py-2 font-mono text-xs">{t.target}</td>
-                    <td className="px-3 py-2">{t.retention}</td>
-                    <td className="px-3 py-2">{t.eligibleCount}</td>
-                    <td className="px-3 py-2 text-xs text-slate-600">{t.cutoff}</td>
-                    <td className="px-3 py-2 text-xs text-slate-600">{t.oldestEligibleAt ?? '—'}</td>
-                    <td className="px-3 py-2 text-xs">
-                      {t.blockedByLegalHold
-                        ? `Blocked (${(t.activeHoldKeys ?? []).join(', ') || 'hold'})`
-                        : '—'}
-                    </td>
-                    <td className="px-3 py-2">{t.purgeableCount ?? t.eligibleCount}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </Card>
+          <RetentionTargetTable targets={plan.targets} />
           <Card className="p-4 text-xs text-slate-600">
             <p className="font-semibold text-slate-800">Policies (summary)</p>
             <ul className="mt-2 list-inside list-disc space-y-1">
@@ -233,50 +216,19 @@ export function AdminNotificationRetentionPage() {
         </>
       ) : null}
 
-      {purgeOpen ? (
-        <Card className="space-y-3 border-red-200 p-4">
-          <p className="text-sm font-semibold text-red-900">Destructive purge</p>
-          <p className="text-sm text-slate-700">
-            This permanently deletes eligible rows up to the server batch limit. Requires MFA (when enforced) and
-            NOTIFICATION_RETENTION_MANUAL_RUN_ENABLED on the notification-service.
-          </p>
-          <label className="block text-xs font-medium text-slate-600">
-            Reason (required, min 10 chars)
-            <textarea
-              className="mt-1 w-full rounded border border-slate-300 p-2 text-sm"
-              rows={3}
-              value={reason}
-              onChange={(e) => setReason(e.target.value)}
-            />
-          </label>
-          <label className="block text-xs font-medium text-slate-600">
-            Type DELETE to confirm
-            <input
-              className="mt-1 w-full rounded border border-slate-300 p-2 text-sm"
-              value={confirmText}
-              onChange={(e) => setConfirmText(e.target.value)}
-            />
-          </label>
-          <div className="flex gap-2">
-            <button
-              type="button"
-              className="rounded bg-red-700 px-3 py-1.5 text-sm font-medium text-white disabled:opacity-50"
-              disabled={purgeBusy}
-              onClick={() => void onPurge()}
-            >
-              Execute purge
-            </button>
-            <button
-              type="button"
-              className="rounded border border-slate-300 px-3 py-1.5 text-sm"
-              disabled={purgeBusy}
-              onClick={() => setPurgeOpen(false)}
-            >
-              Cancel
-            </button>
-          </div>
-        </Card>
-      ) : null}
+      <PurgeConfirmationDialog
+        open={purgeOpen}
+        reason={reason}
+        confirmText={confirmText}
+        busy={purgeBusy}
+        purgeEnabled={showPurge}
+        mfaRequired
+        dryRunReference={plan?.generatedAt}
+        onReasonChange={setReason}
+        onConfirmTextChange={setConfirmText}
+        onConfirm={() => void onPurge()}
+        onCancel={() => setPurgeOpen(false)}
+      />
     </div>
   )
 }

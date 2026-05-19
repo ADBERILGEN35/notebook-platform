@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Destructive Purge Confirmation</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Manrope:wght@600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-bright": "#fcf8ff",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-low": "#f6f2fc",
+                        "surface": "#fcf8ff",
+                        "on-primary": "#ffffff",
+                        "inverse-primary": "#c3c0ff",
+                        "tertiary-container": "#752c00",
+                        "surface-container": "#f0ecf6",
+                        "on-surface-variant": "#464553",
+                        "surface-container-high": "#eae6f1",
+                        "on-secondary": "#ffffff",
+                        "on-secondary-container": "#57657a",
+                        "on-error-container": "#93000a",
+                        "primary": "#1f108e",
+                        "background": "#fcf8ff",
+                        "tertiary-fixed": "#ffdbcc",
+                        "error-container": "#ffdad6",
+                        "tertiary": "#511c00",
+                        "on-error": "#ffffff",
+                        "surface-variant": "#e4e1eb",
+                        "secondary": "#515f74",
+                        "on-background": "#1b1b22",
+                        "surface-container-highest": "#e4e1eb",
+                        "on-secondary-fixed": "#0d1c2e",
+                        "primary-fixed-dim": "#c3c0ff",
+                        "primary-fixed": "#e2dfff",
+                        "surface-dim": "#dcd8e3",
+                        "on-primary-container": "#a9a7ff",
+                        "secondary-fixed-dim": "#b9c7df",
+                        "inverse-surface": "#303037",
+                        "surface-tint": "#544fc0",
+                        "on-secondary-fixed-variant": "#3a485b",
+                        "inverse-on-surface": "#f3eff9",
+                        "on-tertiary": "#ffffff",
+                        "error": "#ba1a1a",
+                        "on-tertiary-fixed-variant": "#7a3003",
+                        "tertiary-fixed-dim": "#ffb694",
+                        "on-surface": "#1b1b22",
+                        "secondary-fixed": "#d5e3fc",
+                        "on-primary-fixed-variant": "#3b35a7",
+                        "on-tertiary-fixed": "#351000",
+                        "outline": "#777584",
+                        "primary-container": "#3730a3",
+                        "secondary-container": "#d5e3fc",
+                        "on-tertiary-container": "#fe9562",
+                        "on-primary-fixed": "#0f0069",
+                        "outline-variant": "#c8c4d5"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "24px",
+                        "lg": "24px",
+                        "base": "4px",
+                        "xs": "4px",
+                        "xl": "48px",
+                        "sm": "8px",
+                        "container-max": "1280px",
+                        "md": "16px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Inter"],
+                        "headline-sm": ["Manrope"],
+                        "display-lg": ["Manrope"],
+                        "headline-md": ["Manrope"],
+                        "mono-sm": ["JetBrains Mono"],
+                        "label-md": ["Inter"],
+                        "body-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["16px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "headline-sm": ["18px", { "lineHeight": "1.4", "fontWeight": "600" }],
+                        "display-lg": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-md": ["24px", { "lineHeight": "1.3", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "mono-sm": ["13px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "label-md": ["12px", { "lineHeight": "1", "letterSpacing": "0.01em", "fontWeight": "500" }],
+                        "body-md": ["14px", { "lineHeight": "1.5", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-surface text-on-surface font-body-md text-body-md h-screen w-screen overflow-hidden flex">
+<!-- SideNavBar Component -->
+<aside class="bg-surface dark:bg-surface-dim border-r border-outline-variant dark:border-outline fixed left-0 top-0 h-full w-[240px] z-30">
+<div class="flex flex-col h-full py-md px-md">
+<div class="flex items-center gap-sm mb-xl px-sm">
+<div class="w-8 h-8 rounded-lg bg-primary-container text-on-primary-container flex items-center justify-center font-bold">N</div>
+<div>
+<h1 class="text-headline-sm font-headline-sm font-bold text-primary dark:text-primary-fixed">Notebook Platform</h1>
+<p class="font-label-md text-label-md text-secondary">Enterprise Workspace</p>
+</div>
+</div>
+<button class="mb-lg w-full bg-primary text-on-primary rounded-lg py-sm px-md flex items-center justify-center gap-sm hover:opacity-90 transition-opacity">
+<span class="material-symbols-outlined text-[18px]">add</span>
+<span class="font-label-md text-label-md">New Notebook</span>
+</button>
+<nav class="flex-1 flex flex-col gap-xs">
+<a class="flex items-center gap-sm px-md py-sm rounded-lg text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-low dark:hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="folder_open">folder_open</span>
+<span>Workspaces</span>
+</a>
+<a class="flex items-center gap-sm px-md py-sm rounded-lg text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-low dark:hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+<span>Search</span>
+</a>
+<a class="flex items-center gap-sm px-md py-sm rounded-lg text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-low dark:hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span>Notifications</span>
+</a>
+<a class="flex items-center gap-sm px-md py-sm rounded-lg text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-low dark:hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span>Settings</span>
+</a>
+<a class="flex items-center gap-sm px-md py-sm rounded-lg text-primary dark:text-primary-fixed font-bold border-r-2 border-primary bg-surface-container-lowest opacity-80 transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="admin_panel_settings">admin_panel_settings</span>
+<span>Admin</span>
+</a>
+</nav>
+<div class="mt-auto pt-md border-t border-outline-variant flex flex-col gap-xs">
+<a class="flex items-center gap-sm px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+<span>Support</span>
+</a>
+<a class="flex items-center gap-sm px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+<span>Sign Out</span>
+</a>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="ml-[240px] flex-1 flex flex-col h-full relative">
+<!-- TopNavBar Component -->
+<header class="bg-surface/80 dark:bg-surface-dim/80 backdrop-blur-md border-b border-outline-variant dark:border-outline fixed top-0 right-0 w-[calc(100%-240px)] z-20">
+<div class="flex justify-between items-center h-16 px-lg w-full">
+<div class="flex items-center gap-lg">
+<span class="font-headline-sm text-headline-sm text-on-surface dark:text-on-surface font-bold tracking-tight">Workspace Switcher</span>
+<nav class="hidden md:flex items-center gap-md">
+<a class="text-secondary dark:text-secondary-fixed-dim hover:text-primary dark:hover:text-primary-fixed transition-colors font-label-md text-label-md" href="#">Drafts</a>
+<a class="text-secondary dark:text-secondary-fixed-dim hover:text-primary dark:hover:text-primary-fixed transition-colors font-label-md text-label-md" href="#">Shared</a>
+<a class="text-secondary dark:text-secondary-fixed-dim hover:text-primary dark:hover:text-primary-fixed transition-colors font-label-md text-label-md" href="#">Archived</a>
+</nav>
+</div>
+<div class="flex items-center gap-sm">
+<button class="text-secondary hover:text-primary transition-colors p-sm rounded-full hover:bg-surface-container-low"><span class="material-symbols-outlined" data-icon="history">history</span></button>
+<button class="text-secondary hover:text-primary transition-colors p-sm rounded-full hover:bg-surface-container-low"><span class="material-symbols-outlined" data-icon="star">star</span></button>
+<button class="text-secondary hover:text-primary transition-colors p-sm rounded-full hover:bg-surface-container-low"><span class="material-symbols-outlined" data-icon="more_vert">more_vert</span></button>
+<button class="ml-sm bg-primary-container text-on-primary-container hover:bg-primary hover:text-on-primary transition-colors rounded-lg px-md py-sm font-label-md text-label-md font-medium">Invite Team</button>
+<div class="w-8 h-8 rounded-full bg-surface-variant ml-sm flex items-center justify-center overflow-hidden border border-outline-variant">
+<span class="material-symbols-outlined text-secondary text-[20px]">person</span>
+</div>
+</div>
+</div>
+</header>
+<!-- Dummy Background Content (Blurred) -->
+<div class="pt-24 px-xl pb-xl flex-1 overflow-y-auto blur-md select-none pointer-events-none opacity-40 transition-all">
+<div class="max-w-container-max mx-auto space-y-lg">
+<div class="flex justify-between items-end border-b border-outline-variant pb-md">
+<div>
+<h2 class="font-display-lg text-display-lg text-on-surface">Retention Overview</h2>
+<p class="text-secondary mt-sm">Manage data lifecycle and compliance policies.</p>
+</div>
+</div>
+<div class="grid grid-cols-3 gap-md">
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-lg h-32"></div>
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-lg h-32"></div>
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-lg h-32"></div>
+</div>
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl h-96"></div>
+</div>
+</div>
+</main>
+<!-- Modal Overlay -->
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-inverse-surface/40 backdrop-blur-sm p-lg">
+<!-- Modal Card -->
+<div aria-labelledby="modal-title" aria-modal="true" class="bg-surface-container-lowest rounded-xl shadow-[0px_10px_15px_-3px_rgba(15,23,42,0.1)] w-full max-w-[560px] border border-outline-variant overflow-hidden flex flex-col relative" role="dialog">
+<!-- Red Destructive Top Accent -->
+<div class="h-1 w-full bg-error absolute top-0 left-0"></div>
+<!-- Header -->
+<div class="px-xl pt-xl pb-md flex items-start gap-md">
+<div class="flex-shrink-0 w-12 h-12 rounded-full bg-error-container flex items-center justify-center">
+<span class="material-symbols-outlined text-error text-[28px]" data-weight="fill" style="font-variation-settings: 'FILL' 1;">warning</span>
+</div>
+<div class="pt-1">
+<h2 class="font-headline-md text-headline-md text-on-surface" id="modal-title">Confirm Destructive Purge</h2>
+<p class="mt-sm font-body-md text-body-md text-on-surface-variant leading-relaxed">
+                        This permanently deletes <strong class="text-on-surface font-semibold">850,000</strong> eligible operational records for <code class="font-mono-sm text-mono-sm bg-surface-container px-xs py-[2px] rounded text-on-surface">notification_delivery_analytics_hourly</code>.
+                    </p>
+</div>
+</div>
+<!-- Body Content -->
+<div class="px-xl py-md space-y-lg flex-1 overflow-y-auto">
+<!-- Statistics Bento -->
+<div class="grid grid-cols-2 gap-sm">
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-md">
+<span class="block font-label-md text-label-md text-secondary mb-xs uppercase tracking-wider">Target Table</span>
+<span class="block font-mono-sm text-mono-sm text-on-surface truncate" title="analytics_hourly">analytics_hourly</span>
+</div>
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-md">
+<span class="block font-label-md text-label-md text-secondary mb-xs uppercase tracking-wider">Cutoff Date</span>
+<span class="block font-body-md text-body-md text-on-surface font-medium">2023-09-27</span>
+</div>
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-md">
+<span class="block font-label-md text-label-md text-secondary mb-xs uppercase tracking-wider">Eligible Records</span>
+<span class="block font-headline-sm text-headline-sm text-error font-bold">850k</span>
+</div>
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-md flex items-center justify-between">
+<div>
+<span class="block font-label-md text-label-md text-secondary mb-xs uppercase tracking-wider">Legal Hold</span>
+<span class="block font-body-md text-body-md text-on-surface font-medium">0 Blocked</span>
+</div>
+<span class="material-symbols-outlined text-outline-variant">gavel</span>
+</div>
+</div>
+<!-- Form Inputs -->
+<div class="space-y-md">
+<div>
+<label class="block font-label-md text-label-md text-on-surface mb-xs font-medium" for="purge-reason">Reason for Purge <span class="text-error">*</span></label>
+<input class="w-full bg-surface-container-lowest border border-outline text-on-surface font-body-md text-body-md rounded-lg px-md py-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-fixed-dim transition-shadow placeholder-outline-variant" id="purge-reason" required="" type="text" value="Quarterly data cleanup as per retention policy."/>
+</div>
+<div class="bg-error-container/30 border border-error-container rounded-lg p-md">
+<label class="block font-label-md text-label-md text-on-surface mb-xs font-medium" for="confirm-text">To confirm, type <strong class="text-error select-none">DELETE</strong></label>
+<input autocomplete="off" class="w-full bg-surface-container-lowest border border-outline text-on-surface font-body-md text-body-md rounded-lg px-md py-sm focus:outline-none focus:border-error focus:ring-2 focus:ring-error-container transition-shadow" id="confirm-text" placeholder="" required="" type="text"/>
+</div>
+</div>
+<!-- Compliance Note -->
+<div class="flex items-start gap-sm bg-surface-container-low rounded-lg p-sm border border-outline-variant/50">
+<span class="material-symbols-outlined text-secondary text-[18px] mt-[2px]">verified_user</span>
+<p class="font-label-md text-label-md text-secondary leading-snug">
+                        Audit event will be logged. MFA required for execution.
+                    </p>
+</div>
+</div>
+<!-- Footer Actions -->
+<div class="px-xl py-md bg-surface border-t border-outline-variant flex items-center justify-end gap-md rounded-b-xl">
+<button class="font-label-md text-label-md font-medium text-on-surface bg-surface-container-lowest border border-outline-variant rounded-lg px-lg py-sm hover:bg-surface-container-low transition-colors focus:outline-none focus:ring-2 focus:ring-outline-variant">
+                    Cancel
+                </button>
+<button class="font-label-md text-label-md font-medium text-on-error bg-error rounded-lg px-lg py-sm flex items-center gap-xs hover:bg-error/90 transition-colors focus:outline-none focus:ring-2 focus:ring-error-container shadow-sm">
+<span class="material-symbols-outlined text-[18px]">delete_forever</span>
+                    Run Purge
+                </button>
+</div>
+</div>
+</div>
+</body></html>

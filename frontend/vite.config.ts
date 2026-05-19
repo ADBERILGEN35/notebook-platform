@@ -47,7 +47,7 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: './src/shared/utils/test-setup.ts',
     globals: true,
-    exclude: ['e2e/**', 'node_modules/**'],
+    exclude: ['e2e/**', 'tests/e2e/**', 'node_modules/**'],
     // Slow machines / CI: reduce flaky worker handshakes (Vitest 4: avoid deprecated poolOptions).
     hookTimeout: 120_000,
     teardownTimeout: 120_000,

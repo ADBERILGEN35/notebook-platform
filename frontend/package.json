@@ -13,7 +13,8 @@
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:headed": "playwright test --headed",
-    "test:e2e:debug": "playwright test --debug"
+    "test:e2e:debug": "playwright test --debug",
+    "test:visual-qa": "npm run build && playwright test tests/e2e/visual-qa-signoff.spec.ts --project=chromium"
   },
   "dependencies": {
     "@blocknote/core": "^0.50.0",

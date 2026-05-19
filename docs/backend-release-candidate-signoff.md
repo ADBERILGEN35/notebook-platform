@@ -8,6 +8,8 @@ Related:
 
 | Document | Role |
 |----------|------|
+| [platform-release-candidate-signoff.md](platform-release-candidate-signoff.md) | **Full platform** GO/NO_GO (backend + frontend) — Faz 148 |
+| [platform-release-go-no-go-checklist.md](platform-release-go-no-go-checklist.md) | Platform artifact + ops checklist |
 | [backend-release-freeze-checklist.md](backend-release-freeze-checklist.md) | Pre-deploy freeze gates |
 | [backend-staging-pp-evidence-execution-plan.md](backend-staging-pp-evidence-execution-plan.md) | How to obtain PP artifacts |
 | [backend-preprod-evidence-bundle.md](backend-preprod-evidence-bundle.md) | Bundle schema |
@@ -158,3 +160,7 @@ After [backend-live-staging-pp-evidence-run-checklist.md](backend-live-staging-p
 Live staging PP evidence and a production **GO** bundle were **not** produced in Faz 131–137 without GitHub repository staging secrets. Default generated template sets **final decision: NO_GO** until operators attach real artifacts.
 
 When bundle **GO** (Faz 137+): set PP verdict from `live-pp-evidence-out/backend-preprod-evidence-bundle.json`, attach `backend-preprod-evidence-summary.md`, `backend-rc-readiness-summary.md`, and `backend-docker-ci-summary.md` for the same SHA — see [phase-137-summary.md](phases/phase-137-summary.md) § RC sign-off when bundle GO.
+
+## Platform sign-off (Faz 148)
+
+Backend domain sign-off is **one input** to [platform-release-candidate-signoff.md](platform-release-candidate-signoff.md). Platform **GO** requires backend **GO** (or **GO_WITH_ACCEPTED_RISKS** with approvals) **and** frontend **GO** (visual QA complete). Staging secrets missing or PP-1/PP-2 live evidence missing → backend **NO_GO** → platform **NO_GO**. PP-3 default **not_required** unless production CR scope requires dedicated retention datasource.

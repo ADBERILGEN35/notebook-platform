@@ -10,6 +10,7 @@ import {
   revokeAllBreakGlassActiveSessions,
   revokeBreakGlassSession,
 } from './admin-break-glass-sessions-api'
+import { maskSessionId } from '../security/mask-session-id'
 
 export function BreakGlassActiveSessionsPanel() {
   const user = useAuthStore((s) => s.user)
@@ -128,7 +129,7 @@ export function BreakGlassActiveSessionsPanel() {
               ) : (
                 sessionsQuery.data.items.map((row) => (
                   <tr key={row.eventId} className="border-b border-slate-100">
-                    <td className="py-1 pr-3 font-mono">{row.sessionId}</td>
+                    <td className="py-1 pr-3 font-mono">{maskSessionId(row.sessionId)}</td>
                     <td className="py-1 pr-3 font-mono">{row.jtiMasked || '—'}</td>
                     <td className="py-1 pr-3">{row.mode}</td>
                     <td className="py-1 pr-3">{row.status}</td>

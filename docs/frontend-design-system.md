@@ -70,3 +70,72 @@ Harici CDN Tailwind/Material Symbols kullanılmaz; fontlar `index.html` Google F
 | Settings chrome | `SettingsLayout`, `SettingsNav`, `PreferenceToggle` |
 | Security | `SessionRow`, `SecurityMethodCard`, `ConfirmActionModal` |
 | Offline | `SyncHealthCard`, `LocalDataUsageCard`, `ClearLocalDataDialog` |
+
+## Faz 142 patterns (admin)
+
+| Pattern | Components |
+|---------|------------|
+| Admin page chrome | `AdminPageShell`, `AdminRunbookLink` |
+| Health / risk | `AdminHealthCard`, `AdminRiskBadge`, `AdminOverviewCard` |
+| Setup readiness | `AdminSetupChecklist` + `buildSetupChecklistItems` |
+| Diagnostics shell | `AdminSearchPanel`, `AdminDiagnosticPanel` |
+| Identity | `IdentityStatusCard`, `SsoDiagnosticCard`, `ScimProvisioningCard` |
+| RBAC mapping | `RoleMappingTable`, `RoleMappingWarningCard` |
+| Break-glass | `BreakGlassStatusCard`, `BreakGlassRevocationSummary`, `maskSessionId` |
+| Audit (extracted) | `AuditEventTable`, `AuditEventDetailDrawer` + `metadata-mask` |
+
+## Faz 143 patterns (change requests / GitOps)
+
+| Pattern | Components |
+|---------|------------|
+| Status badges | `ChangeRequestStatusBadge`, `SeverityBadge`, `OperationTypeBadge`, `GitOpsStateBadge` |
+| Approval | `ChangeRequestTimeline`, `ApprovalGatePanel` |
+| GitOps | `GitOpsPrStateCard`, `DryRunWarningList`, `GitOpsDisabledBanner` |
+| Diff | `GitOpsDiffViewer`, `DiffLine`, `DiffFileHeader`, `maskDiffLineContent` |
+| RBAC | `RbacOverrideDiffPanel` (PLATFORM_ADMIN warning) |
+
+## Faz 144 patterns (notification ops / retention)
+
+| Pattern | Components |
+|---------|------------|
+| Metrics | `AdminMetricCard` (aggregate-only) |
+| Dead-letter | `DeadLetterEventTable`, `DuplicateRiskBadge`, `RequeueEligibilityChecklist` |
+| Retention | `RetentionTargetTable`, `RetentionWarningChip`, `RetentionServiceSummaryCard` |
+| Legal hold | `LegalHoldCard` + `sanitizeLegalHoldReason` |
+| Purge | `PurgeConfirmationDialog`, `PurgeResultSummary`, `purge-result-storage` |
+| Privacy | `maskRecipientHash`, `maskActorId`, `sanitizeDeadLetterForDisplay` |
+
+## Faz 145 patterns (quality / a11y / responsive)
+
+| Pattern | Usage |
+|---------|--------|
+| Skip link | `SkipToMain` → `#main-content` / `#auth-main` |
+| Focus | Global `:focus-visible` in `index.css`; component `focus-visible:ring-*` |
+| Dense tables | `ResponsiveTableShell` — horizontal scroll + `role="region"` |
+| Modals | `Modal` / `ResponsiveDrawer` — Escape, `aria-modal`, labelled close |
+| Mobile diff | GitOps side-by-side `hidden md:block`; unified default |
+| E2E | `tests/e2e/helpers/no-secrets.ts` — no JWT/Bearer in DOM |
+
+## Faz 146 RC gate
+
+| Artifact | Purpose |
+|----------|---------|
+| `ci-frontend-rc-readiness.sh` | Single local/CI orchestrator |
+| `build_frontend_rc_readiness_report.py` | Sanitized JSON/Markdown + route inventory |
+| `frontend-rc-readiness.yml` | GitHub Actions with Playwright browser install |
+
+## Faz 147 RC sign-off + visual QA
+
+| Artifact | Purpose |
+|----------|---------|
+| [frontend-release-candidate-signoff.md](../frontend-release-candidate-signoff.md) | GO/NO_GO rules + required RC artifacts |
+| [frontend-release-visual-qa-checklist.md](../frontend-release-visual-qa-checklist.md) | Manual QA (unchecked by default) |
+| `generate-frontend-rc-signoff-template.sh` | Placeholder sign-off markdown |
+
+## Faz 149 Visual QA execution
+
+| Artifact | Purpose |
+|----------|---------|
+| `tests/e2e/visual-qa-signoff.spec.ts` | Production-preview visual QA automation |
+| `E2E_USE_PREVIEW=1` | `playwright.config.ts` serves `vite preview` :4173 |
+| `stub-non-admin-session.ts` | AdminGate denial without bypass |

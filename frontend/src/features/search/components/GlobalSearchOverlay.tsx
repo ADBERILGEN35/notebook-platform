@@ -86,6 +86,7 @@ export function GlobalSearchOverlay({ open, onClose, initialQuery = '' }: Global
         role="dialog"
         aria-modal="true"
         aria-label="Global search"
+        data-testid="global-search-overlay"
         className="w-full max-w-2xl overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest shadow-auth-card"
       >
         <div className="border-b border-outline-variant px-4 py-3">

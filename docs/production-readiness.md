@@ -459,3 +459,27 @@
 - **MISSING_SECRET:** dispatch skipped; bundle **NO_GO**.
 - **Live run:** **NOT_RUN** in dev until secrets provisioned.
 - Spec: [`phase-135.md`](phases/phase-135.md).
+
+## Faz 146–147 — Frontend RC gate + sign-off
+
+- **RC gate:** `ci-frontend-rc-readiness.sh`, workflow `frontend-rc-readiness.yml` — verdict **PASS** (vitest, tsc, Playwright smoke, build).
+- **Sign-off:** [`frontend-release-candidate-signoff.md`](frontend-release-candidate-signoff.md), visual QA [`frontend-release-visual-qa-checklist.md`](frontend-release-visual-qa-checklist.md).
+- **Frontend production sign-off:** **NO_GO** until visual QA complete (template default).
+
+## Faz 149 — Frontend visual QA execution + sign-off
+
+- **Execution:** production build + `tests/e2e/visual-qa-signoff.spec.ts` on `vite preview` (`E2E_USE_PREVIEW=1`).
+- **Checklist:** [frontend-release-visual-qa-checklist.md](frontend-release-visual-qa-checklist.md) — **COMPLETE** with accepted risks AR-FE-149-*.
+- **Frontend decision:** **GO_WITH_ACCEPTED_RISKS** (RC gate **PASS**, 25 Playwright specs).
+- **Platform:** still **NO_GO** (backend PP evidence).
+- Spec: [`phase-149.md`](phases/phase-149.md).
+
+## Faz 148 — Full platform RC sign-off + go/no-go
+
+- **Platform sign-off:** [`platform-release-candidate-signoff.md`](platform-release-candidate-signoff.md) — aggregates backend + frontend artifacts, blockers, flag wave reference, platform **GO / NO_GO / GO_WITH_ACCEPTED_RISKS**.
+- **Checklist:** [`platform-release-go-no-go-checklist.md`](platform-release-go-no-go-checklist.md).
+- **Template:** `scripts/security/generate-platform-rc-signoff-template.sh` + `ci-generate-platform-rc-signoff-template.sh`.
+- **Current platform decision:** **NO_GO** — backend PP live evidence / staging secrets missing; frontend visual QA incomplete. Backend Docker CI **PASS**; frontend RC gate **PASS**.
+- **PP-3:** default **not_required** unless prod CR requires retention datasource.
+- **Production flags:** not enabled.
+- Spec: [`phase-148.md`](phases/phase-148.md).

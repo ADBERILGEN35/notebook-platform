@@ -1,8 +1,10 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { describe, expect, it, vi, afterEach } from 'vitest'
 import { AdminEnterpriseChangeRequestsPage } from './AdminEnterpriseChangeRequestsPage'
+import { AdminChangeRequestDetailPage } from './AdminChangeRequestDetailPage'
+import { AdminChangeRequestDryRunPage } from './AdminChangeRequestDryRunPage'
 import * as changeRequestsApi from '../../features/admin/enterprise/change-requests-api'
 
 vi.mock('../../shared/config/admin-feature-flags', () => ({
@@ -20,6 +22,11 @@ vi.mock('../../features/auth/auth-store', () => ({
         email: 'a@b.com',
         name: 'A',
         roles: ['PLATFORM_ADMIN'],
+        platformPermissions: [
+          'admin:change-request:list',
+          'admin:change-request:approve',
+          'admin:change-request:gitops:dry-run',
+        ],
       },
     }),
 }))
@@ -42,19 +49,24 @@ const baseItem = {
   targetEnvironment: 'staging',
 }
 
+function renderRoutes(initial = '/app/admin/change-requests') {
+  return render(
+    <MemoryRouter initialEntries={[initial]}>
+      <Routes>
+        <Route path="/app/admin/change-requests" element={<AdminEnterpriseChangeRequestsPage />} />
+        <Route path="/app/admin/change-requests/:id" element={<AdminChangeRequestDetailPage />} />
+        <Route path="/app/admin/change-requests/:id/dry-run" element={<AdminChangeRequestDryRunPage />} />
+      </Routes>
+    </MemoryRouter>,
+  )
+}
+
 describe('AdminEnterpriseChangeRequestsPage', () => {
   afterEach(() => {
     vi.restoreAllMocks()
   })
 
-  const renderPage = () =>
-    render(
-      <MemoryRouter>
-        <AdminEnterpriseChangeRequestsPage />
-      </MemoryRouter>,
-    )
-
-  it('shows approve disabled with title when request was created by current user', async () => {
+  it('shows approve disabled when request was created by current user', async () => {
     vi.spyOn(changeRequestsApi, 'listChangeRequests').mockResolvedValue({
       items: [
         {
@@ -66,11 +78,13 @@ describe('AdminEnterpriseChangeRequestsPage', () => {
         },
       ],
     })
-    renderPage()
-    await waitFor(() => expect(changeRequestsApi.listChangeRequests).toHaveBeenCalled())
-    const approveBtn = screen.getByRole('button', { name: 'Approve' })
+    const user = userEvent.setup()
+    renderRoutes()
+    await waitFor(() => expect(screen.getByRole('link', { name: 'View' })).toBeInTheDocument())
+    await user.click(screen.getByRole('link', { name: 'View' }))
+    const approveBtn = await screen.findByRole('button', { name: 'Approve' })
     expect(approveBtn).toBeDisabled()
-    expect(approveBtn).toHaveAttribute('title', 'Another platform admin must approve this request.')
+    expect(approveBtn).toHaveAttribute('title', 'Another admin must approve')
   })
 
   it('approve dialog shows impact and calls API', async () => {
@@ -98,26 +112,25 @@ describe('AdminEnterpriseChangeRequestsPage', () => {
       nextStep: { type: 'GITOPS_OR_MANUAL_APPLY', message: 'next' },
     })
     const user = userEvent.setup()
-    renderPage()
-    await waitFor(() => expect(screen.getAllByRole('button', { name: 'Approve' })[0]).toBeEnabled())
-    await user.click(screen.getAllByRole('button', { name: 'Approve' })[0])
-    expect(screen.getByText(/This does not apply the change automatically/i)).toBeInTheDocument()
-    expect(screen.getByText('impact text')).toBeInTheDocument()
-    const approveInModal = screen.getAllByRole('button', { name: 'Approve' }).at(-1)!
-    await user.click(approveInModal)
+    renderRoutes()
+    await user.click(await screen.findByRole('link', { name: 'View' }))
+    await user.click(await screen.findByRole('button', { name: 'Approve' }))
+    expect(screen.getAllByText(/No runtime mutation/i).length).toBeGreaterThan(0)
+    expect(document.body.textContent).toContain('impact text')
+    await user.click(screen.getByRole('button', { name: 'Confirm approve' }))
     await waitFor(() => expect(approveSpy).toHaveBeenCalledWith('r2', { reason: undefined }))
   })
 
   it('status filter requests list with status query', async () => {
     const listSpy = vi.spyOn(changeRequestsApi, 'listChangeRequests').mockResolvedValue({ items: [] })
     const user = userEvent.setup()
-    renderPage()
+    renderRoutes()
     await waitFor(() => expect(listSpy).toHaveBeenCalledWith('PENDING'))
     await user.click(screen.getByRole('button', { name: 'Approved' }))
     await waitFor(() => expect(listSpy).toHaveBeenCalledWith('APPROVED'))
   })
 
-  it('approved request shows GitOps dry-run and runs preview', async () => {
+  it('approved request navigates to dry-run and runs preview', async () => {
     vi.spyOn(changeRequestsApi, 'listChangeRequests').mockResolvedValue({
       items: [
         {
@@ -138,10 +151,9 @@ describe('AdminEnterpriseChangeRequestsPage', () => {
       warnings: [],
     })
     const user = userEvent.setup()
-    renderPage()
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Dry-run GitOps' })).toBeInTheDocument())
-    await user.click(screen.getByRole('button', { name: 'Dry-run GitOps' }))
-    await user.click(screen.getByRole('button', { name: 'Run dry-run' }))
+    renderRoutes()
+    await user.click(await screen.findByRole('link', { name: 'Dry-run GitOps' }))
+    await user.click(await screen.findByRole('button', { name: 'Run dry-run' }))
     await waitFor(() => expect(drySpy).toHaveBeenCalledWith('r3', { targetEnvironment: 'staging' }))
     expect(await screen.findByText('--- preview')).toBeInTheDocument()
   })

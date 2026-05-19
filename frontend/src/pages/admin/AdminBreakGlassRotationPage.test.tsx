@@ -72,9 +72,7 @@ describe('AdminBreakGlassRotationPage', () => {
       expect(screen.getByText('REQUIRED')).toBeInTheDocument()
     })
     expect(screen.getByText('fp:abcd1234')).toBeInTheDocument()
-    expect(
-      screen.getByText(/The token value is never shown/i),
-    ).toBeInTheDocument()
+    expect(screen.getAllByText(/The token value is never shown/i).length).toBeGreaterThan(0)
     // No raw secrets / no full hash
     expect(document.body.textContent).not.toContain('sha256:')
   })

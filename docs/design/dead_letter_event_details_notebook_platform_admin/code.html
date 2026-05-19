@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Notebook Platform - Dead-letter Detail</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Manrope:wght@600;700&amp;family=JetBrains+Mono:wght@400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                            "on-primary-fixed": "#0f0069",
+                            "on-secondary": "#ffffff",
+                            "outline": "#777584",
+                            "on-secondary-container": "#57657a",
+                            "background": "#fcf8ff",
+                            "tertiary": "#511c00",
+                            "secondary": "#515f74",
+                            "surface-container": "#f0ecf6",
+                            "on-primary": "#ffffff",
+                            "surface-tint": "#544fc0",
+                            "surface": "#fcf8ff",
+                            "on-background": "#1b1b22",
+                            "primary-fixed": "#e2dfff",
+                            "on-primary-fixed-variant": "#3b35a7",
+                            "inverse-on-surface": "#f3eff9",
+                            "on-tertiary": "#ffffff",
+                            "surface-container-highest": "#e4e1eb",
+                            "on-error-container": "#93000a",
+                            "on-tertiary-container": "#fe9562",
+                            "on-tertiary-fixed": "#351000",
+                            "error-container": "#ffdad6",
+                            "on-error": "#ffffff",
+                            "primary-fixed-dim": "#c3c0ff",
+                            "outline-variant": "#c8c4d5",
+                            "surface-variant": "#e4e1eb",
+                            "surface-bright": "#fcf8ff",
+                            "inverse-surface": "#303037",
+                            "secondary-container": "#d5e3fc",
+                            "surface-container-high": "#eae6f1",
+                            "tertiary-fixed-dim": "#ffb694",
+                            "on-surface-variant": "#464553",
+                            "inverse-primary": "#c3c0ff",
+                            "on-tertiary-fixed-variant": "#7a3003",
+                            "secondary-fixed": "#d5e3fc",
+                            "on-surface": "#1b1b22",
+                            "primary-container": "#3730a3",
+                            "on-primary-container": "#a9a7ff",
+                            "tertiary-fixed": "#ffdbcc",
+                            "error": "#ba1a1a",
+                            "primary": "#1f108e",
+                            "surface-container-lowest": "#ffffff",
+                            "surface-dim": "#dcd8e3",
+                            "tertiary-container": "#752c00",
+                            "on-secondary-fixed": "#0d1c2e",
+                            "surface-container-low": "#f6f2fc",
+                            "secondary-fixed-dim": "#b9c7df",
+                            "on-secondary-fixed-variant": "#3a485b"
+                    },
+                    "borderRadius": {
+                            "DEFAULT": "0.25rem",
+                            "lg": "0.5rem",
+                            "xl": "0.75rem",
+                            "full": "9999px"
+                    },
+                    "spacing": {
+                            "base": "4px",
+                            "md": "16px",
+                            "xl": "48px",
+                            "lg": "24px",
+                            "gutter": "24px",
+                            "container-max": "1280px",
+                            "xs": "4px",
+                            "sm": "8px"
+                    },
+                    "fontFamily": {
+                            "body-lg": [
+                                    "Inter"
+                            ],
+                            "label-md": [
+                                    "Inter"
+                            ],
+                            "display-lg": [
+                                    "Manrope"
+                            ],
+                            "body-md": [
+                                    "Inter"
+                            ],
+                            "headline-sm": [
+                                    "Manrope"
+                            ],
+                            "headline-md": [
+                                    "Manrope"
+                            ],
+                            "mono-sm": [
+                                    "JetBrains Mono"
+                            ]
+                    },
+                    "fontSize": {
+                            "body-lg": [
+                                    "16px",
+                                    {
+                                            "lineHeight": "1.6",
+                                            "fontWeight": "400"
+                                    }
+                            ],
+                            "label-md": [
+                                    "12px",
+                                    {
+                                            "lineHeight": "1",
+                                            "letterSpacing": "0.01em",
+                                            "fontWeight": "500"
+                                    }
+                            ],
+                            "display-lg": [
+                                    "48px",
+                                    {
+                                            "lineHeight": "1.1",
+                                            "letterSpacing": "-0.02em",
+                                            "fontWeight": "700"
+                                    }
+                            ],
+                            "body-md": [
+                                    "14px",
+                                    {
+                                            "lineHeight": "1.5",
+                                            "fontWeight": "400"
+                                    }
+                            ],
+                            "headline-sm": [
+                                    "18px",
+                                    {
+                                            "lineHeight": "1.4",
+                                            "fontWeight": "600"
+                                    }
+                            ],
+                            "headline-md": [
+                                    "24px",
+                                    {
+                                            "lineHeight": "1.3",
+                                            "letterSpacing": "-0.01em",
+                                            "fontWeight": "600"
+                                    }
+                            ],
+                            "mono-sm": [
+                                    "13px",
+                                    {
+                                            "lineHeight": "1.5",
+                                            "fontWeight": "400"
+                                    }
+                            ]
+                    }
+            },
+                },
+            }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings:
+            'FILL' 0,
+            'wght' 400,
+            'GRAD' 0,
+            'opsz' 24
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body-md text-body-md antialiased overflow-hidden">
+<!-- Background App State (Blurred/Covered by overlay) -->
+<div class="h-screen w-full flex select-none pointer-events-none opacity-50 blur-sm">
+<!-- SideNavBar Mock -->
+<nav class="bg-surface border-r border-outline-variant flat no shadows flex flex-col h-full py-md px-md w-[240px]">
+<div class="mb-xl flex items-center gap-sm">
+<div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-on-primary">
+<span class="material-symbols-outlined text-label-md" style="font-variation-settings: 'FILL' 1;">book</span>
+</div>
+<div>
+<h1 class="text-headline-sm font-headline-sm font-bold text-primary">Notebook Platform</h1>
+<p class="text-label-md font-label-md text-secondary">Enterprise Workspace</p>
+</div>
+</div>
+<button class="bg-primary text-on-primary font-label-md text-label-md rounded-lg py-sm px-md flex items-center justify-center gap-sm mb-lg">
+<span class="material-symbols-outlined">add</span>
+                New Notebook
+            </button>
+<ul class="flex-1 space-y-sm">
+<li><a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors" href="#"><span class="material-symbols-outlined">folder_open</span>Workspaces</a></li>
+<li><a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors" href="#"><span class="material-symbols-outlined">search</span>Search</a></li>
+<li><a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors" href="#"><span class="material-symbols-outlined">notifications</span>Notifications</a></li>
+<li><a class="flex items-center gap-md px-md py-sm rounded-lg text-primary font-bold border-r-2 border-primary bg-surface-container-low" href="#"><span class="material-symbols-outlined">settings</span>Settings</a></li>
+<li><a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors" href="#"><span class="material-symbols-outlined">admin_panel_settings</span>Admin</a></li>
+</ul>
+<ul class="space-y-sm mt-auto pt-lg border-t border-outline-variant">
+<li><a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors" href="#"><span class="material-symbols-outlined">help</span>Support</a></li>
+<li><a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors" href="#"><span class="material-symbols-outlined">logout</span>Sign Out</a></li>
+</ul>
+</nav>
+<!-- Main Content Mock -->
+<main class="flex-1 flex flex-col h-full relative">
+<header class="bg-surface/80 backdrop-blur-md border-b border-outline-variant flex justify-between items-center h-16 px-lg w-full z-40">
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Workspace Switcher</h2>
+</header>
+<div class="p-xl overflow-y-auto">
+<div class="max-w-container-max mx-auto space-y-lg">
+<h3 class="font-headline-md text-headline-md">Dead-letter Queue</h3>
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-lg h-96">
+<!-- Table mock -->
+<div class="h-10 border-b border-outline-variant mb-md"></div>
+<div class="space-y-sm">
+<div class="h-12 bg-surface-container-lowest border border-outline-variant rounded"></div>
+<div class="h-12 bg-surface-container-lowest border border-outline-variant rounded"></div>
+<div class="h-12 bg-surface-container-lowest border border-outline-variant rounded"></div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- Drawer Overlay & Container -->
+<div class="fixed inset-0 z-50 flex justify-end">
+<!-- Backdrop -->
+<div class="absolute inset-0 bg-inverse-surface/40 backdrop-blur-sm transition-opacity"></div>
+<!-- Drawer Panel -->
+<div class="relative w-full max-w-[600px] h-full bg-surface-container-lowest border-l border-outline-variant shadow-[0px_10px_15px_-3px_rgba(15,23,42,0.1)] flex flex-col transform transition-transform duration-300">
+<!-- Header -->
+<div class="flex items-center justify-between px-lg py-md border-b border-outline-variant bg-surface-container-lowest z-10 sticky top-0">
+<div class="flex items-center gap-sm">
+<div class="w-10 h-10 rounded-full bg-error-container text-error flex items-center justify-center">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">mail</span>
+</div>
+<div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Event evt_938xj2...</h2>
+<div class="flex items-center gap-2 mt-1">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full bg-error-container text-on-error-container font-label-md text-label-md">
+                                Dead-lettered
+                            </span>
+<span class="font-mono-sm text-mono-sm text-secondary">ID: dlk_44p1m</span>
+</div>
+</div>
+</div>
+<button class="p-sm rounded-full text-on-surface-variant hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<!-- Scrollable Content -->
+<div class="flex-1 overflow-y-auto p-lg space-y-xl bg-surface-container-low/30">
+<!-- Callout -->
+<div class="bg-primary-fixed/20 border border-primary-fixed-dim rounded-lg p-md flex gap-md items-start">
+<span class="material-symbols-outlined text-primary mt-0.5">info</span>
+<div>
+<h4 class="font-label-md text-label-md text-primary-container mb-1">Safe to Requeue</h4>
+<p class="font-body-md text-body-md text-on-surface-variant">This event originated from a Fanout outbox retry mechanism. Replaying it is idempotent and will not cause duplicate side-effects downstream.</p>
+</div>
+</div>
+<!-- Warning -->
+<div class="bg-error-container/30 border border-error-container rounded-lg p-md flex gap-md items-start">
+<span class="material-symbols-outlined text-error mt-0.5">warning</span>
+<div>
+<h4 class="font-label-md text-label-md text-on-error-container mb-1">Duplicate Risk Warning</h4>
+<p class="font-body-md text-body-md text-on-surface-variant">Proceed with caution if target system lacks idempotency keys. Requeueing may result in duplicate records.</p>
+</div>
+</div>
+<!-- Bento Grid: Metadata & Error Info -->
+<div class="grid grid-cols-2 gap-md">
+<!-- Metadata Card -->
+<div class="col-span-2 md:col-span-1 bg-surface-container-lowest border border-outline-variant rounded-xl p-md">
+<h3 class="font-label-md text-label-md text-secondary mb-md uppercase tracking-wider">Routing Metadata</h3>
+<dl class="space-y-sm">
+<div class="flex justify-between items-center py-xs border-b border-outline-variant/50 last:border-0">
+<dt class="text-on-surface-variant font-body-md">Source</dt>
+<dd class="font-mono-sm text-on-surface">billing.invoice.created</dd>
+</div>
+<div class="flex justify-between items-center py-xs border-b border-outline-variant/50 last:border-0">
+<dt class="text-on-surface-variant font-body-md">Event Type</dt>
+<dd class="font-mono-sm text-on-surface">webhook_dispatch</dd>
+</div>
+<div class="flex justify-between items-center py-xs border-b border-outline-variant/50 last:border-0">
+<dt class="text-on-surface-variant font-body-md">Recipient (Masked)</dt>
+<dd class="font-mono-sm text-on-surface">sha256:8f4a...2b9c</dd>
+</div>
+<div class="flex justify-between items-center py-xs border-b border-outline-variant/50 last:border-0">
+<dt class="text-on-surface-variant font-body-md">Attempts</dt>
+<dd class="font-mono-sm text-on-surface">5 / 5</dd>
+</div>
+<div class="flex justify-between items-center py-xs border-b border-outline-variant/50 last:border-0">
+<dt class="text-on-surface-variant font-body-md">Requeue Count</dt>
+<dd class="font-mono-sm text-on-surface">0</dd>
+</div>
+</dl>
+</div>
+<!-- Error Info Card -->
+<div class="col-span-2 md:col-span-1 bg-surface-container-lowest border border-outline-variant rounded-xl p-md flex flex-col">
+<h3 class="font-label-md text-label-md text-secondary mb-md uppercase tracking-wider">Last Error State</h3>
+<div class="flex-1 flex flex-col justify-center items-center text-center p-md bg-surface-container-low rounded-lg border border-outline-variant/50">
+<span class="material-symbols-outlined text-error mb-2 text-[32px]">cloud_off</span>
+<span class="font-mono-sm text-error font-bold mb-1">ERR_CONN_TIMEOUT</span>
+<p class="font-body-md text-on-surface-variant text-sm">Target endpoint failed to respond within 30000ms.</p>
+</div>
+</div>
+</div>
+<!-- Audit Timeline -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-md">
+<h3 class="font-label-md text-label-md text-secondary mb-lg uppercase tracking-wider">Audit Timeline</h3>
+<div class="relative pl-sm">
+<!-- Timeline Line -->
+<div class="absolute left-[11px] top-2 bottom-2 w-px bg-outline-variant"></div>
+<div class="space-y-lg">
+<!-- Timeline Item -->
+<div class="relative flex gap-md items-start">
+<div class="absolute -left-[5px] top-1.5 w-3 h-3 rounded-full bg-error-container border-2 border-surface-container-lowest z-10"></div>
+<div class="pl-md">
+<div class="flex items-baseline gap-sm">
+<h4 class="font-label-md text-label-md text-on-surface">Final Delivery Failure</h4>
+<span class="font-mono-sm text-xs text-secondary">Oct 24, 14:32:01 UTC</span>
+</div>
+<p class="font-body-md text-on-surface-variant text-sm mt-1">Moved to dead-letter queue after 5 failed attempts.</p>
+</div>
+</div>
+<!-- Timeline Item -->
+<div class="relative flex gap-md items-start">
+<div class="absolute -left-[5px] top-1.5 w-3 h-3 rounded-full bg-surface-variant border-2 border-surface-container-lowest z-10"></div>
+<div class="pl-md">
+<div class="flex items-baseline gap-sm">
+<h4 class="font-label-md text-label-md text-on-surface">Attempt 5 Failed</h4>
+<span class="font-mono-sm text-xs text-secondary">Oct 24, 14:31:55 UTC</span>
+</div>
+<p class="font-body-md text-on-surface-variant text-sm mt-1">Connection timeout.</p>
+</div>
+</div>
+<!-- Timeline Item -->
+<div class="relative flex gap-md items-start">
+<div class="absolute -left-[5px] top-1.5 w-3 h-3 rounded-full bg-primary-fixed-dim border-2 border-surface-container-lowest z-10"></div>
+<div class="pl-md">
+<div class="flex items-baseline gap-sm">
+<h4 class="font-label-md text-label-md text-on-surface">Event Created</h4>
+<span class="font-mono-sm text-xs text-secondary">Oct 24, 14:30:00 UTC</span>
+</div>
+<p class="font-body-md text-on-surface-variant text-sm mt-1">Originated from billing service.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Privacy Note -->
+<div class="text-center pb-xl">
+<p class="font-label-md text-xs text-secondary flex items-center justify-center gap-xs">
+<span class="material-symbols-outlined text-[16px]">lock</span>
+                        Raw payload hidden for privacy compliance.
+                    </p>
+</div>
+</div>
+<!-- Footer Actions -->
+<div class="p-lg border-t border-outline-variant bg-surface-container-lowest flex justify-end gap-md sticky bottom-0 z-10">
+<button class="px-md py-sm rounded-lg bg-surface-container-lowest border border-outline-variant text-on-surface font-label-md text-label-md hover:bg-surface-container-low transition-colors flex items-center gap-sm">
+<span class="material-symbols-outlined text-[18px]">play_arrow</span>
+                    Dry-run Requeue
+                </button>
+<button class="px-md py-sm rounded-lg bg-primary text-on-primary font-label-md text-label-md hover:bg-primary/90 transition-colors flex items-center gap-sm">
+<span class="material-symbols-outlined text-[18px]">replay</span>
+                    Requeue (MFA Required)
+                </button>
+</div>
+</div>
+</div>
+</body></html>

@@ -1,0 +1,82 @@
+name: Frontend RC Readiness
+
+on:
+  workflow_dispatch:
+    inputs:
+      skip_playwright:
+        description: Skip Playwright smoke (lightweight)
+        required: false
+        type: boolean
+        default: false
+      release_candidate_id:
+        description: Optional release candidate id
+        required: false
+        type: string
+        default: ""
+  push:
+    branches:
+      - main
+  pull_request:
+    paths:
+      - "frontend/**"
+      - "scripts/security/ci-frontend-rc-readiness.sh"
+      - "scripts/security/build_frontend_rc_readiness_report.py"
+      - "scripts/check-no-secrets.sh"
+      - ".github/workflows/frontend-rc-readiness.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  frontend-rc-readiness:
+    name: frontend-rc-readiness
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        run: npm ci
+        working-directory: frontend
+
+      - name: Install Playwright browsers
+        if: github.event.inputs.skip_playwright != true
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+
+      - name: Run frontend RC readiness gate
+        env:
+          RC_OUTPUT_DIR: frontend-rc-readiness-out
+          GIT_SHA: ${{ github.sha }}
+          RELEASE_CANDIDATE_ID: ${{ github.event.inputs.release_candidate_id || github.sha }}
+          RC_SKIP_PLAYWRIGHT: ${{ (github.event_name == 'pull_request' || github.event.inputs.skip_playwright == true) && 'true' || 'false' }}
+          RC_ALLOW_PLAYWRIGHT_SKIP: "false"
+          RC_ROOT: ${{ github.workspace }}
+        run: bash scripts/security/ci-frontend-rc-readiness.sh
+
+      - name: Validate results JSON
+        if: always()
+        run: python3 -m json.tool frontend-rc-readiness-out/frontend-rc-readiness-results.json
+
+      - name: Write job summary
+        if: always()
+        run: |
+          if [ -f frontend-rc-readiness-out/frontend-rc-readiness-summary.md ]; then
+            cat frontend-rc-readiness-out/frontend-rc-readiness-summary.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload frontend RC readiness artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-rc-readiness
+          path: |
+            frontend-rc-readiness-out/frontend-rc-readiness-results.json
+            frontend-rc-readiness-out/frontend-rc-readiness-summary.md
+          if-no-files-found: warn

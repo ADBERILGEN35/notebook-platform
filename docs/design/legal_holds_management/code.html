@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Legal Holds - Notebook Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Manrope:wght@600;700&amp;family=JetBrains+Mono:wght@400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-bright": "#fcf8ff",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-low": "#f6f2fc",
+                        "surface": "#fcf8ff",
+                        "on-primary": "#ffffff",
+                        "inverse-primary": "#c3c0ff",
+                        "tertiary-container": "#752c00",
+                        "surface-container": "#f0ecf6",
+                        "on-surface-variant": "#464553",
+                        "surface-container-high": "#eae6f1",
+                        "on-secondary": "#ffffff",
+                        "on-secondary-container": "#57657a",
+                        "on-error-container": "#93000a",
+                        "primary": "#1f108e",
+                        "background": "#fcf8ff",
+                        "tertiary-fixed": "#ffdbcc",
+                        "error-container": "#ffdad6",
+                        "tertiary": "#511c00",
+                        "on-error": "#ffffff",
+                        "surface-variant": "#e4e1eb",
+                        "secondary": "#515f74",
+                        "on-background": "#1b1b22",
+                        "surface-container-highest": "#e4e1eb",
+                        "on-secondary-fixed": "#0d1c2e",
+                        "primary-fixed-dim": "#c3c0ff",
+                        "primary-fixed": "#e2dfff",
+                        "surface-dim": "#dcd8e3",
+                        "on-primary-container": "#a9a7ff",
+                        "secondary-fixed-dim": "#b9c7df",
+                        "inverse-surface": "#303037",
+                        "surface-tint": "#544fc0",
+                        "on-secondary-fixed-variant": "#3a485b",
+                        "inverse-on-surface": "#f3eff9",
+                        "on-tertiary": "#ffffff",
+                        "error": "#ba1a1a",
+                        "on-tertiary-fixed-variant": "#7a3003",
+                        "tertiary-fixed-dim": "#ffb694",
+                        "on-surface": "#1b1b22",
+                        "secondary-fixed": "#d5e3fc",
+                        "on-primary-fixed-variant": "#3b35a7",
+                        "on-tertiary-fixed": "#351000",
+                        "outline": "#777584",
+                        "primary-container": "#3730a3",
+                        "secondary-container": "#d5e3fc",
+                        "on-tertiary-container": "#fe9562",
+                        "on-primary-fixed": "#0f0069",
+                        "outline-variant": "#c8c4d5"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "24px",
+                        "lg": "24px",
+                        "base": "4px",
+                        "xs": "4px",
+                        "xl": "48px",
+                        "sm": "8px",
+                        "container-max": "1280px",
+                        "md": "16px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Inter"],
+                        "headline-sm": ["Manrope"],
+                        "display-lg": ["Manrope"],
+                        "headline-md": ["Manrope"],
+                        "mono-sm": ["JetBrains Mono"],
+                        "label-md": ["Inter"],
+                        "body-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                        "headline-sm": ["18px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                        "display-lg": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "headline-md": ["24px", {"lineHeight": "1.3", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "mono-sm": ["13px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                        "label-md": ["12px", {"lineHeight": "1", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                        "body-md": ["14px", {"lineHeight": "1.5", "fontWeight": "400"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-surface-bright text-on-surface font-body-md h-screen overflow-hidden flex selection:bg-primary-container selection:text-on-primary-container">
+<!-- SideNavBar -->
+<nav class="fixed left-0 top-0 h-full w-[240px] bg-surface dark:bg-surface-dim border-r border-outline-variant dark:border-outline flex flex-col h-full py-md px-md z-50">
+<div class="mb-xl flex flex-col gap-sm">
+<div class="text-headline-sm font-headline-sm font-bold text-primary dark:text-primary-fixed mb-xs flex items-center gap-2">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">menu_book</span> Notebook Platform
+            </div>
+<div class="text-label-md font-label-md text-on-surface-variant">Enterprise Workspace</div>
+</div>
+<button class="bg-[#4f46e5] text-[#ffffff] font-body-md text-body-md py-2 px-4 rounded-[8px] flex items-center justify-center gap-2 mb-lg hover:bg-opacity-90 transition-all shadow-[0px_4px_6px_-1px_rgba(15,23,42,0.05)]">
+<span class="material-symbols-outlined text-[18px]">add</span> New Notebook
+        </button>
+<div class="flex flex-col gap-sm flex-grow">
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-low dark:hover:bg-surface-container-high transition-colors font-body-md text-body-md" href="#">
+<span class="material-symbols-outlined text-[20px]">folder_open</span>
+<span>Workspaces</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-low dark:hover:bg-surface-container-high transition-colors font-body-md text-body-md" href="#">
+<span class="material-symbols-outlined text-[20px]">search</span>
+<span>Search</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-low dark:hover:bg-surface-container-high transition-colors font-body-md text-body-md" href="#">
+<span class="material-symbols-outlined text-[20px]">notifications</span>
+<span>Notifications</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-low dark:hover:bg-surface-container-high transition-colors font-body-md text-body-md" href="#">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+<span>Settings</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-primary dark:text-primary-fixed font-bold border-r-2 border-primary hover:bg-surface-container-low dark:hover:bg-surface-container-high transition-colors font-body-md text-body-md opacity-80 transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">admin_panel_settings</span>
+<span>Admin</span>
+</a>
+</div>
+<div class="mt-auto pt-4 border-t border-outline-variant dark:border-outline flex flex-col gap-sm">
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors font-body-md text-body-md" href="#">
+<span class="material-symbols-outlined text-[20px]">help</span>
+<span>Support</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors font-body-md text-body-md" href="#">
+<span class="material-symbols-outlined text-[20px]">logout</span>
+<span>Sign Out</span>
+</a>
+</div>
+</nav>
+<!-- TopNavBar -->
+<header class="fixed top-0 right-0 w-[calc(100%-240px)] z-40 bg-surface/80 dark:bg-surface-dim/80 backdrop-blur-md border-b border-outline-variant dark:border-outline flex justify-between items-center h-16 px-lg">
+<div class="flex items-center gap-xl">
+<div class="font-headline-sm text-headline-sm text-on-surface dark:text-on-surface flex items-center gap-2">
+                Workspace Switcher
+                <span class="material-symbols-outlined text-outline">unfold_more</span>
+</div>
+<nav class="hidden md:flex gap-lg">
+<a class="text-secondary dark:text-secondary-fixed-dim hover:text-primary dark:hover:text-primary-fixed transition-colors font-label-md text-label-md py-5 border-b-2 border-transparent" href="#">Drafts</a>
+<a class="text-secondary dark:text-secondary-fixed-dim hover:text-primary dark:hover:text-primary-fixed transition-colors font-label-md text-label-md py-5 border-b-2 border-transparent" href="#">Shared</a>
+<a class="text-secondary dark:text-secondary-fixed-dim hover:text-primary dark:hover:text-primary-fixed transition-colors font-label-md text-label-md py-5 border-b-2 border-transparent" href="#">Archived</a>
+</nav>
+</div>
+<div class="flex items-center gap-md">
+<div class="relative hidden lg:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[18px]">search</span>
+<input class="pl-10 pr-4 py-1.5 bg-surface-container-lowest border border-outline-variant rounded-full text-body-md focus:outline-none focus:border-[#4f46e5] focus:ring-2 focus:ring-[#e0e7ff] transition-all w-64 placeholder:text-outline-variant" placeholder="Search..." type="text"/>
+</div>
+<button class="text-secondary hover:bg-surface-container-highest p-2 rounded-full transition-colors flex items-center justify-center">
+<span class="material-symbols-outlined">history</span>
+</button>
+<button class="text-secondary hover:bg-surface-container-highest p-2 rounded-full transition-colors flex items-center justify-center">
+<span class="material-symbols-outlined">star</span>
+</button>
+<button class="text-secondary hover:bg-surface-container-highest p-2 rounded-full transition-colors flex items-center justify-center">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+<button class="bg-[#ffffff] text-[#0f172a] border border-[#e2e8f0] font-label-md text-label-md py-1.5 px-3 rounded-[8px] hover:bg-surface-container-lowest transition-colors ml-2 hidden sm:block">
+                Invite Team
+            </button>
+<div class="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container font-headline-sm ml-2 overflow-hidden border border-outline-variant">
+<img alt="User Profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA2XZWKrw2rfDaJ8qFSwbDinyHxY8IMDmPp-EiV0JPQBF119zG8kuNu2wiwfUsAtjypS-j898lUgjcoxqOtzQYy60c-WQJzhP0d3F1W1jLI9vMQWd6QpJYMnKUUWUbGnknTEmNq9uwyOfufz33JhGsXkJCsZTVCDDZUZ6ReCeLOGaPRGvDtiI6t1geIVWw1DRszp-AwZch95cT6sjEcWjDWa89pXutZB0nTgAnDPbNKuKSJRKA1o-don87CbsnchwAB6xMBpQI2pHI"/>
+</div>
+</div>
+</header>
+<!-- Main Content Layout -->
+<main class="ml-[240px] mt-16 p-lg xl:p-xl w-[calc(100%-240px)] h-[calc(100vh-64px)] overflow-y-auto overflow-x-hidden flex flex-row gap-lg relative">
+<!-- Primary Content Area -->
+<div class="flex-1 max-w-container-max mx-auto flex flex-col gap-xl w-full">
+<!-- Breadcrumbs & Header -->
+<div class="flex flex-col gap-sm">
+<div class="flex items-center gap-2 text-label-md font-label-md text-secondary">
+<a class="hover:text-primary transition-colors" href="#">Admin</a>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<a class="hover:text-primary transition-colors" href="#">Notifications</a>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<span class="text-on-surface">Legal Holds</span>
+</div>
+<div class="flex justify-between items-end">
+<h1 class="text-display-lg font-display-lg text-on-surface">Legal Holds</h1>
+<button class="bg-[#4f46e5] text-[#ffffff] font-body-md text-body-md py-2 px-4 rounded-[8px] flex items-center justify-center gap-2 hover:bg-opacity-90 transition-all shadow-[0px_4px_6px_-1px_rgba(15,23,42,0.05)]">
+<span class="material-symbols-outlined text-[18px]">add</span> Create Legal Hold
+                    </button>
+</div>
+</div>
+<!-- Summary Cards (Bento Grid Style) -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-lg">
+<!-- Active Holds -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-md flex flex-col gap-md relative overflow-hidden shadow-[0px_4px_6px_-1px_rgba(15,23,42,0.05)]">
+<div class="flex justify-between items-start">
+<span class="text-body-md font-body-md text-secondary">Active Holds</span>
+<div class="bg-[#fffbeb] text-[#b45309] font-label-md text-label-md px-2 py-0.5 rounded-full border border-[#fef3c7] flex items-center gap-1">
+<div class="w-1.5 h-1.5 rounded-full bg-[#f59e0b]"></div>
+                            Amber
+                        </div>
+</div>
+<div class="text-display-lg font-display-lg text-on-surface mt-auto">3</div>
+<div class="absolute bottom-0 right-0 p-4 opacity-5 text-on-surface pointer-events-none">
+<span class="material-symbols-outlined text-[64px]">gavel</span>
+</div>
+</div>
+<!-- Released Holds -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-md flex flex-col gap-md relative overflow-hidden shadow-[0px_4px_6px_-1px_rgba(15,23,42,0.05)]">
+<div class="flex justify-between items-start">
+<span class="text-body-md font-body-md text-secondary">Released Holds</span>
+</div>
+<div class="text-display-lg font-display-lg text-on-surface mt-auto">14</div>
+<div class="absolute bottom-0 right-0 p-4 opacity-5 text-on-surface pointer-events-none">
+<span class="material-symbols-outlined text-[64px]">task_alt</span>
+</div>
+</div>
+<!-- Retention Blocked -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-md flex flex-col gap-md relative overflow-hidden shadow-[0px_4px_6px_-1px_rgba(15,23,42,0.05)]">
+<div class="flex justify-between items-start">
+<span class="text-body-md font-body-md text-secondary">Retention Blocked</span>
+</div>
+<div class="text-display-lg font-display-lg text-on-surface mt-auto flex items-baseline gap-2">
+                        2 <span class="text-body-lg font-body-lg text-secondary">targets</span>
+</div>
+<div class="absolute bottom-0 right-0 p-4 opacity-5 text-on-surface pointer-events-none">
+<span class="material-symbols-outlined text-[64px]">shield</span>
+</div>
+</div>
+</div>
+<!-- Main Table Section -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl flex flex-col shadow-[0px_4px_6px_-1px_rgba(15,23,42,0.05)] overflow-hidden">
+<div class="px-md py-4 border-b border-outline-variant flex justify-between items-center bg-surface-bright">
+<h2 class="text-headline-sm font-headline-sm text-on-surface">Active Legal Holds</h2>
+<div class="flex items-center gap-2">
+<button class="text-secondary hover:text-on-surface transition-colors p-1 rounded-md hover:bg-surface-container-low">
+<span class="material-symbols-outlined text-[20px]">filter_list</span>
+</button>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-bright border-b border-outline-variant text-label-md font-label-md text-secondary uppercase tracking-wider">
+<th class="px-md py-3 font-medium">Hold Key</th>
+<th class="px-md py-3 font-medium">Scope</th>
+<th class="px-md py-3 font-medium">Status</th>
+<th class="px-md py-3 font-medium">Created By</th>
+<th class="px-md py-3 font-medium">Created At</th>
+<th class="px-md py-3 font-medium text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="text-body-md font-body-md text-on-surface divide-y divide-outline-variant">
+<!-- Row 1 (Active/Selected) -->
+<tr class="hover:bg-surface-container-lowest bg-[#f8fafc] cursor-pointer transition-colors group">
+<td class="px-md py-4 font-mono-sm text-primary">LH-2023-Q4-AUDIT</td>
+<td class="px-md py-4"><span class="bg-surface-container text-on-surface-variant px-2 py-1 rounded-md text-mono-sm">ALL_NOTIFICATION_RETENTION</span></td>
+<td class="px-md py-4">
+<div class="inline-flex items-center gap-1.5 bg-[#e0e7ff] text-[#3730a3] px-2 py-0.5 rounded-full text-label-md">
+<div class="w-1.5 h-1.5 rounded-full bg-[#4f46e5]"></div>
+                                        Active
+                                    </div>
+</td>
+<td class="px-md py-4 text-secondary">compliance-officer@internal.io</td>
+<td class="px-md py-4 text-secondary whitespace-nowrap">Oct 24, 2023</td>
+<td class="px-md py-4 text-right">
+<button class="text-secondary hover:text-primary transition-colors p-1 rounded-md hover:bg-surface-container-low opacity-0 group-hover:opacity-100">
+<span class="material-symbols-outlined text-[20px]">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-container-lowest cursor-pointer transition-colors group">
+<td class="px-md py-4 font-mono-sm text-on-surface">LH-FANOUT-INVESTIGATION</td>
+<td class="px-md py-4"><span class="bg-surface-container text-on-surface-variant px-2 py-1 rounded-md text-mono-sm">FANOUT_OUTBOX</span></td>
+<td class="px-md py-4">
+<div class="inline-flex items-center gap-1.5 bg-[#e0e7ff] text-[#3730a3] px-2 py-0.5 rounded-full text-label-md">
+<div class="w-1.5 h-1.5 rounded-full bg-[#4f46e5]"></div>
+                                        Active
+                                    </div>
+</td>
+<td class="px-md py-4 text-secondary">security-lead@internal.io</td>
+<td class="px-md py-4 text-secondary whitespace-nowrap">Oct 26, 2023</td>
+<td class="px-md py-4 text-right">
+<button class="text-secondary hover:text-primary transition-colors p-1 rounded-md hover:bg-surface-container-low opacity-0 group-hover:opacity-100">
+<span class="material-symbols-outlined text-[20px]">more_vert</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<!-- Detail Drawer (Right Side Pane) -->
+<aside class="w-[400px] flex-shrink-0 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-[0px_10px_15px_-3px_rgba(15,23,42,0.1)] flex flex-col h-full sticky top-0 overflow-hidden">
+<!-- Drawer Header -->
+<div class="p-md border-b border-outline-variant flex justify-between items-start bg-surface-bright">
+<div class="flex flex-col gap-xs">
+<span class="text-label-md font-label-md text-secondary uppercase tracking-wider">Hold Details</span>
+<h3 class="text-headline-md font-headline-md text-on-surface font-mono-sm break-all">LH-2023-Q4-AUDIT</h3>
+<div class="mt-2">
+<div class="inline-flex items-center gap-1.5 bg-[#e0e7ff] text-[#3730a3] px-2 py-0.5 rounded-full text-label-md">
+<div class="w-1.5 h-1.5 rounded-full bg-[#4f46e5]"></div>
+                            Active
+                        </div>
+</div>
+</div>
+<button class="text-secondary hover:bg-surface-container-low p-1.5 rounded-full transition-colors">
+<span class="material-symbols-outlined text-[20px]">close</span>
+</button>
+</div>
+<!-- Drawer Body -->
+<div class="flex-1 overflow-y-auto p-md flex flex-col gap-lg">
+<!-- Section: Scope -->
+<div class="flex flex-col gap-xs">
+<span class="text-label-md font-label-md text-secondary">Scope</span>
+<div class="bg-surface-container-low p-3 rounded-lg border border-outline-variant font-mono-sm text-body-md text-on-surface break-all">
+                        ALL_NOTIFICATION_RETENTION
+                    </div>
+</div>
+<!-- Section: Reason -->
+<div class="flex flex-col gap-xs">
+<span class="text-label-md font-label-md text-secondary">Reason</span>
+<div class="text-body-md font-body-lg text-on-surface leading-relaxed">
+                        Ongoing compliance audit for Q4 2023. Do not purge any notification delivery records until further notice.
+                    </div>
+</div>
+<!-- Section: Affected Targets -->
+<div class="flex flex-col gap-xs border-t border-outline-variant pt-lg">
+<span class="text-label-md font-label-md text-secondary flex items-center justify-between">
+                        Affected Targets
+                        <span class="bg-surface-container text-on-surface-variant px-1.5 py-0.5 rounded text-[10px]">2 Targets</span>
+</span>
+<ul class="flex flex-col gap-2 mt-2">
+<li class="flex items-center gap-2 text-body-md text-on-surface bg-surface-bright p-2 border border-outline-variant rounded-md">
+<span class="material-symbols-outlined text-[16px] text-secondary">database</span>
+<span class="font-mono-sm">notifications_db_main</span>
+</li>
+<li class="flex items-center gap-2 text-body-md text-on-surface bg-surface-bright p-2 border border-outline-variant rounded-md">
+<span class="material-symbols-outlined text-[16px] text-secondary">cloud</span>
+<span class="font-mono-sm">s3_archive_bucket_us_east</span>
+</li>
+</ul>
+</div>
+<!-- Section: Audit Timeline -->
+<div class="flex flex-col gap-xs border-t border-outline-variant pt-lg mb-4">
+<span class="text-label-md font-label-md text-secondary mb-2">Audit Timeline</span>
+<div class="relative pl-4 border-l-2 border-outline-variant ml-2 flex flex-col gap-4">
+<div class="relative">
+<div class="absolute -left-[21px] top-1 w-2.5 h-2.5 rounded-full bg-outline-variant border-2 border-surface-container-lowest"></div>
+<div class="flex flex-col gap-0.5">
+<span class="text-body-md font-body-md text-on-surface">Policy Applied</span>
+<span class="text-label-md font-label-md text-secondary">Oct 24, 2023 - System</span>
+</div>
+</div>
+<div class="relative">
+<div class="absolute -left-[21px] top-1 w-2.5 h-2.5 rounded-full bg-[#4f46e5] border-2 border-surface-container-lowest"></div>
+<div class="flex flex-col gap-0.5">
+<span class="text-body-md font-body-md text-on-surface">Created by Sarah J.</span>
+<span class="text-label-md font-label-md text-secondary">Oct 24, 2023 - compliance-officer@internal.io</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Drawer Footer -->
+<div class="p-md border-t border-outline-variant bg-surface-bright flex justify-end">
+<button class="bg-surface-container-lowest text-error border border-error font-body-md text-body-md py-2 px-4 rounded-[8px] hover:bg-error-container transition-colors w-full flex justify-center items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">lock_open</span> Release Hold
+                </button>
+</div>
+</aside>
+</main>
+</body></html>
