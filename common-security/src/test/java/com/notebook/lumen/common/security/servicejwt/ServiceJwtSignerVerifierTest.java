@@ -70,6 +70,26 @@ class ServiceJwtSignerVerifierTest {
   }
 
   @Test
+  void signerGeneratesEphemeralKeyWhenAllowedAndNoKeyConfigured() {
+    String previous = System.getProperty("internal.service.jwt.allowEphemeralKeys");
+    System.setProperty("internal.service.jwt.allowEphemeralKeys", "true");
+    try {
+      ServiceJwtSigner signer =
+          new ServiceJwtSigner(
+              new ServiceJwtProperties(
+                  null, null, null, "dev-issuer", "service:dev", "dev-service", Duration.ofSeconds(60)));
+      String token = signer.sign("workspace-service", "scope:read");
+      assertThat(token).isNotBlank();
+    } finally {
+      if (previous == null) {
+        System.clearProperty("internal.service.jwt.allowEphemeralKeys");
+      } else {
+        System.setProperty("internal.service.jwt.allowEphemeralKeys", previous);
+      }
+    }
+  }
+
+  @Test
   void verifierRejectsExpiredToken() {
     String token = signer("content-key-1", Duration.ofSeconds(-60)).sign("workspace-service", "a");
 

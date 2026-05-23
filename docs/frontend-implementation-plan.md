@@ -17,6 +17,7 @@ Notebook Platform SPA (React 19 + Vite + TypeScript). Fazlar `docs/phases/` alt�
 | 146 | Frontend RC CI gate + evidence package (`frontend-rc-readiness`) |
 | 147 | Frontend RC sign-off package + visual QA checklist |
 | 149 | Frontend visual QA execution + sign-off (GO_WITH_ACCEPTED_RISKS) |
+| 150 | Design reconciliation + onboarding polish |
 
 ## Dizin yapısı
 
@@ -119,6 +120,12 @@ Legacy: `/app/notes/:noteId` → `NotePage`.
 | `/app/admin/retention/purge-result` | Session-scoped purge summary |
 
 Shared: `features/admin/notifications/*`, `features/admin/retention/*`. Purge execute gated by `NOTIFICATION_RETENTION_PURGE_*` flag.
+
+## Faz 150 Design reconciliation
+
+- Inventory: [frontend-design-reconciliation.md](frontend-design-reconciliation.md)
+- Onboarding: `features/onboarding/OnboardingWizard` on `/app` when no workspaces
+- Polish: hub empty/populated, GitOps mobile/a11y, conflict modal, RBAC override
 
 ## Faz 149 Visual QA execution
 

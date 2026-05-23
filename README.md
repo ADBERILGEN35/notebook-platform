@@ -15,7 +15,36 @@ Engineering takımları için block-based not tutma platformunun MVP iskeleti.
 docker compose -f docker-compose.dev.yml up -d
 ```
 
-Servisleri başlatın (root’tan hepsi):
+Postgres bu repoda **host port `15432`** üzerinde dinler (`5432` genelde yerel PostgreSQL tarafından kullanılır).
+
+**Windows (önerilen):** servisleri sırayla ayrı pencerelerde başlatın (Flyway paylaşılan DB şeması için sıra önemli):
+
+```powershell
+.\scripts\local-dev.ps1 infra
+.\scripts\local-dev.ps1 start
+.\scripts\local-dev.ps1 frontend
+```
+
+**Manuel (Linux/macOS veya tek terminal):** servisleri sırayla başlatın; paralel `bootRun` Flyway çakışmasına yol açabilir.
+
+```bash
+export DB_URL=jdbc:postgresql://127.0.0.1:15432/notebook_platform
+export DB_PASSWORD=notebook
+export DB_USER=notebook
+export JWT_ALLOW_EPHEMERAL_KEYS=true
+export IDENTITY_SERVICE_URL=http://localhost:8081
+export WORKSPACE_SERVICE_URL=http://localhost:8082
+export CONTENT_SERVICE_URL=http://localhost:8083
+export SEARCH_SERVICE_URL=http://localhost:8085
+export NOTIFICATION_SERVICE_URL=http://localhost:8084
+export JWT_JWKS_URI=http://localhost:8081/.well-known/jwks.json
+export CORS_ALLOWED_ORIGINS=http://localhost:5173
+./gradlew :identity-service:bootRun   # sonra workspace → content → notification → search → api-gateway
+```
+
+Frontend: `cd frontend && cp .env.example .env && npm install && npm run dev` → http://localhost:5173
+
+Eski tek komut (paralel, tüm servisler):
 
 ```bash
 ./gradlew bootRun

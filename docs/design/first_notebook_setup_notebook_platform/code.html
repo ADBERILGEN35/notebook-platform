@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>First Notebook Setup</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&amp;family=JetBrains+Mono:wght@400&amp;family=Manrope:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-tertiary-fixed-variant": "#7a3003",
+                    "surface-variant": "#e4e1eb",
+                    "primary-fixed": "#e2dfff",
+                    "surface": "#fcf8ff",
+                    "secondary-fixed-dim": "#b9c7df",
+                    "tertiary-fixed": "#ffdbcc",
+                    "secondary-container": "#d5e3fc",
+                    "on-secondary-fixed": "#0d1c2e",
+                    "on-primary-container": "#a9a7ff",
+                    "surface-tint": "#544fc0",
+                    "error-container": "#ffdad6",
+                    "on-tertiary-container": "#fe9562",
+                    "surface-container-lowest": "#ffffff",
+                    "surface-container-highest": "#e4e1eb",
+                    "inverse-surface": "#303037",
+                    "surface-container-low": "#f6f2fc",
+                    "tertiary": "#511c00",
+                    "inverse-on-surface": "#f3eff9",
+                    "secondary": "#515f74",
+                    "surface-container-high": "#eae6f1",
+                    "on-primary-fixed": "#0f0069",
+                    "error": "#ba1a1a",
+                    "outline": "#777584",
+                    "on-secondary-container": "#57657a",
+                    "on-surface-variant": "#464553",
+                    "inverse-primary": "#c3c0ff",
+                    "primary-fixed-dim": "#c3c0ff",
+                    "on-secondary-fixed-variant": "#3a485b",
+                    "primary-container": "#3730a3",
+                    "on-error-container": "#93000a",
+                    "surface-dim": "#dcd8e3",
+                    "on-secondary": "#ffffff",
+                    "surface-container": "#f0ecf6",
+                    "background": "#fcf8ff",
+                    "on-surface": "#1b1b22",
+                    "secondary-fixed": "#d5e3fc",
+                    "outline-variant": "#c8c4d5",
+                    "on-primary": "#ffffff",
+                    "on-tertiary-fixed": "#351000",
+                    "tertiary-container": "#752c00",
+                    "on-primary-fixed-variant": "#3b35a7",
+                    "on-background": "#1b1b22",
+                    "on-tertiary": "#ffffff",
+                    "surface-bright": "#fcf8ff",
+                    "on-error": "#ffffff",
+                    "primary": "#1f108e",
+                    "tertiary-fixed-dim": "#ffb694"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "xs": "4px",
+                    "container-max": "1280px",
+                    "sm": "8px",
+                    "lg": "24px",
+                    "md": "16px",
+                    "gutter": "24px",
+                    "xl": "48px",
+                    "base": "4px"
+            },
+            "fontFamily": {
+                    "mono-sm": [
+                            "JetBrains Mono"
+                    ],
+                    "headline-md": [
+                            "Manrope"
+                    ],
+                    "body-lg": [
+                            "Inter"
+                    ],
+                    "label-md": [
+                            "Inter"
+                    ],
+                    "headline-sm": [
+                            "Manrope"
+                    ],
+                    "display-lg": [
+                            "Manrope"
+                    ],
+                    "body-md": [
+                            "Inter"
+                    ]
+            },
+            "fontSize": {
+                    "mono-sm": [
+                            "13px",
+                            {
+                                    "lineHeight": "1.5",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "headline-md": [
+                            "24px",
+                            {
+                                    "lineHeight": "1.3",
+                                    "letterSpacing": "-0.01em",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "body-lg": [
+                            "16px",
+                            {
+                                    "lineHeight": "1.6",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "label-md": [
+                            "12px",
+                            {
+                                    "lineHeight": "1",
+                                    "letterSpacing": "0.01em",
+                                    "fontWeight": "500"
+                            }
+                    ],
+                    "headline-sm": [
+                            "18px",
+                            {
+                                    "lineHeight": "1.4",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "display-lg": [
+                            "48px",
+                            {
+                                    "lineHeight": "1.1",
+                                    "letterSpacing": "-0.02em",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "body-md": [
+                            "14px",
+                            {
+                                    "lineHeight": "1.5",
+                                    "fontWeight": "400"
+                            }
+                    ]
+            }
+    },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background min-h-screen flex items-center justify-center p-lg md:p-xl font-body-lg">
+<main class="w-full max-w-[900px] flex flex-col gap-xl">
+<header class="flex flex-col items-center text-center gap-sm mt-xl">
+<div class="w-16 h-16 bg-surface-container-high rounded-2xl flex items-center justify-center mb-sm shadow-[0px_4px_6px_-1px_rgba(15,23,42,0.05)] border border-outline-variant">
+<span class="material-symbols-outlined text-primary" style="font-size: 32px; font-variation-settings: 'FILL' 1;">menu_book</span>
+</div>
+<h1 class="text-display-lg font-display-lg text-on-surface">Set up your first notebook</h1>
+<p class="text-body-lg font-body-lg text-on-surface-variant max-w-[500px]">Establish a dedicated space for your focus. Choose a template or start from scratch.</p>
+</header>
+<section class="bg-surface-container-lowest border border-outline-variant rounded-xl p-lg md:p-xl shadow-[0px_10px_15px_-3px_rgba(15,23,42,0.05)] flex flex-col gap-xl">
+<div class="flex flex-col gap-xs">
+<label class="text-label-md font-label-md text-on-surface-variant ml-xs" for="notebook-name">Notebook Name</label>
+<div class="relative flex items-center">
+<span class="material-symbols-outlined absolute left-md text-outline">edit_document</span>
+<input class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg py-md pl-[48px] pr-md text-body-lg font-body-lg text-on-surface focus:border-primary focus:ring-2 focus:ring-primary-container focus:outline-none transition-all" id="notebook-name" type="text" value="Q4 Roadmap"/>
+</div>
+</div>
+<div class="flex flex-col gap-md">
+<div class="flex items-center justify-between border-b border-outline-variant pb-sm">
+<h2 class="text-headline-sm font-headline-sm text-on-surface">Template Library</h2>
+<span class="text-label-md font-label-md text-primary bg-primary-fixed px-sm py-xs rounded-full">3 Available</span>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-md mt-sm">
+<button class="flex flex-col bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden hover:shadow-[0px_4px_6px_-1px_rgba(15,23,42,0.05)] transition-all text-left group">
+<div class="h-[140px] w-full bg-surface-container-low relative overflow-hidden">
+<img class="w-full h-full object-cover opacity-70 group-hover:opacity-100 transition-opacity duration-300" data-alt="A minimalist top-down view of a pristine white desk setup in a bright, ethereal office environment. Features a sleek metallic pen resting on crisp, softly lined notebook paper. The lighting is high-key and diffused, creating a serene, focused atmosphere with soft shadows. The color palette emphasizes clean whites, subtle slate grays, and a hint of cool indigo, reflecting an enterprise-grade productivity aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAGQ4YIwsH2F_VA70mVZuwGbgMytywVrFAW48OwR4YGq4s5KTL9_flccUn-WdB3bDtLFDwF6rn456UDDfBzLm_50AGJGpirRlAaIrKqGA8owpyU3rDyzaBU8lFNceptdwarIkyJcykxj1Gl-qsvaPuHxA_HF2uFbEUO2VeuLT-regGYlAEgL8pQHucN5x7Ve9AjDqBfLXlxJl_MC5XzwXi37wZFVqz-pTcOxKlpLklNSPUJdf7ahl27k_3lg2WTJbnp3ADNAcKm5i4"/>
+</div>
+<div class="p-md flex flex-col gap-xs flex-grow">
+<span class="text-label-md font-label-md text-on-surface">Meeting Notes</span>
+<span class="text-body-md font-body-md text-on-surface-variant line-clamp-2">Standardized layouts for agendas and tracking action items.</span>
+</div>
+</button>
+<button class="flex flex-col bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden hover:shadow-[0px_4px_6px_-1px_rgba(15,23,42,0.05)] transition-all text-left group">
+<div class="h-[140px] w-full bg-surface-container-low relative overflow-hidden">
+<img class="w-full h-full object-cover opacity-70 group-hover:opacity-100 transition-opacity duration-300" data-alt="An abstract, airy composition of semi-transparent digital layers and subtle data visualization charts floating over a pale, off-white background. The imagery conveys depth and analytical rigor without clutter. High-key lighting ensures a clean, modern aesthetic. The color scheme is restrained, utilizing soft slates, muted indigos, and expansive whitespace to evoke institutional trust and deep focus." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBWWDVoUZ1IfbXK_Nofdj_i8PSf1FCQ87AVU5ZkWFagYXWOqHm1j-gCUbNMDUruNm_kj83z6NQfDarK_Z3lGPccOKmnMAwBLr4HNVRxoj3_-4V7PgtkYwF6oK_CTfbLqqknUpQQAa-Px7b3dHdbbdgUtoXWGCuUsUJiAR-4ITeZkHAQDm9kzsMK1GpbVcM8SktRVd42qRZW8Tr2ypOoSBQOkBIFsNKlIwtefv6visXk9cW6iSyTFq8P-4D3HwugH22t4lp5eu26hpc"/>
+</div>
+<div class="p-md flex flex-col gap-xs flex-grow">
+<span class="text-label-md font-label-md text-on-surface">Research Notes</span>
+<span class="text-body-md font-body-md text-on-surface-variant line-clamp-2">Flexible canvas for literature reviews and data synthesis.</span>
+</div>
+</button>
+<button class="flex flex-col bg-primary-fixed border-2 border-primary rounded-xl overflow-hidden shadow-[0px_4px_6px_-1px_rgba(15,23,42,0.05)] text-left relative ring-4 ring-primary-fixed/50 transform scale-[1.02] transition-all">
+<div class="absolute top-sm right-sm bg-primary text-on-primary rounded-full w-6 h-6 flex items-center justify-center z-10 shadow-sm">
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">check</span>
+</div>
+<div class="h-[140px] w-full bg-surface-container-low relative overflow-hidden">
+<img class="w-full h-full object-cover opacity-90 mix-blend-multiply" data-alt="A highly structured, minimalist digital blueprint graphic featuring precise, thin geometric lines and soft, translucent indigo overlays on a pristine white canvas. The design conveys enterprise software architecture and technical exactness. The lighting is bright and even, highlighting the razor-sharp execution of the grid elements. The overall mood is one of quiet power and reliable, high-end engineering." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDNeAnwdlECU6Es7xbJ48Isyo_p9YkVVOXVkyph3AAF9jojw0W861zSD4gQynpdAbsZ4e_y9WUZ-KNTEP9qpZlM8DzTWjM_MXrUXgaJ5wNyBYWnpqFFB4N5qrxQP4UH9V4Kku0ow14ujEhKGVHIrx7qynafQskvIajUP441RJCW0TypP9VOeiXw2NZpb311cl1JIpfMhFOg03_ChLhVws3UjpJfdCnaOpJH5juSCHA30YQJ-Kfb_sehX2ESmC5vq5PA8uq94beXImU"/>
+</div>
+<div class="p-md flex flex-col gap-xs bg-surface-container-lowest flex-grow">
+<span class="text-label-md font-label-md text-primary font-bold">Product Specs</span>
+<span class="text-body-md font-body-md text-on-surface-variant line-clamp-2">Structured formats for technical requirements and scope.</span>
+</div>
+</button>
+<button class="flex flex-col bg-surface border border-outline-variant rounded-xl overflow-hidden hover:bg-surface-container-low transition-all text-center justify-center items-center p-md min-h-[220px] group border-dashed">
+<div class="w-12 h-12 rounded-full bg-surface-container flex items-center justify-center mb-sm group-hover:bg-primary-fixed group-hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-outline group-hover:text-primary transition-colors">add</span>
+</div>
+<span class="text-label-md font-label-md text-on-surface">Blank Notebook</span>
+<span class="text-body-md font-body-md text-on-surface-variant mt-xs">Start with an empty canvas.</span>
+</button>
+</div>
+</div>
+<div class="flex justify-end pt-lg border-t border-outline-variant mt-md">
+<button class="bg-primary text-on-primary rounded-lg px-xl py-md text-label-md font-label-md hover:bg-on-primary-fixed-variant transition-colors flex items-center gap-sm shadow-sm">
+                    Create Notebook
+                    <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</button>
+</div>
+</section>
+</main>
+</body></html>

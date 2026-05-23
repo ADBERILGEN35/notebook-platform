@@ -159,7 +159,11 @@ export function NoteConflictResolutionDialog(props: Props) {
           ) : null}
         </div>
       ) : null}
-      <div className="flex flex-wrap gap-2">
+      <div
+        className={`flex flex-wrap gap-2${isMobile ? ' sticky bottom-0 border-t border-slate-200 bg-white pt-3' : ''}`}
+        role="group"
+        aria-label="Conflict resolution actions"
+      >
         <Button data-testid="conflict-reload-latest" type="button" onClick={props.onReloadLatest}>
           Reload latest
         </Button>
@@ -218,9 +222,16 @@ export function NoteConflictResolutionDialog(props: Props) {
     <>
       <div className="fixed inset-0 z-40 bg-slate-900/40" onClick={props.onClose} aria-hidden />
       <div className="fixed inset-0 z-50 grid place-items-center p-4">
-        <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-lg border border-slate-200 bg-white p-4 shadow-xl">
+        <div
+          className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-lg border border-slate-200 bg-white p-4 shadow-xl"
+          role="alertdialog"
+          aria-modal="true"
+          aria-labelledby="conflict-dialog-title"
+        >
           <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-base font-semibold text-slate-900">This note changed elsewhere</h2>
+            <h2 id="conflict-dialog-title" className="text-base font-semibold text-slate-900">
+              This note changed elsewhere
+            </h2>
             <button className="text-sm text-slate-600" onClick={props.onClose} aria-label="Close conflict dialog">
               Close
             </button>

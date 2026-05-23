@@ -6,7 +6,8 @@ services:
       POSTGRES_PASSWORD: notebook
       POSTGRES_DB: notebook_platform
     ports:
-      - "5432:5432"
+      # 15432 avoids conflict with local PostgreSQL on 5432/5433 (common on Windows dev machines).
+      - "15432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
 

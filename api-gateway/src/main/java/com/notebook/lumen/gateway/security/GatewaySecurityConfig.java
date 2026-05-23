@@ -71,6 +71,9 @@ public class GatewaySecurityConfig {
         .authorizeExchange(
             exchanges ->
                 exchanges
+                    // Browser CORS preflight must not require a JWT (otherwise signup/login fail from SPA).
+                    .pathMatchers(HttpMethod.OPTIONS, "/**")
+                    .permitAll()
                     .pathMatchers(HttpMethod.POST, "/auth/signup", "/auth/login", "/auth/refresh")
                     .permitAll()
                     .pathMatchers(HttpMethod.GET, "/auth/sso/**")

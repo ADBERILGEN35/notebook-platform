@@ -1,0 +1,97 @@
+# Faz 152 — RC deploy overlay (EXAMPLE ONLY).
+#
+# Merge with deploy/gitops/environments/staging/values.yaml when promoting an RC line to staging.
+# Apply via Argo CD multi-source valueFiles, Kustomize strategic merge, or helm upgrade -f chain.
+#
+# Replace ALL angle-bracket placeholders with org-specific values in your private ops repo or
+# ephemeral CI branch — NEVER commit real domains, JDBC hosts, passwords, or JWT material here.
+#
+# Prerequisites:
+#   - ClusterSecretStore + ExternalSecret keys synced (see externalsecret-*.example.yaml)
+#   - Managed PostgreSQL + Redis reachable from cluster
+#   - DNS + TLS for gateway and frontend ingress hosts
+#
+# See docs/staging-deployment-smoke-runbook.md
+
+global:
+  imageRegistry: "<REGISTRY_HOST>"
+
+# Immutable RC tag (Git SHA or release-images workflow tag). Prefer same tag on all services.
+services:
+  apiGateway:
+    image:
+      tag: "<RC_IMAGE_TAG>"
+      digest: "" # optional: sha256:... when registry supports digest pinning
+  identity:
+    image:
+      tag: "<RC_IMAGE_TAG>"
+  workspace:
+    image:
+      tag: "<RC_IMAGE_TAG>"
+  content:
+    image:
+      tag: "<RC_IMAGE_TAG>"
+  notification:
+    image:
+      tag: "<RC_IMAGE_TAG>"
+  search:
+    image:
+      tag: "<RC_IMAGE_TAG>"
+
+frontend:
+  image:
+    tag: "<RC_FRONTEND_TAG_OR_SAME_AS_BACKEND>"
+  env:
+    FRONTEND_API_BASE_URL: "https://<STAGING_API_HOST>"
+  ingress:
+    hosts:
+      - host: <STAGING_APP_HOST>
+        paths:
+          - path: /
+            pathType: Prefix
+    tls:
+      - secretName: <STAGING_APP_TLS_SECRET_NAME>
+        hosts:
+          - <STAGING_APP_HOST>
+
+ingress:
+  hosts:
+    - host: <STAGING_API_HOST>
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: <STAGING_API_TLS_SECRET_NAME>
+      hosts:
+        - <STAGING_API_HOST>
+
+config:
+  corsAllowedOrigins: "https://<STAGING_APP_HOST>"
+  gatewayAdminAllowedEmails: "<STAGING_PLATFORM_ADMIN_EMAIL>"
+
+# JDBC hosts only — passwords via ExternalSecret (identity-db-password, redis-password, etc.)
+externalDatabase:
+  identityUrl: "jdbc:postgresql://<STAGING_PG_HOST>:5432/<DB_NAME>"
+  workspaceRuntimeUrl: "jdbc:postgresql://<STAGING_PG_HOST>:5432/<DB_NAME>"
+  contentRuntimeUrl: "jdbc:postgresql://<STAGING_PG_HOST>:5432/<DB_NAME>"
+  notificationUrl: "jdbc:postgresql://<STAGING_PG_HOST>:5432/<DB_NAME>"
+  searchUrl: "jdbc:postgresql://<STAGING_PG_HOST>:5432/<DB_NAME>"
+
+externalRedis:
+  host: "<STAGING_REDIS_HOST>"
+  port: "6379"
+  tlsEnabled: false
+
+# secrets.mode / externalSecrets: inherit from staging/values.yaml — do not duplicate remoteRef paths here.
+
+# --- Optional: enable AFTER base deploy smoke passes (PP-2 drill) ---
+# Merge break-glass flags only for staging drill windows; keep production values unchanged.
+# config:
+#   breakGlassEnabled: "true"
+#   breakGlassRevocationEnabled: "true"
+#   gatewayBreakGlassDenylistCheckEnabled: "true"
+#   gatewayBreakGlassAdminAllowed: "true"
+# See docs/break-glass-revocation-staging-drill.md
+
+# --- Optional: enable AFTER SCIM ExternalSecret synced (PP-1) ---
+# Merge deploy/gitops/environments/staging/scim-delta-remote-fetch-enable.overlay.example.yaml

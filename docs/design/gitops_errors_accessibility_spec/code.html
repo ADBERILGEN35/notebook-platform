@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>GitOps Error States &amp; Accessibility</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Manrope:wght@600;700&amp;family=JetBrains+Mono:wght@400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-fixed": "#ffdbcc",
+                        "inverse-primary": "#c3c0ff",
+                        "inverse-on-surface": "#f3eff9",
+                        "on-tertiary": "#ffffff",
+                        "secondary-fixed": "#d5e3fc",
+                        "on-primary-fixed": "#0f0069",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary": "#ffffff",
+                        "error": "#ba1a1a",
+                        "surface-container-highest": "#e4e1eb",
+                        "surface-container": "#f0ecf6",
+                        "on-background": "#1b1b22",
+                        "tertiary-container": "#752c00",
+                        "background": "#fcf8ff",
+                        "error-container": "#ffdad6",
+                        "tertiary-fixed-dim": "#ffb694",
+                        "surface-variant": "#e4e1eb",
+                        "outline": "#777584",
+                        "on-secondary-fixed-variant": "#3a485b",
+                        "on-primary-fixed-variant": "#3b35a7",
+                        "surface-bright": "#fcf8ff",
+                        "surface": "#fcf8ff",
+                        "secondary-fixed-dim": "#b9c7df",
+                        "primary-container": "#3730a3",
+                        "surface-dim": "#dcd8e3",
+                        "surface-container-low": "#f6f2fc",
+                        "secondary-container": "#d5e3fc",
+                        "on-surface": "#1b1b22",
+                        "on-primary-container": "#a9a7ff",
+                        "on-secondary-container": "#57657a",
+                        "on-tertiary-fixed": "#351000",
+                        "on-tertiary-container": "#fe9562",
+                        "on-error": "#ffffff",
+                        "primary-fixed": "#e2dfff",
+                        "surface-container-high": "#eae6f1",
+                        "on-error-container": "#93000a",
+                        "primary": "#1f108e",
+                        "on-secondary-fixed": "#0d1c2e",
+                        "inverse-surface": "#303037",
+                        "surface-tint": "#544fc0",
+                        "secondary": "#515f74",
+                        "primary-fixed-dim": "#c3c0ff",
+                        "on-secondary": "#ffffff",
+                        "outline-variant": "#c8c4d5",
+                        "tertiary": "#511c00",
+                        "on-surface-variant": "#464553",
+                        "on-tertiary-fixed-variant": "#7a3003"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xs": "4px",
+                        "xl": "48px",
+                        "container-max": "1280px",
+                        "gutter": "24px",
+                        "base": "4px",
+                        "lg": "24px",
+                        "sm": "8px",
+                        "md": "16px"
+                    },
+                    "fontFamily": {
+                        "label-md": ["Inter"],
+                        "headline-md": ["Manrope"],
+                        "body-md": ["Inter"],
+                        "headline-sm": ["Manrope"],
+                        "display-lg": ["Manrope"],
+                        "body-lg": ["Inter"],
+                        "mono-sm": ["JetBrains Mono"]
+                    },
+                    "fontSize": {
+                        "label-md": ["12px", { "lineHeight": "1", "letterSpacing": "0.01em", "fontWeight": "500" }],
+                        "headline-md": ["24px", { "lineHeight": "1.3", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "body-md": ["14px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "headline-sm": ["18px", { "lineHeight": "1.4", "fontWeight": "600" }],
+                        "display-lg": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-lg": ["16px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "mono-sm": ["13px", { "lineHeight": "1.5", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-background text-on-background min-h-screen flex font-body-md">
+<!-- SideNavBar (Suppressed as this is a focused gallery/showcase page, not a main destination, but including it as it was in the json, actually wait, the prompt says "The UX Goal: If the user is in a focused journey or a "dead end" relative to the global nav, hide the shell to prioritize the Canvas." - Suppressing SideNav and TopNav for this focused gallery) -->
+<main class="flex-1 w-full max-w-container-max mx-auto p-gutter lg:p-xl flex flex-col gap-xl">
+<header class="pb-md border-b border-outline-variant">
+<h1 class="font-display-lg text-display-lg text-on-surface">GitOps Edge Cases</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant mt-sm">A gallery of error states, contextual interruptions, and accessibility features designed for high-stress operational environments.</p>
+</header>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-xl">
+<!-- Left Column -->
+<div class="flex flex-col gap-lg">
+<!-- 1. 'Mapping not found' error banner -->
+<section class="bg-surface-container-lowest border border-outline-variant rounded-xl p-md shadow-sm">
+<h2 class="font-headline-sm text-headline-sm text-on-surface mb-md">Contextual Banners</h2>
+<div class="bg-error-container rounded-lg p-md flex items-start gap-md border border-error/20">
+<span class="material-symbols-outlined text-on-error-container" style="font-variation-settings: 'FILL' 1;">error</span>
+<div class="flex-1">
+<h3 class="font-label-md text-label-md text-on-error-container font-semibold uppercase tracking-wider mb-xs">Configuration Error</h3>
+<p class="font-body-md text-body-md text-on-error-container/90">Mapping not found for <code class="font-mono-sm text-mono-sm bg-error/10 px-1 rounded">ingress-prod.yaml</code>. Ensure the target cluster is correctly registered in the repository manifest before proceeding with the sync operation.</p>
+<div class="mt-sm flex gap-sm">
+<button class="font-label-md text-label-md bg-error text-on-error px-md py-sm rounded border border-error hover:bg-error/90 transition-colors">View Manifest</button>
+<button class="font-label-md text-label-md text-on-error-container border border-error/30 px-md py-sm rounded hover:bg-error/10 transition-colors">Dismiss</button>
+</div>
+</div>
+</div>
+</section>
+<!-- 3. 'PR already exists' toast -->
+<section class="bg-surface-container-lowest border border-outline-variant rounded-xl p-md shadow-sm relative overflow-hidden">
+<h2 class="font-headline-sm text-headline-sm text-on-surface mb-md">System Notifications</h2>
+<div class="absolute inset-0 bg-surface-container-low pointer-events-none"></div>
+<div class="relative z-10 flex justify-center py-xl">
+<div class="bg-inverse-surface rounded-lg shadow-lg max-w-md w-full flex items-center justify-between p-sm pl-md">
+<div class="flex items-center gap-md">
+<span class="material-symbols-outlined text-inverse-primary">call_merge</span>
+<p class="font-body-md text-body-md text-inverse-on-surface">PR already exists for this branch.</p>
+</div>
+<button class="font-label-md text-label-md text-inverse-primary hover:text-inverse-primary/80 px-md py-sm uppercase transition-colors">View PR #1492</button>
+</div>
+</div>
+</section>
+<!-- 5. 'Environment not allowed' -->
+<section class="bg-surface-container-lowest border border-outline-variant rounded-xl p-md shadow-sm">
+<h2 class="font-headline-sm text-headline-sm text-on-surface mb-md">Access Control State</h2>
+<div class="border border-outline-variant rounded-lg p-xl flex flex-col items-center text-center bg-surface-container">
+<div class="h-16 w-16 bg-surface-variant rounded-full flex items-center justify-center mb-md">
+<span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1; font-size: 32px;">lock</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-xs">Environment not allowed</h3>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-sm mb-lg">Your current role does not have permission to deploy directly to <code class="font-mono-sm text-mono-sm bg-surface-variant px-1 rounded">production-useast1</code>.</p>
+<button class="font-label-md text-label-md bg-primary text-on-primary px-lg py-sm rounded border border-primary hover:bg-primary/90 transition-colors shadow-sm">Request Access</button>
+</div>
+</section>
+</div>
+<!-- Right Column -->
+<div class="flex flex-col gap-lg">
+<!-- 2. 'MFA Required' overlay snippet -->
+<section class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm overflow-hidden flex flex-col">
+<div class="p-md border-b border-outline-variant">
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Interruption Overlays</h2>
+</div>
+<div class="relative bg-surface-dim p-xl flex items-center justify-center flex-1 min-h-[300px]">
+<!-- Simulate backdrop -->
+<div class="absolute inset-0 bg-inverse-surface/40 backdrop-blur-sm"></div>
+<!-- Modal -->
+<div class="relative z-10 bg-surface-container-lowest rounded-xl shadow-lg border border-outline-variant w-full max-w-sm p-lg">
+<div class="flex justify-center mb-md">
+<div class="bg-tertiary-container text-on-tertiary-container p-sm rounded-full">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">security</span>
+</div>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface text-center mb-sm">MFA Required</h3>
+<p class="font-body-md text-body-md text-on-surface-variant text-center mb-lg">Destructive actions require secondary authentication. Please enter the 6-digit code from your authenticator app.</p>
+<div class="flex gap-sm justify-center mb-lg">
+<!-- Simulated input fields -->
+<div class="w-10 h-12 border-2 border-primary rounded text-center font-mono-sm text-headline-md flex items-center justify-center text-on-surface">4</div>
+<div class="w-10 h-12 border border-outline-variant rounded text-center font-mono-sm text-headline-md flex items-center justify-center text-on-surface"></div>
+<div class="w-10 h-12 border border-outline-variant rounded text-center font-mono-sm text-headline-md flex items-center justify-center text-on-surface"></div>
+<div class="w-10 h-12 border border-outline-variant rounded text-center font-mono-sm text-headline-md flex items-center justify-center text-on-surface"></div>
+<div class="w-10 h-12 border border-outline-variant rounded text-center font-mono-sm text-headline-md flex items-center justify-center text-on-surface"></div>
+<div class="w-10 h-12 border border-outline-variant rounded text-center font-mono-sm text-headline-md flex items-center justify-center text-on-surface"></div>
+</div>
+<div class="flex gap-md">
+<button class="flex-1 font-label-md text-label-md bg-surface text-on-surface px-md py-sm rounded border border-outline-variant hover:bg-surface-variant transition-colors">Cancel</button>
+<button class="flex-1 font-label-md text-label-md bg-tertiary text-on-tertiary px-md py-sm rounded border border-tertiary opacity-50 cursor-not-allowed">Verify</button>
+</div>
+</div>
+</div>
+</section>
+<!-- 4. Accessibility Design -->
+<section class="bg-surface-container-lowest border border-outline-variant rounded-xl p-md shadow-sm">
+<h2 class="font-headline-sm text-headline-sm text-on-surface mb-md">Accessibility Design: Diff View</h2>
+<div class="border border-outline-variant rounded-lg overflow-hidden flex flex-col">
+<!-- High Contrast Mode Toggle Preview -->
+<div class="bg-surface-container-low border-b border-outline-variant p-sm flex justify-between items-center">
+<span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">File: deployment.yaml</span>
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-on-surface-variant text-[16px]">contrast</span>
+<span class="font-label-md text-label-md text-on-surface-variant">High Contrast Diff</span>
+<div class="w-8 h-4 bg-primary rounded-full relative ml-sm">
+<div class="absolute right-0 top-0 bottom-0 w-4 bg-surface-container-lowest rounded-full border border-primary"></div>
+</div>
+</div>
+</div>
+<!-- Monospace diff with visual styling -->
+<div aria-label="Diff view showing 1 removed line and 1 added line" class="bg-surface-container-lowest p-md font-mono-sm text-mono-sm overflow-x-auto">
+<div aria-label="Line 42: Unchanged: replicas: 3" class="flex hover:bg-surface-container-low">
+<div class="w-8 text-right pr-sm text-outline select-none">42</div>
+<div class="w-8 text-center text-outline select-none"> </div>
+<div class="text-on-surface pl-sm whitespace-pre">  replicas: 3</div>
+</div>
+<div aria-label="Line 43 removed: image: nginx:1.14.2" class="flex bg-error-container/30 border-l-2 border-error">
+<div class="w-8 text-right pr-sm text-outline select-none">43</div>
+<div class="w-8 text-center text-error select-none">-</div>
+<div class="text-on-error-container pl-sm whitespace-pre"><del class="no-underline">  image: nginx:1.14.2</del></div>
+</div>
+<div aria-label="Line 43 added: image: nginx:1.21.6" class="flex bg-primary-fixed/30 border-l-2 border-primary">
+<div class="w-8 text-right pr-sm text-outline select-none"></div>
+<div class="w-8 text-center text-primary select-none">+</div>
+<div class="text-on-primary-container pl-sm whitespace-pre"><ins class="no-underline">  image: nginx:1.21.6</ins></div>
+</div>
+<div aria-label="Line 44: Unchanged: ports:" class="flex hover:bg-surface-container-low">
+<div class="w-8 text-right pr-sm text-outline select-none">44</div>
+<div class="w-8 text-center text-outline select-none"> </div>
+<div class="text-on-surface pl-sm whitespace-pre">  ports:</div>
+</div>
+</div>
+<!-- Copyable Summary Widget -->
+<div class="bg-surface-container-high border-t border-outline-variant p-md flex items-start gap-md">
+<span class="material-symbols-outlined text-secondary mt-xs">record_voice_over</span>
+<div class="flex-1">
+<h4 class="font-label-md text-label-md text-on-surface mb-xs">Screen Reader Summary</h4>
+<div class="bg-surface-container-lowest border border-outline-variant rounded p-sm relative group">
+<p class="font-body-md text-body-md text-on-surface-variant pr-lg"> deployment.yaml changed. 1 line removed: image: nginx:1.14.2. 1 line added: image: nginx:1.21.6.</p>
+<button aria-label="Copy summary to clipboard" class="absolute right-sm top-sm text-outline hover:text-primary opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-[18px]">content_copy</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+</div>
+</main>
+</body></html>

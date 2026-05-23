@@ -65,6 +65,7 @@ export function AdminChangeRequestDiffPage() {
             operationType={row.operationType}
             filePath={dryRun.changedFiles?.[0]?.path}
             mode="unified"
+            compact
           />
           <div className="hidden md:block">
             <GitOpsDiffViewer
@@ -76,6 +77,24 @@ export function AdminChangeRequestDiffPage() {
           </div>
         </>
       )}
+
+      <div
+        className="fixed bottom-0 left-0 right-0 z-20 flex gap-3 border-t border-slate-200 bg-white/95 p-3 backdrop-blur md:hidden"
+        data-testid="gitops-diff-mobile-footer"
+      >
+        <Link
+          to={`/app/admin/change-requests/${row.id}/dry-run`}
+          className="flex-1 rounded-md border border-primary-200 bg-primary-50 px-3 py-2 text-center text-sm font-medium text-primary-800"
+        >
+          Dry-run
+        </Link>
+        <Link
+          to={`/app/admin/change-requests/${row.id}`}
+          className="flex-1 rounded-md border border-slate-200 px-3 py-2 text-center text-sm text-slate-700"
+        >
+          Details
+        </Link>
+      </div>
     </div>
   )
 }

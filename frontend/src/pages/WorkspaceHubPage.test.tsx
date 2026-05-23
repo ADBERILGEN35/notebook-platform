@@ -2,8 +2,14 @@ import type { ReactElement } from 'react'
 import { render, screen } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { MemoryRouter } from 'react-router-dom'
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { markOnboardingComplete, resetOnboardingForTests } from '../features/onboarding/onboarding-storage'
 import { WorkspaceHubPage } from './WorkspaceHubPage'
+
+vi.mock('../features/auth/auth-store', () => ({
+  useAuthStore: (selector: (state: { user: { name: string; id: string; email: string } | null }) => unknown) =>
+    selector({ user: { name: 'Test User', id: 'u1', email: 't@example.com' } }),
+}))
 
 const workspaceFixture = {
   items: [
@@ -67,28 +73,42 @@ const wrap = (ui: ReactElement, path = '/app/workspaces') =>
   )
 
 describe('WorkspaceHubPage', () => {
-  it('renders empty state when no workspaces', async () => {
+  beforeEach(() => {
+    resetOnboardingForTests()
+  })
+
+  it('renders onboarding when no workspaces', async () => {
     const { listWorkspaces } = await import('../features/workspaces/workspace-api')
     vi.mocked(listWorkspaces).mockResolvedValue(emptyWorkspacePage)
     wrap(<WorkspaceHubPage />)
-    expect(await screen.findByRole('region', { name: /no workspaces yet/i })).toBeTruthy()
-    expect(screen.getByLabelText('New workspace name')).toBeTruthy()
+    expect(await screen.findByTestId('onboarding-wizard')).toBeTruthy()
+    expect(screen.getByText(/Welcome to Notebook Platform/i)).toBeTruthy()
   })
 
   it('renders populated hub with workspace cards (test fixture)', async () => {
     const { listWorkspaces } = await import('../features/workspaces/workspace-api')
     vi.mocked(listWorkspaces).mockResolvedValue(workspaceFixture)
     wrap(<WorkspaceHubPage />)
-    expect(await screen.findByText('Workspace hub')).toBeTruthy()
+    expect(await screen.findByTestId('workspace-dashboard-populated')).toBeTruthy()
+    expect(screen.getByText(/Welcome back/i)).toBeTruthy()
     expect(screen.getByRole('link', { name: /alpha team/i })).toBeTruthy()
     expect(screen.getByText('Quick actions')).toBeTruthy()
+  })
+
+  it('renders empty dashboard when onboarding complete and no workspaces', async () => {
+    markOnboardingComplete()
+    const { listWorkspaces } = await import('../features/workspaces/workspace-api')
+    vi.mocked(listWorkspaces).mockResolvedValue(emptyWorkspacePage)
+    wrap(<WorkspaceHubPage />)
+    expect(await screen.findByTestId('workspace-dashboard-empty')).toBeTruthy()
+    expect(screen.getByRole('heading', { level: 1, name: /welcome to your workspace/i })).toBeTruthy()
   })
 
   it('does not expose raw tokens in hub markup', async () => {
     const { listWorkspaces } = await import('../features/workspaces/workspace-api')
     vi.mocked(listWorkspaces).mockResolvedValue(workspaceFixture)
     const { container } = wrap(<WorkspaceHubPage />)
-    await screen.findByText('Workspace hub')
+    await screen.findByText(/Welcome back/i)
     const text = container.textContent ?? ''
     expect(text).not.toMatch(/eyJ[A-Za-z0-9_-]{10,}/)
     expect(text).not.toMatch(/Bearer\s+[A-Za-z0-9._-]+/)

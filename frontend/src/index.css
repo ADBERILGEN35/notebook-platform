@@ -1,6 +1,5 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+@config '../tailwind.config.ts';
 
 :root {
   font-family: Inter, Manrope, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;

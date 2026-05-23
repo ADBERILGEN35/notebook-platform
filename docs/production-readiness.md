@@ -474,6 +474,21 @@
 - **Platform:** still **NO_GO** (backend PP evidence).
 - Spec: [`phase-149.md`](phases/phase-149.md).
 
+## Faz 151 — Staging environment bootstrap (PP evidence prerequisite)
+
+- **Plan:** [`staging-environment-bootstrap-plan.md`](staging-environment-bootstrap-plan.md) — minimum staging infra, GitHub secret mapping, bring-up order, smoke checklist.
+- **Blocker:** Platform **NO_GO** until staging live + PP-1/PP-2 + bundle **GO**; frontend remains **GO_WITH_ACCEPTED_RISKS**.
+- **No production flags**; no code changes in this phase.
+- Spec: [`phase-151.md`](phases/phase-151.md).
+
+## Faz 152 — Staging deployment + smoke runbook
+
+- **Runbook:** [`staging-deployment-smoke-runbook.md`](staging-deployment-smoke-runbook.md) — RC GitOps promote, Helm/kubectl verification, smoke gate before PP-1/PP-2, rollback.
+- **Overlay:** [`staging-rc-deploy.overlay.example.yaml`](../deploy/gitops/environments/staging/staging-rc-deploy.overlay.example.yaml) — placeholder tags/hosts only.
+- **Blocker:** Platform **NO_GO** until live staging deploy + smoke + PP evidence; backend **NO_GO**; frontend **GO_WITH_ACCEPTED_RISKS** unchanged.
+- **No production flags**; no API or product UI changes.
+- Spec: [`phase-152.md`](phases/phase-152.md).
+
 ## Faz 148 — Full platform RC sign-off + go/no-go
 
 - **Platform sign-off:** [`platform-release-candidate-signoff.md`](platform-release-candidate-signoff.md) — aggregates backend + frontend artifacts, blockers, flag wave reference, platform **GO / NO_GO / GO_WITH_ACCEPTED_RISKS**.

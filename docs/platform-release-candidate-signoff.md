@@ -9,6 +9,8 @@ Related:
 | Document | Role |
 |----------|------|
 | [platform-release-go-no-go-checklist.md](platform-release-go-no-go-checklist.md) | Pre-decision attachment + ops gates |
+| [staging-environment-bootstrap-plan.md](staging-environment-bootstrap-plan.md) | Staging bootstrap before PP-1/PP-2 (Faz 151) |
+| [staging-deployment-smoke-runbook.md](staging-deployment-smoke-runbook.md) | RC deploy + smoke before PP (Faz 152) |
 | [backend-release-candidate-signoff.md](backend-release-candidate-signoff.md) | Backend domain rules + PP evidence |
 | [frontend-release-candidate-signoff.md](frontend-release-candidate-signoff.md) | Frontend domain rules + visual QA |
 | [frontend-release-visual-qa-checklist.md](frontend-release-visual-qa-checklist.md) | Manual frontend QA |
@@ -179,16 +181,18 @@ Apply in order; first match wins unless noted.
 
 ---
 
-## Current repository platform decision (Faz 149)
+## Current repository platform decision (Faz 152)
 
 | Field | Value |
 |-------|--------|
 | **Platform final decision** | **NO_GO** |
-| Backend domain | **NO_GO** — staging secrets missing; PP-1 / PP-2 live evidence missing; bundle `NO_GO` |
-| Frontend domain | **GO_WITH_ACCEPTED_RISKS** — RC gate **PASS**; visual QA **complete** (Faz 149); accepted risks AR-FE-149-* |
+| Backend domain | **NO_GO** — staging RC deploy/smoke not executed on live cluster; [deployment runbook](staging-deployment-smoke-runbook.md) is documentation-only; GitHub staging secrets missing; PP-1 / PP-2 live evidence missing; bundle `NO_GO` |
+| Frontend domain | **GO_WITH_ACCEPTED_RISKS** — RC gate **PASS**; visual QA **complete** (Faz 149); **not** upgraded to full **GO** |
 | Production flags | **Not enabled** |
 
-Platform remains **NO_GO** until backend PP evidence is **GO** and platform go/no-go checklist is signed. Frontend domain is no longer blocked by visual QA.
+Platform remains **NO_GO** until staging is deployed, deployment smoke passes, live PP-1/PP-2 artifacts exist on RC SHA, backend bundle is **GO**, and platform go/no-go checklist is signed. Frontend is release-ready with documented accepted risks only.
+
+Faz 151 bootstrap plan: [staging-environment-bootstrap-plan.md](staging-environment-bootstrap-plan.md). Faz 152 deploy/smoke: [staging-deployment-smoke-runbook.md](staging-deployment-smoke-runbook.md).
 
 Update this table only after backend artifacts and platform checklist are attached on the RC SHA.
 

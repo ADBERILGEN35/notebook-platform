@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Notebook Platform - Conflict Resolution</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Manrope:wght@600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-tertiary-fixed-variant": "#7a3003",
+                      "surface-container-highest": "#e4e1eb",
+                      "secondary": "#515f74",
+                      "on-primary-fixed-variant": "#3b35a7",
+                      "tertiary-fixed-dim": "#ffb694",
+                      "on-error": "#ffffff",
+                      "on-primary-container": "#a9a7ff",
+                      "on-primary-fixed": "#0f0069",
+                      "surface-container": "#f0ecf6",
+                      "on-error-container": "#93000a",
+                      "outline-variant": "#c8c4d5",
+                      "on-primary": "#ffffff",
+                      "inverse-primary": "#c3c0ff",
+                      "on-secondary-container": "#57657a",
+                      "secondary-container": "#d5e3fc",
+                      "surface-container-lowest": "#ffffff",
+                      "error": "#ba1a1a",
+                      "surface": "#fcf8ff",
+                      "surface-dim": "#dcd8e3",
+                      "on-secondary": "#ffffff",
+                      "tertiary-fixed": "#ffdbcc",
+                      "on-tertiary-container": "#fe9562",
+                      "inverse-on-surface": "#f3eff9",
+                      "background": "#fcf8ff",
+                      "on-background": "#1b1b22",
+                      "on-surface-variant": "#464553",
+                      "tertiary": "#511c00",
+                      "primary-fixed": "#e2dfff",
+                      "primary": "#1f108e",
+                      "surface-bright": "#fcf8ff",
+                      "on-tertiary": "#ffffff",
+                      "primary-container": "#3730a3",
+                      "outline": "#777584",
+                      "inverse-surface": "#303037",
+                      "on-tertiary-fixed": "#351000",
+                      "surface-container-high": "#eae6f1",
+                      "error-container": "#ffdad6",
+                      "surface-container-low": "#f6f2fc",
+                      "tertiary-container": "#752c00",
+                      "surface-variant": "#e4e1eb",
+                      "on-secondary-fixed": "#0d1c2e",
+                      "secondary-fixed-dim": "#b9c7df",
+                      "on-secondary-fixed-variant": "#3a485b",
+                      "surface-tint": "#544fc0",
+                      "secondary-fixed": "#d5e3fc",
+                      "on-surface": "#1b1b22",
+                      "primary-fixed-dim": "#c3c0ff",
+                      
+                      // Semantic Overrides for Specific Requirements
+                      "amber-50": "#fffbeb",
+                      "amber-100": "#fef3c7",
+                      "amber-700": "#b45309",
+                      "amber-800": "#92400e",
+                      "emerald-50": "#ecfdf5",
+                      "emerald-100": "#d1fae5",
+                      "emerald-700": "#047857",
+                      "red-50": "#fef2f2",
+                      "red-100": "#fee2e2",
+                      "red-600": "#dc2626",
+                      "red-700": "#b91c1c",
+                      "slate-50": "#f8fafc",
+                      "slate-200": "#e2e8f0",
+                      "slate-600": "#475569",
+                      "slate-900": "#0f172a",
+                      "indigo-100": "#e0e7ff",
+                      "indigo-600": "#4f46e5"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "sm": "8px",
+                      "container-max": "1280px",
+                      "gutter": "24px",
+                      "base": "4px",
+                      "md": "16px",
+                      "xs": "4px",
+                      "xl": "48px",
+                      "lg": "24px"
+              },
+              "fontFamily": {
+                      "label-md": [
+                              "Inter"
+                      ],
+                      "mono-sm": [
+                              "JetBrains Mono"
+                      ],
+                      "headline-sm": [
+                              "Manrope"
+                      ],
+                      "display-lg": [
+                              "Manrope"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "headline-md": [
+                              "Manrope"
+                      ]
+              },
+              "fontSize": {
+                      "label-md": [
+                              "12px",
+                              {
+                                      "lineHeight": "1",
+                                      "letterSpacing": "0.01em",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "mono-sm": [
+                              "13px",
+                              {
+                                      "lineHeight": "1.5",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-sm": [
+                              "18px",
+                              {
+                                      "lineHeight": "1.4",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "display-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "1.1",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "1.5",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "body-lg": [
+                              "16px",
+                              {
+                                      "lineHeight": "1.6",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "1.3",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "600"
+                              }
+                      ]
+              },
+              "boxShadow": {
+                "level-2": "0px 4px 6px -1px rgba(15, 23, 42, 0.05)",
+                "level-3": "0px 10px 15px -3px rgba(15, 23, 42, 0.1)"
+              }
+      },
+          },
+        }
+      </script>
+</head>
+<body class="bg-background min-h-screen text-on-background font-body-md text-body-md antialiased overflow-hidden">
+<!-- Ambient Background / Editor Context (Blurred out for modal focus) -->
+<div class="fixed inset-0 z-0 bg-surface blur-sm pointer-events-none flex flex-col">
+<!-- Mock Editor Header -->
+<header class="h-16 border-b border-outline-variant bg-surface flex items-center px-lg justify-between">
+<div class="flex items-center gap-sm text-primary font-headline-sm text-headline-sm">
+<span class="material-symbols-outlined">folder_open</span>
+                Q3 Strategy Document
+            </div>
+</header>
+<!-- Mock Editor Body -->
+<main class="flex-1 p-xl max-w-container-max mx-auto w-full opacity-50">
+<div class="h-8 w-1/3 bg-surface-container-high rounded mb-md"></div>
+<div class="h-4 w-full bg-surface-container-high rounded mb-sm"></div>
+<div class="h-4 w-5/6 bg-surface-container-high rounded mb-sm"></div>
+<div class="h-4 w-4/5 bg-surface-container-high rounded mb-xl"></div>
+</main>
+</div>
+<!-- Modal Backdrop -->
+<div class="fixed inset-0 z-50 flex items-center justify-center p-md sm:p-lg bg-slate-900/40 backdrop-blur-sm">
+<!-- Modal Container (Level 3 Elevation) -->
+<div class="w-full max-w-6xl bg-surface-container-lowest rounded-xl shadow-level-3 border border-slate-200 flex flex-col max-h-[921px] overflow-hidden">
+<!-- Warning Banner -->
+<div class="bg-amber-50 border-b border-amber-100 px-lg py-md flex items-start gap-md">
+<span class="material-symbols-outlined text-amber-700" style="font-variation-settings: 'FILL' 1;">warning</span>
+<div class="flex-1">
+<h2 class="font-headline-sm text-headline-sm text-amber-800 mb-xs">Conflict Detected</h2>
+<p class="font-body-md text-body-md text-amber-700">
+                        Another collaborator has pushed changes to "Q3 Strategy Document" since you last synced. Please review the differences below to resolve the conflict.
+                    </p>
+</div>
+</div>
+<!-- Split View Layout -->
+<div class="flex-1 overflow-auto bg-slate-50 flex flex-col md:flex-row min-h-0">
+<!-- Local Changes -->
+<div class="flex-1 flex flex-col min-w-0 border-b md:border-b-0 md:border-r border-slate-200">
+<div class="px-md py-sm bg-surface-container-lowest border-b border-slate-200 flex items-center justify-between sticky top-0 z-10">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-secondary">computer</span>
+<span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Local Changes (Yours)</span>
+</div>
+<span class="bg-emerald-50 text-emerald-700 px-sm py-xs rounded-full font-label-md text-[10px]">Unsaved</span>
+</div>
+<!-- Code/Text Block Diff -->
+<div class="p-md font-mono-sm text-mono-sm text-on-surface-variant bg-surface-container-lowest flex-1 overflow-x-auto whitespace-pre">
+<div class="opacity-50">1  ## Market Expansion Strategy
+2
+3  Our primary focus for Q3 is to scale operations</div>
+<div class="bg-emerald-50 text-emerald-700 px-sm py-xs -mx-sm my-xs border-l-2 border-emerald-700 rounded-r">4  rapidly into the APAC region, specifically targeting
+5  emerging markets in Southeast Asia. We project a 
+6  45% growth in user acquisition.</div>
+<div class="opacity-50">7  
+8  ### Resource Allocation
+9  We will dedicate 30% of our marketing budget...</div>
+</div>
+</div>
+<!-- Server Changes -->
+<div class="flex-1 flex flex-col min-w-0">
+<div class="px-md py-sm bg-surface-container-lowest border-b border-slate-200 flex items-center justify-between sticky top-0 z-10">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-secondary">cloud</span>
+<span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Server Changes (Remote)</span>
+</div>
+<div class="flex items-center gap-sm">
+<span class="text-secondary font-label-md text-label-md">by Sarah J.</span>
+<span class="bg-indigo-100 text-indigo-600 px-sm py-xs rounded-full font-label-md text-[10px]">Latest</span>
+</div>
+</div>
+<!-- Code/Text Block Diff -->
+<div class="p-md font-mono-sm text-mono-sm text-on-surface-variant bg-surface-container-lowest flex-1 overflow-x-auto whitespace-pre">
+<div class="opacity-50">1  ## Market Expansion Strategy
+2
+3  Our primary focus for Q3 is to scale operations</div>
+<div class="bg-indigo-50 text-indigo-700 px-sm py-xs -mx-sm my-xs border-l-2 border-indigo-600 rounded-r">4  steadily into the EMEA region, consolidating our
+5  presence in established hubs. We project a 
+6  conservative 20% growth while optimizing costs.</div>
+<div class="opacity-50">7  
+8  ### Resource Allocation
+9  We will dedicate 30% of our marketing budget...</div>
+</div>
+</div>
+</div>
+<!-- Resolution Actions Footer -->
+<div class="bg-surface-container-lowest border-t border-slate-200 p-md lg:p-lg flex flex-col sm:flex-row items-center justify-between gap-md">
+<div class="flex items-center gap-sm text-error">
+<span class="material-symbols-outlined text-[18px]">error</span>
+<span class="font-label-md text-label-md">Overwriting server changes cannot be undone and may lose work from other collaborators.</span>
+</div>
+<div class="flex items-center gap-sm w-full sm:w-auto">
+<!-- Ghost Button -->
+<button class="px-md py-sm rounded-lg font-label-md text-label-md text-slate-600 hover:text-slate-900 transition-colors">
+                        Keep Both as Copy
+                    </button>
+<!-- Secondary Button (Warning) -->
+<button class="px-md py-sm rounded-lg font-label-md text-label-md bg-surface-container-lowest border border-slate-200 text-red-600 hover:bg-red-50 transition-colors flex items-center gap-xs">
+<span class="material-symbols-outlined text-[16px]">upload</span>
+                        Overwrite Server
+                    </button>
+<!-- Primary Button -->
+<button class="px-md py-sm rounded-lg font-label-md text-label-md bg-indigo-600 text-on-primary hover:bg-indigo-700 transition-colors shadow-sm flex items-center gap-xs">
+<span class="material-symbols-outlined text-[16px]">call_merge</span>
+                        Apply Suggested Merge
+                    </button>
+</div>
+</div>
+</div>
+</div>
+</body></html>

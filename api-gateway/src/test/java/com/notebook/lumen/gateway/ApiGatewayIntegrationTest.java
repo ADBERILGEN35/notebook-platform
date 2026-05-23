@@ -136,6 +136,21 @@ class ApiGatewayIntegrationTest {
   }
 
   @Test
+  void authSignup_corsPreflight_returnsOkWithoutJwt() {
+    webTestClient
+        .options()
+        .uri("/auth/signup")
+        .header("Origin", "http://localhost:5173")
+        .header("Access-Control-Request-Method", "POST")
+        .header("Access-Control-Request-Headers", "content-type")
+        .exchange()
+        .expectStatus()
+        .isOk()
+        .expectHeader()
+        .valueEquals("Access-Control-Allow-Origin", "http://localhost:5173");
+  }
+
+  @Test
   void protectedRoute_withoutToken_returns401() {
     webTestClient
         .get()

@@ -6,6 +6,9 @@ import com.nimbusds.jose.JWSHeader;
 import com.nimbusds.jose.crypto.RSASSASigner;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.interfaces.RSAPrivateKey;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
@@ -13,9 +16,12 @@ import java.util.Date;
 import java.util.UUID;
 
 public class ServiceJwtSigner {
+  private static final String DEFAULT_EPHEMERAL_KID = "ephemeral-service-jwt";
+
   private final ServiceJwtProperties properties;
   private final RSASSASigner signer;
   private final Clock clock;
+  private final String signingKid;
 
   public ServiceJwtSigner(ServiceJwtProperties properties) {
     this(properties, Clock.systemUTC());
@@ -23,13 +29,54 @@ public class ServiceJwtSigner {
 
   public ServiceJwtSigner(ServiceJwtProperties properties, Clock clock) {
     this.properties = properties;
-    this.signer =
-        new RSASSASigner(
-            RsaPemUtils.loadPrivateKey(
-                "INTERNAL_SERVICE_JWT_PRIVATE_KEY",
-                properties.privateKey(),
-                properties.privateKeyPath()));
     this.clock = clock;
+    RSAPrivateKey privateKey = resolvePrivateKey(properties);
+    this.signer = new RSASSASigner(privateKey);
+    this.signingKid = resolveSigningKid(properties);
+  }
+
+  private static RSAPrivateKey resolvePrivateKey(ServiceJwtProperties properties) {
+    boolean hasInline = properties.privateKey() != null && !properties.privateKey().isBlank();
+    boolean hasPath =
+        properties.privateKeyPath() != null && !properties.privateKeyPath().isBlank();
+    if (hasInline || hasPath) {
+      return RsaPemUtils.loadPrivateKey(
+          "INTERNAL_SERVICE_JWT_PRIVATE_KEY", properties.privateKey(), properties.privateKeyPath());
+    }
+    if (!allowEphemeralKeys()) {
+      throw new IllegalArgumentException("Missing RSA key material for INTERNAL_SERVICE_JWT_PRIVATE_KEY");
+    }
+    return generateEphemeralPrivateKey();
+  }
+
+  private static String resolveSigningKid(ServiceJwtProperties properties) {
+    if (properties.activeKid() != null && !properties.activeKid().isBlank()) {
+      return properties.activeKid();
+    }
+    return DEFAULT_EPHEMERAL_KID;
+  }
+
+  private static boolean allowEphemeralKeys() {
+    if (Boolean.getBoolean("internal.service.jwt.allowEphemeralKeys")) {
+      return true;
+    }
+    String internal = System.getenv("INTERNAL_SERVICE_JWT_ALLOW_EPHEMERAL_KEYS");
+    if (internal != null && !internal.isBlank()) {
+      return Boolean.parseBoolean(internal);
+    }
+    String jwt = System.getenv("JWT_ALLOW_EPHEMERAL_KEYS");
+    return jwt != null && Boolean.parseBoolean(jwt);
+  }
+
+  private static RSAPrivateKey generateEphemeralPrivateKey() {
+    try {
+      KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
+      keyPairGenerator.initialize(2048);
+      KeyPair keyPair = keyPairGenerator.generateKeyPair();
+      return (RSAPrivateKey) keyPair.getPrivate();
+    } catch (Exception e) {
+      throw new IllegalStateException("Failed to generate ephemeral RSA keys: " + e.getMessage(), e);
+    }
   }
 
   public String sign(String audience, String scope) {
@@ -52,7 +99,7 @@ public class ServiceJwtSigner {
               .build();
       JWSHeader header =
           new JWSHeader.Builder(JWSAlgorithm.RS256)
-              .keyID(properties.activeKid())
+              .keyID(signingKid)
               .type(JOSEObjectType.JWT)
               .build();
       SignedJWT jwt = new SignedJWT(header, claims);

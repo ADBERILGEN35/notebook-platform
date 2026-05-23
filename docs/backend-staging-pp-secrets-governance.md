@@ -4,6 +4,7 @@ Governance for **PP-1** (SCIM delta sandbox) and **PP-2** (break-glass revocatio
 
 | Doc | Role |
 |-----|------|
+| [staging-environment-bootstrap-plan.md](staging-environment-bootstrap-plan.md) | Staging infra + bring-up before secrets (Faz 151) |
 | [backend-staging-pp-secrets-setup.md](backend-staging-pp-secrets-setup.md) | Setup + dispatch |
 | [backend-live-staging-pp-evidence-run-checklist.md](backend-live-staging-pp-evidence-run-checklist.md) | Run + bundle |
 | [backend-staging-pp-secrets-governance.md](backend-staging-pp-secrets-governance.md) | This doc — ownership, TTL, rotation, cleanup |

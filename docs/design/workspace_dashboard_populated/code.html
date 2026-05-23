@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Notebook Platform - Workspace Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&amp;family=JetBrains+Mono:wght@400&amp;family=Manrope:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary-fixed-variant": "#7a3003",
+                        "surface-container-highest": "#e4e1eb",
+                        "secondary": "#515f74",
+                        "on-primary-fixed-variant": "#3b35a7",
+                        "tertiary-fixed-dim": "#ffb694",
+                        "on-error": "#ffffff",
+                        "on-primary-container": "#a9a7ff",
+                        "on-primary-fixed": "#0f0069",
+                        "surface-container": "#f0ecf6",
+                        "on-error-container": "#93000a",
+                        "outline-variant": "#c8c4d5",
+                        "on-primary": "#ffffff",
+                        "inverse-primary": "#c3c0ff",
+                        "on-secondary-container": "#57657a",
+                        "secondary-container": "#d5e3fc",
+                        "surface-container-lowest": "#ffffff",
+                        "error": "#ba1a1a",
+                        "surface": "#fcf8ff",
+                        "surface-dim": "#dcd8e3",
+                        "on-secondary": "#ffffff",
+                        "tertiary-fixed": "#ffdbcc",
+                        "on-tertiary-container": "#fe9562",
+                        "inverse-on-surface": "#f3eff9",
+                        "background": "#fcf8ff",
+                        "on-background": "#1b1b22",
+                        "on-surface-variant": "#464553",
+                        "tertiary": "#511c00",
+                        "primary-fixed": "#e2dfff",
+                        "primary": "#1f108e",
+                        "surface-bright": "#fcf8ff",
+                        "on-tertiary": "#ffffff",
+                        "primary-container": "#3730a3",
+                        "outline": "#777584",
+                        "inverse-surface": "#303037",
+                        "on-tertiary-fixed": "#351000",
+                        "surface-container-high": "#eae6f1",
+                        "error-container": "#ffdad6",
+                        "surface-container-low": "#f6f2fc",
+                        "tertiary-container": "#752c00",
+                        "surface-variant": "#e4e1eb",
+                        "on-secondary-fixed": "#0d1c2e",
+                        "secondary-fixed-dim": "#b9c7df",
+                        "on-secondary-fixed-variant": "#3a485b",
+                        "surface-tint": "#544fc0",
+                        "secondary-fixed": "#d5e3fc",
+                        "on-surface": "#1b1b22",
+                        "primary-fixed-dim": "#c3c0ff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "sm": "8px",
+                        "container-max": "1280px",
+                        "gutter": "24px",
+                        "base": "4px",
+                        "md": "16px",
+                        "xs": "4px",
+                        "xl": "48px",
+                        "lg": "24px"
+                    },
+                    "fontFamily": {
+                        "label-md": ["Inter"],
+                        "mono-sm": ["JetBrains Mono"],
+                        "headline-sm": ["Manrope"],
+                        "display-lg": ["Manrope"],
+                        "body-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-md": ["Manrope"]
+                    },
+                    "fontSize": {
+                        "label-md": ["12px", { "lineHeight": "1", "letterSpacing": "0.01em", "fontWeight": "500" }],
+                        "mono-sm": ["13px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "headline-sm": ["18px", { "lineHeight": "1.4", "fontWeight": "600" }],
+                        "display-lg": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-md": ["14px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "body-lg": ["16px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "1.3", "letterSpacing": "-0.01em", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { background-color: theme('colors.background'); color: theme('colors.on-background'); }
+    </style>
+</head>
+<body class="font-body-md text-body-md antialiased flex h-screen overflow-hidden">
+<!-- SideNavBar -->
+<nav class="bg-surface dark:bg-surface-dim font-body-md text-body-md fixed left-0 top-0 h-full w-[240px] border-r border-outline-variant dark:border-outline flex flex-col h-full py-md px-md z-50">
+<div class="mb-xl flex items-center gap-sm">
+<div class="w-8 h-8 rounded bg-primary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-on-primary-container text-sm">menu_book</span>
+</div>
+<div>
+<h1 class="text-headline-sm font-headline-sm font-bold text-primary dark:text-primary-fixed">Notebook Platform</h1>
+<p class="font-label-md text-label-md text-on-surface-variant">Enterprise Workspace</p>
+</div>
+</div>
+<button class="bg-primary text-on-primary font-label-md text-label-md py-sm px-md rounded-lg w-full flex items-center justify-center gap-xs mb-lg hover:opacity-90 transition-opacity">
+<span class="material-symbols-outlined text-sm">add</span>
+            New Notebook
+        </button>
+<ul class="flex-1 space-y-sm">
+<li>
+<a class="flex items-center gap-sm px-md py-sm rounded-md text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-low dark:hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined">folder_open</span>
+<span>Workspaces</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-sm px-md py-sm rounded-md text-primary dark:text-primary-fixed font-bold border-r-2 border-primary bg-surface-container-low dark:bg-surface-container-high opacity-80 transition-all duration-200" href="#">
+<span class="material-symbols-outlined">search</span>
+<span>Search</span>
+</a>
+</li>
+<li>
+<a class="flex items-center justify-between px-md py-sm rounded-md text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-low dark:hover:bg-surface-container-high transition-colors" href="#">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined">notifications</span>
+<span>Notifications</span>
+</div>
+<span class="bg-error text-on-error font-label-md text-label-md px-2 py-0.5 rounded-full">3</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-sm px-md py-sm rounded-md text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-low dark:hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span>Settings</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-sm px-md py-sm rounded-md text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-low dark:hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined">admin_panel_settings</span>
+<span>Admin</span>
+</a>
+</li>
+</ul>
+<div class="mt-auto pt-lg border-t border-outline-variant dark:border-outline space-y-sm">
+<a class="flex items-center gap-sm px-md py-sm rounded-md text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-low dark:hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined">help</span>
+<span>Support</span>
+</a>
+<a class="flex items-center gap-sm px-md py-sm rounded-md text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-low dark:hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined">logout</span>
+<span>Sign Out</span>
+</a>
+</div>
+</nav>
+<!-- Main Content Wrapper -->
+<div class="ml-[240px] flex-1 flex flex-col h-full bg-background relative">
+<!-- TopNavBar -->
+<header class="bg-surface/80 dark:bg-surface-dim/80 backdrop-blur-md font-label-md text-label-md fixed top-0 right-0 w-[calc(100%-240px)] z-40 border-b border-outline-variant dark:border-outline flex justify-between items-center h-16 px-lg">
+<div class="flex items-center gap-lg">
+<div class="flex items-center gap-sm text-on-surface-variant">
+<span>Workspaces</span>
+<span class="material-symbols-outlined text-sm">chevron_right</span>
+<span class="font-headline-sm text-headline-sm text-on-surface dark:text-on-surface font-semibold">Engineering</span>
+</div>
+<nav class="hidden md:flex gap-md ml-xl">
+<a class="text-secondary dark:text-secondary-fixed-dim hover:text-primary dark:hover:text-primary-fixed transition-colors py-sm" href="#">Drafts</a>
+<a class="text-primary dark:text-primary-fixed-dim border-b-2 border-primary py-sm" href="#">Shared</a>
+<a class="text-secondary dark:text-secondary-fixed-dim hover:text-primary dark:hover:text-primary-fixed transition-colors py-sm" href="#">Archived</a>
+</nav>
+</div>
+<div class="flex items-center gap-md">
+<div class="flex items-center gap-xs text-on-surface-variant">
+<button class="p-xs rounded hover:bg-surface-container-high transition-colors"><span class="material-symbols-outlined">history</span></button>
+<button class="p-xs rounded hover:bg-surface-container-high transition-colors"><span class="material-symbols-outlined">star</span></button>
+<button class="p-xs rounded hover:bg-surface-container-high transition-colors"><span class="material-symbols-outlined">more_vert</span></button>
+</div>
+<button class="bg-surface text-on-surface border border-outline-variant font-label-md text-label-md py-sm px-md rounded-lg hover:bg-surface-container-low transition-colors">
+                    Invite Team
+                </button>
+<img alt="User Profile" class="w-8 h-8 rounded-full border border-outline-variant" data-alt="A small, circular avatar portrait of a professional individual, softly lit against a neutral background. The style is modern, crisp, and high-resolution, fitting a premium SaaS application profile picture." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDcwhMocYWaBOZSw53ChJDatGdsxBfJD7VxXQormM9olOVtS1oWjYShM27j_uAbWJtmlLwoptHp9UlwGkwJnZEnpJsq2A3Zv2xytjxTPBJrS2W22TndixJp2XBzS6-8d20o1a1EKa5RD-WGwTB3Rk37Hb7J2YiSfC2CSCTmAsDiAN_Zy2EJRramI844wHRvlbfCzbjsE6Kw04e8kHG3s71l2oatVt6SRxF1JM7KGHt4aXO4K1l150e_otdCzuliYpHX3qljvReKeUE"/>
+</div>
+</header>
+<!-- Main Canvas -->
+<main class="flex-1 overflow-y-auto pt-24 px-lg pb-xl lg:px-xl">
+<div class="max-w-container-max mx-auto space-y-xl">
+<!-- Your Workspaces Bento Grid -->
+<section>
+<h2 class="font-headline-md text-headline-md mb-md text-on-surface">Your Workspaces</h2>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-md">
+<!-- Workspace Card 1 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-md flex flex-col gap-md hover:shadow-[0px_4px_6px_-1px_rgba(15,23,42,0.05)] transition-shadow cursor-pointer">
+<div class="flex justify-between items-start">
+<div class="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center">
+<span class="material-symbols-outlined text-primary">engineering</span>
+</div>
+<button class="text-on-surface-variant hover:text-on-surface"><span class="material-symbols-outlined">more_horiz</span></button>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface mb-xs">Engineering</h3>
+<p class="text-on-surface-variant text-sm">Core system architecture and backend services documentation.</p>
+</div>
+<div class="mt-auto pt-md border-t border-outline-variant flex justify-between items-center text-sm text-on-surface-variant">
+<div class="flex items-center gap-xs"><span class="material-symbols-outlined text-sm">group</span> 24 Members</div>
+<div class="flex items-center gap-xs"><span class="material-symbols-outlined text-sm">description</span> 142 Notes</div>
+</div>
+</div>
+<!-- Workspace Card 2 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-md flex flex-col gap-md hover:shadow-[0px_4px_6px_-1px_rgba(15,23,42,0.05)] transition-shadow cursor-pointer">
+<div class="flex justify-between items-start">
+<div class="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center">
+<span class="material-symbols-outlined text-tertiary">design_services</span>
+</div>
+<button class="text-on-surface-variant hover:text-on-surface"><span class="material-symbols-outlined">more_horiz</span></button>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface mb-xs">Product Design</h3>
+<p class="text-on-surface-variant text-sm">Design specs, component libraries, and user research findings.</p>
+</div>
+<div class="mt-auto pt-md border-t border-outline-variant flex justify-between items-center text-sm text-on-surface-variant">
+<div class="flex items-center gap-xs"><span class="material-symbols-outlined text-sm">group</span> 12 Members</div>
+<div class="flex items-center gap-xs"><span class="material-symbols-outlined text-sm">description</span> 85 Notes</div>
+</div>
+</div>
+<!-- Workspace Card 3 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-md flex flex-col gap-md hover:shadow-[0px_4px_6px_-1px_rgba(15,23,42,0.05)] transition-shadow cursor-pointer">
+<div class="flex justify-between items-start">
+<div class="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center">
+<span class="material-symbols-outlined text-error">security</span>
+</div>
+<button class="text-on-surface-variant hover:text-on-surface"><span class="material-symbols-outlined">more_horiz</span></button>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface mb-xs">Security Ops</h3>
+<p class="text-on-surface-variant text-sm">Audit logs, compliance protocols, and incident reports.</p>
+</div>
+<div class="mt-auto pt-md border-t border-outline-variant flex justify-between items-center text-sm text-on-surface-variant">
+<div class="flex items-center gap-xs"><span class="material-symbols-outlined text-sm">group</span> 8 Members</div>
+<div class="flex items-center gap-xs"><span class="material-symbols-outlined text-sm">description</span> 34 Notes</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Recent Work List -->
+<section>
+<div class="flex justify-between items-center mb-md">
+<h2 class="font-headline-md text-headline-md text-on-surface">Recent Work</h2>
+<div class="flex gap-sm">
+<button class="bg-surface-container-low px-sm py-xs rounded border border-outline-variant text-on-surface-variant hover:bg-surface-container-high"><span class="material-symbols-outlined text-sm">grid_view</span></button>
+<button class="bg-surface-container px-sm py-xs rounded border border-outline-variant text-on-surface"><span class="material-symbols-outlined text-sm">view_list</span></button>
+</div>
+</div>
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden">
+<!-- Table Header -->
+<div class="grid grid-cols-12 gap-sm p-sm px-md border-b border-outline-variant bg-surface-container-low text-label-md font-label-md text-on-surface-variant uppercase tracking-wider">
+<div class="col-span-6">Note Title</div>
+<div class="col-span-3">Last Edited</div>
+<div class="col-span-3 text-right">Collaborators</div>
+</div>
+<!-- List Items -->
+<div class="divide-y divide-outline-variant">
+<!-- Item 1 -->
+<a class="grid grid-cols-12 gap-sm p-md items-center hover:bg-surface-container-low transition-colors group" href="#">
+<div class="col-span-6 flex items-center gap-md">
+<span class="material-symbols-outlined text-primary-container">description</span>
+<div>
+<div class="font-medium text-on-surface group-hover:text-primary transition-colors">Q3 API Migration Plan</div>
+<div class="text-sm text-on-surface-variant">Engineering / Architecture</div>
+</div>
+</div>
+<div class="col-span-3 text-sm text-on-surface-variant">2 hours ago</div>
+<div class="col-span-3 flex justify-end">
+<div class="flex -space-x-2">
+<img alt="Collaborator" class="w-6 h-6 rounded-full border-2 border-surface-container-lowest" data-alt="Small avatar of a collaborator, modern minimal aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA2XTQ28_Hv6llxz4Lzeabu4teTn_7zPsohONZbnahBT4Glj0cXnro43EcE986yTrwujRrr-X0kU-K3suWkzcUJoGzfsQ8Kv6FJv6bCWsJIp9ALHK66ugrUaewBL2x4FHHNNPatwHi42Wn_9tDHptI304tZmqH9EcWssmZVpl3QwlcgI5ZkInpRlf6a2StvnjtzKY-ab6rU40IjtAiravGYnJ0QnHcIq_pPDbHnezybXHSQPSMjQsiho6COsOzRX1CjAyiedTFifB0"/>
+<img alt="Collaborator" class="w-6 h-6 rounded-full border-2 border-surface-container-lowest" data-alt="Small avatar of a collaborator, modern minimal aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDcJttUsHuJsM8b-tqa26BPZuriqGRu3rgsbfs1W-tnbvDonajAaGGx0_s1NqWva34PhwF6fAdsUhNOIWGbkN2h9RGbs9fRycFwjGQwZ-4X5apSCUoRbkOtKenC1J7dzyGA6jGvLkg-xw2jgf1idIvSzj9YVU9rV77UXR-5kS8npWXcmLvadDBZwRoNVYoMCPPUmq_5lutIG7toG-VA6D3KGt-ixy-cju9gqGYK9bkuTZNTiPy--dnteFrxKpL4e6DU4ekhyt3EukY"/>
+</div>
+</div>
+</a>
+<!-- Item 2 -->
+<a class="grid grid-cols-12 gap-sm p-md items-center hover:bg-surface-container-low transition-colors group" href="#">
+<div class="col-span-6 flex items-center gap-md">
+<span class="material-symbols-outlined text-tertiary">description</span>
+<div>
+<div class="font-medium text-on-surface group-hover:text-primary transition-colors">Design System Tokens Update</div>
+<div class="text-sm text-on-surface-variant">Product Design / Library</div>
+</div>
+</div>
+<div class="col-span-3 text-sm text-on-surface-variant">Yesterday, 4:30 PM</div>
+<div class="col-span-3 flex justify-end">
+<div class="flex -space-x-2">
+<img alt="Collaborator" class="w-6 h-6 rounded-full border-2 border-surface-container-lowest" data-alt="Small avatar of a collaborator, modern minimal aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDTCe8tRoJ4vquJ6_JXwiuCwMisAh8ZO46w51jS-I1_h-XCQn5-slvhOxZI2t6u6smWwdEvqgnnu7q_FQN57C-liHcBlUOScubWu-tIufI4NHXQua9-la2pIIiEmwj9sXM-2HD8jC4f4VTfpBndGI83sGdxYt53DDITdAPu-Y_1SBGzIOQCFB6K8lSNil2Q7RVKby3e4iJOtoENFiesYUKciHzBX7EX1EjU4ZdGB5ofXZXI9gRboYjNDO_zaP-tuMbHC4bujB_8fPs"/>
+<div class="w-6 h-6 rounded-full border-2 border-surface-container-lowest bg-surface-container-high flex items-center justify-center text-xs font-medium text-on-surface-variant">+2</div>
+</div>
+</div>
+</a>
+<!-- Item 3 -->
+<a class="grid grid-cols-12 gap-sm p-md items-center hover:bg-surface-container-low transition-colors group" href="#">
+<div class="col-span-6 flex items-center gap-md">
+<span class="material-symbols-outlined text-secondary">description</span>
+<div>
+<div class="font-medium text-on-surface group-hover:text-primary transition-colors">Weekly Sync Notes</div>
+<div class="text-sm text-on-surface-variant">Engineering / Meetings</div>
+</div>
+</div>
+<div class="col-span-3 text-sm text-on-surface-variant">Aug 12, 2023</div>
+<div class="col-span-3 flex justify-end">
+<div class="flex -space-x-2">
+<img alt="Collaborator" class="w-6 h-6 rounded-full border-2 border-surface-container-lowest" data-alt="Small avatar of a collaborator, modern minimal aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCe28Ury9tOT-qVI8FECzotMjb9i2WL7tckJmTuvbM-pjZctvVnyv-FRBT7Kvm4RyhD-uh9BNwiYuguDQiCRlzEFO6hbAcwSxujIqxvwgjwtvV1xiUEWM7O94cAyGelkr24jXaVZlmpDFKmKzzQolfeiWLf6VuCfEgUue2PNUydv46bzba9FnnnwM1upd4FrgiyYyA8vLYnx2-azjePzNbidU6GA--zjY51RH-D3ngrYxI3kg14vZ-kpRM1iEnYuO2IoNJRYO6A5t0"/>
+</div>
+</div>
+</a>
+</div>
+</div>
+</section>
+</div>
+</main>
+</div>
+</body></html>

@@ -132,6 +132,14 @@ Harici CDN Tailwind/Material Symbols kullanılmaz; fontlar `index.html` Google F
 | [frontend-release-visual-qa-checklist.md](../frontend-release-visual-qa-checklist.md) | Manual QA (unchecked by default) |
 | `generate-frontend-rc-signoff-template.sh` | Placeholder sign-off markdown |
 
+## Faz 150 Design reconciliation
+
+| Artifact | Purpose |
+|----------|---------|
+| [frontend-design-reconciliation.md](../frontend-design-reconciliation.md) | Stitch ↔ implementation inventory |
+| `OnboardingWizard` | Hub conditional stepper (no new routes) |
+| `GitOpsDiffViewer` `compact` | Mobile unified diff + a11y labels |
+
 ## Faz 149 Visual QA execution
 
 | Artifact | Purpose |

@@ -2,6 +2,7 @@ import org.gradle.api.tasks.testing.logging.TestLogEvent
 import org.gradle.api.plugins.JavaPluginExtension
 import org.gradle.jvm.toolchain.JavaLanguageVersion
 import org.springframework.boot.gradle.tasks.bundling.BootJar
+import org.springframework.boot.gradle.tasks.run.BootRun
 import com.diffplug.gradle.spotless.SpotlessExtension
 import com.diffplug.spotless.LineEnding
 
@@ -55,6 +56,10 @@ subprojects {
     // Stable artifact name for Docker ENTRYPOINT usage.
     tasks.withType<BootJar>().configureEach {
         archiveFileName.set("${project.name}.jar")
+        enabled = project.name != "common-security"
+    }
+
+    tasks.named<BootRun>("bootRun") {
         enabled = project.name != "common-security"
     }
 

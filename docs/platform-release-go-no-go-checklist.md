@@ -34,39 +34,48 @@ Use with [platform-release-candidate-signoff.md](platform-release-candidate-sign
 
 ---
 
-## C. Backend PP evidence (live staging)
+## C. Staging bootstrap + deploy (Faz 151 / 152 — before PP)
 
 | # | Item | Status | Notes |
 |---|------|--------|-------|
-| C1 | Staging secrets provisioned per [backend-staging-pp-secrets-governance.md](backend-staging-pp-secrets-governance.md) | [ ] | Missing → backend **NO_GO** |
-| C2 | PP-1 SCIM delta sandbox evidence attached | [ ] | Required |
-| C3 | PP-2 break-glass revocation drill evidence attached | [ ] | Required |
-| C4 | PP-3 retention smoke | [ ] N/A **not_required** / [ ] pass / [ ] fail | Default **not_required** unless prod CR requires datasource |
+| C0 | [staging-environment-bootstrap-plan.md](staging-environment-bootstrap-plan.md) steps 1–3 (infra, DNS, data) | [ ] | Cluster + TLS + PostgreSQL/Redis |
+| C0a | [staging-deployment-smoke-runbook.md](staging-deployment-smoke-runbook.md) §2 RC deploy + rollout healthy | [ ] | Argo/Helm; RC image tag on staging |
+| C0b | Deployment smoke SM-1–SM-9 pass | [ ] | Gateway, admin, break-glass, no secret logs |
+| C0c | Bootstrap steps 7–12 (admin, SCIM, GitHub secrets) | [ ] | Before PP dispatch |
+
+## D. Backend PP evidence (live staging)
+
+| # | Item | Status | Notes |
+|---|------|--------|-------|
+| D1 | Staging secrets provisioned per [backend-staging-pp-secrets-governance.md](backend-staging-pp-secrets-governance.md) | [ ] | Missing → backend **NO_GO** |
+| D2 | PP-1 SCIM delta sandbox evidence attached | [ ] | Required |
+| D3 | PP-2 break-glass revocation drill evidence attached | [ ] | Required |
+| D4 | PP-3 retention smoke | [ ] N/A **not_required** / [ ] pass / [ ] fail | Default **not_required** unless prod CR requires datasource |
 
 ---
 
-## D. Frontend visual QA
+## E. Frontend visual QA
 
 | # | Item | Verified |
 |---|------|----------|
-| D1 | Visual QA checklist fully completed (or waivers documented in sign-off) | [x] Faz 149 |
-| D2 | RC gate **PASS** alone is **not** sufficient — D1 required for frontend **GO** | [x] acknowledged |
-| D3 | No token/secret visible in UI during QA session | [ ] |
+| E1 | Visual QA checklist fully completed (or waivers documented in sign-off) | [x] Faz 149 |
+| E2 | RC gate **PASS** alone is **not** sufficient — E1 required for frontend **GO** | [x] acknowledged |
+| E3 | No token/secret visible in UI during QA session | [ ] |
 
 ---
 
-## E. Production change control
+## F. Production change control
 
 | # | Item | Verified |
 |---|------|----------|
-| E1 | No production feature flag changed outside approved CR | [ ] |
-| E2 | [backend-release-freeze-checklist.md](backend-release-freeze-checklist.md) satisfied for RC line | [ ] |
-| E3 | First production wave selected from [backend-production-flag-flip-plan.md](backend-production-flag-flip-plan.md) | [ ] |
-| E4 | Rollback plan reviewed — [backend-production-rollback-matrix.md](backend-production-rollback-matrix.md) | [ ] |
+| F1 | No production feature flag changed outside approved CR | [ ] |
+| F2 | [backend-release-freeze-checklist.md](backend-release-freeze-checklist.md) satisfied for RC line | [ ] |
+| F3 | First production wave selected from [backend-production-flag-flip-plan.md](backend-production-flag-flip-plan.md) | [ ] |
+| F4 | Rollback plan reviewed — [backend-production-rollback-matrix.md](backend-production-rollback-matrix.md) | [ ] |
 
 ---
 
-## F. Operations ownership
+## G. Operations ownership
 
 | Role | Name / rotation | Assigned |
 |------|-----------------|----------|
@@ -76,7 +85,7 @@ Use with [platform-release-candidate-signoff.md](platform-release-candidate-sign
 
 ---
 
-## G. Domain sign-off linkage
+## H. Domain sign-off linkage
 
 | Domain | Final decision (from domain sign-off) | Matches artifacts |
 |--------|--------------------------------------|-------------------|
@@ -85,7 +94,7 @@ Use with [platform-release-candidate-signoff.md](platform-release-candidate-sign
 
 ---
 
-## H. Platform decision (fill in sign-off doc, not here)
+## I. Platform decision (fill in sign-off doc, not here)
 
 | Field | Value |
 |-------|--------|

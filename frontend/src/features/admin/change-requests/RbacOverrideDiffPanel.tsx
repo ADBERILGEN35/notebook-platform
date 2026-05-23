@@ -23,12 +23,15 @@ export function RbacOverrideDiffPanel({
       </p>
 
       {highRisk ? (
-        <p className="rounded border border-red-200 bg-red-50 p-3 text-xs font-medium text-red-950">
+        <p
+          className="rounded border border-red-200 bg-red-50 p-3 text-xs font-medium text-red-950"
+          role="alert"
+        >
           HIGH risk: PLATFORM_ADMIN grant/revoke — require four-eyes approval and least-privilege review.
         </p>
       ) : null}
 
-      <ul className="text-xs text-slate-700 space-y-1">
+      <ul className="text-xs text-slate-700 space-y-1" aria-label="Role change summary">
         <li>Operation: {row.operationType}</li>
         <li>Requested value: {row.requestedValue}</li>
         <li>Target user: {maskUserId(String(targetUser ?? ''))}</li>

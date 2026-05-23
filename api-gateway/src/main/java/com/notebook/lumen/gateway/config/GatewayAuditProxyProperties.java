@@ -24,8 +24,12 @@ public record GatewayAuditProxyProperties(
         serviceJwt == null
             ? new ServiceJwt(null, null, null, null, null, null, null, null)
             : serviceJwt;
+    String activeKid =
+        jwt.activeKid() == null || jwt.activeKid().isBlank()
+            ? "gateway-admin-audit-key-1"
+            : jwt.activeKid();
     return new ServiceJwtProperties(
-        jwt.activeKid(),
+        activeKid,
         jwt.privateKey(),
         jwt.privateKeyPath(),
         jwt.issuer() == null || jwt.issuer().isBlank() ? "audit-admin" : jwt.issuer(),

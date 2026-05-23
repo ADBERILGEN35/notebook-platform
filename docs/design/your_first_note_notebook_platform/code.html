@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Notebook Platform - First Note Creation</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&amp;family=JetBrains+Mono:wght@400&amp;family=Manrope:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary-fixed-variant": "#7a3003",
+                        "surface-variant": "#e4e1eb",
+                        "primary-fixed": "#e2dfff",
+                        "surface": "#fcf8ff",
+                        "secondary-fixed-dim": "#b9c7df",
+                        "tertiary-fixed": "#ffdbcc",
+                        "secondary-container": "#d5e3fc",
+                        "on-secondary-fixed": "#0d1c2e",
+                        "on-primary-container": "#a9a7ff",
+                        "surface-tint": "#544fc0",
+                        "error-container": "#ffdad6",
+                        "on-tertiary-container": "#fe9562",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-highest": "#e4e1eb",
+                        "inverse-surface": "#303037",
+                        "surface-container-low": "#f6f2fc",
+                        "tertiary": "#511c00",
+                        "inverse-on-surface": "#f3eff9",
+                        "secondary": "#515f74",
+                        "surface-container-high": "#eae6f1",
+                        "on-primary-fixed": "#0f0069",
+                        "error": "#ba1a1a",
+                        "outline": "#777584",
+                        "on-secondary-container": "#57657a",
+                        "on-surface-variant": "#464553",
+                        "inverse-primary": "#c3c0ff",
+                        "primary-fixed-dim": "#c3c0ff",
+                        "on-secondary-fixed-variant": "#3a485b",
+                        "primary-container": "#3730a3",
+                        "on-error-container": "#93000a",
+                        "surface-dim": "#dcd8e3",
+                        "on-secondary": "#ffffff",
+                        "surface-container": "#f0ecf6",
+                        "background": "#fcf8ff",
+                        "on-surface": "#1b1b22",
+                        "secondary-fixed": "#d5e3fc",
+                        "outline-variant": "#c8c4d5",
+                        "on-primary": "#ffffff",
+                        "on-tertiary-fixed": "#351000",
+                        "tertiary-container": "#752c00",
+                        "on-primary-fixed-variant": "#3b35a7",
+                        "on-background": "#1b1b22",
+                        "on-tertiary": "#ffffff",
+                        "surface-bright": "#fcf8ff",
+                        "on-error": "#ffffff",
+                        "primary": "#1f108e",
+                        "tertiary-fixed-dim": "#ffb694"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xs": "4px",
+                        "container-max": "1280px",
+                        "sm": "8px",
+                        "lg": "24px",
+                        "md": "16px",
+                        "gutter": "24px",
+                        "xl": "48px",
+                        "base": "4px"
+                    },
+                    "fontFamily": {
+                        "mono-sm": ["JetBrains Mono"],
+                        "headline-md": ["Manrope"],
+                        "body-lg": ["Inter"],
+                        "label-md": ["Inter"],
+                        "headline-sm": ["Manrope"],
+                        "display-lg": ["Manrope"],
+                        "body-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "mono-sm": ["13px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "1.3", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "body-lg": ["16px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "label-md": ["12px", { "lineHeight": "1", "letterSpacing": "0.01em", "fontWeight": "500" }],
+                        "headline-sm": ["18px", { "lineHeight": "1.4", "fontWeight": "600" }],
+                        "display-lg": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-md": ["14px", { "lineHeight": "1.5", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined[data-weight="fill"] {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md h-screen overflow-hidden flex">
+<!-- SideNavBar (JSON Component) -->
+<nav class="bg-surface fixed left-0 top-0 h-full w-[240px] border-r border-outline-variant flex flex-col h-full py-md px-md z-50">
+<div class="flex items-center gap-sm mb-lg px-xs">
+<div class="w-8 h-8 rounded-lg bg-primary-container text-on-primary-container flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-label-md" data-icon="auto_awesome">auto_awesome</span>
+</div>
+<div>
+<h1 class="text-headline-sm font-headline-sm font-bold text-primary">Notebook Platform</h1>
+<p class="font-label-md text-label-md text-on-surface-variant">Enterprise Workspace</p>
+</div>
+</div>
+<button class="mb-lg w-full bg-primary text-on-primary rounded-lg py-sm px-md flex items-center justify-center gap-xs font-label-md text-label-md hover:bg-primary/90 transition-colors">
+<span class="material-symbols-outlined text-body-lg" data-icon="add">add</span>
+            New Notebook
+        </button>
+<ul class="flex-1 flex flex-col gap-xs font-body-md text-body-md">
+<li>
+<a class="flex items-center gap-sm px-sm py-xs rounded-DEFAULT text-primary font-bold border-r-2 border-primary bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="folder_open">folder_open</span>
+                    Workspaces
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-sm px-sm py-xs rounded-DEFAULT text-on-surface-variant hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+                    Search
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-sm px-sm py-xs rounded-DEFAULT text-on-surface-variant hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+                    Notifications
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-sm px-sm py-xs rounded-DEFAULT text-on-surface-variant hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+                    Settings
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-sm px-sm py-xs rounded-DEFAULT text-on-surface-variant hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="admin_panel_settings">admin_panel_settings</span>
+                    Admin
+                </a>
+</li>
+</ul>
+<ul class="mt-auto flex flex-col gap-xs font-body-md text-body-md pt-md border-t border-outline-variant">
+<li>
+<a class="flex items-center gap-sm px-sm py-xs rounded-DEFAULT text-on-surface-variant hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+                    Support
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-sm px-sm py-xs rounded-DEFAULT text-on-surface-variant hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+                    Sign Out
+                </a>
+</li>
+</ul>
+</nav>
+<!-- TopNavBar (JSON Component) -->
+<header class="bg-surface/80 backdrop-blur-md fixed top-0 right-0 w-[calc(100%-240px)] z-40 border-b border-outline-variant flex justify-between items-center h-16 px-lg w-full">
+<div class="flex items-center gap-lg">
+<span class="font-headline-sm text-headline-sm text-on-surface">Workspace Switcher</span>
+<div class="flex bg-surface-container rounded-lg items-center px-sm py-xs border border-outline-variant focus-within:border-primary focus-within:ring-2 focus-within:ring-primary-container/20 transition-all">
+<span class="material-symbols-outlined text-outline mr-xs text-body-md" data-icon="search">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-body-md font-body-md text-on-surface placeholder-on-surface-variant p-0 w-64" placeholder="Search workspace..." type="text"/>
+</div>
+<nav class="hidden md:flex gap-md font-label-md text-label-md">
+<a class="text-secondary hover:text-primary transition-colors py-sm" href="#">Drafts</a>
+<a class="text-secondary hover:text-primary transition-colors py-sm" href="#">Shared</a>
+<a class="text-secondary hover:text-primary transition-colors py-sm" href="#">Archived</a>
+</nav>
+</div>
+<div class="flex items-center gap-md relative">
+<!-- Helper Callout -->
+<div class="absolute -bottom-10 right-32 bg-inverse-surface text-inverse-on-surface font-label-md text-label-md px-sm py-xs rounded-DEFAULT whitespace-nowrap shadow-md opacity-90">
+                Changes are saved automatically
+                <div class="absolute -top-1 right-8 w-2 h-2 bg-inverse-surface transform rotate-45"></div>
+</div>
+<div class="flex items-center gap-xs text-secondary">
+<button class="p-xs rounded-full hover:bg-surface-container-low hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="history">history</span>
+</button>
+<button class="p-xs rounded-full hover:bg-surface-container-low hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="star">star</span>
+</button>
+<button class="p-xs rounded-full hover:bg-surface-container-low hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="more_vert">more_vert</span>
+</button>
+</div>
+<button class="bg-primary-container text-on-primary-container rounded-lg py-xs px-sm font-label-md text-label-md hover:opacity-90 transition-opacity">
+                Invite Team
+            </button>
+<div class="w-8 h-8 rounded-full bg-surface-variant overflow-hidden border border-outline-variant">
+<img alt="User Profile" class="w-full h-full object-cover" data-alt="A close-up portrait of a professional individual against a clean, light background, shot with soft, flattering studio lighting. The person has a friendly, confident expression, suitable for a modern enterprise software avatar. The aesthetic is bright, high-key, and minimalist, aligning perfectly with a clean corporate UI design system." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDeLAJOK1BvYRZhbjDKpYmO87TUdKBlupSHxEiCnkFXe_8b2WSGhw3XCgyoqQeZU2RXob13HSIhQ3X6AAOdysS9IijaczFz3jKZ4XYAd92Za0fM2edOj5NZn7bJZtTB-KuUafz4p95XBZ6AGaYqv63q5MDoJnmpQTdI_CbT46qVehRZ7tm6PuQLnwt6R0h2zJvzZISiRIbs88kfxXORH-Xwp2Z-WAr02aZpLq3ESZAHBMqKMRQFeq8ZoLOyEJjaigmRzpFt2bm_X6w"/>
+</div>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="ml-[240px] mt-16 flex-1 flex h-[calc(100vh-64px)] w-full overflow-hidden">
+<!-- Editor Canvas -->
+<div class="flex-1 overflow-y-auto px-xl py-xl bg-background scroll-smooth">
+<div class="max-w-[800px] mx-auto">
+<!-- Title -->
+<input class="w-full text-display-lg font-display-lg font-bold text-on-surface bg-transparent border-none focus:ring-0 p-0 mb-lg placeholder-outline-variant" placeholder="Untitled Note" type="text" value=""/>
+<!-- Editor Body Area -->
+<div class="relative min-h-[400px]">
+<div class="flex items-center text-outline-variant mb-md font-body-lg text-body-lg group">
+<span class="material-symbols-outlined mr-sm opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer" data-icon="drag_indicator">drag_indicator</span>
+<div class="flex-1 relative">
+<span class="text-outline">Type '/' for commands</span>
+<!-- Helper Callout -->
+<div class="absolute top-8 left-0 bg-primary text-on-primary font-label-md text-label-md px-sm py-xs rounded-DEFAULT whitespace-nowrap shadow-md z-10 animate-pulse">
+                                Type / to insert blocks
+                                <div class="absolute -top-1 left-4 w-2 h-2 bg-primary transform rotate-45"></div>
+</div>
+</div>
+</div>
+<!-- Starter Blocks Menu (Bento/Glassmorphism style hint) -->
+<div class="bg-surface-container-lowest border border-surface-variant rounded-xl shadow-[0_10px_15px_-3px_rgba(15,23,42,0.1)] p-sm w-64 absolute top-10 left-8 z-20 backdrop-blur-md">
+<div class="font-label-md text-label-md text-on-surface-variant px-sm py-xs mb-xs uppercase tracking-wider">Basic Blocks</div>
+<div class="grid grid-cols-1 gap-xs">
+<button class="flex items-center gap-sm px-sm py-xs rounded-lg hover:bg-surface-container-low transition-colors text-left group">
+<div class="w-8 h-8 rounded border border-outline-variant bg-surface flex items-center justify-center text-secondary group-hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-body-lg" data-icon="format_h1">format_h1</span>
+</div>
+<div>
+<div class="font-body-md text-body-md text-on-surface font-medium">Heading 1</div>
+<div class="font-label-md text-label-md text-on-surface-variant">Big section heading</div>
+</div>
+</button>
+<button class="flex items-center gap-sm px-sm py-xs rounded-lg hover:bg-surface-container-low transition-colors text-left group">
+<div class="w-8 h-8 rounded border border-outline-variant bg-surface flex items-center justify-center text-secondary group-hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-body-lg" data-icon="checklist">checklist</span>
+</div>
+<div>
+<div class="font-body-md text-body-md text-on-surface font-medium">Checklist</div>
+<div class="font-label-md text-label-md text-on-surface-variant">Track tasks with a list</div>
+</div>
+</button>
+<button class="flex items-center gap-sm px-sm py-xs rounded-lg hover:bg-surface-container-low transition-colors text-left group bg-surface-container-low">
+<div class="w-8 h-8 rounded border border-primary bg-primary-container flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-body-lg" data-icon="segment">segment</span>
+</div>
+<div>
+<div class="font-body-md text-body-md text-primary font-medium">Text</div>
+<div class="font-label-md text-label-md text-on-surface-variant">Just start writing with plain text</div>
+</div>
+</button>
+<button class="flex items-center gap-sm px-sm py-xs rounded-lg hover:bg-surface-container-low transition-colors text-left group">
+<div class="w-8 h-8 rounded border border-outline-variant bg-surface flex items-center justify-center text-secondary group-hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-body-lg" data-icon="code_blocks">code_blocks</span>
+</div>
+<div>
+<div class="font-body-md text-body-md text-on-surface font-medium">Code</div>
+<div class="font-label-md text-label-md text-on-surface-variant">Capture a code snippet</div>
+</div>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Sidebar - Onboarding -->
+<aside class="w-[300px] border-l border-outline-variant bg-surface-container-lowest h-full p-md overflow-y-auto hidden lg:block">
+<div class="mb-lg">
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-bold flex items-center gap-xs">
+<span class="material-symbols-outlined text-primary" data-icon="school">school</span>
+                    Getting Started
+                </h3>
+<p class="font-label-md text-label-md text-on-surface-variant mt-xs">Complete these steps to master the platform.</p>
+</div>
+<div class="space-y-sm">
+<!-- Completed Step -->
+<div class="bg-surface border border-outline-variant rounded-lg p-sm flex items-start gap-sm opacity-60">
+<div class="mt-xs w-5 h-5 rounded-full bg-primary flex items-center justify-center text-on-primary shrink-0">
+<span class="material-symbols-outlined text-[14px]" data-icon="check">check</span>
+</div>
+<div>
+<div class="font-body-md text-body-md text-on-surface line-through">Create Workspace</div>
+<div class="font-label-md text-label-md text-on-surface-variant">Set up your team's home base.</div>
+</div>
+</div>
+<!-- Completed Step -->
+<div class="bg-surface border border-outline-variant rounded-lg p-sm flex items-start gap-sm opacity-60">
+<div class="mt-xs w-5 h-5 rounded-full bg-primary flex items-center justify-center text-on-primary shrink-0">
+<span class="material-symbols-outlined text-[14px]" data-icon="check">check</span>
+</div>
+<div>
+<div class="font-body-md text-body-md text-on-surface line-through">Create Notebook</div>
+<div class="font-label-md text-label-md text-on-surface-variant">Organize a collection of notes.</div>
+</div>
+</div>
+<!-- Active Step -->
+<div class="bg-surface-container-low border border-primary rounded-lg p-sm flex items-start gap-sm relative overflow-hidden shadow-[0_4px_6px_-1px_rgba(15,23,42,0.05)]">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-primary"></div>
+<div class="mt-xs w-5 h-5 rounded-full border-2 border-primary flex items-center justify-center shrink-0">
+<div class="w-2 h-2 rounded-full bg-primary"></div>
+</div>
+<div>
+<div class="font-body-md text-body-md text-primary font-bold">Write your first note</div>
+<div class="font-label-md text-label-md text-on-surface-variant mt-xs">Give it a title and try adding some content using the '/' command.</div>
+</div>
+</div>
+</div>
+<div class="mt-xl p-md bg-secondary-container text-on-secondary-container rounded-lg border border-secondary-fixed-dim">
+<div class="font-label-md text-label-md font-bold mb-xs flex items-center gap-xs">
+<span class="material-symbols-outlined text-[16px]" data-icon="lightbulb">lightbulb</span>
+                    Pro Tip
+                </div>
+<div class="font-body-md text-body-md">
+                    Use Markdown syntax like <code class="font-mono-sm text-mono-sm bg-surface/50 px-1 rounded">##</code> for headings or <code class="font-mono-sm text-mono-sm bg-surface/50 px-1 rounded">- [ ]</code> for checklists to format faster.
+                </div>
+</div>
+</aside>
+</main>
+</body></html>

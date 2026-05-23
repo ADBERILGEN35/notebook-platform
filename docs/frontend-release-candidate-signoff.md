@@ -202,7 +202,7 @@ Frontend domain sign-off is **one input** to [platform-release-candidate-signoff
 
 ### Accepted risks (summary)
 
-Documented in checklist § Accepted risks (AR-FE-149-01 … AR-FE-149-13): stubbed APIs, no axe-core, partial manual depth (requeue/purge flows, live collab, staging console audit).
+Documented in checklist § Accepted risks (AR-FE-149-01 … AR-FE-149-13): stubbed APIs, no axe-core, partial manual depth (requeue/purge flows, live collab, staging console audit). Faz 150 adds **AR-FE-150-14** (onboarding via `localStorage` + workspace API only).
 
 ### Approvers (placeholder)
 

@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Workspace Creation Flow</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&amp;family=JetBrains+Mono:wght@400&amp;family=Manrope:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-tertiary-fixed-variant": "#7a3003",
+                      "surface-variant": "#e4e1eb",
+                      "primary-fixed": "#e2dfff",
+                      "surface": "#fcf8ff",
+                      "secondary-fixed-dim": "#b9c7df",
+                      "tertiary-fixed": "#ffdbcc",
+                      "secondary-container": "#d5e3fc",
+                      "on-secondary-fixed": "#0d1c2e",
+                      "on-primary-container": "#a9a7ff",
+                      "surface-tint": "#544fc0",
+                      "error-container": "#ffdad6",
+                      "on-tertiary-container": "#fe9562",
+                      "surface-container-lowest": "#ffffff",
+                      "surface-container-highest": "#e4e1eb",
+                      "inverse-surface": "#303037",
+                      "surface-container-low": "#f6f2fc",
+                      "tertiary": "#511c00",
+                      "inverse-on-surface": "#f3eff9",
+                      "secondary": "#515f74",
+                      "surface-container-high": "#eae6f1",
+                      "on-primary-fixed": "#0f0069",
+                      "error": "#ba1a1a",
+                      "outline": "#777584",
+                      "on-secondary-container": "#57657a",
+                      "on-surface-variant": "#464553",
+                      "inverse-primary": "#c3c0ff",
+                      "primary-fixed-dim": "#c3c0ff",
+                      "on-secondary-fixed-variant": "#3a485b",
+                      "primary-container": "#3730a3",
+                      "on-error-container": "#93000a",
+                      "surface-dim": "#dcd8e3",
+                      "on-secondary": "#ffffff",
+                      "surface-container": "#f0ecf6",
+                      "background": "#fcf8ff",
+                      "on-surface": "#1b1b22",
+                      "secondary-fixed": "#d5e3fc",
+                      "outline-variant": "#c8c4d5",
+                      "on-primary": "#ffffff",
+                      "on-tertiary-fixed": "#351000",
+                      "tertiary-container": "#752c00",
+                      "on-primary-fixed-variant": "#3b35a7",
+                      "on-background": "#1b1b22",
+                      "on-tertiary": "#ffffff",
+                      "surface-bright": "#fcf8ff",
+                      "on-error": "#ffffff",
+                      "primary": "#1f108e",
+                      "tertiary-fixed-dim": "#ffb694"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "xs": "4px",
+                      "container-max": "1280px",
+                      "sm": "8px",
+                      "lg": "24px",
+                      "md": "16px",
+                      "gutter": "24px",
+                      "xl": "48px",
+                      "base": "4px"
+              },
+              "fontFamily": {
+                      "mono-sm": [
+                              "JetBrains Mono"
+                      ],
+                      "headline-md": [
+                              "Manrope"
+                      ],
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "label-md": [
+                              "Inter"
+                      ],
+                      "headline-sm": [
+                              "Manrope"
+                      ],
+                      "display-lg": [
+                              "Manrope"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ]
+              },
+              "fontSize": {
+                      "mono-sm": [
+                              "13px",
+                              {
+                                      "lineHeight": "1.5",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "1.3",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-lg": [
+                              "16px",
+                              {
+                                      "lineHeight": "1.6",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "label-md": [
+                              "12px",
+                              {
+                                      "lineHeight": "1",
+                                      "letterSpacing": "0.01em",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "headline-sm": [
+                              "18px",
+                              {
+                                      "lineHeight": "1.4",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "display-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "1.1",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "1.5",
+                                      "fontWeight": "400"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined[data-weight="fill"] {
+            font-variation-settings: 'FILL' 1;
+        }
+    </style>
+</head>
+<body class="bg-background min-h-screen font-body-md text-on-background antialiased flex flex-col md:flex-row">
+<!-- Content Canvas (Full Width since Nav is suppressed for linear flow) -->
+<main class="flex-1 w-full h-screen overflow-y-auto bg-surface-container-low flex flex-col justify-center items-center p-lg md:p-xl">
+<div class="w-full max-w-[600px] flex flex-col gap-xl">
+<!-- Header / Stepper -->
+<div class="flex flex-col gap-md text-center md:text-left">
+<div class="flex items-center justify-center md:justify-start gap-sm mb-lg">
+<span class="material-symbols-outlined text-primary text-2xl" data-weight="fill">book_4</span>
+<span class="font-headline-sm text-headline-sm text-primary font-bold">Notebook Platform</span>
+</div>
+<h1 class="font-display-lg text-display-lg text-on-surface">Create a Workspace</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant">Set up a dedicated space for your team to collaborate.</p>
+<!-- Stepper UI -->
+<div class="flex items-center gap-xs mt-md">
+<div class="flex items-center gap-xs flex-1">
+<div class="w-6 h-6 rounded-full bg-primary text-on-primary flex items-center justify-center font-label-md text-label-md">1</div>
+<span class="font-label-md text-label-md text-primary font-bold ml-xs">Details</span>
+<div class="h-[2px] bg-primary flex-1 ml-sm"></div>
+</div>
+<div class="flex items-center gap-xs flex-1">
+<div class="w-6 h-6 rounded-full bg-primary text-on-primary flex items-center justify-center font-label-md text-label-md">2</div>
+<span class="font-label-md text-label-md text-primary font-bold ml-xs">Purpose</span>
+<div class="h-[2px] bg-surface-variant flex-1 ml-sm"></div>
+</div>
+<div class="flex items-center gap-xs">
+<div class="w-6 h-6 rounded-full bg-surface-variant text-on-surface-variant flex items-center justify-center font-label-md text-label-md">3</div>
+<span class="font-label-md text-label-md text-on-surface-variant ml-xs">Teammates</span>
+</div>
+</div>
+</div>
+<!-- Form Card -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-lg md:p-xl shadow-[0px_4px_6px_-1px_rgba(15,23,42,0.05)] flex flex-col gap-xl">
+<!-- Step 1: Details -->
+<div class="flex flex-col gap-md">
+<h2 class="font-headline-md text-headline-md text-on-surface border-b border-outline-variant pb-sm">Workspace Details</h2>
+<div class="flex flex-col gap-sm">
+<label class="font-label-md text-label-md text-on-surface font-bold" for="workspace-name">Workspace Name</label>
+<input class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-md py-sm font-body-md text-body-md text-on-surface focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-container/20 transition-all placeholder:text-outline" id="workspace-name" placeholder="e.g., Engineering Docs" type="text" value="Product Design"/>
+</div>
+</div>
+<!-- Step 2: Purpose -->
+<div class="flex flex-col gap-md">
+<h2 class="font-headline-md text-headline-md text-on-surface border-b border-outline-variant pb-sm">Primary Purpose</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">How will your team use this workspace? Select one.</p>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-sm">
+<!-- Option 1 -->
+<label class="flex items-start gap-md p-md border border-outline-variant rounded-lg cursor-pointer hover:bg-surface-container-low transition-colors group">
+<div class="mt-1">
+<input class="w-4 h-4 text-primary focus:ring-primary border-outline-variant" name="purpose" type="radio"/>
+</div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-bold group-hover:text-primary transition-colors">Team Knowledge Base</span>
+<span class="font-body-md text-body-md text-on-surface-variant mt-xs">Centralize docs, policies, and how-tos.</span>
+</div>
+</label>
+<!-- Option 2 -->
+<label class="flex items-start gap-md p-md border border-outline-variant rounded-lg cursor-pointer hover:bg-surface-container-low transition-colors group">
+<div class="mt-1">
+<input class="w-4 h-4 text-primary focus:ring-primary border-outline-variant" name="purpose" type="radio"/>
+</div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-bold group-hover:text-primary transition-colors">Research</span>
+<span class="font-body-md text-body-md text-on-surface-variant mt-xs">Organize findings, interviews, and data.</span>
+</div>
+</label>
+<!-- Option 3 -->
+<label class="flex items-start gap-md p-md border border-outline-variant rounded-lg cursor-pointer hover:bg-surface-container-low transition-colors group">
+<div class="mt-1">
+<input class="w-4 h-4 text-primary focus:ring-primary border-outline-variant" name="purpose" type="radio"/>
+</div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-bold group-hover:text-primary transition-colors">Engineering Docs</span>
+<span class="font-body-md text-body-md text-on-surface-variant mt-xs">Technical specs, architecture, and APIs.</span>
+</div>
+</label>
+<!-- Option 4 (Selected) -->
+<label class="flex items-start gap-md p-md border-2 border-primary rounded-lg cursor-pointer bg-primary-fixed/10 transition-colors">
+<div class="mt-1">
+<input checked="" class="w-4 h-4 text-primary focus:ring-primary border-primary" name="purpose" type="radio"/>
+</div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-primary font-bold">Product Planning</span>
+<span class="font-body-md text-body-md text-on-surface-variant mt-xs">Roadmaps, PRDs, and feature specs.</span>
+</div>
+</label>
+</div>
+</div>
+<!-- Footer Actions -->
+<div class="flex flex-col md:flex-row items-center justify-between gap-md pt-md border-t border-outline-variant">
+<div class="flex items-center gap-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-xl">lock</span>
+<span class="font-body-md text-body-md">By default, workspaces are private to invited members.</span>
+</div>
+<button class="w-full md:w-auto bg-primary text-on-primary font-label-md text-label-md font-bold px-lg py-sm rounded-lg hover:bg-primary/90 transition-colors flex items-center justify-center gap-sm">
+                        Continue
+                        <span class="material-symbols-outlined text-xl">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+</main>
+</body></html>

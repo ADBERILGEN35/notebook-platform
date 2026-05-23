@@ -4,6 +4,8 @@ Operator checklist to collect **live** PP-1 and PP-2 evidence from staging, opti
 
 | Doc | Role |
 |-----|------|
+| [staging-environment-bootstrap-plan.md](staging-environment-bootstrap-plan.md) | **Prerequisite:** staging bootstrap (Faz 151) |
+| [staging-deployment-smoke-runbook.md](staging-deployment-smoke-runbook.md) | **Prerequisite:** RC deploy + smoke gate (Faz 152) |
 | [backend-staging-pp-evidence-execution-plan.md](backend-staging-pp-evidence-execution-plan.md) | Full runbook |
 | [backend-preprod-evidence-bundle.md](backend-preprod-evidence-bundle.md) | Bundle schema |
 | [backend-release-candidate-signoff.md](backend-release-candidate-signoff.md) | Post-bundle sign-off |
@@ -46,8 +48,12 @@ bash scripts/security/run-backend-live-staging-pp-evidence.sh \
 
 ## Before you start
 
+**Prerequisite:** Complete [staging-environment-bootstrap-plan.md](staging-environment-bootstrap-plan.md) (infra, DNS, data) and [staging-deployment-smoke-runbook.md](staging-deployment-smoke-runbook.md) (RC deploy, rollout, smoke SM-1–SM-9). Configure admin tokens, SCIM sandbox, and GitHub Environment `staging` secrets per bootstrap step 12. **Do not dispatch PP workflows until deployment smoke passes.**
+
 | # | Check | Done |
 |---|-------|------|
+| 0.0 | Staging bootstrap plan steps 1–3 (infra, DNS, data) | [ ] |
+| 0.0b | [staging-deployment-smoke-runbook.md](staging-deployment-smoke-runbook.md) deploy + smoke SM-1–SM-9 | [ ] |
 | 0.1 | RC + Docker CI artifacts exist for RC SHA | [ ] |
 | 0.2 | Staging Argo CD healthy; RC image deployed | [ ] |
 | 0.3 | `bash scripts/check-no-secrets.sh` PASS | [ ] |
