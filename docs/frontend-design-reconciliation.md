@@ -4,6 +4,25 @@ Maps Stitch design folders under `docs/design/` to the React implementation. Sta
 
 Source of truth: [notebook_platform_final_design_handoff_source_of_truth.md](design/notebook_platform_final_design_handoff_source_of_truth.md), [final_design_handoff_guide_notebook_platform.md](design/final_design_handoff_guide_notebook_platform.md), [responsive_web_handoff_guide_notebook_platform.md](design/responsive_web_handoff_guide_notebook_platform.md).
 
+## Faz 151C changes (AppShell + dashboard layout alignment)
+
+| Area | Change |
+|------|--------|
+| Global surface | `body` background `#f5f7fb` → `#fcf8ff` (design `surface` token) |
+| SideNav | 288px → 240px, NP rosette + "Enterprise Workspace" subtitle, primary `New Notebook` CTA, compact icon+label nav (Workspaces collapsible / Search / Notifications / Settings / Admin), sticky Support + Sign Out at the bottom (logout mutation moved from `UserMenu`) |
+| TopNav | rounded-full search pill (left), `Drafts` / `Shared` / `Archived` secondary nav linking to `/app/search?filter=…`, utility (NotificationBell), `Invite Team` CTA (routes to `/members` when workspace is active, disabled otherwise), `UserMenu` avatar |
+| Canvas width | `ResponsiveContent` new `2xl` (`max-w-[1280px]`); WorkspaceHub uses it for breathing room |
+| Tests | `app-shell.test.tsx` rewritten + `phase-151c-visual-alignment.test.tsx` (7 new assertions) |
+
+## Faz 151B changes (visual mismatch fix)
+
+| Area | Change |
+|------|--------|
+| Workspace dashboard empty | New `WorkspaceDashboardHero` (display-lg, decorative blur, primary "Create New Workspace" + secondary "Browse Discovery"), `WorkspaceQuickActions` rebuilt as tonal icon cards (Quick Note + Invite Member), `RecentlyViewedSection` with tiered-opacity skeleton + real-notebook variant |
+| Onboarding integration | `OnboardingWizard` full-screen branch removed from `WorkspaceHubPage`. New `GettingStartedPanel` embedded inside empty dashboard above hero; collapsible + dismissable; preserves `localStorage` decision (no new backend service) |
+| Cleanup | Removed obsolete `WorkspaceGettingStartedCard` and `RecentlyViewedPlaceholder` (replaced by hero + section) |
+| Test ids | `workspace-dashboard-empty`, `getting-started-panel`, `recently-viewed-list` |
+
 ## Faz 151A changes
 
 | Area | Change |

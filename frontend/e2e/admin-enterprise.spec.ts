@@ -131,6 +131,6 @@ test('enterprise console renders mocked status and warning', async ({ page }) =>
   })
   await signUpAndLogin(page, `enterprise-e2e-${Date.now()}@example.com`, 'Password1234!')
   await page.goto('/app/admin/enterprise')
-  await expect(page.getByText('Enterprise console')).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Enterprise console' })).toBeVisible()
   await expect(page.getByText('SSO_ADMIN_MAPPING_MISSING')).toBeVisible()
 })

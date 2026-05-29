@@ -13,8 +13,9 @@
 
 body {
   margin: 0;
-  background: #f5f7fb;
-  color: #0f172a;
+  /* Faz 151C: align global surface with design system (workspace_dashboard `surface` token). */
+  background: #fcf8ff;
+  color: #1b1b22;
 }
 
 #root {

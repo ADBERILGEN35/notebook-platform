@@ -68,7 +68,7 @@ export async function exportAuditEvents(
   const fileName = fileNameMatch?.[1] || `audit-export.${format === 'csv' ? 'csv' : 'jsonl'}`
   return {
     blob: await response.blob(),
-    fileName: fileName.replace(/[^\w.\-]/g, '_'),
+    fileName: fileName.replace(/[^\w.-]/g, '_'),
     contentType: response.headers.get('Content-Type') || '',
   }
 }

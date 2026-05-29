@@ -82,7 +82,7 @@ export function AdminChangeRequestsPage() {
   if (!isEnterpriseAdminWriteEnabled()) {
     return (
       <div className="space-y-4">
-        <PageHeader title="Change requests" subtitle="Enterprise configuration change workflow." />
+        <PageHeader title="Enterprise change requests" subtitle="Enterprise configuration change workflow." />
         <GitOpsDisabledBanner reason="write" />
       </div>
     )
@@ -137,7 +137,7 @@ export function AdminChangeRequestsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Change requests"
+        title="Enterprise change requests"
         subtitle="Validate impact, open pending requests, approve via four-eyes, then GitOps PR (no runtime mutation)."
       />
       <p className="text-xs text-slate-600">

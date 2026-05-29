@@ -77,12 +77,15 @@ describe('WorkspaceHubPage', () => {
     resetOnboardingForTests()
   })
 
-  it('renders onboarding when no workspaces', async () => {
+  it('renders empty dashboard with embedded onboarding panel when no workspaces', async () => {
     const { listWorkspaces } = await import('../features/workspaces/workspace-api')
     vi.mocked(listWorkspaces).mockResolvedValue(emptyWorkspacePage)
     wrap(<WorkspaceHubPage />)
-    expect(await screen.findByTestId('onboarding-wizard')).toBeTruthy()
-    expect(screen.getByText(/Welcome to Notebook Platform/i)).toBeTruthy()
+    expect(await screen.findByTestId('workspace-dashboard-empty')).toBeTruthy()
+    expect(screen.getByTestId('getting-started-panel')).toBeTruthy()
+    expect(
+      screen.getByRole('heading', { level: 1, name: /welcome to your workspace/i }),
+    ).toBeTruthy()
   })
 
   it('renders populated hub with workspace cards (test fixture)', async () => {

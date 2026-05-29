@@ -16,7 +16,7 @@ vi.mock('../../notifications/components/NotificationBell', () => ({
 }))
 
 vi.mock('../../../shared/hooks/useMediaQuery', () => ({
-  useMediaQuery: () => false,
+  useMediaQuery: (query: string) => query === '(min-width: 1024px)',
 }))
 
 vi.mock('../../auth/auth-store', () => ({
@@ -27,10 +27,10 @@ vi.mock('../../auth/auth-store', () => ({
     }),
 }))
 
-const withProviders = (ui: ReactNode) =>
+const withProviders = (ui: ReactNode, initialEntries = ['/app/workspaces']) =>
   render(
     <QueryClientProvider client={new QueryClient()}>
-      <MemoryRouter>{ui}</MemoryRouter>
+      <MemoryRouter initialEntries={initialEntries}>{ui}</MemoryRouter>
     </QueryClientProvider>,
   )
 
@@ -59,64 +59,92 @@ const notebooks = [
 describe('AppShell layout', () => {
   it('renders AppShell with main landmark and child content', () => {
     withProviders(
-        <AppShell
-          isDesktop
-          mobileNavOpen={false}
-          onMobileNavOpen={vi.fn()}
-          onMobileNavClose={vi.fn()}
-          nav={{
-            workspaces,
-            notebooks,
-            activeWorkspaceId: 'w1',
-            onWorkspaceSelect: vi.fn(),
-          }}
-          top={{
-            search: '',
-            onSearchChange: vi.fn(),
-            onCreateNote: vi.fn(),
-            workspaces,
-            activeWorkspaceId: 'w1',
-            onWorkspaceSelect: vi.fn(),
-          }}
-        >
-          <p>Hub content</p>
-        </AppShell>,
+      <AppShell
+        isDesktop
+        mobileNavOpen={false}
+        onMobileNavOpen={vi.fn()}
+        onMobileNavClose={vi.fn()}
+        nav={{
+          workspaces,
+          notebooks,
+          activeWorkspaceId: 'w1',
+          onWorkspaceSelect: vi.fn(),
+          onCreateNotebook: vi.fn(),
+          onSignOut: vi.fn(),
+        }}
+        top={{
+          search: '',
+          onSearchChange: vi.fn(),
+          onCreateNote: vi.fn(),
+          workspaces,
+          activeWorkspaceId: 'w1',
+          onWorkspaceSelect: vi.fn(),
+        }}
+      >
+        <p>Hub content</p>
+      </AppShell>,
     )
     expect(screen.getByRole('main')).toBeTruthy()
     expect(screen.getByText('Hub content')).toBeTruthy()
   })
 
-  it('renders SideNav with workspace and hub links', () => {
+  it('renders SideNav with brand, new notebook CTA and workspace switching', () => {
     render(
-      <MemoryRouter>
+      <MemoryRouter initialEntries={['/app/workspaces']}>
         <SideNav
           workspaces={workspaces}
           notebooks={notebooks}
           activeWorkspaceId="w1"
           onWorkspaceSelect={vi.fn()}
+          onCreateNotebook={vi.fn()}
+          onSignOut={vi.fn()}
         />
       </MemoryRouter>,
     )
     expect(screen.getByRole('navigation', { name: /workspace navigation/i })).toBeTruthy()
+    expect(screen.getByText(/enterprise workspace/i)).toBeTruthy()
+    expect(screen.getByTestId('sidenav-new-notebook')).toBeTruthy()
     expect(screen.getByRole('button', { name: 'Alpha' })).toBeTruthy()
-    expect(screen.getByRole('link', { name: 'Hub' })).toBeTruthy()
+    expect(screen.getByRole('link', { name: /^all workspaces$/i })).toBeTruthy()
   })
 
-  it('renders TopNav with search and sidebar toggle', () => {
+  it('renders TopNav with search pill, secondary nav and invite team CTA', () => {
     const onSidebarToggle = vi.fn()
+    const onInviteTeam = vi.fn()
     withProviders(
-        <TopNav
-          search=""
-          onSearchChange={vi.fn()}
-          onCreateNote={vi.fn()}
-          onSidebarToggle={onSidebarToggle}
-          workspaces={workspaces}
-          activeWorkspaceId="w1"
-          onWorkspaceSelect={vi.fn()}
-        />,
+      <TopNav
+        search=""
+        onSearchChange={vi.fn()}
+        onCreateNote={vi.fn()}
+        onSidebarToggle={onSidebarToggle}
+        workspaces={workspaces}
+        activeWorkspaceId="w1"
+        onWorkspaceSelect={vi.fn()}
+        onInviteTeam={onInviteTeam}
+        inviteTeamDisabled={false}
+      />,
     )
-    fireEvent.click(screen.getByTestId('sidebar-toggle'))
-    expect(onSidebarToggle).toHaveBeenCalled()
     expect(screen.getByLabelText(/search notes/i)).toBeTruthy()
+    expect(screen.getByRole('link', { name: 'Drafts' })).toBeTruthy()
+    expect(screen.getByRole('link', { name: 'Shared' })).toBeTruthy()
+    expect(screen.getByRole('link', { name: 'Archived' })).toBeTruthy()
+    fireEvent.click(screen.getByTestId('topnav-invite-team'))
+    expect(onInviteTeam).toHaveBeenCalled()
+  })
+
+  it('disables Invite Team when no active workspace', () => {
+    withProviders(
+      <TopNav
+        search=""
+        onSearchChange={vi.fn()}
+        onCreateNote={vi.fn()}
+        workspaces={[]}
+        activeWorkspaceId={null}
+        onWorkspaceSelect={vi.fn()}
+        inviteTeamDisabled
+      />,
+    )
+    const invite = screen.getByTestId('topnav-invite-team') as HTMLButtonElement
+    expect(invite.disabled).toBe(true)
   })
 })

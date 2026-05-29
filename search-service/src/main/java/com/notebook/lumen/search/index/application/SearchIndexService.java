@@ -12,6 +12,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,6 +25,7 @@ public class SearchIndexService {
   private final SearchPermissionSnapshotService permissionSnapshotService;
   private final MeterRegistry meterRegistry;
 
+  @Autowired
   public SearchIndexService(
       SearchDocumentRepository repository,
       ContentBlockTextExtractor textExtractor,

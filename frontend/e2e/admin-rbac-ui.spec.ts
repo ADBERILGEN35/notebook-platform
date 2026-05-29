@@ -9,8 +9,8 @@ test.describe('admin RBAC UI (Faz 79)', () => {
     await signUpAndLogin(page, email, 'Password1234!')
 
     await page.goto('/app/admin')
-    await expect(page.getByRole('link', { name: 'Audit Events', exact: true })).toBeVisible()
-    await expect(page.getByRole('link', { name: 'Enterprise Console', exact: true })).not.toBeVisible()
+    await expect(page.getByRole('link', { name: 'Audit events', exact: true })).toBeVisible()
+    await expect(page.getByRole('link', { name: 'Enterprise console', exact: true })).not.toBeVisible()
 
     await page.goto('/app/admin/audit?source=identity&size=25&page=0&sort=createdAt,desc')
     await expect(page.getByRole('heading', { name: 'Audit Events' })).toBeVisible()
@@ -23,8 +23,9 @@ test.describe('admin RBAC UI (Faz 79)', () => {
     await signUpAndLogin(page, email, 'Password1234!')
 
     await page.goto('/app/admin/enterprise/change-requests')
-    await expect(page.getByText(/does not have.*admin:change-request:create/)).toBeVisible()
+    await expect(page.getByText('Missing admin:change-request:create permission.')).toBeVisible()
     await expect(page.getByRole('button', { name: 'Validate' })).toBeDisabled()
+    await page.locator('tbody').getByRole('link', { name: 'View', exact: true }).click()
     await expect(page.getByRole('button', { name: 'Approve', exact: true })).toBeVisible()
   })
 

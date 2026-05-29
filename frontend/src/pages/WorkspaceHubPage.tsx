@@ -5,8 +5,10 @@ import { createWorkspace, listWorkspaces } from '../features/workspaces/workspac
 import { listNotebooks } from '../features/notebooks/notebook-api'
 import { useWorkspaceStore } from '../features/workspaces/workspace-store'
 import { useAuthStore } from '../features/auth/auth-store'
-import { OnboardingWizard } from '../features/onboarding/components/OnboardingWizard'
-import { isOnboardingComplete, markOnboardingComplete } from '../features/onboarding/onboarding-storage'
+import {
+  isOnboardingComplete,
+  markOnboardingComplete,
+} from '../features/onboarding/onboarding-storage'
 import {
   WorkspaceDashboardEmpty,
   WorkspaceDashboardPopulated,
@@ -17,6 +19,14 @@ import { ErrorState } from '../shared/components/ErrorState'
 import { LoadingState } from '../shared/components/LoadingState'
 import { Button } from '../shared/components/Button'
 
+/**
+ * Workspace Hub route handler.
+ *
+ * Faz 151B fix: previously, new users were routed to a full-screen
+ * OnboardingWizard which masked the design's dashboard layout. We now
+ * always render the empty/populated dashboard and embed onboarding as a
+ * dismissable panel above the hero.
+ */
 export function WorkspaceHubPage() {
   const navigate = useNavigate()
   const params = useParams()
@@ -25,8 +35,7 @@ export function WorkspaceHubPage() {
   const activeWorkspaceId = useWorkspaceStore((state) => state.activeWorkspaceId)
   const setActiveWorkspaceId = useWorkspaceStore((state) => state.setActiveWorkspaceId)
   const [newWorkspaceName, setNewWorkspaceName] = useState('')
-  const [showOnboarding, setShowOnboarding] = useState(false)
-  const [onboardingCreated, setOnboardingCreated] = useState(false)
+  const [onboardingDismissed, setOnboardingDismissed] = useState(false)
 
   const workspaceQuery = useQuery({
     queryKey: ['workspaces'],
@@ -46,11 +55,8 @@ export function WorkspaceHubPage() {
     onSuccess: (workspace) => {
       setNewWorkspaceName('')
       setActiveWorkspaceId(workspace.id)
-      setOnboardingCreated(true)
       void workspaceQuery.refetch()
-      if (!showOnboarding) {
-        navigate(`/app/workspaces/${workspace.id}`)
-      }
+      navigate(`/app/workspaces/${workspace.id}`)
     },
   })
 
@@ -62,15 +68,9 @@ export function WorkspaceHubPage() {
     }
   }, [workspaceQuery.isSuccess, workspaces.length])
 
-  useEffect(() => {
-    if (workspaceQuery.isSuccess && workspaces.length === 0 && !isOnboardingComplete()) {
-      setShowOnboarding(true)
-    }
-  }, [workspaceQuery.isSuccess, workspaces.length])
-
   if (workspaceQuery.isLoading) {
     return (
-      <ResponsiveContent>
+      <ResponsiveContent maxWidth="2xl">
         <LoadingState label="Loading workspaces…" />
       </ResponsiveContent>
     )
@@ -78,7 +78,10 @@ export function WorkspaceHubPage() {
 
   if (workspaceQuery.isError) {
     return (
-      <ResponsiveContent className="flex min-h-[min(28rem,calc(100dvh-11rem))] flex-col justify-center gap-4">
+      <ResponsiveContent
+        maxWidth="2xl"
+        className="flex min-h-[min(28rem,calc(100dvh-11rem))] flex-col justify-center gap-4"
+      >
         <PageHeader
           title="Your workspace dashboard"
           subtitle="Workspaces could not be loaded. The workspace service may be offline in local development."
@@ -96,32 +99,11 @@ export function WorkspaceHubPage() {
     )
   }
 
-  if (!workspaces.length && showOnboarding) {
-    return (
-      <ResponsiveContent>
-        <PageHeader
-          title="Get started"
-          subtitle="Complete setup to create your first workspace."
-        />
-        <OnboardingWizard
-          workspaceName={newWorkspaceName}
-          onWorkspaceNameChange={setNewWorkspaceName}
-          onCreateWorkspace={() => createMutation.mutate()}
-          createPending={createMutation.isPending}
-          createError={createMutation.isError}
-          hasWorkspace={onboardingCreated || workspaces.length > 0}
-          onFinish={() => {
-            setShowOnboarding(false)
-            void workspaceQuery.refetch()
-          }}
-        />
-      </ResponsiveContent>
-    )
-  }
+  const showOnboardingPanel = !isOnboardingComplete() && !onboardingDismissed
 
   if (!workspaces.length) {
     return (
-      <ResponsiveContent>
+      <ResponsiveContent maxWidth="2xl">
         <WorkspaceDashboardEmpty
           workspaceName={newWorkspaceName}
           onWorkspaceNameChange={setNewWorkspaceName}
@@ -129,10 +111,19 @@ export function WorkspaceHubPage() {
           createPending={createMutation.isPending}
           createError={createMutation.isError}
           error={createMutation.error}
-          showGuidedSetup={!isOnboardingComplete()}
-          onGuidedSetup={() => setShowOnboarding(true)}
-          onSearch={() => navigate('/app/search')}
-          onNotifications={() => navigate('/app/notifications')}
+          showOnboarding={showOnboardingPanel}
+          onDismissOnboarding={() => {
+            markOnboardingComplete()
+            setOnboardingDismissed(true)
+          }}
+          onFocusCreate={() => {
+            const input = document.querySelector<HTMLInputElement>('input[aria-label="New workspace name"]')
+            input?.focus()
+          }}
+          onQuickNote={() => navigate('/app/search')}
+          onInviteMember={() =>
+            focusWorkspaceId && navigate(`/app/workspaces/${focusWorkspaceId}/members`)
+          }
         />
       </ResponsiveContent>
     )
@@ -142,7 +133,7 @@ export function WorkspaceHubPage() {
   const activeWorkspace = workspaces.find((w) => w.id === focusWorkspaceId)
 
   return (
-    <ResponsiveContent>
+    <ResponsiveContent maxWidth="2xl">
       <WorkspaceDashboardPopulated
         userName={user?.name}
         workspaces={workspaces}

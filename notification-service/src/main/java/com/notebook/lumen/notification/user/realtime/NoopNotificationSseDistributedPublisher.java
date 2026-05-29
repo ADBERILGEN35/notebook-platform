@@ -1,10 +1,13 @@
 package com.notebook.lumen.notification.user.realtime;
 
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 @Component
-@ConditionalOnMissingBean(NotificationSseDistributedPublisher.class)
+@ConditionalOnProperty(
+    name = "notification.sse.distributed.enabled",
+    havingValue = "false",
+    matchIfMissing = true)
 public class NoopNotificationSseDistributedPublisher
     implements NotificationSseDistributedPublisher {
   @Override

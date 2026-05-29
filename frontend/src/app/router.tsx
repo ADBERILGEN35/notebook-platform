@@ -1,5 +1,4 @@
-import { createBrowserRouter, Navigate, Outlet } from 'react-router-dom'
-import type { ReactNode } from 'react'
+import { createBrowserRouter, Navigate } from 'react-router-dom'
 import { LoginPage } from '../pages/LoginPage'
 import { RegisterPage } from '../pages/RegisterPage'
 import { SignupPage } from '../pages/SignupPage'
@@ -57,38 +56,7 @@ import { AdminChangeRequestDetailPage } from '../pages/admin/AdminChangeRequestD
 import { AdminChangeRequestGitOpsPage } from '../pages/admin/AdminChangeRequestGitOpsPage'
 import { AdminChangeRequestDryRunPage } from '../pages/admin/AdminChangeRequestDryRunPage'
 import { AdminChangeRequestDiffPage } from '../pages/admin/AdminChangeRequestDiffPage'
-import { useAuthStore } from '../features/auth/auth-store'
-import { isCookieMode } from '../shared/config/auth-transport'
-import { isAdminUiEnabled } from '../shared/config/admin-feature-flags'
-import { canShowAdminNavigation } from '../features/admin/access/admin-access'
-import { PermissionDenied } from '../shared/components/PermissionDenied'
-
-function Protected({ children }: { children: ReactNode }) {
-  const token = useAuthStore((state) => state.accessToken)
-  const user = useAuthStore((state) => state.user)
-  if (isCookieMode()) {
-    if (!user) return <Navigate to="/login" replace />
-    return <>{children}</>
-  }
-  if (!token) return <Navigate to="/login" replace />
-  return <>{children}</>
-}
-
-function AdminGate() {
-  const user = useAuthStore((state) => state.user)
-  if (!isAdminUiEnabled()) {
-    return <Navigate to="/app" replace />
-  }
-  if (!canShowAdminNavigation(user)) {
-    return (
-      <PermissionDenied
-        title="Admin area restricted"
-        message="Admin UI requires feature flags and a trusted role. Local development may set ADMIN_UI_DEV_OPEN; production requires platform admin authorization (planned Faz 43)."
-      />
-    )
-  }
-  return <Outlet />
-}
+import { AdminGate, Protected } from './route-guards'
 
 export const router = createBrowserRouter([
   { path: '/', element: <Navigate to="/app" replace /> },

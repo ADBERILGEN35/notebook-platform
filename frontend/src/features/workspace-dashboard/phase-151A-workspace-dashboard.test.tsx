@@ -10,27 +10,34 @@ vi.mock('../../shared/hooks/useOnlineStatus', () => ({
   useOnlineStatus: () => ({ isOnline: true }),
 }))
 
-describe('Faz 151A workspace dashboard', () => {
-  it('renders empty dashboard with h1 welcome and CTA', () => {
-    render(
-      <MemoryRouter>
-        <WorkspaceDashboardEmpty
-          workspaceName=""
-          onWorkspaceNameChange={vi.fn()}
-          onCreateWorkspace={vi.fn()}
-          createPending={false}
-          createError={false}
-          error={null}
-          showGuidedSetup
-          onGuidedSetup={vi.fn()}
-          onSearch={vi.fn()}
-          onNotifications={vi.fn()}
-        />
-      </MemoryRouter>,
-    )
+const renderEmpty = (overrides: Partial<Parameters<typeof WorkspaceDashboardEmpty>[0]> = {}) =>
+  render(
+    <MemoryRouter>
+      <WorkspaceDashboardEmpty
+        workspaceName=""
+        onWorkspaceNameChange={vi.fn()}
+        onCreateWorkspace={vi.fn()}
+        createPending={false}
+        createError={false}
+        error={null}
+        showOnboarding={false}
+        onDismissOnboarding={vi.fn()}
+        onFocusCreate={vi.fn()}
+        onQuickNote={vi.fn()}
+        onInviteMember={vi.fn()}
+        {...overrides}
+      />
+    </MemoryRouter>,
+  )
+
+describe('Faz 151A workspace dashboard (post 151B fix)', () => {
+  it('renders empty dashboard with h1 welcome and create-workspace CTA', () => {
+    renderEmpty()
     expect(screen.getByTestId('workspace-dashboard-empty')).toBeTruthy()
-    expect(screen.getByRole('heading', { level: 1, name: /welcome to your workspace/i })).toBeTruthy()
-    expect(screen.getByRole('button', { name: /create workspace/i })).toBeTruthy()
+    expect(
+      screen.getByRole('heading', { level: 1, name: /welcome to your workspace/i }),
+    ).toBeTruthy()
+    expect(screen.getByRole('button', { name: /create new workspace/i })).toBeTruthy()
     expect(screen.getByText(/built for teams/i)).toBeTruthy()
   })
 
@@ -73,17 +80,16 @@ describe('Faz 151A workspace dashboard', () => {
     expect(screen.getByText('At a glance')).toBeTruthy()
   })
 
-  it('renders quick actions with accessible labels', () => {
+  it('renders quick actions with accessible labels (151B API)', () => {
     render(
       <WorkspaceQuickActions
         focusWorkspaceId="w1"
-        onSearch={vi.fn()}
-        onNotifications={vi.fn()}
-        onOpenWorkspace={vi.fn()}
+        onQuickNote={vi.fn()}
+        onInviteMember={vi.fn()}
       />,
     )
     expect(screen.getByRole('button', { name: /quick note/i })).toBeTruthy()
-    expect(screen.getByRole('button', { name: /notifications/i })).toBeTruthy()
+    expect(screen.getByRole('button', { name: /invite member/i })).toBeTruthy()
   })
 
   it('does not expose tokens in dashboard markup', () => {

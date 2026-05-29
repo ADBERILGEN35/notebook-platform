@@ -29,10 +29,6 @@ export function MfaAuthenticationPage() {
   const [recoveryCode, setRecoveryCode] = useState('')
   const [showRecovery, setShowRecovery] = useState(false)
 
-  if (!mfaSessionId) {
-    return <Navigate to="/login" replace />
-  }
-
   const finishSession = async (data: AuthResponse) => {
     if (data.user) {
       setSession({
@@ -49,6 +45,7 @@ export function MfaAuthenticationPage() {
 
   const passkeyMutation = useMutation({
     mutationFn: async () => {
+      if (!mfaSessionId) throw new Error('MFA session expired')
       const options = await authenticationOptions(mfaSessionId)
       const credential = (await navigator.credentials.get({
         publicKey: {
@@ -76,9 +73,16 @@ export function MfaAuthenticationPage() {
   })
 
   const recoveryMutation = useMutation({
-    mutationFn: () => verifyRecoveryCode({ mfaSessionId, recoveryCode }),
+    mutationFn: () => {
+      if (!mfaSessionId) throw new Error('MFA session expired')
+      return verifyRecoveryCode({ mfaSessionId, recoveryCode })
+    },
     onSuccess: (data) => void finishSession(data as AuthResponse),
   })
+
+  if (!mfaSessionId) {
+    return <Navigate to="/login" replace />
+  }
 
   return (
     <AuthShell>

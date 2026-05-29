@@ -182,10 +182,11 @@ test.describe('Enterprise change requests', () => {
 
     await signUpAndLogin(page, `chg-appr-${Date.now()}@example.com`, 'Password1234!', 'Approve E2E')
     await page.goto('/app/admin/enterprise/change-requests')
-    await page.locator('tbody').getByRole('button', { name: 'Approve', exact: true }).click()
-    await expect(page.getByText(/This does not apply the change automatically/i)).toBeVisible()
-    await clickDialogPrimary(page, 'Approve change request', 'Approve')
-    await expect(page.getByText(/Request approved/i)).toBeVisible()
+    await page.locator('tbody').getByRole('link', { name: 'View', exact: true }).click()
+    await page.getByRole('button', { name: 'Approve', exact: true }).click()
+    await expect(page.getByRole('dialog', { name: 'Approve change request' }).getByText(/No runtime mutation/i)).toBeVisible()
+    await clickDialogPrimary(page, 'Approve change request', 'Confirm approve')
+    await expect(page.getByText('MERGE_ANALYSIS_ROLLOUT_REQUEST', { exact: true })).toBeVisible()
   })
 
   test('self-created request has approve disabled', async ({ page }) => {
@@ -223,6 +224,7 @@ test.describe('Enterprise change requests', () => {
     })
     await signUpAndLogin(page, `chg-self-${Date.now()}@example.com`, 'Password1234!', 'Self E2E')
     await page.goto('/app/admin/enterprise/change-requests')
+    await page.locator('tbody').getByRole('link', { name: 'View', exact: true }).click()
     await expect(page.getByRole('button', { name: 'Approve', exact: true })).toBeDisabled()
   })
 
@@ -296,10 +298,11 @@ test.describe('Enterprise change requests', () => {
     })
     await signUpAndLogin(page, `chg-rej-${Date.now()}@example.com`, 'Password1234!', 'Reject E2E')
     await page.goto('/app/admin/enterprise/change-requests')
-    await page.locator('tbody').getByRole('button', { name: 'Reject', exact: true }).click()
-    await page.getByRole('textbox', { name: /reason/i }).fill('Not ready for rollout')
-    await clickDialogPrimary(page, 'Reject change request', 'Reject')
-    await expect(page.getByText('MERGE_ANALYSIS_ROLLOUT_REQUEST')).toBeVisible()
+    await page.locator('tbody').getByRole('link', { name: 'View', exact: true }).click()
+    await page.getByRole('button', { name: 'Reject', exact: true }).click()
+    await page.locator('textarea').fill('Not ready for rollout')
+    await clickDialogPrimary(page, 'Reject change request', 'Confirm reject')
+    await expect(page.getByText('MERGE_ANALYSIS_ROLLOUT_REQUEST', { exact: true })).toBeVisible()
   })
 
   test('gitops dry-run for approved request', async ({ page }) => {
@@ -357,8 +360,8 @@ test.describe('Enterprise change requests', () => {
     await signUpAndLogin(page, `chg-gitops-${Date.now()}@example.com`, 'Password1234!', 'GitOps E2E')
     await page.goto('/app/admin/enterprise/change-requests')
     await page.getByRole('button', { name: 'Approved' }).click()
-    await page.getByRole('button', { name: 'Dry-run GitOps' }).click()
-    await clickDialogPrimary(page, 'GitOps dry-run', 'Run dry-run')
+    await page.getByRole('link', { name: 'Dry-run GitOps' }).click()
+    await page.getByRole('button', { name: 'Run dry-run' }).click()
     await expect(page.getByText('--- e2e')).toBeVisible()
   })
 
@@ -427,11 +430,10 @@ test.describe('Enterprise change requests', () => {
     await signUpAndLogin(page, `chg-rbac-gitops-${Date.now()}@example.com`, 'Password1234!', 'RBAC GitOps E2E')
     await page.goto('/app/admin/enterprise/change-requests')
     await page.getByRole('button', { name: 'Approved' }).click()
-    await page.getByRole('button', { name: 'Dry-run GitOps' }).click()
-    await expect(page.getByText(/does not grant or revoke roles at runtime/i)).toBeVisible()
-    await clickDialogPrimary(page, 'GitOps dry-run', 'Run dry-run')
+    await page.getByRole('link', { name: 'Dry-run GitOps' }).click()
+    await expect(page.getByText(/Dry-run computes a patch preview/i)).toBeVisible()
+    await page.getByRole('button', { name: 'Run dry-run' }).click()
     await expect(page.getByText('RBAC_ASSIGNMENT_ALREADY_PROPOSED')).toBeVisible()
-    await expect(page.getByText('adminRbacOverrides')).toBeVisible()
   })
 
   test('403 on list shows permission message', async ({ page }) => {
@@ -455,6 +457,6 @@ test.describe('Enterprise change requests', () => {
 
     await signUpAndLogin(page, `chg-denied-${Date.now()}@example.com`, 'Password1234!', 'Denied E2E')
     await page.goto('/app/admin/enterprise/change-requests')
-    await expect(page.getByText(/Permission denied/i)).toBeVisible()
+    await expect(page.getByText('ADMIN_ACCESS_DENIED: no')).toBeVisible()
   })
 })

@@ -1,13 +1,25 @@
 import { defineConfig, devices } from '@playwright/test'
 
 const usePreview = process.env.E2E_USE_PREVIEW === '1'
+const includeRealBackendJourneys = process.env.E2E_REAL_BACKEND === '1'
 const previewPort = 4173
 const devPort = 5173
 const baseURL = process.env.E2E_BASE_URL || (usePreview ? `http://localhost:${previewPort}` : `http://localhost:${devPort}`)
+const realBackendJourneySpecs = [
+  'e2e/auth.spec.ts',
+  'e2e/comments-versions.spec.ts',
+  'e2e/notification-preferences.spec.ts',
+  'e2e/offline-background-sync.spec.ts',
+  'e2e/responsive.spec.ts',
+  'e2e/search.spec.ts',
+  'e2e/settings-security.spec.ts',
+  'e2e/workspace-note.spec.ts',
+]
 
 export default defineConfig({
   testDir: '.',
   testMatch: ['e2e/**/*.spec.ts', 'tests/e2e/**/*.spec.ts'],
+  testIgnore: includeRealBackendJourneys ? [] : realBackendJourneySpecs,
   timeout: 60_000,
   expect: {
     timeout: 10_000,

@@ -4,6 +4,12 @@ import { MemoryRouter } from 'react-router-dom'
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 import { SettingsPage } from './SettingsPage'
 
+type MockAuthState = {
+  user: { id: string }
+  clearSession: () => void
+  refreshToken: string
+}
+
 const mockPrefs = vi.hoisted(() => ({
   data: [
     {
@@ -39,7 +45,7 @@ const patchDeliverySpy = vi.hoisted(() =>
 )
 
 vi.mock('../features/auth/auth-store', () => ({
-  useAuthStore: (selector: (state: any) => any) =>
+  useAuthStore: <T,>(selector: (state: MockAuthState) => T) =>
     selector({ user: { id: 'u1' }, clearSession: vi.fn(), refreshToken: 'r1' }),
 }))
 vi.mock('../features/auth/auth-api', () => ({

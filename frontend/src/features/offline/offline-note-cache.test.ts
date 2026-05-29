@@ -17,12 +17,17 @@ type OfflineEntry = {
   cachedAt: string
 }
 
+type MockDb = {
+  objectStoreNames: { contains: (name: string) => boolean }
+  createObjectStore: (name: string) => { createIndex: (name: string) => void }
+}
+
 const notesStore = new Map<string, OfflineEntry>()
 const draftsStore = new Map<string, unknown>()
 
 vi.mock('idb', () => ({
   openDB: vi.fn(
-    async (_name: string, _version: number, opts?: { upgrade?: (db: any, oldVersion: number) => void }) => {
+    async (_name: string, _version: number, opts?: { upgrade?: (db: MockDb, oldVersion: number) => void }) => {
       if (opts?.upgrade) {
         opts.upgrade(
           {

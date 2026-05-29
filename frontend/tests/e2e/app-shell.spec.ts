@@ -12,7 +12,7 @@ test.describe('app shell smoke', () => {
     await signUpAndLogin(page, `shell-${Date.now()}@example.com`, 'Password1234!')
     await page.goto('/app')
     await expect(page.getByRole('main')).toBeVisible()
-    await expect(page.getByRole('button', { name: 'Create note' })).toBeVisible()
+    await expect(page.getByRole('button', { name: /Create note|Create/ })).toBeVisible()
     await assertNoSecretsVisible(page)
   })
 

@@ -33,7 +33,11 @@ export function AppShell({
       <MobileNavDrawer open={!isDesktop && mobileNavOpen} onClose={onMobileNavClose} {...nav} />
       <div className="flex min-h-screen flex-1 flex-col pb-16 lg:pb-0">
         <TopNav {...top} onSidebarToggle={onMobileNavOpen} />
-        <main className="flex-1 p-3 sm:p-4 lg:p-6" id="main-content" tabIndex={-1}>
+        <main
+          className="flex-1 px-4 py-6 sm:px-6 lg:px-10 lg:py-8"
+          id="main-content"
+          tabIndex={-1}
+        >
           {banners}
           {children}
         </main>

@@ -5,6 +5,7 @@ import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -14,6 +15,7 @@ public class SearchPermissionService {
   private final WorkspaceClient workspaceClient;
   private final MeterRegistry meterRegistry;
 
+  @Autowired
   public SearchPermissionService(WorkspaceClient workspaceClient, MeterRegistry meterRegistry) {
     this.workspaceClient = workspaceClient;
     this.meterRegistry = meterRegistry;

@@ -6,6 +6,9 @@ export type AppShellNavProps = {
   activeWorkspaceId: string | null
   showAdminNav?: boolean
   onWorkspaceSelect: (workspaceId: string) => void
+  onCreateNotebook?: () => void
+  onSignOut?: () => void
+  signOutPending?: boolean
   onNavigate?: () => void
   className?: string
 }
@@ -20,4 +23,6 @@ export type AppShellTopProps = {
   activeWorkspaceId: string | null
   onWorkspaceSelect: (workspaceId: string) => void
   onOpenSearch?: () => void
+  onInviteTeam?: () => void
+  inviteTeamDisabled?: boolean
 }

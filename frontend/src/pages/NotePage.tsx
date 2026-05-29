@@ -130,7 +130,7 @@ export function NotePage({ embedded, expectedWorkspaceId }: NotePageProps = {}) 
           if (cached) {
             return { note: cached.note, etag: cached.etag, source: 'offline' as const }
           }
-          throw new Error('OFFLINE_NOTE_UNAVAILABLE')
+          throw new Error('OFFLINE_NOTE_UNAVAILABLE', { cause: error })
         }
         throw error
       }

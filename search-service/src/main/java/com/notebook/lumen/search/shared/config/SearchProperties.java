@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.bind.ConstructorBinding;
 
 @ConfigurationProperties(prefix = "search")
 public record SearchProperties(
@@ -25,6 +26,9 @@ public record SearchProperties(
     ServiceJwt serviceJwt,
     Internal internal,
     Reindex reindex) {
+  @ConstructorBinding
+  public SearchProperties {}
+
   public SearchProperties(
       int maxIndexedChars,
       int maxQueryLength,

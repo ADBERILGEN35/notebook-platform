@@ -2,13 +2,14 @@ import type { PropsWithChildren } from 'react'
 
 type ResponsiveContentProps = PropsWithChildren<{
   className?: string
-  maxWidth?: 'md' | 'lg' | 'xl' | 'full'
+  maxWidth?: 'md' | 'lg' | 'xl' | '2xl' | 'full'
 }>
 
 const maxWidthClass = {
   md: 'max-w-3xl',
   lg: 'max-w-5xl',
   xl: 'max-w-6xl',
+  '2xl': 'max-w-[1280px]',
   full: 'max-w-full',
 }
 

@@ -25,6 +25,8 @@ import { OfflineSyncSummaryBanner } from '../features/offline/components/Offline
 import type { BackgroundSyncSummary } from '../features/offline/offline-background-sync-types'
 import { AppShell } from '../features/app-shell/components'
 import { GlobalSearchOverlay } from '../features/search/components/GlobalSearchOverlay'
+import { logout as logoutApi } from '../features/auth/auth-api'
+import { isCookieMode } from '../shared/config/auth-transport'
 
 export function AppShellPage() {
   const navigate = useNavigate()
@@ -38,6 +40,8 @@ export function AppShellPage() {
   const setActiveWorkspaceId = useWorkspaceStore((state) => state.setActiveWorkspaceId)
   const user = useAuthStore((state) => state.user)
   const accessToken = useAuthStore((state) => state.accessToken)
+  const refreshToken = useAuthStore((state) => state.refreshToken)
+  const clearSession = useAuthStore((state) => state.clearSession)
   const showAdminNav = canShowAdminNavigation(user)
   const isDesktop = useMediaQuery('(min-width: 1024px)')
   const { isOnline } = useOnlineStatus()
@@ -163,6 +167,14 @@ export function AppShellPage() {
     },
   })
 
+  const logoutMutation = useMutation({
+    mutationFn: () => logoutApi(isCookieMode() ? null : refreshToken),
+    onSuccess: () => {
+      clearSession()
+      navigate('/login', { replace: true })
+    },
+  })
+
   const workspaces = workspaceQuery.data?.items ?? []
   const notebooks = notebooksQuery.data?.items ?? []
 
@@ -207,6 +219,9 @@ export function AppShellPage() {
             setActiveWorkspaceId(id)
             navigate(`/app/workspaces/${id}`)
           },
+          onCreateNotebook: () => setOpenCreateNotebook(true),
+          onSignOut: () => logoutMutation.mutate(),
+          signOutPending: logoutMutation.isPending,
         }}
         top={{
           search,
@@ -220,6 +235,10 @@ export function AppShellPage() {
             navigate(`/app/workspaces/${id}`)
           },
           onOpenSearch: () => setGlobalSearchOpen(true),
+          onInviteTeam: activeWorkspaceId
+            ? () => navigate(`/app/workspaces/${activeWorkspaceId}/members`)
+            : undefined,
+          inviteTeamDisabled: !activeWorkspaceId,
         }}
       >
         <Outlet />

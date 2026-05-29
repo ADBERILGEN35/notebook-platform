@@ -4,9 +4,12 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
+import jakarta.persistence.Column;
 import jakarta.persistence.Table;
 import java.time.Instant;
 import java.util.UUID;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Entity
 @Table(name = "email_notifications")
@@ -35,7 +38,11 @@ public class EmailNotification {
   private Instant complainedAt;
   private Instant suppressedAt;
   private String providerEventId;
+
+  @JdbcTypeCode(SqlTypes.JSON)
+  @Column(columnDefinition = "jsonb")
   private String providerEventPayload;
+
   private String idempotencyKey;
   private int attemptCount;
   private Instant nextAttemptAt;

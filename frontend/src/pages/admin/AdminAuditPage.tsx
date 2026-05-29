@@ -187,7 +187,9 @@ export function AdminAuditPage() {
   }
 
   const handleExport = async () => {
-    if (!parsedFromUrl.createdFrom || !parsedFromUrl.createdTo) {
+    const createdFrom = draft.createdFrom.trim()
+    const createdTo = draft.createdTo.trim()
+    if (!createdFrom || !createdTo) {
       setExportError('Export requires createdFrom and createdTo filters.')
       return
     }
@@ -387,7 +389,7 @@ export function AdminAuditPage() {
             <span className="text-xs text-slate-500">Export requires admin:audit:export.</span>
           )}
         </div>
-        {exportError ? <ErrorAlert error={new Error(exportError)} /> : null}
+        {exportError ? <ErrorAlert message={exportError} /> : null}
       </Card>
 
       {auditQuery.isLoading ? <LoadingState /> : null}

@@ -11,6 +11,7 @@ import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import java.util.Map;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +24,7 @@ public class SearchQueryService {
   private final SearchAuditService auditService;
   private final MeterRegistry meterRegistry;
 
+  @Autowired
   public SearchQueryService(
       SearchProviderRouter providerRouter,
       SearchPermissionService permissionService,

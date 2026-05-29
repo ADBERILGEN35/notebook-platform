@@ -73,5 +73,5 @@ export function useNotificationEventStream() {
     return () => {
       source?.close()
     }
-  }, [queryClient, user?.id])
+  }, [queryClient, user])
 }

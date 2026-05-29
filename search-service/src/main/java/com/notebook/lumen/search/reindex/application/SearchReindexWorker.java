@@ -40,16 +40,12 @@ public class SearchReindexWorker {
     this.meterRegistry = meterRegistry;
   }
 
-  @Scheduled(fixedDelayString = "#{@searchReindexWorker.pollIntervalMillis()}")
+  @Scheduled(fixedDelayString = "${search.reindex.poll-interval-seconds:10}000")
   public void poll() {
     if (!acceptingClaims.get() || !properties.reindex().workerEnabled()) {
       return;
     }
     reindexService.claimNextPending().ifPresent(this::runJob);
-  }
-
-  public String pollIntervalMillis() {
-    return String.valueOf(properties.reindex().effectivePollIntervalSeconds() * 1000);
   }
 
   @jakarta.annotation.PreDestroy

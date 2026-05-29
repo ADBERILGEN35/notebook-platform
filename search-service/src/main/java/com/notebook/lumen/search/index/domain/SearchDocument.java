@@ -24,7 +24,7 @@ public class SearchDocument {
   private Instant noteUpdatedAt;
   private Instant archivedAt;
 
-  @Column(insertable = false, updatable = false)
+  @Column(columnDefinition = "tsvector", insertable = false, updatable = false)
   private String searchVector;
 
   private Instant indexedAt;
