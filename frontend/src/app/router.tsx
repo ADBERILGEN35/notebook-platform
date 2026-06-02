@@ -1,4 +1,6 @@
+import { lazy } from 'react'
 import { createBrowserRouter, Navigate } from 'react-router-dom'
+import { RouteError } from './ErrorBoundary'
 import { LoginPage } from '../pages/LoginPage'
 import { RegisterPage } from '../pages/RegisterPage'
 import { SignupPage } from '../pages/SignupPage'
@@ -21,42 +23,160 @@ import { AccountSecurityPage } from '../pages/AccountSecurityPage'
 import { NotificationPreferencesPage } from '../pages/NotificationPreferencesPage'
 import { OfflineSyncDiagnosticsPage } from '../pages/OfflineSyncDiagnosticsPage'
 import { NotificationCenterPage } from '../pages/NotificationCenterPage'
-import { AdminHomePage } from '../pages/admin/AdminHomePage'
-import { AdminOverviewPage } from '../pages/admin/AdminOverviewPage'
-import { AdminSetupChecklistPage } from '../pages/admin/AdminSetupChecklistPage'
-import { AdminSearchDiagnosticsPage } from '../pages/admin/AdminSearchDiagnosticsPage'
-import { AdminIdentityOverviewPage } from '../pages/admin/AdminIdentityOverviewPage'
-import { AdminSsoDiagnosticsPage } from '../pages/admin/AdminSsoDiagnosticsPage'
-import { AdminScimProvisioningPage } from '../pages/admin/AdminScimProvisioningPage'
-import { AdminRoleMappingDiagnosticsPage } from '../pages/admin/AdminRoleMappingDiagnosticsPage'
-import { AdminBreakGlassOpsPage } from '../pages/admin/AdminBreakGlassOpsPage'
-import { AdminAuditPage } from '../pages/admin/AdminAuditPage'
 import { AdminLayout } from '../pages/admin/AdminLayout'
 import { AdminEnterpriseLayout } from '../pages/admin/AdminEnterpriseLayout'
-import {
-  AdminEnterpriseOverviewPage,
-  AdminEnterpriseSecurityPage,
-  AdminEnterpriseIntegrationsPage,
-} from '../pages/admin/AdminEnterprisePages'
-import { AdminEnterpriseChangeRequestsPage } from '../pages/admin/AdminEnterpriseChangeRequestsPage'
-import { AdminNotificationAnalyticsPage } from '../pages/admin/AdminNotificationAnalyticsPage'
-import { AdminNotificationDeadLetterPage } from '../pages/admin/AdminNotificationDeadLetterPage'
-import { AdminNotificationRetentionPage } from '../pages/admin/AdminNotificationRetentionPage'
-import { AdminNotificationLegalHoldsPage } from '../pages/admin/AdminNotificationLegalHoldsPage'
-import { AdminPlatformRetentionPage } from '../pages/admin/AdminPlatformRetentionPage'
-import { AdminNotificationDeadLetterDetailPage } from '../pages/admin/AdminNotificationDeadLetterDetailPage'
-import { AdminNotificationDeadLetterRequeuePage } from '../pages/admin/AdminNotificationDeadLetterRequeuePage'
-import { AdminRetentionHubPage } from '../pages/admin/AdminRetentionHubPage'
-import { AdminPlatformLegalHoldsPage } from '../pages/admin/AdminPlatformLegalHoldsPage'
-import { AdminPurgeResultPage } from '../pages/admin/AdminPurgeResultPage'
-import { AdminRbacPage } from '../pages/admin/AdminRbacPage'
-import { AdminBreakGlassRotationPage } from '../pages/admin/AdminBreakGlassRotationPage'
-import { AdminChangeRequestsPage } from '../pages/admin/AdminChangeRequestsPage'
-import { AdminChangeRequestDetailPage } from '../pages/admin/AdminChangeRequestDetailPage'
-import { AdminChangeRequestGitOpsPage } from '../pages/admin/AdminChangeRequestGitOpsPage'
-import { AdminChangeRequestDryRunPage } from '../pages/admin/AdminChangeRequestDryRunPage'
-import { AdminChangeRequestDiffPage } from '../pages/admin/AdminChangeRequestDiffPage'
 import { AdminGate, Protected } from './route-guards'
+
+// Admin leaf pages are lazy-loaded so the ~40 admin components are not bundled
+// into the initial chunk for non-admin users. The Suspense boundary lives in
+// AdminLayout (around its <Outlet/>), covering all nested admin routes.
+const AdminHomePage = lazy(() =>
+  import('../pages/admin/AdminHomePage').then((m) => ({ default: m.AdminHomePage })),
+)
+const AdminOverviewPage = lazy(() =>
+  import('../pages/admin/AdminOverviewPage').then((m) => ({ default: m.AdminOverviewPage })),
+)
+const AdminSetupChecklistPage = lazy(() =>
+  import('../pages/admin/AdminSetupChecklistPage').then((m) => ({
+    default: m.AdminSetupChecklistPage,
+  })),
+)
+const AdminSearchDiagnosticsPage = lazy(() =>
+  import('../pages/admin/AdminSearchDiagnosticsPage').then((m) => ({
+    default: m.AdminSearchDiagnosticsPage,
+  })),
+)
+const AdminIdentityOverviewPage = lazy(() =>
+  import('../pages/admin/AdminIdentityOverviewPage').then((m) => ({
+    default: m.AdminIdentityOverviewPage,
+  })),
+)
+const AdminSsoDiagnosticsPage = lazy(() =>
+  import('../pages/admin/AdminSsoDiagnosticsPage').then((m) => ({
+    default: m.AdminSsoDiagnosticsPage,
+  })),
+)
+const AdminScimProvisioningPage = lazy(() =>
+  import('../pages/admin/AdminScimProvisioningPage').then((m) => ({
+    default: m.AdminScimProvisioningPage,
+  })),
+)
+const AdminRoleMappingDiagnosticsPage = lazy(() =>
+  import('../pages/admin/AdminRoleMappingDiagnosticsPage').then((m) => ({
+    default: m.AdminRoleMappingDiagnosticsPage,
+  })),
+)
+const AdminBreakGlassOpsPage = lazy(() =>
+  import('../pages/admin/AdminBreakGlassOpsPage').then((m) => ({
+    default: m.AdminBreakGlassOpsPage,
+  })),
+)
+const AdminAuditPage = lazy(() =>
+  import('../pages/admin/AdminAuditPage').then((m) => ({ default: m.AdminAuditPage })),
+)
+const AdminEnterpriseOverviewPage = lazy(() =>
+  import('../pages/admin/AdminEnterprisePages').then((m) => ({
+    default: m.AdminEnterpriseOverviewPage,
+  })),
+)
+const AdminEnterpriseSecurityPage = lazy(() =>
+  import('../pages/admin/AdminEnterprisePages').then((m) => ({
+    default: m.AdminEnterpriseSecurityPage,
+  })),
+)
+const AdminEnterpriseIntegrationsPage = lazy(() =>
+  import('../pages/admin/AdminEnterprisePages').then((m) => ({
+    default: m.AdminEnterpriseIntegrationsPage,
+  })),
+)
+const AdminEnterpriseChangeRequestsPage = lazy(() =>
+  import('../pages/admin/AdminEnterpriseChangeRequestsPage').then((m) => ({
+    default: m.AdminEnterpriseChangeRequestsPage,
+  })),
+)
+const AdminNotificationAnalyticsPage = lazy(() =>
+  import('../pages/admin/AdminNotificationAnalyticsPage').then((m) => ({
+    default: m.AdminNotificationAnalyticsPage,
+  })),
+)
+const AdminNotificationDeadLetterPage = lazy(() =>
+  import('../pages/admin/AdminNotificationDeadLetterPage').then((m) => ({
+    default: m.AdminNotificationDeadLetterPage,
+  })),
+)
+const AdminNotificationRetentionPage = lazy(() =>
+  import('../pages/admin/AdminNotificationRetentionPage').then((m) => ({
+    default: m.AdminNotificationRetentionPage,
+  })),
+)
+const AdminNotificationLegalHoldsPage = lazy(() =>
+  import('../pages/admin/AdminNotificationLegalHoldsPage').then((m) => ({
+    default: m.AdminNotificationLegalHoldsPage,
+  })),
+)
+const AdminPlatformRetentionPage = lazy(() =>
+  import('../pages/admin/AdminPlatformRetentionPage').then((m) => ({
+    default: m.AdminPlatformRetentionPage,
+  })),
+)
+const AdminNotificationDeadLetterDetailPage = lazy(() =>
+  import('../pages/admin/AdminNotificationDeadLetterDetailPage').then((m) => ({
+    default: m.AdminNotificationDeadLetterDetailPage,
+  })),
+)
+const AdminNotificationDeadLetterRequeuePage = lazy(() =>
+  import('../pages/admin/AdminNotificationDeadLetterRequeuePage').then((m) => ({
+    default: m.AdminNotificationDeadLetterRequeuePage,
+  })),
+)
+const AdminRetentionHubPage = lazy(() =>
+  import('../pages/admin/AdminRetentionHubPage').then((m) => ({
+    default: m.AdminRetentionHubPage,
+  })),
+)
+const AdminPlatformLegalHoldsPage = lazy(() =>
+  import('../pages/admin/AdminPlatformLegalHoldsPage').then((m) => ({
+    default: m.AdminPlatformLegalHoldsPage,
+  })),
+)
+const AdminPurgeResultPage = lazy(() =>
+  import('../pages/admin/AdminPurgeResultPage').then((m) => ({
+    default: m.AdminPurgeResultPage,
+  })),
+)
+const AdminRbacPage = lazy(() =>
+  import('../pages/admin/AdminRbacPage').then((m) => ({ default: m.AdminRbacPage })),
+)
+const AdminBreakGlassRotationPage = lazy(() =>
+  import('../pages/admin/AdminBreakGlassRotationPage').then((m) => ({
+    default: m.AdminBreakGlassRotationPage,
+  })),
+)
+const AdminChangeRequestsPage = lazy(() =>
+  import('../pages/admin/AdminChangeRequestsPage').then((m) => ({
+    default: m.AdminChangeRequestsPage,
+  })),
+)
+const AdminChangeRequestDetailPage = lazy(() =>
+  import('../pages/admin/AdminChangeRequestDetailPage').then((m) => ({
+    default: m.AdminChangeRequestDetailPage,
+  })),
+)
+const AdminChangeRequestGitOpsPage = lazy(() =>
+  import('../pages/admin/AdminChangeRequestGitOpsPage').then((m) => ({
+    default: m.AdminChangeRequestGitOpsPage,
+  })),
+)
+const AdminChangeRequestDryRunPage = lazy(() =>
+  import('../pages/admin/AdminChangeRequestDryRunPage').then((m) => ({
+    default: m.AdminChangeRequestDryRunPage,
+  })),
+)
+const AdminChangeRequestDiffPage = lazy(() =>
+  import('../pages/admin/AdminChangeRequestDiffPage').then((m) => ({
+    default: m.AdminChangeRequestDiffPage,
+  })),
+)
 
 export const router = createBrowserRouter([
   { path: '/', element: <Navigate to="/app" replace /> },
@@ -73,6 +193,7 @@ export const router = createBrowserRouter([
         <AppShellPage />
       </Protected>
     ),
+    errorElement: <RouteError />,
     children: [
       { index: true, element: <WorkspaceHubPage /> },
       { path: 'workspaces', element: <WorkspaceHubPage /> },

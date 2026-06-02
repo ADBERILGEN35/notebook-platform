@@ -56,6 +56,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -64,6 +66,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class AuthService {
+  private static final Logger log = LoggerFactory.getLogger(AuthService.class);
   private static final String ACCESS_TOKEN_TYPE = "access";
   private static final String USER_LOGOUT_REASON = "USER_LOGOUT";
   private static final String USER_REVOKE_ALL_REASON = "USER_REVOKE_ALL";
@@ -589,7 +592,9 @@ public class AuthService {
         }
         return out;
       }
-    } catch (Exception ignored) {
+    } catch (Exception e) {
+      // No PII: log only the claim name and exception type, never the claim contents.
+      log.debug("Failed to parse groups claim '{}': {}", groupsClaim, e.toString());
     }
     return List.of();
   }

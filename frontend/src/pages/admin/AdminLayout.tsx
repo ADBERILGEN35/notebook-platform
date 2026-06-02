@@ -1,4 +1,6 @@
+import { Suspense } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
+import { LoadingState } from '../../shared/components/LoadingState'
 import { useAuthStore } from '../../features/auth/auth-store'
 import {
   PERM_AUDIT_READ,
@@ -222,7 +224,9 @@ export function AdminLayout() {
         </ul>
       </nav>
       <div className="min-w-0 flex-1">
-        <Outlet />
+        <Suspense fallback={<LoadingState label="Loading…" />}>
+          <Outlet />
+        </Suspense>
       </div>
     </div>
   )

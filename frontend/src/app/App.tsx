@@ -1,5 +1,6 @@
 import { RouterProvider } from 'react-router-dom'
 import { router } from './router'
+import { ErrorBoundary } from './ErrorBoundary'
 import { useEffect } from 'react'
 import { authUserFromMeResponse, me } from '../features/auth/auth-api'
 import { useAuthStore } from '../features/auth/auth-store'
@@ -33,6 +34,10 @@ export default function App() {
       })
   }, [clearSession, setUser])
 
-  return <RouterProvider router={router} />
+  return (
+    <ErrorBoundary>
+      <RouterProvider router={router} />
+    </ErrorBoundary>
+  )
 }
 

@@ -41,6 +41,14 @@ spec:
           envFrom:
             - configMapRef:
                 name: {{ include "notebook-platform.componentName" (dict "root" . "component" "frontend-config") }}
+          startupProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 2
+            periodSeconds: 3
+            timeoutSeconds: 3
+            failureThreshold: 20
           readinessProbe:
             httpGet:
               path: /healthz
