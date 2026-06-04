@@ -7,14 +7,23 @@ type QuickActionCardProps = {
   onClick?: () => void
   href?: string
   disabled?: boolean
+  'data-testid'?: string
 }
 
-export function QuickActionCard({ title, description, icon, onClick, disabled }: QuickActionCardProps) {
+export function QuickActionCard({
+  title,
+  description,
+  icon,
+  onClick,
+  disabled,
+  'data-testid': testId,
+}: QuickActionCardProps) {
   return (
     <button
       type="button"
       disabled={disabled}
       onClick={onClick}
+      data-testid={testId}
       className="flex w-full items-start gap-3 rounded-xl border border-outline-variant bg-surface-container-lowest p-4 text-left shadow-card transition hover:border-primary/30 hover:bg-surface-container-low focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-60"
     >
       {icon ? (

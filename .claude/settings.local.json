@@ -50,7 +50,21 @@
       "Bash(python3 -m json.tool observability/grafana/dashboards/platform-retention-readiness.json)",
       "Bash(python3 -c \"import yaml,sys; d=yaml.safe_load\\(open\\('observability/prometheus/alerts/platform-retention-readiness.yml'\\)\\); print\\('PROM_YAML_OK groups=%d rules=%d' % \\(len\\(d['groups']\\), len\\(d['groups'][0]['rules']\\)\\)\\)\")",
       "Bash(./gradlew :api-gateway:test --tests \"*AdminPlatformRetention*\" --tests \"*PlatformRetentionMetricsPublisher*\" --no-build-cache --no-configuration-cache)",
-      "Bash(echo \"SPOTLESS_EXIT=$?\")"
+      "Bash(echo \"SPOTLESS_EXIT=$?\")",
+      "Bash(docker compose *)",
+      "Bash(./gradlew bootRun *)",
+      "Bash(npm run *)",
+      "Bash(export DB_URL='jdbc:postgresql://127.0.0.1:15432/notebook_platform' \\\\ *)",
+      "Bash(curl -s -o /dev/null -w '%{http_code}' http://localhost:__TRACKED_VAR__/actuator/health)",
+      "Bash(curl -s -o /dev/null -w '%{http_code}' http://localhost:5173/)",
+      "Bash(echo \"frontend 5173 -> HTTP $\\(curl -s -o /dev/null -w '%{http_code}' http://localhost:5173/ 2>/dev/null\\)\")",
+      "Bash(command -v dockerd)",
+      "Bash(docker context *)",
+      "Bash(service --status-all)",
+      "Bash(nohup \"/mnt/c/Program Files/Docker/Docker/Docker Desktop.exe\")",
+      "Bash(docker info *)",
+      "Bash(awk '{print \"proc:\", $11, $12}')",
+      "Bash(docker --context desktop-linux info)"
     ]
   }
 }

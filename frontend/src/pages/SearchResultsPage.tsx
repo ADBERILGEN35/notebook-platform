@@ -11,15 +11,21 @@ import { EmptyState } from '../shared/components/EmptyState'
 import { LoadingState } from '../shared/components/LoadingState'
 import { ErrorState } from '../shared/components/ErrorState'
 import { PaginationControls } from '../shared/components/PaginationControls'
+import { InlineStatus } from '../shared/components/InlineStatus'
 import { SearchFilterPanel } from '../features/search/components/SearchFilterPanel'
 import { SearchResultCard } from '../features/search/components/SearchResultCard'
 import { SearchPreviewDrawer } from '../features/search/components/SearchPreviewDrawer'
 import type { SearchNoteResult } from '../shared/types/api'
 
+const KNOWN_TOPBAR_FILTERS = new Set(['drafts', 'shared', 'archived'])
+
 export function SearchResultsPage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const workspaceId = useWorkspaceStore((s) => s.activeWorkspaceId)
   const initialQ = searchParams.get('q') ?? ''
+  const topbarFilter = searchParams.get('filter')?.toLowerCase() ?? null
+  const recognizedFilter =
+    topbarFilter && KNOWN_TOPBAR_FILTERS.has(topbarFilter) ? topbarFilter : null
   const [query, setQuery] = useState(initialQ)
   const [page, setPage] = useState(0)
   const [sort, setSort] = useState('relevance')
@@ -66,6 +72,36 @@ export function SearchResultsPage() {
           aria-label="Search query"
         />
       </div>
+      {recognizedFilter ? (
+        <div
+          className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-outline-variant bg-surface-container-low px-3 py-2"
+          role="status"
+          aria-live="polite"
+          data-testid="search-filter-notice"
+        >
+          <div className="flex items-center gap-2">
+            <InlineStatus
+              label={`Filter: ${recognizedFilter}`}
+              tone="warning"
+            />
+            <span className="text-body-md text-on-surface-variant">
+              Backend filter endpoint is not yet available. Showing unfiltered results — your query
+              still applies.
+            </span>
+          </div>
+          <button
+            type="button"
+            className="text-label-md font-medium text-primary hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            onClick={() => {
+              const next = new URLSearchParams(searchParams)
+              next.delete('filter')
+              setSearchParams(next)
+            }}
+          >
+            Clear filter
+          </button>
+        </div>
+      ) : null}
       {!workspaceId ? (
         <EmptyState title="Select a workspace" message="Choose a workspace to search notes you can access." />
       ) : null}

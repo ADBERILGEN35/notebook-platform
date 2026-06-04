@@ -100,15 +100,19 @@ export function WorkspaceDashboardPopulated({
             workspaceCount={workspaces.length}
             notebookCount={focusWorkspaceId ? notebooks.length : undefined}
           />
-          <PageSection title="Quick actions" description="Common tasks for your active workspace.">
+          <PageSection
+            title="Quick actions"
+            description="Common tasks for your active workspace."
+          >
             <ul className="flex flex-col gap-2">
               <li>
                 <QuickActionCard
-                  title="New notebook"
-                  description="Start a notebook in the active workspace."
+                  title="Open workspace"
+                  description="Jump to notebooks and members of the active workspace. Use the sidebar New Notebook button to create one."
                   icon={<span aria-hidden>📓</span>}
                   disabled={!focusWorkspaceId}
                   onClick={onNewNotebook}
+                  data-testid="quick-action-open-workspace"
                 />
               </li>
               <li>
